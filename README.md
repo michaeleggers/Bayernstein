@@ -42,6 +42,16 @@ if ( didCollide ) {
 ```
 even if it is just a single expression following the if. But sometimes
 I don't follow this rule.
+- Filenames are lowercase but I have not followed this rule strictly. I am open
+to suggestions. However, I found it useful to prepend the file with a letter 
+(or more) to indicate what part of the codebase it belongs to, like ```r_gl.cpp```
+which is the Render implementation for the OpenGL backend. I prefer this to
+having a lot of folders as this reduces search-fatigue. Especially for people
+who navigate their files by searching them (in vim) we can just type ```r_*```
+to see all the files that belong to the renderer. I would like to keep it this way.
+What we can do is to divide the engine code and the game code into folders later,
+but for now just keep it loose to not restrict ourselves by imposing arbitrary
+borders in the codebase.
 
 This is all. I am not particularly picky about code style. I also
 used Unix snail_case_in_the_past. Mostly it is decided in the morning
