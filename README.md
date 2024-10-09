@@ -31,9 +31,7 @@ However, I plan to refactor the code to adhere those conventions:
 - Class member values are prepended with a 'm_', like 'm_Gravity'.
 - Struct member values are in camelCase, like 'normalVector'.
 - Getters/Setters are only needed if some logic has to be performed
-to get/set a value of an instance. This is the only rule I am a code-Nazi
-about. Having setters to just read or assign a value is just... not
-smart!
+to get/set a value of an instance. 
 - if-blocks always use {}, like:
 ```
 if ( didCollide ) {
