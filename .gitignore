@@ -1,0 +1,16 @@
+**/build/**
+**/bin/**
+**/lib/**
+
+**/.DS_Store
+**/.vscode/**
+
+**/*.o/
+
+**/cmake-build-debug/**
+**/cmake-build-release/**
+
+**/.idea/**
+
+# Some local docs
+**/line_vs_swept_sphere.md

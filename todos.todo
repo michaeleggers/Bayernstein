@@ -1,0 +1,28 @@
+✔ Create OpenGL capable window @done(24-01-20 12:27)
+✔ Render ImGUI menu @done(24-01-20 12:27)
+✔ Load IQM models @started(24-01-21 12:26) @done(24-01-21 22:49) @lasted(10h23m14s)
+✔ Render IQM model @done(24-01-23 20:10)
+✔ Load and display textures for IQM models @started(24-01-23 23:45) @done(24-01-23 23:45) @lasted(6s)
+✔ Cleanup Texturecode @done(24-01-24 13:51)
+☐ Load checkerboard texture when texturefile cannot be found on disk
+✔ Render animated IQM models @started(24-01-27 23:31) @done(24-01-28 16:02) @lasted(16h31m4s)
+✔ Stop frametime @done(24-01-28 16:02)
+☐ Write blogpost on how vertex-skinning works
+☐ Set the basepath (usually executable path) for all subsystems. So fileloading doesn't have to be like: LoadIQM((exePath + "../../assets/models/mrfixit/mrfixit.iqm").c_str()); but rather just LoadIQM(mrfixit.iqm);
+✔ Have a game class that operates only on the subsystems (renderer, input-system, etc.) that is given to it. So the game-code acts on all the custom library functions and does not care about renderer implementation or Operating System stuff @done(24-01-24 15:14)
+☐ Let usercode create entities
+✔ Create camera class @done(24-01-30 01:17)
+✔ Read and implement Input code @started(24-01-29 17:14) @done(24-01-29 18:39) @lasted(1h25m11s)
+☐ Space optimization: If the same model (IQM) is loaded twice. Use the existing VBO, VAO
+☐ Move Render API into game. The user should be able to do render-stuff him/herself.
+☐ Load Quake .MAP files as levels and render them.
+✔ Run around with player @started(24-02-02 12:44) @done(24-02-02 14:02) @lasted(1h18m2s)
+✔ Add mouse-input @done(24-01-30 18:12)
+☐ Use mouse to control debug camera
+✔ Create model matrix and upload to shader @done(24-02-02 12:41)
+✔ Build bullet physics library and link against them @done(24-02-03 13:35)
+
+- BUGS:
+✔ When SDLK_TAB is used to toggle wireframe then some WASD keys get disabled. @done(24-01-30 01:39) (Problem was TAB key triggering imgui slider-values)
+
+
