@@ -63,5 +63,11 @@ principles.
 
 # Using CMake to generate Makefiles / Visual Studio Project
 - Create a ```build``` folder inside the root folder of this repo and go inside it.
-- Run ```cmake ..```. This generates a Makefile on UNIX systems by default. On Windows, usually
-a Visual Studio Solution. Use ```cmake -G``` to see what generator is used.
+## Linux
+- Run
+```cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..```
+This generates a Makefile on UNIX systems by default. 
+Or just open the project in CLion (without creating the ```build``` folder)
+and CLion will take care of it.
+# Windows
+Visual Studio Solution. Use ```cmake -G``` to see what generator is used.
