@@ -7,12 +7,14 @@
 #include <unordered_map>
 
 #include "r_itexture.h"
+#include "r_font.h"
 
 class GLTexture : public ITexture {
 public:
     GLTexture(std::string filename); 
-
-    // TODO: Kill texture
+    GLTexture::GLTexture(CFont font);
+   
+    // TODO: (Michael) Nuke texture from GPU memory
 
     GLuint      m_gl_Handle;
 };

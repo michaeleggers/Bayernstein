@@ -5,12 +5,14 @@
 #define _IRENDER_H_
 
 #include <vector>
+#include <string>
 
 #include "irender.h"
 #include "r_itexture.h"
 #include "r_model.h"
 #include "camera.h"
 #include "r_common.h"
+#include "r_font.h"
 
 enum DrawMode {
 	DRAW_MODE_SOLID,
@@ -32,6 +34,7 @@ public:
 	virtual bool Init(void)			= 0;
 	virtual void Shutdown(void)		= 0;
 	virtual int  RegisterModel(HKD_Model* model)	= 0;
+	virtual void RegisterFont(CFont* font, std::string fontName) = 0;
 	virtual void SetActiveCamera(Camera* camera) = 0;
 	virtual std::vector<ITexture*> ModelTextures(int gpuModelHandle) = 0;
 	virtual std::vector<ITexture*> Textures() = 0;

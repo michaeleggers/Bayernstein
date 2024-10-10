@@ -31,6 +31,7 @@ public:
 	virtual bool Init(void)								override;
 	virtual void Shutdown(void)							override;
 	virtual int  RegisterModel(HKD_Model* model)		override;
+	virtual void RegisterFont(CFont* font, std::string fontName) override;
 	virtual void SetActiveCamera(Camera* camera) override;
 	virtual std::vector<ITexture*> ModelTextures(int gpuModelHandle)	override;
 	virtual std::vector<ITexture*> Textures(void)       override;

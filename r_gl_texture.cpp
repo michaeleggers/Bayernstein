@@ -2,8 +2,10 @@
 
 #include "r_itexture.h"
 #include "platform.h"
+#include "r_font.h"
 #include "stb_image.h"
 
+#include <assert.h>
 #include <string>
 
 extern std::string g_GameDir;
@@ -40,6 +42,27 @@ GLTexture::GLTexture(std::string filename)
     m_hGPU = (uint64_t)glTextureHandle;    
 }
 
+GLTexture::GLTexture(CFont font)
+{
+    assert( font.m_Bitmap != NULL && "GLTexture: Cannot create GLTexture from font, because the font-bitmap is NULL!" );
 
+    int x = 512;
+    int y = 512;
+    GLuint glTextureHandle;
+    glGenTextures(1, &glTextureHandle);
+    glBindTexture(GL_TEXTURE_2D, glTextureHandle);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLuint)x, (GLuint)y, 0, GL_RGBA, GL_UNSIGNED_BYTE, font.m_Bitmap);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    m_Filename = font.m_Filename;
+    m_gl_Handle = glTextureHandle;
+    m_Width= x;
+    m_Height = y;
+    m_Channels = 4;
+
+    m_hGPU = (uint64_t)glTextureHandle;    
+}
 
 

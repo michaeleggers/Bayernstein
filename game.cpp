@@ -10,7 +10,7 @@
 #include "Shape.h"
 #include "ShapeSphere.h"
 #include "CWorld.h"
-
+#include "r_font.h"
 #include "imgui.h"
 
 
@@ -34,6 +34,10 @@ Game::Game(std::string exePath, hkdInterface* interface, IRender* renderer)
 void Game::Init()
 {
     m_AccumTime = 0.0f;
+
+    // Load a font file from disk
+    CFont coolFont = CFont("fonts/HackNerdFont-Bold.ttf", 32);
+    m_Renderer->RegisterFont(&coolFont, "console_font"); 
 	
     // Load world triangles from Quake .MAP file
 
@@ -296,14 +300,14 @@ bool Game::RunFrame(double dt)
     m_Renderer->RenderEnd();
 
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
-    {
+    /*{
         m_Renderer->Begin2D(); // Enable screenspace 2D rendering
        
         m_Renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
         m_Renderer->DrawText("Hello there.");
 
         m_Renderer->End2D(); // Stop 2D mode
-    }
+    } */
 
     return true;
 }

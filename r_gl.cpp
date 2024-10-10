@@ -206,6 +206,11 @@ int GLRender::RegisterModel(HKD_Model* model)
     return gpuModelHandle;
 }
 
+void GLRender::RegisterFont(CFont* font, std::string fontName)
+{
+    GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(fontName);
+}
+
 void GLRender::SetActiveCamera(Camera* camera)
 {
     m_ActiveCamera = camera;
