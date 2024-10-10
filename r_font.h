@@ -13,7 +13,7 @@ public:
 
     std::string     m_Filename;
     unsigned char*  m_Bitmap;
-    stbtt_bakedchar m_Cdata[96]; // glyphs
+    stbtt_bakedchar* m_Cdata; // glyphs
     stbtt_fontinfo  m_FontInfo;
 };
 

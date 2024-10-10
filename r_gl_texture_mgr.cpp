@@ -1,6 +1,7 @@
 #include "r_gl_texture_mgr.h"
 
 #include "r_itexture.h"
+#include "r_font.h"
 #include "r_gl_texture.h"
 
 GLTextureManager::GLTextureManager() {
@@ -25,3 +26,17 @@ ITexture* GLTextureManager::CreateTexture(std::string filename)
 
 	return result;
 }
+
+ITexture* GLTextureManager::CreateTexture(CFont* font)
+{
+	if (m_NameToTexture.contains(font->m_Filename)) {
+		return m_NameToTexture.at(font->m_Filename);
+	}
+
+	ITexture* result = new GLTexture(font);
+
+	m_NameToTexture.insert({ font->m_Filename, result });
+
+	return result;
+}
+

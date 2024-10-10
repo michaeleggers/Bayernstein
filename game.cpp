@@ -36,8 +36,8 @@ void Game::Init()
     m_AccumTime = 0.0f;
 
     // Load a font file from disk
-    CFont coolFont = CFont("fonts/HackNerdFont-Bold.ttf", 32);
-    m_Renderer->RegisterFont(&coolFont, "console_font"); 
+    CFont *coolFont = new CFont("fonts/HackNerdFont-Bold.ttf", 10);
+    m_Renderer->RegisterFont(coolFont);
 	
     // Load world triangles from Quake .MAP file
 

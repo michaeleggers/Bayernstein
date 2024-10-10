@@ -48,7 +48,7 @@ HKD_Model CreateModelFromIQM(IQMModel* model)
         else {
             mesh.isTextured = true;
         }
-        mesh.textureFileName = iqmMesh->material;
+        mesh.textureFileName = "console_font"; //iqmMesh->material;
         mesh.firstTri = iqmMesh->firstTri;
         mesh.numTris = iqmMesh->numTris;
         for (int v = 0; v < iqmMesh->vertices.size(); v += 3) {

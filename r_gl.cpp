@@ -189,6 +189,7 @@ int GLRender::RegisterModel(HKD_Model* model)
 
     for (int i = 0; i < model->meshes.size(); i++) {
         HKD_Mesh* mesh = &model->meshes[i];
+        //GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture("fonts/HackNerdFont-Bold.ttf");        
         GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(mesh->textureFileName);        
         GLMesh gl_mesh = {
             .triOffset = offset/3 + (int)mesh->firstTri,
@@ -206,9 +207,9 @@ int GLRender::RegisterModel(HKD_Model* model)
     return gpuModelHandle;
 }
 
-void GLRender::RegisterFont(CFont* font, std::string fontName)
+void GLRender::RegisterFont(CFont* font) 
 {
-    GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(fontName);
+    GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(font);
 }
 
 void GLRender::SetActiveCamera(Camera* camera)
