@@ -35,39 +35,38 @@ void Game::Init()
 {
     m_AccumTime = 0.0f;
 	
+    // Load world triangles from Quake .MAP file
 
-	// Load world triangles from Quake .MAP file
+    std::vector<TriPlane> worldTris{};
+    MapVersion mapVersion = VALVE_220; // TODO: Change to MAP_TYPE_QUAKE
+    
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/room.map"); // TODO: Sane loading of Maps based on path
+    size_t inputLength = mapData.length();
+    Map map = getMap(&mapData[0], inputLength, mapVersion);	
+    std::vector<MapPolygon> polysoup = createPolysoup(map);
+    std::vector<MapPolygon> tris = triangulate(polysoup);
+    
+    glm::vec4 triColor = glm::vec4( RandBetween(0.0f, 1.0f), RandBetween(0.0f, 1.0f), RandBetween(0.0f, 1.0f), 1.0f);
+    for (int i = 0; i < tris.size(); i++) {
+        MapPolygon mapPoly = tris[ i ];
+        Vertex A = { glm::vec3(mapPoly.vertices[0].x, mapPoly.vertices[0].y, mapPoly.vertices[0].z) };
+        Vertex B = { glm::vec3(mapPoly.vertices[1].x, mapPoly.vertices[1].y, mapPoly.vertices[1].z) };
+        Vertex C = { glm::vec3(mapPoly.vertices[2].x, mapPoly.vertices[2].y, mapPoly.vertices[2].z) };
+        A.color = triColor;
+        B.color = triColor;
+        C.color = triColor;
+        Tri tri = { A, B, C };
 
-	std::vector<TriPlane> worldTris{};
-	MapVersion mapVersion = VALVE_220; // TODO: Change to MAP_TYPE_QUAKE
-	
-	std::string mapData = loadTextFile(m_ExePath + "../assets/maps/room.map"); // TODO: Sane loading of Maps based on path
-	size_t inputLength = mapData.length();
-	Map map = getMap(&mapData[0], inputLength, mapVersion);	
-	std::vector<MapPolygon> polysoup = createPolysoup(map);
-	std::vector<MapPolygon> tris = triangulate(polysoup);
-	
-	glm::vec4 triColor = glm::vec4( RandBetween(0.0f, 1.0f), RandBetween(0.0f, 1.0f), RandBetween(0.0f, 1.0f), 1.0f);
-	for (int i = 0; i < tris.size(); i++) {
-		MapPolygon mapPoly = tris[ i ];
-		Vertex A = { glm::vec3(mapPoly.vertices[0].x, mapPoly.vertices[0].y, mapPoly.vertices[0].z) };
-		Vertex B = { glm::vec3(mapPoly.vertices[1].x, mapPoly.vertices[1].y, mapPoly.vertices[1].z) };
-		Vertex C = { glm::vec3(mapPoly.vertices[2].x, mapPoly.vertices[2].y, mapPoly.vertices[2].z) };
-		A.color = triColor;
-		B.color = triColor;
-		C.color = triColor;
-		Tri tri = { A, B, C };
+        TriPlane triPlane{};
+        triPlane.tri = tri;
+        triPlane.plane = CreatePlaneFromTri(triPlane.tri);
+        triPlane.tri.a.normal = triPlane.plane.normal;
+        triPlane.tri.b.normal = triPlane.plane.normal;
+        triPlane.tri.c.normal = triPlane.plane.normal;
+        worldTris.push_back( triPlane );	
 
-		TriPlane triPlane{};
-		triPlane.tri = tri;
-		triPlane.plane = CreatePlaneFromTri(triPlane.tri);
-		triPlane.tri.a.normal = triPlane.plane.normal;
-		triPlane.tri.b.normal = triPlane.plane.normal;
-		triPlane.tri.c.normal = triPlane.plane.normal;
-		worldTris.push_back( triPlane );	
-
-	}
-	m_World.InitWorld( worldTris.data(), worldTris.size(), glm::vec3(0.0f, 0.0f, -0.5f) );
+    }
+    m_World.InitWorld( worldTris.data(), worldTris.size(), glm::vec3(0.0f, 0.0f, -0.5f) );
 
     // Load IQM Model
 
@@ -191,7 +190,7 @@ bool Game::RunFrame(double dt)
         }
     }
 
-	SetAnimState(&m_Player, playerAnimState);
+    SetAnimState(&m_Player, playerAnimState);
 
 
     // Test collision between player and world geometry
@@ -295,6 +294,16 @@ bool Game::RunFrame(double dt)
     m_Renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
 
     m_Renderer->RenderEnd();
+
+    // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
+    {
+        m_Renderer->Begin2D(); // Enable screenspace 2D rendering
+       
+        m_Renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
+        m_Renderer->DrawText("Hello there.");
+
+        m_Renderer->End2D(); // Stop 2D mode
+    }
 
     return true;
 }

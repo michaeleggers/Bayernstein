@@ -11,6 +11,7 @@
 - make
 - libXext-devel
 - mesa-libGL-devel
+- TODO: Complete this list
 - OpenGL 4.6
 
 # MacOS
@@ -40,6 +41,9 @@ if ( didCollide ) {
 ```
 even if it is just a single expression following the if. But sometimes
 I don't follow this rule.
+- File Global variables are prepended with 'g_' and declared as ```static```.
+- Compilation Unit Global variables are prepended with 'g_' (and referenced with explicit
+```extern``` in other files.
 - Filenames are lowercase but I have not followed this rule strictly. I am open
 to suggestions. However, I found it useful to prepend the file with a letter 
 (or more) to indicate what part of the codebase it belongs to, like ```r_gl.cpp```
@@ -63,9 +67,11 @@ principles.
 - Create a ```build``` folder inside the root folder of this repo and go inside it.
 ## Linux
 - Run
-```cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..```
+```
+cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
+```
 This generates a Makefile on UNIX systems by default. 
 Or just open the project in CLion (without creating the ```build``` folder)
 and CLion will take care of it.
 # Windows
-Visual Studio Solution. Use ```cmake -G``` to see what generator is used.
+Visual Studio Solution is created by default if installed. Use ```cmake -G``` to see what generator is used.
