@@ -14,6 +14,7 @@
 #include "r_gl_shader.h"
 #include "r_gl_texture_mgr.h"
 #include "r_gl_texture.h"
+#include "r_gl_fbo.h"
 #include "camera.h"
 
 struct GLMesh {
@@ -80,8 +81,11 @@ private:
 	// Offsets into collider batch
 	GLBatchDrawCmd				m_EllipsoidColliderDrawCmd;
 
+	CglFBO		m_2dFBO;
 	int							m_WindowWidth;
 	int							m_WindowHeight;
+
+
 };
 
 #endif

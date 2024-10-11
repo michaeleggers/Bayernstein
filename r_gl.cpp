@@ -19,6 +19,7 @@
 #include "r_gl_batch.h"
 #include "r_gl_texture.h"
 #include "r_gl_texture_mgr.h"
+#include "r_gl_fbo.h"
 #include "input.h" 
 
 const int WINDOW_WIDTH = 1920;
@@ -176,6 +177,10 @@ bool GLRender::Init(void)
     // Create and upload Collider Models to GPU
 
     RegisterColliderModels();
+
+    // Create FBOs for 3D/2D Rendering
+
+    m_2dFBO = CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     return true;
 }
