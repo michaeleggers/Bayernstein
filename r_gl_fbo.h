@@ -4,6 +4,8 @@
 #include <SDL.h>
 #include <glad/glad.h>
 
+#include "r_itexture.h"
+
 class CglFBO {
 
 public:
@@ -14,9 +16,11 @@ public:
     void Bind(); 
     void Unbind();
 
-    int m_Width;
-    int m_Height;
-    GLuint m_hFBO;
+    int	    m_Width;
+    int	    m_Height;
+    GLuint  m_hFBO;
+    ITexture m_Texture;
 };
 
 #endif
+

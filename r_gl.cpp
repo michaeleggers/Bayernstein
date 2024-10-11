@@ -542,6 +542,8 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
 
     // Draw Models
 
+    m_2dFBO.Bind(); // Render to offscreen buffer
+    
     m_ModelBatch->Bind();
     m_ModelShader->Activate();
     m_ModelShader->SetViewProjMatrices(view, proj);
@@ -579,6 +581,8 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
         }
     }
     m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
+
+    m_2dFBO.Unbind(); // Switch back to default FBO
 
     //const std::vector<GLBatchDrawCmd>& modelDrawCmds = m_ModelBatch->DrawCmds();
     //for (int i = 0; i < modelDrawCmds.size(); i++) {
