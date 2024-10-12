@@ -11,9 +11,9 @@
 #include <set>
 #include <stack>
 #include <algorithm>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
 
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
@@ -26,7 +26,7 @@
 #define PS_FLOAT_EPSILON	(0.0001)
 
 
-static std::string loadTextFile(std::string file)
+static std::string loadTextFile(const std::string& file)
 {
 	std::ifstream iFileStream;
 	std::stringstream ss;
@@ -42,7 +42,7 @@ static std::string loadTextFile(std::string file)
 	return data;
 }
 
-static void writePolys(std::string fileName, std::vector<MapPolygon> polys)
+static void writePolys(const std::string& fileName, std::vector<MapPolygon> polys)
 {
 	std::ofstream oFileStream;
 	oFileStream.open(fileName, std::ios::binary | std::ios::out);
@@ -50,8 +50,8 @@ static void writePolys(std::string fileName, std::vector<MapPolygon> polys)
 	uint32_t numPolys = polys.size();
 	oFileStream.write((char*)&numPolys, sizeof(uint32_t));
 
-	for (auto p = polys.begin(); p != polys.end(); p++) {
-		for (auto v = p->vertices.begin(); v != p->vertices.end(); v++) {
+	for (auto & poly : polys) {
+		for (auto v = poly.vertices.begin(); v != poly.vertices.end(); v++) {
 			oFileStream.write((char*) & *v, sizeof(glm::f64vec3));
 		}
 	}
@@ -59,7 +59,7 @@ static void writePolys(std::string fileName, std::vector<MapPolygon> polys)
 	oFileStream.close();
 }
 
-static void writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys)
+static void writePolysOBJ(const std::string& fileName, std::vector<MapPolygon> polys)
 {
 	std::stringstream faces;
 	std::ofstream oFileStream;
@@ -68,9 +68,9 @@ static void writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys)
 	oFileStream << "o Quake-map" << std::endl;
 
 	size_t count = 1;
-	for (auto p = polys.begin(); p != polys.end(); p++) {
+	for (auto & poly : polys) {
 		faces << "f";
-		for (auto v = p->vertices.begin(); v != p->vertices.end(); v++) {
+		for (auto v = poly.vertices.begin(); v != poly.vertices.end(); v++) {
 			oFileStream << "v " << std::to_string(v->x) << " " << std::to_string(v->y) << " " << std::to_string(v->z) << std::endl;
 			faces << " " << count; count++;
 		}
@@ -94,10 +94,10 @@ MapPlane createPlane(glm::f64vec3 p0, glm::f64vec3 p1, glm::f64vec3 p2)
 
 static inline glm::f64vec3 convertVertexToVec3(MapVertex v)
 {
-	return glm::f64vec3(v.x, v.y, v.z);
+	return {v.x, v.y, v.z};
 }
 
-MapPlane convertFaceToPlane(Face face)
+MapPlane convertFaceToPlane(const Face& face)
 {
 	glm::f64vec3 p0 = convertVertexToVec3(face.vertices[0]);
 	glm::f64vec3 p1 = convertVertexToVec3(face.vertices[1]);
@@ -147,9 +147,8 @@ void insertVertexToPolygon(glm::f64vec3 v, MapPolygon* p)
 
 bool isPointInsideBrush(Brush brush, glm::f64vec3 intersectionPoint)
 {
-	for (int i = 0; i < brush.faces.size(); i++) {
-		Face face = brush.faces[i];
-		MapPlane plane = convertFaceToPlane(face);
+	for (auto face : brush.faces) {
+			MapPlane plane = convertFaceToPlane(face);
 		glm::f64vec3 a = glm::normalize(intersectionPoint - plane.p0);
 		double dotProd = glm::dot(plane.n, a);
 		if (glm::dot(plane.n, intersectionPoint) + plane.d > PS_FLOAT_EPSILON) // FIXME: HOW DO WE GET IT NUMERICALLY GOOD ENOUGH??
@@ -162,8 +161,8 @@ bool isPointInsideBrush(Brush brush, glm::f64vec3 intersectionPoint)
 std::vector<MapPolygon> createPolysoup(Map map)
 {
 	std::vector<MapPolygon> polys;
-	for (auto e = map.entities.begin(); e != map.entities.end(); e++) {
-		for (auto b = e->brushes.begin(); b != e->brushes.end(); b++) {
+	for (auto & entitie : map.entities) {
+		for (auto b = entitie.brushes.begin(); b != entitie.brushes.end(); b++) {
 			int faceCount = b->faces.size();
 			for (int i = 0; i <  faceCount; i++) {
 				MapPlane p0 = convertFaceToPlane(b->faces[i]);
@@ -184,7 +183,7 @@ std::vector<MapPolygon> createPolysoup(Map map)
 						}
 					}
 				}
-				if (poly.vertices.size() > 0)
+				if (!poly.vertices.empty())
 					polys.push_back(poly);
 			}
 		}
@@ -223,8 +222,8 @@ MapPolygon sortVerticesCCW(MapPolygon poly)
 
 	// Center of poly
 	glm::f64vec3 center(0.0f);
-	for (auto v = poly.vertices.begin(); v != poly.vertices.end(); v++) {
-		center += *v;
+	for (auto & vertice : poly.vertices) {
+		center += vertice;
 	}
 	center /= vertCount;
 
@@ -287,8 +286,8 @@ std::vector<MapPolygon> triangulate(std::vector<MapPolygon> polys)
 {
 	std::vector<MapPolygon> tris = { };
 
-	for (auto p = polys.begin(); p != polys.end(); p++) {
-		MapPolygon sortedPoly = sortVerticesCCW(*p);
+	for (auto & p : polys) {
+		MapPolygon sortedPoly = sortVerticesCCW(p);
 		size_t vertCount = sortedPoly.vertices.size();		
 		glm::f64vec3 provokingVert = sortedPoly.vertices[0];
 		for (size_t i = 2; i < vertCount; i++) {

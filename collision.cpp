@@ -4,7 +4,7 @@
 
 #include "r_common.h"
 #include "collision.h"
-#include <stdio.h>
+#include <cstdio>
 #include <glm/gtx/norm.hpp>
 
 // NOTE: This distance depends very much on the size of the level geometry!
@@ -88,7 +88,7 @@ void SortDoubles(double* a, double* b) {
 }
 
 #define SortValues(a, b, t) do { \
-        t(&a, &b); \
+        t(&(a), &(b)); \
     } while(0); \
 
 bool GetSmallestRoot(float a, float b, float c, float maxRoot, float* root)
@@ -344,7 +344,7 @@ CollisionInfo CollideEllipsoidWithTriPlane(EllipsoidCollider ec, glm::vec3 veloc
     // From now on the Radius of the ellipsoid is 1.0 in X, Y, Z.
 	// Thus, it is a unit sphere.
 	
-	CollisionInfo ci;
+	CollisionInfo ci{};
 	ci.didCollide = false;
 	ci.nearestDistance = 0.0f;
 	ci.velocity = esVelocity;

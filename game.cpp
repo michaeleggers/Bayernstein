@@ -2,6 +2,8 @@
 
 #include <SDL.h>
 
+#include <utility>
+
 #include "r_itexture.h"
 #include "camera.h"
 #include "input.h" 
@@ -28,7 +30,7 @@ Game::Game(std::string exePath, hkdInterface* interface, IRender* renderer)
 {
     m_Renderer = renderer;
     m_Interface = interface;
-    m_ExePath = exePath;
+    m_ExePath = std::move(exePath);
 }
 
 void Game::Init()
@@ -48,9 +50,8 @@ void Game::Init()
 	std::vector<MapPolygon> tris = triangulate(polysoup);
 	
 	glm::vec4 triColor = glm::vec4( RandBetween(0.0f, 1.0f), RandBetween(0.0f, 1.0f), RandBetween(0.0f, 1.0f), 1.0f);
-	for (int i = 0; i < tris.size(); i++) {
-		MapPolygon mapPoly = tris[ i ];
-		Vertex A = { glm::vec3(mapPoly.vertices[0].x, mapPoly.vertices[0].y, mapPoly.vertices[0].z) };
+	for (auto mapPoly : tris) {
+			Vertex A = { glm::vec3(mapPoly.vertices[0].x, mapPoly.vertices[0].y, mapPoly.vertices[0].z) };
 		Vertex B = { glm::vec3(mapPoly.vertices[1].x, mapPoly.vertices[1].y, mapPoly.vertices[1].z) };
 		Vertex C = { glm::vec3(mapPoly.vertices[2].x, mapPoly.vertices[2].y, mapPoly.vertices[2].z) };
 		A.color = triColor;

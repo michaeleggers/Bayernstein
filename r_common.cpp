@@ -1,6 +1,6 @@
 #include "r_common.h" 
 
-#include <math.h>
+#include <cmath>
 
 
 #include "r_model.h"
@@ -117,7 +117,7 @@ void SubdivTri(Tri* tri, Tri out_tris[], uint32_t numIterations)
 
 // out_verts are expect to hold 6 vertices
 // out_indices are expected to hold 12 indices
-void SubdivIndexedTri(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, Vertex* out_verts, uint16_t* out_indices)
+void SubdivIndexedTri(Vertex* verts, uint32_t numVerts, const uint16_t* indices, uint32_t numIndices, Vertex* out_verts, uint16_t* out_indices)
 {
 	if (numVerts < 3) {
 		return;
@@ -328,8 +328,8 @@ MeshEllipsoid CreateUnitEllipsoid(uint32_t numSubdivs) {
 	NBox unitNbox = CreateNBox(glm::vec3(1.0f), numSubdivs);
 
 	// Project box vertices onto unit sphere
-	for (int i = 0; i < unitNbox.tris.size(); i++) {
-		Tri* tri = &unitNbox.tris[i];
+	for (auto & i : unitNbox.tris) {
+		Tri* tri = &i;
 		tri->a.pos = glm::normalize(tri->a.pos);
 		tri->b.pos = glm::normalize(tri->b.pos);
 		tri->c.pos = glm::normalize(tri->c.pos);
@@ -345,26 +345,26 @@ MeshEllipsoid CreateUnitEllipsoid(uint32_t numSubdivs) {
 
 void TranslateBox(Box* box, glm::vec3 t)
 {
-	for (int i = 0; i < 6; i++) {
-		Quad* q = &box->quads[i];
+	for (auto & quad : box->quads) {
+		Quad* q = &quad;
 		TranslateQuad(q, t);
 	}
 }
 
 void TransformBox(Box* box, glm::mat4 modelMatrix)
 {
-	for (int i = 0; i < 6; i++) {
-		Quad* q = &box->quads[i];
-		for (int j = 0; j < 2; j++) {
-			TransformTri(&q->tris[j], modelMatrix);
+	for (auto & quad : box->quads) {
+		Quad* q = &quad;
+		for (auto & tri : q->tris) {
+			TransformTri(&tri, modelMatrix);
 		}
 	}
 }
 
 void TransformEllipsoid(Ellipsoid* ellipsoid, glm::mat4 modelMatrix)
 {
-	for (int i = 0; i < ELLIPSOID_VERT_COUNT; i++) {
-		Vertex* v = &ellipsoid->vertices[i];
+	for (auto & vertice : ellipsoid->vertices) {
+		Vertex* v = &vertice;
 		v->pos = modelMatrix * glm::vec4(v->pos, 1.0f);
 	}
 }
@@ -379,9 +379,9 @@ NBox CreateNBox(glm::vec3 scale, uint32_t numSubidvs)
 
 	for (int i = 0; i < numSubidvs; i++) {
 		std::vector<Tri> tmp;
-		for (int j = 0; j < currentTris.size(); j++) {
+		for (auto & currentTri : currentTris) {
 			Tri out[4];
-			SubdivTri(&currentTris[j], out);
+			SubdivTri(&currentTri, out);
 			tmp.push_back(out[0]);
 			tmp.push_back(out[1]);
 			tmp.push_back(out[2]);

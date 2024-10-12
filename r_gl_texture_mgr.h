@@ -10,7 +10,7 @@ class GLTextureManager {
 public:
 	static GLTextureManager* Instance();
 	
-	ITexture* CreateTexture(std::string filename);
+	ITexture* CreateTexture(const std::string& filename);
 
 	// TODO: Shutdown methods
 

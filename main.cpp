@@ -6,9 +6,9 @@
 #include <Windows.h>
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
 
 #include <string>
 
@@ -44,7 +44,7 @@ static bool         g_GameWantsToQuit;
 std::string         g_GameDir;
 
 
-static bool QuitGameFunc(void) {
+static bool QuitGameFunc() {
     g_GameWantsToQuit = true;
     return true;
 }

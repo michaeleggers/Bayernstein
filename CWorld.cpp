@@ -3,7 +3,7 @@
 //
 
 #include "CWorld.h"
-#include <string.h>
+#include <cstring>
 
 void CWorld::InitWorld(TriPlane *triPlanes, uint32_t triPlaneCount, glm::vec3 gravity) {
     m_TriPlanes.resize(triPlaneCount);

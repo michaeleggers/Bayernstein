@@ -1,6 +1,6 @@
 #include "iqm_loader.h" 
 
-#include <assert.h>
+#include <cassert>
 
 #include <string>
 #include <vector>
@@ -20,47 +20,47 @@ IQMModel LoadIQM(const char* file)
 	IQMModel result = {};
 	result.filename = g_GameDir + std::string(file);
 
-	HKD_File iqmFile;
+	HKD_File iqmFile{};
 	if (hkd_read_file(result.filename.c_str() , &iqmFile) != HKD_FILE_SUCCESS) {
 		printf("Could not read IQM file: %s\n", file);
 		exit(-1);
 	}
 
- 	uint8_t* iqmData = (uint8_t*)iqmFile.data;
+ 	auto* iqmData = (uint8_t*)iqmFile.data;
 
-	IQMHeader* pHeader = (IQMHeader*)iqmFile.data;
+	auto* pHeader = (IQMHeader*)iqmFile.data;
 	char* pText = (char*)(iqmData + pHeader->ofsText);
-	IQMMeshData* pMeshes = (IQMMeshData*)(iqmData + pHeader->ofsMeshes);
-	IQMVertArray* pVertArrays = (IQMVertArray*)(iqmData + pHeader->ofsVertArrays);
+	auto* pMeshes = (IQMMeshData*)(iqmData + pHeader->ofsMeshes);
+	auto* pVertArrays = (IQMVertArray*)(iqmData + pHeader->ofsVertArrays);
 	uint32_t numVertices = pHeader->numVertices;
-	IQMTri* pTris = (IQMTri*)(iqmData + pHeader->ofsTris);
-	uint8_t* pAdjacency = (uint8_t*)(iqmData + pHeader->ofsAdjacency);
-	IQMJoint* pJoints = (IQMJoint*)(iqmData + pHeader->ofsJoints);
-	IQMPose* pPoses = (IQMPose*)(iqmData + pHeader->ofsPoses);
-	IQMAnim* pAnims = (IQMAnim*)(iqmData + pHeader->ofsAnims);
-	uint16_t* pFrames = (uint16_t*)(iqmData + pHeader->ofsFrames);
-	IQMBounds* pBounds = (IQMBounds*)(iqmData + pHeader->ofsBounds);
+	auto* pTris = (IQMTri*)(iqmData + pHeader->ofsTris);
+	auto* pAdjacency = (uint8_t*)(iqmData + pHeader->ofsAdjacency);
+	auto* pJoints = (IQMJoint*)(iqmData + pHeader->ofsJoints);
+	auto* pPoses = (IQMPose*)(iqmData + pHeader->ofsPoses);
+	auto* pAnims = (IQMAnim*)(iqmData + pHeader->ofsAnims);
+	auto* pFrames = (uint16_t*)(iqmData + pHeader->ofsFrames);
+	auto* pBounds = (IQMBounds*)(iqmData + pHeader->ofsBounds);
 	char* pComments = (char*)(iqmData + pHeader->ofsComment);
-	uint8_t* pExt = (uint8_t*)(iqmData + pHeader->ofsExt);
+	auto* pExt = (uint8_t*)(iqmData + pHeader->ofsExt);
 
 	printf("IQM Header: %s\n", pHeader->magic);
 
-	uint8_t* pPositions = NULL;
+	uint8_t* pPositions = nullptr;
 	uint32_t positionStride = 0;
-	uint8_t* pTexCoords = NULL;
+	uint8_t* pTexCoords = nullptr;
 	uint32_t texCoordStride = 0;
-	uint8_t* pNormals = NULL;
+	uint8_t* pNormals = nullptr;
 	uint32_t normalStride = 0;
-	uint8_t* pBlendIndices = NULL;
+	uint8_t* pBlendIndices = nullptr;
 	uint32_t blendIndexStride = 0;
-	uint8_t* pBlendWeights = NULL;
+	uint8_t* pBlendWeights = nullptr;
 	uint32_t blendWeightStride = 0;
 
 	for (int i = 0; i < pHeader->numVertArrays; i++) {
 		
 		IQMVertArray* pVertArray = pVertArrays + i;
-		IQMVertArrayType type = static_cast<IQMVertArrayType>(pVertArray->type);
-		IQMVertArrayFormat format = static_cast<IQMVertArrayFormat>(pVertArray->format);
+		auto type = static_cast<IQMVertArrayType>(pVertArray->type);
+		auto format = static_cast<IQMVertArrayFormat>(pVertArray->format);
 		uint32_t numComponents = pVertArray->size;
 		uint32_t offset = pVertArray->offset;
 

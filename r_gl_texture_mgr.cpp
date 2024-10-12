@@ -3,9 +3,7 @@
 #include "r_itexture.h"
 #include "r_gl_texture.h"
 
-GLTextureManager::GLTextureManager() {
-
-}
+GLTextureManager::GLTextureManager() = default;
 
 GLTextureManager* GLTextureManager::Instance()
 {
@@ -13,7 +11,7 @@ GLTextureManager* GLTextureManager::Instance()
 	return &theOneAndOnly;
 }
 
-ITexture* GLTextureManager::CreateTexture(std::string filename)
+ITexture* GLTextureManager::CreateTexture(const std::string& filename)
 {
 	if (m_NameToTexture.contains(filename)) {
 		return m_NameToTexture.at(filename);

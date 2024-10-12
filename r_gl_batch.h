@@ -26,20 +26,20 @@ public:
 	void			Reset();
 	void			Kill();
 
-	uint32_t		VertCount();
+	uint32_t		VertCount() const;
 	
 private:
 	GeometryType m_GeometryType;
 
-	GLuint		m_VBO, m_VAO;
-	GLuint      m_iVBO;
+	GLuint		m_VBO{}, m_VAO{};
+	GLuint      m_iVBO{};
 
 	uint32_t	m_MaxVerts;
 	uint32_t	m_NumVerts;
 	int			m_VertOffsetIndex;	
 
 	uint32_t	m_MaxIndices;
-	uint32_t	m_NumIndices;
+	uint32_t	m_NumIndices{};
 	int			m_IndexOffsetIndex;
 };
 

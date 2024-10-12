@@ -16,13 +16,13 @@ public:
 	void RotateAroundUp(float angle);
 	void RotateAroundSide(float angle);
 
-	glm::mat4 ViewMatrix(void);
+	glm::mat4 ViewMatrix(void) const;
 
-	glm::vec3 m_Pos;
-	glm::vec3 m_Forward;
-	glm::vec3 m_Side;
-	glm::vec3 m_Up;
-	glm::quat m_Orientation;
+	glm::vec3 m_Pos{};
+	glm::vec3 m_Forward{};
+	glm::vec3 m_Side{};
+	glm::vec3 m_Up{};
+	glm::quat m_Orientation{};
 };
 
 #endif

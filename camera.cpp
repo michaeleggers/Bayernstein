@@ -39,7 +39,7 @@ void Camera::RotateAroundSide(float angle)
 	m_Orientation *= orientation;
 }
 
-glm::mat4 Camera::ViewMatrix(void)
+glm::mat4 Camera::ViewMatrix() const
 {
 	glm::vec3 center = m_Pos + m_Forward;
 	return glm::lookAt(m_Pos, center, m_Up);

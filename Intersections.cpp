@@ -14,8 +14,8 @@ bool Intersect(Body* bodyA, Body* bodyB, Contact& contact) {
     contact.normal = glm::normalize(ab);
     float distanceAB = glm::length(ab);
 
-    ShapeSphere* shapeA = (ShapeSphere*)bodyA->m_Shape;
-    ShapeSphere* shapeB = (ShapeSphere*)bodyB->m_Shape;
+    auto* shapeA = (ShapeSphere*)bodyA->m_Shape;
+    auto* shapeB = (ShapeSphere*)bodyB->m_Shape;
 
     contact.ptOnA_WorldSpace = bodyA->m_Position + shapeA->m_Radius * contact.normal;
     contact.ptOnB_WorldSpace = bodyB->m_Position - shapeB->m_Radius * contact.normal;

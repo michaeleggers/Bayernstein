@@ -30,7 +30,7 @@ private:
 
 	Box m_SkyBox{};
 	
-	double			m_AccumTime;
+	double			m_AccumTime{};
 
 	CWorld			m_World;
 };

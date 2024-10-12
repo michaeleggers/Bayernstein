@@ -24,7 +24,7 @@
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
 
-void GLRender::Shutdown(void)
+void GLRender::Shutdown()
 {
     // Deinit ImGui
 
@@ -50,7 +50,7 @@ void GLRender::Shutdown(void)
     delete m_ImPrimitivesShader;
 }
 
-bool GLRender::Init(void)
+bool GLRender::Init()
 {
     SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -110,7 +110,7 @@ bool GLRender::Init(void)
 
     // Check that the window was successfully created
 
-    if (m_Window == NULL) {
+    if (m_Window == nullptr) {
         // In the case that the window could not be made...
         SDL_Log("Could not create window: %s\n", SDL_GetError());
         return false;
@@ -187,8 +187,8 @@ int GLRender::RegisterModel(HKD_Model* model)
     GLModel gl_model = {};
     int offset = m_ModelBatch->Add(&model->tris[0], model->tris.size());
 
-    for (int i = 0; i < model->meshes.size(); i++) {
-        HKD_Mesh* mesh = &model->meshes[i];
+    for (auto & meshe : model->meshes) {
+        HKD_Mesh* mesh = &meshe;
         GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(mesh->textureFileName);        
         GLMesh gl_mesh = {
             .triOffset = offset/3 + (int)mesh->firstTri,
@@ -240,10 +240,11 @@ std::vector<ITexture*> GLRender::ModelTextures(int gpuModelHandle)
     return results;
 }
 
-std::vector<ITexture*> GLRender::Textures(void)
+std::vector<ITexture*> GLRender::Textures()
 {
     std::vector<ITexture*> result;
-    for (auto& elem: m_TextureManager->m_NameToTexture) {
+    result.reserve(m_TextureManager->m_NameToTexture.size());
+for (auto& elem: m_TextureManager->m_NameToTexture) {
         result.push_back(elem.second);
     }
 
@@ -370,7 +371,7 @@ void GLRender::ImDrawSphere(glm::vec3 pos, float radius, glm::vec4 color)
 
     m_ColliderBatch->Bind();
         m_ColliderShader->SetVec4("uDebugColor", color);
-        glm::vec3 scale = glm::vec3(radius);
+        auto scale = glm::vec3(radius);
         glm::mat4 T = glm::translate(glm::mat4(1.0f), pos);
         glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
         glm::mat4 M = T * S;
@@ -412,7 +413,7 @@ GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t 
     return drawCmd;
 }
 
-void GLRender::RenderBegin(void)
+void GLRender::RenderBegin()
 {    
     // SDL_GetWindowSize(m_Window, &m_WindowWidth, &m_WindowHeight);
     
@@ -434,9 +435,7 @@ void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryTy
 {
     uint32_t prevDrawMode = GL_FILL;
     uint32_t primitiveType = GL_TRIANGLES;
-    for (int i = 0; i < drawCmds.size(); i++) {
-
-        GLBatchDrawCmd drawCmd = drawCmds[i];
+    for (auto drawCmd : drawCmds) {
 
         if (!drawCmd.cullFace) {
             glDisable(GL_CULL_FACE);
@@ -555,8 +554,8 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
         glm::mat4 modelMatrix = CreateModelMatrix( models[i] );
         m_ModelShader->SetMat4("model", modelMatrix);
 
-        for (int j = 0; j < model.meshes.size(); j++) {
-            GLMesh* mesh = &model.meshes[j];
+        for (auto & meshe : model.meshes) {
+            GLMesh* mesh = &meshe;
             if (!mesh->texture->m_Filename.empty()) { // TODO: Checking string of empty is not great.
                 m_ModelShader->SetShaderSettingBits(SHADER_IS_TEXTURED);
                 glBindTexture(GL_TEXTURE_2D, mesh->texture->m_gl_Handle);
@@ -612,7 +611,7 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
     }
 }
 
-void GLRender::RenderEnd(void)
+void GLRender::RenderEnd()
 {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -661,7 +660,7 @@ void GLRender::InitShaders()
     }
 
     // TODO: Just to test if shaders overwrite data from each other. Delete later!
-    Shader* foo = new Shader(); 
+    auto* foo = new Shader(); 
     if (!foo->Load(
         "shaders/entities.vert",
         "shaders/entities.frag",

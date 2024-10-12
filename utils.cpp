@@ -1,6 +1,6 @@
 #include "utils.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 float RandBetween(float min, float max) {
 

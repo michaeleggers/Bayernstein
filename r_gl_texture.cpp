@@ -10,7 +10,7 @@ extern std::string g_GameDir;
 
 // TODO: This is the texture manager at the moment...
 
-GLTexture::GLTexture(std::string filename)
+GLTexture::GLTexture(const std::string& filename)
 {
     std::string filePath = g_GameDir + "textures/" + filename;
     int x, y, n;

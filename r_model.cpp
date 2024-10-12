@@ -39,8 +39,8 @@ HKD_Model CreateModelFromIQM(IQMModel* model)
 {
     HKD_Model result = {};
 
-    for (int i = 0; i < model->meshes.size(); i++) {
-        IQMMesh* iqmMesh = &model->meshes[i];
+    for (auto & meshe : model->meshes) {
+        IQMMesh* iqmMesh = &meshe;
         HKD_Mesh mesh = {};
         if (iqmMesh->material.empty()) {
             mesh.isTextured = false;
@@ -91,8 +91,8 @@ HKD_Model CreateModelFromIQM(IQMModel* model)
 		// TODO: This is just for testing the collision detection.
 		// Later we actually want to use dedicated colliders for each animation!
 		EllipsoidCollider ec = result.ellipsoidColliders[0];
-		for (int i = 0; i < result.ellipsoidColliders.size(); i++) {
-			result.ellipsoidColliders[i] = ec;
+		for (auto & ellipsoidCollider : result.ellipsoidColliders) {
+			ellipsoidCollider = ec;
 		}
     } else {
         result.type = HKD_MODEL_TYPE_STATIC;
@@ -265,7 +265,7 @@ glm::mat4 CreateModelMatrix(glm::vec3 pos, glm::quat orientation, glm::vec3 scal
 
 void SetAnimState(HKD_Model* model, AnimState animState)
 {
-    AnimState currentState = (AnimState)model->currentAnimIdx;
+    auto currentState = (AnimState)model->currentAnimIdx;
 
     if (currentState == animState) {
         return;
