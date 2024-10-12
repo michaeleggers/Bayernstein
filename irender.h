@@ -45,6 +45,10 @@ public:
 	virtual void ImDrawLines(Vertex* verts, uint32_t numVerts, bool close = false) = 0;
 	virtual void ImDrawSphere(glm::vec3 pos, float radius, glm::vec4 color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)) = 0;
 	virtual void RenderBegin(void) = 0;
+	virtual void Begin2D() = 0;
+	virtual void End2D() = 0;
+	virtual void SetFont(CFont* font) = 0; 
+	virtual void DrawText(std::string text, int x, int y) = 0; 
 	virtual void Render(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
 	virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
 	virtual void RenderEnd(void) = 0;

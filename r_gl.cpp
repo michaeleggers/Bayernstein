@@ -603,8 +603,6 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
 
     // Draw Models
     
-    m_2dFBO->Bind();
-    glDrawBuffer(GL_COLOR_ATTACHMENT0);
     m_ModelBatch->Bind();
     m_ModelShader->Activate();
     m_ModelShader->SetViewProjMatrices(view, proj);
@@ -643,7 +641,6 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     }
     m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
 
-    m_2dFBO->Unbind();
 
     //const std::vector<GLBatchDrawCmd>& modelDrawCmds = m_ModelBatch->DrawCmds();
     //for (int i = 0; i < modelDrawCmds.size(); i++) {
@@ -651,6 +648,32 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     //    glDrawArrays(GL_TRIANGLES, 3*modelDrawCmds[i].offset, 3 * modelDrawCmds[i].numTris);
     //}
     //glDrawArrays(GL_TRIANGLES, 0, 3*m_ModelBatch->TriCount());
+}
+
+void GLRender::Begin2D() {
+
+    // Draw 2d screenspace elements
+    
+    m_2dFBO->Bind();
+
+    m_Screenspace2dShader->Activate();
+
+
+}
+
+void GLRender::End2D() {
+
+    m_2dFBO->Unbind();
+
+    // TODO: (Michael): Unbind bound (font-)textures?
+}
+
+void GLRender::SetFont(CFont* font) {
+    ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
+    glBindTexture(GL_TEXTURE0, fontTexture->m_hGPU);
+}
+
+void GLRender::DrawText(std::string text, int x, int y) {
 }
 
 void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels)

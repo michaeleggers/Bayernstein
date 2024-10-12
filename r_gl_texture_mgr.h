@@ -13,6 +13,7 @@ public:
 	
 	ITexture* CreateTexture(std::string filename);
 	ITexture* CreateTexture(CFont* font);
+	ITexture* GetTexture(std::string filename);
 
 	// TODO: Shutdown methods
 

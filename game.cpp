@@ -36,8 +36,8 @@ void Game::Init()
     m_AccumTime = 0.0f;
 
     // Load a font file from disk
-    CFont *coolFont = new CFont("fonts/HackNerdFont-Bold.ttf", 30);
-    m_Renderer->RegisterFont(coolFont);
+    m_ConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 30);
+    m_Renderer->RegisterFont(m_ConsoleFont);
 	
     // Load world triangles from Quake .MAP file
 
@@ -297,17 +297,18 @@ bool Game::RunFrame(double dt)
     HKD_Model* playerColliderModel[] = {&m_Player};
     m_Renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
 
-    m_Renderer->RenderEnd();
+    m_Renderer->RenderEnd(); // TODO: This has to be *after* render2d etc and should superimpose the 2d offscreen texture onto default fbo.
 
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
-    /*{
-        m_Renderer->Begin2D(); // Enable screenspace 2D rendering
+    {
+        m_Renderer->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
        
-        m_Renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
-        m_Renderer->DrawText("Hello there.");
+        //m_Renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
+        m_Renderer->SetFont(m_ConsoleFont);
+        m_Renderer->DrawText("Hello there.", 200, 200);
 
-        m_Renderer->End2D(); // Stop 2D mode
-    } */
+        m_Renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
+    } 
 
     return true;
 }

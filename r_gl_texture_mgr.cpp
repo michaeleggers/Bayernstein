@@ -40,3 +40,14 @@ ITexture* GLTextureManager::CreateTexture(CFont* font)
 	return result;
 }
 
+ITexture* GLTextureManager::GetTexture(std::string filename) {
+
+	if (m_NameToTexture.contains(filename)) {
+		return m_NameToTexture.at(filename);
+	}
+
+	printf("WARNING: GetTexture(): tried to get texture '%s', but not available!\n", filename.c_str());
+
+	return NULL;
+}
+

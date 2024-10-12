@@ -45,6 +45,10 @@ public:
 	virtual void RenderBegin(void)						override;
 	virtual void Render(Camera* camera, HKD_Model** models, uint32_t numModels) override;
 	virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) override;
+	virtual void Begin2D() override;
+	virtual void End2D() override;
+	virtual void SetFont(CFont* font) override;
+	virtual void DrawText(std::string text, int x, int y) override;
 	virtual void RenderEnd(void)						override;
 	virtual void SetWindowTitle(char* windowTitle) override;
 

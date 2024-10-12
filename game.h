@@ -27,8 +27,8 @@ private:
 	Camera			m_FollowCamera;
 
 	std::vector<HKD_Model*> m_Models;
-
-	Box m_SkyBox{};
+	CFont*                  m_ConsoleFont;
+	Box			    m_SkyBox{};
 	
 	double			m_AccumTime;
 
