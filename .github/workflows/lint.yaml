@@ -1,12 +1,10 @@
 name: Build and Test
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - feat/*
+    branches-ignore:
+      - "main"
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -14,6 +12,10 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -52,6 +54,7 @@ jobs:
         with:
           commit_message: "chore(💅): Prettify"
           branch: ${{ github.head_ref }}
+
   build:
     runs-on: ubuntu-latest
     needs: lint
