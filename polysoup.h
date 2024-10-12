@@ -19,7 +19,7 @@ struct MapPlane {
 
 std::string loadTextFile(const std::string &file);
 void writePolys(const std::string &fileName, std::vector<MapPolygon> polys);
-void writePolysOBJ(const std::string &fileName, std::vector<MapPolygon> polys);
+void writePolysOBJ(const std::string &fileName, const std::vector<MapPolygon>& polys);
 MapPlane createPlane(glm::f64vec3 p0, glm::f64vec3 p1, glm::f64vec3 p2);
 inline glm::f64vec3 convertVertexToVec3(MapVertex v);
 MapPlane convertFaceToPlane(const Face &face);

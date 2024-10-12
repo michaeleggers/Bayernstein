@@ -57,7 +57,7 @@ class GLRender : public IRender {
 	void RenderEnd() override;
 	void SetWindowTitle(char *windowTitle) override;
 
-	void ExecuteDrawCmds(std::vector<GLBatchDrawCmd> &drawCmds,
+	static void ExecuteDrawCmds(std::vector<GLBatchDrawCmd> &drawCmds,
 						 GeometryType geomType);
 	void InitShaders();
 	void RegisterColliderModels();

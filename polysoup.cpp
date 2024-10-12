@@ -57,7 +57,7 @@ static void writePolys(const std::string &fileName,
 }
 
 static void writePolysOBJ(const std::string &fileName,
-						  std::vector<MapPolygon> polys) {
+						  const std::vector<MapPolygon>& polys) {
 	std::stringstream faces;
 	std::ofstream oFileStream;
 	oFileStream.open(fileName, std::ios::out);

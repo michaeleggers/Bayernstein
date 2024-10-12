@@ -1,5 +1,5 @@
 #ifndef _IQM_LOADER_H_
-#define IQM_LOADER_H_
+#define _IQM_LOADER_H_
 
 #include <string>
 #include <vector>
