@@ -37,7 +37,7 @@ class Shader {
 
   private:
 	static bool CompileShader(const std::string &fileName, GLenum shaderType,
-					   GLuint &outShader);
+							  GLuint &outShader);
 	static bool IsCompiled(GLuint shader);
 	[[nodiscard]] bool IsValidProgram() const;
 

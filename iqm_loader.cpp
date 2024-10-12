@@ -16,7 +16,7 @@ extern std::string g_GameDir;
 
 IQMModel LoadIQM(const char *file) {
 	IQMModel result = {};
-	result.filename = g_GameDir + std::string(file);
+	result.filename = g_GameDir + "../assets/" + std::string(file);
 
 	HKD_File iqmFile{};
 	if (hkd_read_file(result.filename.c_str(), &iqmFile) != HKD_FILE_SUCCESS) {

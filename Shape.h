@@ -12,7 +12,9 @@ class Shape {
 	enum ShapeType { SHAPE_SPHERE };
 
 	[[nodiscard]] virtual ShapeType GetType() const = 0;
-	[[nodiscard]] virtual glm::vec3 GetCenterOfMass() const { return m_CenterOfMass; };
+	[[nodiscard]] virtual glm::vec3 GetCenterOfMass() const {
+		return m_CenterOfMass;
+	};
 
 	glm::vec3 m_CenterOfMass;
 };

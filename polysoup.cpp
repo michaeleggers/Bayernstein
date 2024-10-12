@@ -48,7 +48,7 @@ static void writePolys(const std::string &fileName,
 	oFileStream.write((char *)&numPolys, sizeof(uint32_t));
 
 	for (auto &poly : polys) {
-		for (auto & vertice : poly.vertices) {
+		for (auto &vertice : poly.vertices) {
 			oFileStream.write((char *)&vertice, sizeof(glm::f64vec3));
 		}
 	}
@@ -57,7 +57,7 @@ static void writePolys(const std::string &fileName,
 }
 
 static void writePolysOBJ(const std::string &fileName,
-						  const std::vector<MapPolygon>& polys) {
+						  const std::vector<MapPolygon> &polys) {
 	std::stringstream faces;
 	std::ofstream oFileStream;
 	oFileStream.open(fileName, std::ios::out);
@@ -67,10 +67,10 @@ static void writePolysOBJ(const std::string &fileName,
 	size_t count = 1;
 	for (auto &poly : polys) {
 		faces << "f";
-		for (auto & vertice : poly.vertices) {
+		for (auto &vertice : poly.vertices) {
 			oFileStream << "v " << std::to_string(vertice.x) << " "
-						<< std::to_string(vertice.y) << " " << std::to_string(vertice.z)
-						<< std::endl;
+						<< std::to_string(vertice.y) << " "
+						<< std::to_string(vertice.z) << std::endl;
 			faces << " " << count;
 			count++;
 		}
@@ -106,9 +106,11 @@ bool intersectThreePlanes(MapPlane p0, MapPlane p1, MapPlane p2,
 	glm::f64vec3 n0xn1 = glm::cross(p0.n, p1.n);
 	double det = glm::dot(n0xn1, p2.n);
 
-	if (fabs(det) < PS_FLOAT_EPSILON) // Early out if planes do not intersect at
-									  // single point
+	if (fabs(det) <
+		PS_FLOAT_EPSILON) { // Early out if planes do not intersect at
+							// single point
 		return false;
+	}
 
 	*intersectionPoint =
 		(-p0.d * (glm::cross(p1.n, p2.n)) - p1.d * (glm::cross(p2.n, p0.n)) -
@@ -140,15 +142,16 @@ void insertVertexToPolygon(glm::f64vec3 v, MapPolygon *p) {
 	p->vertices.push_back(v);
 }
 
-bool isPointInsideBrush(const Brush& brush, glm::f64vec3 intersectionPoint) {
-	for (const auto& face : brush.faces) {
+bool isPointInsideBrush(const Brush &brush, glm::f64vec3 intersectionPoint) {
+	for (const auto &face : brush.faces) {
 		MapPlane plane = convertFaceToPlane(face);
 		glm::f64vec3 a = glm::normalize(intersectionPoint - plane.p0);
 		double dotProd = glm::dot(plane.n, a);
 		if (glm::dot(plane.n, intersectionPoint) + plane.d >
-			PS_FLOAT_EPSILON) // FIXME: HOW DO WE GET IT NUMERICALLY GOOD
-							  // ENOUGH??
+			PS_FLOAT_EPSILON) { // FIXME: HOW DO WE GET IT NUMERICALLY GOOD
+								// ENOUGH??
 			return false;
+		}
 	}
 
 	return true;
@@ -157,7 +160,7 @@ bool isPointInsideBrush(const Brush& brush, glm::f64vec3 intersectionPoint) {
 std::vector<MapPolygon> createPolysoup(Map map) {
 	std::vector<MapPolygon> polys;
 	for (auto &entitie : map.entities) {
-		for (auto & brushe : entitie.brushes) {
+		for (auto &brushe : entitie.brushes) {
 			int faceCount = brushe.faces.size();
 			for (int i = 0; i < faceCount; i++) {
 				MapPlane p0 = convertFaceToPlane(brushe.faces[i]);
@@ -171,7 +174,8 @@ std::vector<MapPolygon> createPolysoup(Map map) {
 						if (i != j != k) {
 							if (intersectThreePlanes(p0, p1, p2,
 													 &intersectionPoint)) {
-								if (isPointInsideBrush(brushe, intersectionPoint)) {
+								if (isPointInsideBrush(brushe,
+													   intersectionPoint)) {
 									// TODO: Calculate texture coordinates
 									insertVertexToPolygon(intersectionPoint,
 														  &poly);
@@ -180,8 +184,9 @@ std::vector<MapPolygon> createPolysoup(Map map) {
 						}
 					}
 				}
-				if (!poly.vertices.empty())
+				if (!poly.vertices.empty()) {
 					polys.push_back(poly);
+				}
 			}
 		}
 	}
@@ -211,8 +216,9 @@ MapPolygon sortVerticesCCW(MapPolygon poly) {
 	MapPolygon result;
 	size_t vertCount = poly.vertices.size();
 
-	if (vertCount < 3)
+	if (vertCount < 3) {
 		return poly; // Actually not a valid polygon
+	}
 
 	// Center of poly
 	glm::f64vec3 center(0.0f);
@@ -279,7 +285,7 @@ MapPolygon sortVerticesCCW(MapPolygon poly) {
  *
  * TODO: Fix this with indexed data.
  */
-std::vector<MapPolygon> triangulate(const std::vector<MapPolygon>& polys) {
+std::vector<MapPolygon> triangulate(const std::vector<MapPolygon> &polys) {
 	std::vector<MapPolygon> tris = {};
 
 	for (auto &p : polys) {

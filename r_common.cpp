@@ -10,8 +10,9 @@
 #include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/gtx/quaternion.hpp"
 
-void RotateTri(Tri *tri, glm::vec3 axis, float angle) {
-	glm::quat q = glm::angleAxis(glm::radians(angle), glm::normalize(axis));
+void RotateTri(Tri *tri, const glm::vec3 axis, const float angle) {
+	const glm::quat q =
+		glm::angleAxis(glm::radians(angle), glm::normalize(axis));
 	tri->a.pos = glm::rotate(q, tri->a.pos);
 	tri->b.pos = glm::rotate(q, tri->b.pos);
 	tri->c.pos = glm::rotate(q, tri->c.pos);
@@ -20,13 +21,13 @@ void RotateTri(Tri *tri, glm::vec3 axis, float angle) {
 	tri->c.normal = glm::rotate(q, tri->c.normal);
 }
 
-void TranslateTri(Tri *tri, glm::vec3 t) {
+void TranslateTri(Tri *tri, const glm::vec3 t) {
 	tri->a.pos += t;
 	tri->b.pos += t;
 	tri->c.pos += t;
 }
 
-void TransformTri(Tri *tri, glm::mat4 modelMatrix) {
+void TransformTri(Tri *tri, const glm::mat4 &modelMatrix) {
 	tri->a.pos = modelMatrix * glm::vec4(tri->a.pos, 1.0f);
 	tri->b.pos = modelMatrix * glm::vec4(tri->b.pos, 1.0f);
 	tri->c.pos = modelMatrix * glm::vec4(tri->c.pos, 1.0f);

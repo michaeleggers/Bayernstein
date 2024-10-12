@@ -183,8 +183,9 @@ void CollideUnitSphereWithTri(CollisionInfo *ci, Tri tri) {
 	glm::vec3 basePos = ci->basePos;
 	glm::vec3 velocity = ci->velocity;
 
-	if (glm::dot(glm::normalize(velocity), normal) >= 0.0f)
+	if (glm::dot(glm::normalize(velocity), normal) >= 0.0f) {
 		return;
+	}
 	// Signed distance from plane to unit sphere's center
 	float sD = glm::dot(normal, basePos - ptOnPlane);
 
@@ -388,8 +389,9 @@ glm::vec3 CollideEllipsoidWithTriPlaneRec(CollisionInfo *ci,
 										  glm::vec3 velocity, Tri *tris,
 										  int triCount, int depth,
 										  int maxDepth) {
-	if (depth > maxDepth)
+	if (depth > maxDepth) {
 		return esBasePos;
+	}
 
 	ci->didCollide = false;
 	ci->velocity = velocity;

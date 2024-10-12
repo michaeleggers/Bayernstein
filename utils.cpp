@@ -2,10 +2,9 @@
 
 #include <cstdlib>
 
-float RandBetween(float min, float max) {
-
-	float range = max - min;
-	float r = (float)rand() / (float)RAND_MAX;
+float RandBetween(const float min, const float max) {
+	const float range = max - min;
+	const float r = (float)rand() / (float)RAND_MAX;
 
 	return min + r * range;
 }

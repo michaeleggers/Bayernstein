@@ -11,7 +11,7 @@ extern std::string g_GameDir;
 // TODO: This is the texture manager at the moment...
 
 GLTexture::GLTexture(const std::string &filename) {
-	std::string filePath = g_GameDir + "textures/" + filename;
+	std::string filePath = g_GameDir + "../assets/textures/" + filename;
 	int x, y, n;
 	unsigned char *data = stbi_load(filePath.c_str(), &x, &y, &n, 4);
 

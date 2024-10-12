@@ -34,8 +34,9 @@ glm::vec3 Body::BodySpaceToWorldSpace(glm::vec3 &pt) const {
 }
 
 void Body::ApplyImpulseLinear(glm::vec3 &impulse) {
-	if (m_InvMass <= 0.0f)
+	if (m_InvMass <= 0.0f) {
 		return;
+	}
 
 	m_LinearVelocity += impulse * m_InvMass;
 }

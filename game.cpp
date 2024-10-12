@@ -21,8 +21,9 @@
 #include "polysoup.h"
 
 static int hkd_Clamp(int val, int clamp) {
-	if (val > clamp || val < clamp)
+	if (val > clamp || val < clamp) {
 		return clamp;
+	}
 	return val;
 }
 
@@ -41,8 +42,8 @@ void Game::Init() {
 	MapVersion mapVersion = VALVE_220; // TODO: Change to MAP_TYPE_QUAKE
 
 	std::string mapData = loadTextFile(
-		m_ExePath +
-		"../assets/maps/room.map"); // TODO: Sane loading of Maps based on path
+		m_ExePath + "../assets/maps/room-test.map"); // TODO: Sane loading of
+													 // Maps based on path
 	size_t inputLength = mapData.length();
 	Map map = getMap(&mapData[0], inputLength, mapVersion);
 	std::vector<MapPolygon> polysoup = createPolysoup(map);
@@ -265,8 +266,8 @@ bool Game::RunFrame(double dt) {
 	ImGui::ShowDemoWindow();
 
 	// Draw Debug Line for player veloctiy vector
-	Line velocityDebugLine = {Vertex(ec.center),
-							  Vertex(ec.center + 200.0f * m_Player.velocity)};
+	Line velocityDebugLine = {ec.center,
+							  ec.center + 200.0f * m_Player.velocity};
 	velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
 	velocityDebugLine.b.color = velocityDebugLine.a.color;
 	m_Renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);

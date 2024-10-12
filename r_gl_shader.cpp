@@ -36,8 +36,9 @@ bool Shader::Load(const std::string &vertName, const std::string &fragName,
 	glAttachShader(m_ShaderProgram, m_FragmentShader);
 	glLinkProgram(m_ShaderProgram);
 
-	if (!IsValidProgram())
+	if (!IsValidProgram()) {
 		return false;
+	}
 
 	// Uniforms
 
@@ -198,7 +199,7 @@ void Shader::InitGlobalBuffers() {
 
 bool Shader::CompileShader(const std::string &fileName, GLenum shaderType,
 						   GLuint &outShader) {
-	std::string shaderFilePath = g_GameDir + fileName;
+	std::string shaderFilePath = g_GameDir + "../assets/" + fileName;
 	HKD_File shaderCode{};
 	if (hkd_read_file(shaderFilePath.c_str(), &shaderCode) !=
 		HKD_FILE_SUCCESS) {

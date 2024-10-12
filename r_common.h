@@ -15,8 +15,8 @@ struct Vertex {
 	glm::vec2 uv;
 	glm::vec3 bc;
 	glm::vec3 normal; // = glm::vec3(0.0f, -1.0f, 0.0f); // points *against* the
-					  // forward direction (because camera is facing to forward
-					  // by default)
+	// forward direction (because camera is facing to forward
+	// by default)
 	glm::vec4 color;
 	uint32_t blendindices[4];
 	glm::vec4 blendweights;
@@ -57,6 +57,7 @@ struct Tri {
 			Vertex b;
 			Vertex c;
 		};
+
 		Vertex vertices[3];
 	};
 };
@@ -67,6 +68,7 @@ struct Line {
 			Vertex a;
 			Vertex b;
 		};
+
 		Vertex vertices[2];
 	};
 };
@@ -88,9 +90,12 @@ struct Quad {
 			Tri a; // top right
 			Tri b; // bottom left
 		};
+
 		Tri tris[2];
 		Vertex vertices[6];
-		struct { // This just makes access to individual vertices easier.
+
+		struct {
+			// This just makes access to individual vertices easier.
 			Vertex tl;
 			Vertex tr;
 			Vertex br;
@@ -111,6 +116,7 @@ struct FaceQuad {
 			Vertex c;
 			Vertex d;
 		};
+
 		Vertex vertices[4];
 	};
 };
@@ -125,6 +131,7 @@ struct Box {
 			Quad top;
 			Quad bottom;
 		};
+
 		Quad quads[6];
 		Tri tris[12];
 	};
@@ -149,32 +156,53 @@ struct MeshEllipsoid {
 };
 
 void RotateTri(Tri *tri, glm::vec3 axis, float angle);
+
 void TranslateTri(Tri *tri, glm::vec3 t);
-void TransformTri(Tri *tri, glm::mat4 modelMatrix);
+
+void TransformTri(Tri *tri, const glm::mat4 &modelMatrix);
+
 void SetTriColor(Tri *tri, glm::vec4 color);
+
 void SubdivTri(Tri *tri, Tri out_tris[]);
+
 void SubdivTri(Tri *tri, Tri out_tris[], uint32_t numIterations);
+
 void SubdivIndexedTri(Vertex *verts, uint32_t numVerts, const uint16_t *indices,
 					  uint32_t numIndices, Vertex *out_verts,
 					  uint16_t *out_indices);
+
 void SubdivIndexedTri(Vertex *verts, uint32_t numVerts, uint16_t *indices,
 					  uint32_t numIndices, Vertex *out_verts,
 					  uint16_t *out_indices, uint32_t numIterations);
+
 Quad CreateQuad(glm::vec3 pos = glm::vec3(0, 0, 0), float width = 1.0f,
 				float height = 1.0f, glm::vec4 color = glm::vec4(1, 0, 0, 1));
+
 void RotateQuad(Quad *quad, glm::vec3 axis, float angle);
+
 void TranslateQuad(Quad *quad, glm::vec3 t);
+
 FaceQuad QuadToFace(Quad *quad);
+
 void SetQuadColor(Quad *quad, glm::vec4 color);
+
 Box CreateBox(glm::vec3 scale = glm::vec3(1.0f),
 			  glm::vec4 color = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
+
 Box CreateBoxFromAABB(glm::vec3 mins, glm::vec3 maxs);
+
 void TranslateBox(Box *box, glm::vec3 t);
+
 void TransformBox(Box *box, glm::mat4 modelMatrix);
+
 Ellipsoid CreateEllipsoidFromAABB(glm::vec3 mins, glm::vec3 maxs);
+
 MeshEllipsoid CreateUnitEllipsoid(uint32_t numSubdivs);
+
 void TransformEllipsoid(Ellipsoid *ellipsoid, glm::mat4 modelMatrix);
+
 NBox CreateNBox(glm::vec3 scale, uint32_t numSubdivs);
+
 Plane CreatePlaneFromTri(Tri tri);
 
 #endif

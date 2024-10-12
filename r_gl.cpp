@@ -217,10 +217,11 @@ void GLRender::RegisterColliderModels() {
 std::vector<ITexture *> GLRender::ModelTextures(int gpuModelHandle) {
 	std::vector<ITexture *> results;
 
-	if (gpuModelHandle >= m_Models.size())
+	if (gpuModelHandle >= m_Models.size()) {
 		return results;
-	else if (gpuModelHandle < 0)
+	} else if (gpuModelHandle < 0) {
 		return results;
+	}
 
 	GLModel *model = &m_Models[gpuModelHandle];
 	for (auto &mesh : model->meshes) {
@@ -240,14 +241,15 @@ std::vector<ITexture *> GLRender::Textures() {
 	return result;
 }
 
-void GLRender::ImDrawTris(Tri *tris, uint32_t numTris, bool cullFace,
-						  DrawMode drawMode) {
-	int offset = m_ImPrimitiveBatch->Add(tris, numTris, cullFace, drawMode);
+void GLRender::ImDrawTris(Tri *tris, const uint32_t numTris,
+						  const bool cullFace, const DrawMode drawMode) {
+	const int offset =
+		m_ImPrimitiveBatch->Add(tris, numTris, cullFace, drawMode);
 
-	GLBatchDrawCmd drawCmd = {.offset = offset,
-							  .numVerts = 3 * numTris,
-							  .cullFace = cullFace,
-							  .drawMode = drawMode};
+	const GLBatchDrawCmd drawCmd = {.offset = offset,
+									.numVerts = 3 * numTris,
+									.cullFace = cullFace,
+									.drawMode = drawMode};
 
 	m_PrimitiveDrawCmds.push_back(drawCmd);
 }
@@ -310,7 +312,8 @@ void GLRender::ImDrawVerts(Vertex *verts, uint32_t numVerts) {
 // We have separate draw cmds from the batch. This function generate
 // unneccessary many draw cmds (each Add is a new one!).
 void GLRender::ImDrawLines(Vertex *verts, uint32_t numVerts, bool close) {
-	if (numVerts < 2) { // This won't work, man.
+	if (numVerts < 2) {
+		// This won't work, man.
 		return;
 	}
 
@@ -363,7 +366,8 @@ void GLRender::ImDrawSphere(glm::vec3 pos, float radius, glm::vec4 color) {
 
 GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch *batch, Vertex *verts,
 										uint32_t numVerts, bool close) {
-	if (numVerts < 2) { // This won't work, man.
+	if (numVerts < 2) {
+		// This won't work, man.
 		return {-1};
 	}
 
@@ -414,7 +418,6 @@ void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd> &drawCmds,
 	uint32_t prevDrawMode = GL_FILL;
 	uint32_t primitiveType = GL_TRIANGLES;
 	for (auto drawCmd : drawCmds) {
-
 		if (!drawCmd.cullFace) {
 			glDisable(GL_CULL_FACE);
 		} else {
@@ -434,7 +437,8 @@ void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd> &drawCmds,
 				Shader::SetShaderSettingBits(SHADER_LINEMODE);
 				prevDrawMode = GL_FILL;
 				primitiveType = GL_LINES;
-			} else { // DRAW_MODE_SOLID
+			} else {
+				// DRAW_MODE_SOLID
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				prevDrawMode = GL_FILL;
 				primitiveType = GL_TRIANGLES;
@@ -461,8 +465,9 @@ void GLRender::Render(Camera *camera, HKD_Model **models, uint32_t numModels) {
 
 	static uint32_t drawWireframe = 0;
 
-	if (KeyWentDown(SDLK_r)) { // WARNING: TAB key also triggers slider-values
-							   // in ImGui Window.
+	if (KeyWentDown(SDLK_r)) {
+		// WARNING: TAB key also triggers slider-values
+		// in ImGui Window.
 		drawWireframe ^= 1;
 	}
 
@@ -517,7 +522,6 @@ void GLRender::Render(Camera *camera, HKD_Model **models, uint32_t numModels) {
 		Shader::ResetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
 	}
 	for (int i = 0; i < numModels; i++) {
-
 		GLModel model = m_Models[models[i]->gpuModelHandle];
 
 		if (models[i]->numJoints > 0) {
@@ -533,8 +537,8 @@ void GLRender::Render(Camera *camera, HKD_Model **models, uint32_t numModels) {
 
 		for (auto &meshe : model.meshes) {
 			GLMesh *mesh = &meshe;
-			if (!mesh->texture->m_Filename
-					 .empty()) { // TODO: Checking string of empty is not great.
+			if (!mesh->texture->m_Filename.empty()) {
+				// TODO: Checking string of empty is not great.
 				Shader::SetShaderSettingBits(SHADER_IS_TEXTURED);
 				glBindTexture(GL_TEXTURE_2D, mesh->texture->m_gl_Handle);
 			} else {
