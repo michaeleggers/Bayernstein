@@ -1,0 +1,72 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup
+
+      - name: Create build directory
+        run: mkdir build
+        working-directory: ${{ github.workspace }}
+
+      - name: Install clang-tidy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy clang-format
+
+      - name: Prepare compile_commands.json
+        run: |
+          cmake -B build \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+          -DCMAKE_C_COMPILER=$(which clang) \
+          -DCMAKE_CXX_COMPILER=$(which clang++) \
+          -DCMAKE_BUILD_TYPE=Release \
+      - name: Run clang-tidy
+        run: ./tools/lint.sh
+      - name: Run clang-format
+        run: ./tools/format.sh
+  build:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup
+
+      - name: Create build directory
+        run: mkdir build
+        working-directory: ${{ github.workspace }}
+
+      - name: Configure CMake
+        shell: bash
+        run: |
+          sudo cmake -G "Ninja" ${{ github.workspace }} \
+          -DCMAKE_C_COMPILER=$(which clang) \
+          -DCMAKE_CXX_COMPILER=$(which clang++) \
+          -DCMAKE_BUILD_TYPE=Release \
+          -B ${{ github.workspace }}/build/Release/bin
+        working-directory: ${{ github.workspace }}/build
+
+      - name: Build
+        run: sudo cmake --build ${{ github.workspace }}/build/Release/bin
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: game_test
+          path: ${{ github.workspace }}/build/Release/bin
