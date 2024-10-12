@@ -1,1 +1,1 @@
-find . -path ./dependencies -prune -o \( -name '*.cpp' -o -name '*.h' \) -print | xargs clang-tidy-15 --fix-errors -p build/
+find . -path ./dependencies -prune -o \( -name '*.cpp' -o -name '*.h' \) -print | xargs clang-tidy --fix-errors -p build/
