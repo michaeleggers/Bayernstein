@@ -59,7 +59,7 @@ jobs:
       - name: Install ninja
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build
+          sudo apt-get install -y build-essential
 
       - name: Create build directory
         run: mkdir build
@@ -68,17 +68,18 @@ jobs:
       - name: Configure CMake
         shell: bash
         run: |
-          sudo cmake -G "Ninja" ${{ github.workspace }} \
+          sudo cmake ${{ github.workspace }} \
           -DCMAKE_C_COMPILER=$(which clang) \
           -DCMAKE_CXX_COMPILER=$(which clang++) \
           -DCMAKE_BUILD_TYPE=Release \
-          -B ${{ github.workspace }}/build/Release/bin
+          -B ${{ github.workspace }}/build/Release
         working-directory: ${{ github.workspace }}/build
 
       - name: Build
-        run: sudo cmake --build ${{ github.workspace }}/build/Release/bin
+        run: make
+        working-directory: ${{ github.workspace }}/build/Release
 
       - uses: actions/upload-artifact@v4
         with:
           name: game_test
-          path: ${{ github.workspace }}/build/Release/bin
+          path: ${{ github.workspace }}/bin
