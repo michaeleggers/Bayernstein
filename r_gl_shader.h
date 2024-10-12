@@ -17,6 +17,7 @@
 #define SHADER_FEATURE_MODEL_ANIMATION_BIT (0x00000001)
 #define SHADER_FEATURE_MAX				   (0x00000001 << 1)
 
+// TODO: (Michael): Change classname to CglShader or something like that to make clear this is GL specific.
 class Shader {
 public:
 	

@@ -167,7 +167,7 @@ bool GLRender::Init(void)
     printf("OpenGL Version active (via glGetString): %s\n", glGetString(GL_VERSION));
 
     // Allow OpenGL to send us debug information.
-    EnableOpenGLDebugCallback();
+    //EnableOpenGLDebugCallback();
 
 
     // Check that the window was successfully created
@@ -745,6 +745,17 @@ void GLRender::InitShaders()
     )) {
         printf("Problems initializing model shaders!\n");
     }
+
+    // 2D Screenspace: UI, Console, etc.
+
+    m_Screenspace2dShader = new Shader();
+    if (!m_Screenspace2dShader->Load(
+        "shaders/screenspace2d.vert",
+        "shaders/screenspace2d.frag"
+        )) {
+        printf("Problems initializing screenspace2d shader!\n");
+    }
+
 }
 
 void GLRender::SetWindowTitle(char* windowTitle)
