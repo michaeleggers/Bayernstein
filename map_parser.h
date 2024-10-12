@@ -322,7 +322,7 @@ static Face getFace(char *c, int *pos) {
 	Face face = {};
 
 	/* 3 Vertices defining the plane */
-	for (auto & vertice : face.vertices) {
+	for (auto &vertice : face.vertices) {
 		check(getToken(c, pos), LPAREN);
 		*pos += 1;
 		check(getToken(c, pos), NUMBER);
@@ -378,7 +378,7 @@ static Face getFaceValve220(char *c, int *pos) {
 	Face face = {};
 
 	/* 3 Vertices defining the plane */
-	for (auto & vertice : face.vertices) {
+	for (auto &vertice : face.vertices) {
 		check(getToken(c, pos), LPAREN);
 		*pos += 1;
 		check(getToken(c, pos), NUMBER);
