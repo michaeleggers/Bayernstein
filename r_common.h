@@ -150,8 +150,8 @@ struct Ellipsoid {
 };
 
 struct MeshEllipsoid {
-	float radiusA;
-	float radiusB;
+	float radiusA{};
+	float radiusB{};
 	std::vector<Tri> tris;
 };
 
@@ -201,7 +201,7 @@ MeshEllipsoid CreateUnitEllipsoid(uint32_t numSubdivs);
 
 void TransformEllipsoid(Ellipsoid *ellipsoid, glm::mat4 modelMatrix);
 
-NBox CreateNBox(glm::vec3 scale, uint32_t numSubdivs);
+NBox CreateNBox(glm::vec3 scale, uint32_t numSubidvs);
 
 Plane CreatePlaneFromTri(Tri tri);
 

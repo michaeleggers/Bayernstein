@@ -40,36 +40,36 @@ struct HKD_Model {
 	std::string filename;
 	std::vector<Tri> tris;
 	std::vector<HKD_Mesh> meshes;
-	glm::vec3 position;
-	glm::quat orientation;
-	glm::vec3 scale;
-	glm::vec3 velocity; // TODO: Move out to Entity later
-	int gpuModelHandle; // -1: Data not yet on GPU
+	glm::vec3 position{};
+	glm::quat orientation{};
+	glm::vec3 scale{};
+	glm::vec3 velocity{}; // TODO: Move out to Entity later
+	int gpuModelHandle{}; // -1: Data not yet on GPU
 	std::vector<Pose>
 		poses; // A POSE IS JUST A LOCAL TRANSFORM FOR A SINGLE JOINT!!! IT IS
 			   // NOT THE SKELETON STATE AT A CERTAIN FRAME!
-	uint32_t currentFrame;
-	uint32_t numFrames;
-	float pctFrameDone;
+	uint32_t currentFrame{};
+	uint32_t numFrames{};
+	float pctFrameDone{};
 	std::vector<glm::mat4> invBindPoses;
 	std::vector<glm::mat4> bindPoses;
 	std::vector<glm::mat4> palette;
-	uint32_t numJoints;
+	uint32_t numJoints{};
 	std::vector<Anim> animations;
 	std::vector<AABB>
 		aabbs; // one AABB for each animation (first frame of anim used).
 	std::vector<Box>
 		aabbBoxes; // Actual vertex geometry for each aabb ready to render
 	std::vector<EllipsoidCollider> ellipsoidColliders;
-	uint32_t currentAnimIdx;
-	uint32_t prevAnimIdx;
+	uint32_t currentAnimIdx{};
+	uint32_t prevAnimIdx{};
 
 	// For drawing debugging colors. TODO: Remove later?
-	glm::vec4 debugColor;
+	glm::vec4 debugColor{};
 
 	// Rigid Body Physics
-	bool isRigidBody;
-	Body body;
+	bool isRigidBody{};
+	Body body{};
 };
 
 HKD_Model CreateModelFromIQM(IQMModel *model);

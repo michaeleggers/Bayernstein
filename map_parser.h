@@ -152,7 +152,7 @@ static std::string getString(char *c, int *pos) {
 
 	cur++;
 	*pos += 1; // advance over "
-	std::string result = "";
+	std::string result;
 	while (*cur != '\"') {
 		result += *cur;
 		*pos += 1;
@@ -255,7 +255,7 @@ static bool check(TokenType got, TokenType expected) {
 
 static double parseNumber(char *c, int *pos) {
 	char *cur = c + *pos;
-	std::string number = "";
+	std::string number;
 	while (*cur == '-' || *cur >= '0' && *cur <= '9' || *cur == '.') {
 		number += *cur;
 		cur++;
@@ -282,7 +282,7 @@ static MapVertex getVertex(char *c, int *pos) {
 
 static double getNumber(char *c, int *pos) {
 	char *cur = c + *pos;
-	std::string number = "";
+	std::string number;
 	while (*cur == '-' || *cur >= '0' && *cur <= '9' || *cur == '.' ||
 		   *cur == 'e') {
 		number += *cur;
@@ -295,7 +295,7 @@ static double getNumber(char *c, int *pos) {
 static std::string getTextureName(char *c, int *pos) {
 	char *cur = c + *pos;
 
-	std::string textureName = "";
+	std::string textureName;
 	char *end = cur;
 	advanceToNextWhitespaceOrLinebreak(&end, pos);
 	while (cur != end) {
@@ -322,7 +322,7 @@ static Face getFace(char *c, int *pos) {
 	Face face = {};
 
 	/* 3 Vertices defining the plane */
-	for (size_t i = 0; i < 3; ++i) {
+	for (auto & vertice : face.vertices) {
 		check(getToken(c, pos), LPAREN);
 		*pos += 1;
 		check(getToken(c, pos), NUMBER);
@@ -333,7 +333,7 @@ static Face getFace(char *c, int *pos) {
 		double z = getNumber(c, pos);
 		check(getToken(c, pos), RPAREN);
 		*pos += 1;
-		face.vertices[i] = {x, y, z};
+		vertice = {x, y, z};
 	}
 
 	/* Texture stuff */
@@ -378,7 +378,7 @@ static Face getFaceValve220(char *c, int *pos) {
 	Face face = {};
 
 	/* 3 Vertices defining the plane */
-	for (size_t i = 0; i < 3; ++i) {
+	for (auto & vertice : face.vertices) {
 		check(getToken(c, pos), LPAREN);
 		*pos += 1;
 		check(getToken(c, pos), NUMBER);
@@ -389,7 +389,7 @@ static Face getFaceValve220(char *c, int *pos) {
 		double z = getNumber(c, pos);
 		check(getToken(c, pos), RPAREN);
 		*pos += 1;
-		face.vertices[i] = {x, y, z};
+		vertice = {x, y, z};
 	}
 
 	check(getToken(c, pos), TEXNAME);

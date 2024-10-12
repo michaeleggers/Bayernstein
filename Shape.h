@@ -16,7 +16,7 @@ class Shape {
 		return m_CenterOfMass;
 	};
 
-	glm::vec3 m_CenterOfMass;
+	glm::vec3 m_CenterOfMass{};
 };
 
 #endif // SHAPE_H
