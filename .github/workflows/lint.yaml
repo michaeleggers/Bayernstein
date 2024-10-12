@@ -15,8 +15,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Environment
-        uses: ./.github/actions/setup
+      - name: Set up Clang
+        uses: egor-tensin/setup-clang@v1
+
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.28.0'
 
       - name: Create build directory
         run: mkdir build
@@ -46,9 +51,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup Environment
-        uses: ./.github/actions/setup
-
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.28.0'
       - name: Create build directory
         run: mkdir build
         working-directory: ${{ github.workspace }}
