@@ -1,0 +1,1 @@
+find . -path ./dependencies -prune -o -name '*.cpp' -print | xargs clang-tidy-15 --fix-errors -p build/
