@@ -4,7 +4,7 @@
 #include <SDL.h>
 #include <glad/glad.h>
 
-#include "r_itexture.h"
+#include "r_gl_rendertexture.h"
 
 class CglFBO {
 
@@ -19,7 +19,8 @@ public:
     int	    m_Width;
     int	    m_Height;
     GLuint  m_hFBO;
-    ITexture m_Texture;
+    CglRenderTexture m_ColorTexture;
+    CglRenderTexture m_DepthTexture;
 };
 
 #endif

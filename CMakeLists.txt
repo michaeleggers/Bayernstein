@@ -92,6 +92,8 @@ add_executable(Game
 
 	r_gl_fbo.h
 	r_gl_fbo.cpp
+	r_gl_rendertexture.h
+	r_gl_rendertexture.cpp
 	
 	camera.h
 	camera.cpp

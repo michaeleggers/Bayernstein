@@ -81,7 +81,7 @@ private:
 	// Offsets into collider batch
 	GLBatchDrawCmd				m_EllipsoidColliderDrawCmd;
 
-	CglFBO		m_2dFBO;
+	CglFBO*		m_2dFBO;
 	int							m_WindowWidth;
 	int							m_WindowHeight;
 

@@ -25,6 +25,60 @@
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
 
+void GLAPIENTRY OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
+                                    GLsizei length, const GLchar* message, const void* userParam) {
+    // Ignore non-significant error/warning codes (e.g., vendor-specific warnings)
+    if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+        return; 
+
+    printf("--------------------- OpenGL Debug Output ---------------------\n");
+    printf("Message: %s\n", message);
+
+    printf("Source: ");
+    switch (source) {
+        case GL_DEBUG_SOURCE_API:             printf("API\n"); break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   printf("Window System\n"); break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: printf("Shader Compiler\n"); break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     printf("Third Party\n"); break;
+        case GL_DEBUG_SOURCE_APPLICATION:     printf("Application\n"); break;
+        case GL_DEBUG_SOURCE_OTHER:           printf("Other\n"); break;
+    }
+
+    printf("Type: ");
+    switch (type) {
+        case GL_DEBUG_TYPE_ERROR:               printf("Error\n"); break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: printf("Deprecated Behaviour\n"); break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  printf("Undefined Behaviour\n"); break; 
+        case GL_DEBUG_TYPE_PORTABILITY:         printf("Portability\n"); break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         printf("Performance\n"); break;
+        case GL_DEBUG_TYPE_MARKER:              printf("Marker\n"); break;
+        case GL_DEBUG_TYPE_PUSH_GROUP:          printf("Push Group\n"); break;
+        case GL_DEBUG_TYPE_POP_GROUP:           printf("Pop Group\n"); break;
+        case GL_DEBUG_TYPE_OTHER:               printf("Other\n"); break;
+    }
+
+    printf("Severity: ");
+    switch (severity) {
+        case GL_DEBUG_SEVERITY_HIGH:         printf("High\n"); break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       printf("Medium\n"); break;
+        case GL_DEBUG_SEVERITY_LOW:          printf("Low\n"); break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION: printf("Notification\n"); break;
+    }
+    printf("---------------------------------------------------------------\n");
+}
+
+static void EnableOpenGLDebugCallback() {
+    // Enable debug output (OpenGL 4.3 or higher is required)
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // Make sure OpenGL calls this callback in the same thread
+
+    // Register the debug callback function
+    glDebugMessageCallback(OpenGLDebugCallback, NULL);
+
+    // You can optionally control which types of messages are logged
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+}
+
 void GLRender::Shutdown(void)
 {
     // Deinit ImGui
@@ -49,6 +103,9 @@ void GLRender::Shutdown(void)
 
     m_ImPrimitivesShader->Unload();
     delete m_ImPrimitivesShader;
+
+    // Destroy FBOs
+    delete m_2dFBO;
 }
 
 bool GLRender::Init(void)
@@ -108,6 +165,10 @@ bool GLRender::Init(void)
     }
 
     printf("OpenGL Version active (via glGetString): %s\n", glGetString(GL_VERSION));
+
+    // Allow OpenGL to send us debug information.
+    EnableOpenGLDebugCallback();
+
 
     // Check that the window was successfully created
 
@@ -180,7 +241,7 @@ bool GLRender::Init(void)
 
     // Create FBOs for 3D/2D Rendering
 
-    m_2dFBO = CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
+    m_2dFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     return true;
 }
@@ -424,7 +485,7 @@ GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t 
 }
 
 void GLRender::RenderBegin(void)
-{    
+{   
     // SDL_GetWindowSize(m_Window, &m_WindowWidth, &m_WindowHeight);
     
     // See: https://wiki.libsdl.org/SDL2/SDL_GL_GetDrawableSize
@@ -541,9 +602,9 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
 
 
     // Draw Models
-
-    m_2dFBO.Bind(); // Render to offscreen buffer
     
+    m_2dFBO->Bind();
+    glDrawBuffer(GL_COLOR_ATTACHMENT0);
     m_ModelBatch->Bind();
     m_ModelShader->Activate();
     m_ModelShader->SetViewProjMatrices(view, proj);
@@ -582,7 +643,7 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     }
     m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
 
-    m_2dFBO.Unbind(); // Switch back to default FBO
+    m_2dFBO->Unbind();
 
     //const std::vector<GLBatchDrawCmd>& modelDrawCmds = m_ModelBatch->DrawCmds();
     //for (int i = 0; i < modelDrawCmds.size(); i++) {

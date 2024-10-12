@@ -68,24 +68,3 @@ GLTexture::GLTexture(CFont* font)
     m_hGPU = (uint64_t)glTextureHandle;    
 }
 
-// For now make this a RGBA 32 bit/pixel Texture by default.
-// We can add more params later to make it more configurable.
-GLTexture::GLTexture(int width, int height)
-{
-    m_Pixeldata = (unsigned char*)malloc( 4 * width * height );
-    GLuint glTextureHandle;
-    glGenTextures(1, &glTextureHandle);
-    glBindTexture(GL_TEXTURE_2D, glTextureHandle);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLuint)width, (GLuint)height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_Pixeldata);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    m_Filename = "rendertexture";
-    m_gl_Handle = glTextureHandle;
-    m_Width= width;
-    m_Height = height;
-    m_Channels = 4;
-
-    m_hGPU = (uint64_t)glTextureHandle;
-}
-

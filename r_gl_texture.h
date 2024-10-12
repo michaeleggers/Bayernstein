@@ -13,7 +13,6 @@ class GLTexture : public ITexture {
 public:
     GLTexture(std::string filename); 
     GLTexture(CFont* font);
-    GLTexture(int width, int height);
 
     // TODO: (Michael) Nuke texture from GPU memory
 
