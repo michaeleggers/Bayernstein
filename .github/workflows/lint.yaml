@@ -75,6 +75,10 @@ jobs:
           -B ${{ github.workspace }}/build/Release
         working-directory: ${{ github.workspace }}/build
 
+      - name: log
+        shell: bash
+        run: ls -la
+
       - name: Build
         run: make
         working-directory: ${{ github.workspace }}/build/Release
