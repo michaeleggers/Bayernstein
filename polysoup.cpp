@@ -19,7 +19,7 @@
 
 #include "polysoup.h"
 
-//#define MAP_PARSER_IMPLEMENTATION
+// #define MAP_PARSER_IMPLEMENTATION
 #include "map_parser.h"
 
 #define PS_FLOAT_EPSILON (0.0001)
@@ -106,9 +106,8 @@ bool intersectThreePlanes(MapPlane p0, MapPlane p1, MapPlane p2,
 	glm::f64vec3 n0xn1 = glm::cross(p0.n, p1.n);
 	double det = glm::dot(n0xn1, p2.n);
 
-	if (fabs(det) <
-		PS_FLOAT_EPSILON) { // Early out if planes do not intersect at
-							// single point
+	if (fabs(det) < PS_FLOAT_EPSILON) { // Early out if planes do not intersect
+										// at single point
 		return false;
 	}
 

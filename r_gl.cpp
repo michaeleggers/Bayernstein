@@ -413,8 +413,8 @@ void GLRender::RenderBegin() {
 	ImGui::NewFrame();
 }
 
-void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd> &drawCmds,
-							   GeometryType geomType) {
+static void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd> &drawCmds,
+									  GeometryType geomType) {
 	uint32_t prevDrawMode = GL_FILL;
 	uint32_t primitiveType = GL_TRIANGLES;
 	for (auto drawCmd : drawCmds) {
