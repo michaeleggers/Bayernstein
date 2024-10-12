@@ -1,4 +1,4 @@
-#include "iqm_loader.h" 
+#include "iqm_loader.h"
 
 #include <cassert>
 
@@ -6,59 +6,57 @@
 #include <vector>
 
 #define GLM_FORCE_RADIANS
-#include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/ext.hpp"
+#include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/gtx/quaternion.hpp"
 
 #include "platform.h"
 
-extern std::string  g_GameDir;
+extern std::string g_GameDir;
 
-
-IQMModel LoadIQM(const char* file)
-{
+IQMModel LoadIQM(const char *file) {
 	IQMModel result = {};
 	result.filename = g_GameDir + std::string(file);
 
 	HKD_File iqmFile{};
-	if (hkd_read_file(result.filename.c_str() , &iqmFile) != HKD_FILE_SUCCESS) {
+	if (hkd_read_file(result.filename.c_str(), &iqmFile) != HKD_FILE_SUCCESS) {
 		printf("Could not read IQM file: %s\n", file);
 		exit(-1);
 	}
 
- 	auto* iqmData = (uint8_t*)iqmFile.data;
+	auto *iqmData = (uint8_t *)iqmFile.data;
 
-	auto* pHeader = (IQMHeader*)iqmFile.data;
-	char* pText = (char*)(iqmData + pHeader->ofsText);
-	auto* pMeshes = (IQMMeshData*)(iqmData + pHeader->ofsMeshes);
-	auto* pVertArrays = (IQMVertArray*)(iqmData + pHeader->ofsVertArrays);
+	auto *pHeader = (IQMHeader *)iqmFile.data;
+	char *pText = (char *)(iqmData + pHeader->ofsText);
+	auto *pMeshes = (IQMMeshData *)(iqmData + pHeader->ofsMeshes);
+	auto *pVertArrays = (IQMVertArray *)(iqmData + pHeader->ofsVertArrays);
 	uint32_t numVertices = pHeader->numVertices;
-	auto* pTris = (IQMTri*)(iqmData + pHeader->ofsTris);
-	auto* pAdjacency = (uint8_t*)(iqmData + pHeader->ofsAdjacency);
-	auto* pJoints = (IQMJoint*)(iqmData + pHeader->ofsJoints);
-	auto* pPoses = (IQMPose*)(iqmData + pHeader->ofsPoses);
-	auto* pAnims = (IQMAnim*)(iqmData + pHeader->ofsAnims);
-	auto* pFrames = (uint16_t*)(iqmData + pHeader->ofsFrames);
-	auto* pBounds = (IQMBounds*)(iqmData + pHeader->ofsBounds);
-	char* pComments = (char*)(iqmData + pHeader->ofsComment);
-	auto* pExt = (uint8_t*)(iqmData + pHeader->ofsExt);
+	auto *pTris = (IQMTri *)(iqmData + pHeader->ofsTris);
+	auto *pAdjacency = (uint8_t *)(iqmData + pHeader->ofsAdjacency);
+	auto *pJoints = (IQMJoint *)(iqmData + pHeader->ofsJoints);
+	auto *pPoses = (IQMPose *)(iqmData + pHeader->ofsPoses);
+	auto *pAnims = (IQMAnim *)(iqmData + pHeader->ofsAnims);
+	auto *pFrames = (uint16_t *)(iqmData + pHeader->ofsFrames);
+	auto *pBounds = (IQMBounds *)(iqmData + pHeader->ofsBounds);
+	char *pComments = (char *)(iqmData + pHeader->ofsComment);
+	auto *pExt = (uint8_t *)(iqmData + pHeader->ofsExt);
 
 	printf("IQM Header: %s\n", pHeader->magic);
 
-	uint8_t* pPositions = nullptr;
+	uint8_t *pPositions = nullptr;
 	uint32_t positionStride = 0;
-	uint8_t* pTexCoords = nullptr;
+	uint8_t *pTexCoords = nullptr;
 	uint32_t texCoordStride = 0;
-	uint8_t* pNormals = nullptr;
+	uint8_t *pNormals = nullptr;
 	uint32_t normalStride = 0;
-	uint8_t* pBlendIndices = nullptr;
+	uint8_t *pBlendIndices = nullptr;
 	uint32_t blendIndexStride = 0;
-	uint8_t* pBlendWeights = nullptr;
+	uint8_t *pBlendWeights = nullptr;
 	uint32_t blendWeightStride = 0;
 
 	for (int i = 0; i < pHeader->numVertArrays; i++) {
-		
-		IQMVertArray* pVertArray = pVertArrays + i;
+
+		IQMVertArray *pVertArray = pVertArrays + i;
 		auto type = static_cast<IQMVertArrayType>(pVertArray->type);
 		auto format = static_cast<IQMVertArrayFormat>(pVertArray->format);
 		uint32_t numComponents = pVertArray->size;
@@ -69,43 +67,36 @@ IQMModel LoadIQM(const char* file)
 			uint32_t dataSize = 0;
 			if (format == IQM_FLOAT) {
 				dataSize = sizeof(float);
-			}
-			else if (format == IQM_DOUBLE) {
+			} else if (format == IQM_DOUBLE) {
 				dataSize = sizeof(double);
 			}
 			positionStride = numComponents * dataSize;
-		}
-		else if (type == IQM_TEXCOORD) {
+		} else if (type == IQM_TEXCOORD) {
 			pTexCoords = iqmData + offset;
 			uint32_t dataSize = 0;
 			if (format == IQM_FLOAT) {
 				dataSize = sizeof(float);
-			}
-			else if (format == IQM_DOUBLE) {
+			} else if (format == IQM_DOUBLE) {
 				dataSize = sizeof(double);
 			}
 			texCoordStride = numComponents * dataSize;
-		}
-		else if (type == IQM_NORMAL) {
+		} else if (type == IQM_NORMAL) {
 			pNormals = iqmData + offset;
 			uint32_t dataSize = 0;
 			if (format == IQM_FLOAT) {
 				dataSize = sizeof(float);
-			}
-			else if (format == IQM_DOUBLE) {
+			} else if (format == IQM_DOUBLE) {
 				dataSize = sizeof(double);
 			}
 			normalStride = numComponents * dataSize;
-		}
-		else if (type == IQM_BLENDINDIXES) {
+		} else if (type == IQM_BLENDINDIXES) {
 			pBlendIndices = iqmData + offset;
 			uint32_t dataSize = 0;
 			if (format == IQM_UBYTE) {
 				dataSize = sizeof(uint8_t);
 			}
 			blendIndexStride = numComponents * dataSize;
-		}
-		else if (type == IQM_BLENDWEIGHTS) {
+		} else if (type == IQM_BLENDWEIGHTS) {
 			pBlendWeights = iqmData + offset;
 			uint32_t dataSize = 0;
 			if (format == IQM_UBYTE) {
@@ -113,47 +104,64 @@ IQMModel LoadIQM(const char* file)
 			}
 			blendWeightStride = numComponents * dataSize;
 		}
-		
-		printf("type: %d, format: %d, numComponents: %d, offset: %d\n", type, format, numComponents, offset);
+
+		printf("type: %d, format: %d, numComponents: %d, offset: %d\n", type,
+			   format, numComponents, offset);
 	}
-	
+
 	for (int i = 0; i < pHeader->numMeshes; i++) {
-		IQMMeshData* iqmMesh = pMeshes + i;
+		IQMMeshData *iqmMesh = pMeshes + i;
 		uint32_t firstTri = iqmMesh->firstTri;
 		uint32_t numTris = iqmMesh->numTris;
 		IQMMesh mesh = {};
-		//mesh.vertices = (IQMVertex*)malloc(iqmMesh->numVerts * sizeof(IQMVertex));
+		// mesh.vertices = (IQMVertex*)malloc(iqmMesh->numVerts *
+		// sizeof(IQMVertex));
 		mesh.material = std::string(pText + iqmMesh->material);
 		mesh.firstTri = firstTri;
 		mesh.numTris = numTris;
 
 		for (int j = 0; j < numTris; j++) {
-			IQMTri* tri = pTris + firstTri + j;
+			IQMTri *tri = pTris + firstTri + j;
 
 			IQMVertex vertA = {};
 			IQMVertex vertB = {};
 			IQMVertex vertC = {};
 
-			memcpy(vertA.pos, pPositions + tri->vertex[0] * positionStride, 3 * sizeof(float));
-			memcpy(vertB.pos, pPositions + tri->vertex[1] * positionStride, 3 * sizeof(float));
-			memcpy(vertC.pos, pPositions + tri->vertex[2] * positionStride, 3 * sizeof(float));
+			memcpy(vertA.pos, pPositions + tri->vertex[0] * positionStride,
+				   3 * sizeof(float));
+			memcpy(vertB.pos, pPositions + tri->vertex[1] * positionStride,
+				   3 * sizeof(float));
+			memcpy(vertC.pos, pPositions + tri->vertex[2] * positionStride,
+				   3 * sizeof(float));
 
-			memcpy(vertA.texCoord, pTexCoords + tri->vertex[0] * texCoordStride, 2 * sizeof(float));
-			memcpy(vertB.texCoord, pTexCoords + tri->vertex[1] * texCoordStride, 2 * sizeof(float));
-			memcpy(vertC.texCoord, pTexCoords + tri->vertex[2] * texCoordStride, 2 * sizeof(float));
+			memcpy(vertA.texCoord, pTexCoords + tri->vertex[0] * texCoordStride,
+				   2 * sizeof(float));
+			memcpy(vertB.texCoord, pTexCoords + tri->vertex[1] * texCoordStride,
+				   2 * sizeof(float));
+			memcpy(vertC.texCoord, pTexCoords + tri->vertex[2] * texCoordStride,
+				   2 * sizeof(float));
 
-			memcpy(vertA.normal, pNormals + tri->vertex[0] * normalStride, 3 * sizeof(float));
-			memcpy(vertB.normal, pNormals + tri->vertex[1] * normalStride, 3 * sizeof(float));
-			memcpy(vertC.normal, pNormals + tri->vertex[2] * normalStride, 3 * sizeof(float));
+			memcpy(vertA.normal, pNormals + tri->vertex[0] * normalStride,
+				   3 * sizeof(float));
+			memcpy(vertB.normal, pNormals + tri->vertex[1] * normalStride,
+				   3 * sizeof(float));
+			memcpy(vertC.normal, pNormals + tri->vertex[2] * normalStride,
+				   3 * sizeof(float));
 
 			if (pHeader->numJoints > 0) {
-				memcpy(vertA.blendindices, pBlendIndices + tri->vertex[0] * blendIndexStride, 4);
-				memcpy(vertB.blendindices, pBlendIndices + tri->vertex[1] * blendIndexStride, 4);
-				memcpy(vertC.blendindices, pBlendIndices + tri->vertex[2] * blendIndexStride, 4);
+				memcpy(vertA.blendindices,
+					   pBlendIndices + tri->vertex[0] * blendIndexStride, 4);
+				memcpy(vertB.blendindices,
+					   pBlendIndices + tri->vertex[1] * blendIndexStride, 4);
+				memcpy(vertC.blendindices,
+					   pBlendIndices + tri->vertex[2] * blendIndexStride, 4);
 
-				memcpy(vertA.blendweights, pBlendWeights + tri->vertex[0] * blendWeightStride, 4);
-				memcpy(vertB.blendweights, pBlendWeights + tri->vertex[1] * blendWeightStride, 4);
-				memcpy(vertC.blendweights, pBlendWeights + tri->vertex[2] * blendWeightStride, 4);
+				memcpy(vertA.blendweights,
+					   pBlendWeights + tri->vertex[0] * blendWeightStride, 4);
+				memcpy(vertB.blendweights,
+					   pBlendWeights + tri->vertex[1] * blendWeightStride, 4);
+				memcpy(vertC.blendweights,
+					   pBlendWeights + tri->vertex[2] * blendWeightStride, 4);
 			}
 
 			mesh.vertices.push_back(vertA);
@@ -168,13 +176,17 @@ IQMModel LoadIQM(const char* file)
 	std::vector<glm::mat4> invBindPoses;
 	bindPoses.resize(pHeader->numJoints);
 	for (int i = 0; i < pHeader->numJoints; i++) {
-		IQMJoint* pJoint = pJoints + i;
+		IQMJoint *pJoint = pJoints + i;
 		printf("Joint %d name: %s\n", i, pText + pJoint->name);
-		
-		glm::vec3 translation = glm::vec3(pJoint->translate[0], pJoint->translate[1], pJoint->translate[2]);
-		// WARNING: GLM STORES W AS ITS ____FIRST____ COMPONENT!!! WHAT THE FUCK IS WRONG WITH THEM???
-		glm::quat rotation = glm::quat(pJoint->rotate[3], pJoint->rotate[0], pJoint->rotate[1], pJoint->rotate[2]);
-		glm::vec3 scale = glm::vec3(pJoint->scale[0], pJoint->scale[1], pJoint->scale[2]);
+
+		glm::vec3 translation = glm::vec3(
+			pJoint->translate[0], pJoint->translate[1], pJoint->translate[2]);
+		// WARNING: GLM STORES W AS ITS ____FIRST____ COMPONENT!!! WHAT THE FUCK
+		// IS WRONG WITH THEM???
+		glm::quat rotation = glm::quat(pJoint->rotate[3], pJoint->rotate[0],
+									   pJoint->rotate[1], pJoint->rotate[2]);
+		glm::vec3 scale =
+			glm::vec3(pJoint->scale[0], pJoint->scale[1], pJoint->scale[2]);
 
 		glm::mat4 mTranslate = glm::translate(glm::mat4(1.0f), translation);
 		glm::mat4 mRotate = glm::toMat4(rotation);
@@ -197,20 +209,23 @@ IQMModel LoadIQM(const char* file)
 	result.invBindPoses = invBindPoses;
 
 	std::vector<Pose> poses;
-	uint16_t* pFramedata = pFrames;
+	uint16_t *pFramedata = pFrames;
 	for (int i = 0; i < pHeader->numFrames; i++) {
 
-		IQMBounds* pBound = pBounds + i;
+		IQMBounds *pBound = pBounds + i;
 
 		Frame frame = {};
-		frame.bbmins = glm::vec3(pBound->bbmins[0], pBound->bbmins[1], pBound->bbmins[2]);
-		frame.bbmaxs = glm::vec3(pBound->bbmaxs[0], pBound->bbmaxs[1], pBound->bbmaxs[2]);
+		frame.bbmins =
+			glm::vec3(pBound->bbmins[0], pBound->bbmins[1], pBound->bbmins[2]);
+		frame.bbmaxs =
+			glm::vec3(pBound->bbmaxs[0], pBound->bbmaxs[1], pBound->bbmaxs[2]);
 		frame.xyRadius = pBound->xyradius;
 		frame.sphericalRadius = pBound->radius;
 		result.frameData.push_back(frame);
 
-		for (int j = 0; j < pHeader->numPoses; j++) {  // A pose is actually the local matrix for a joint
-			IQMPose* pPose = pPoses + j;
+		for (int j = 0; j < pHeader->numPoses;
+			 j++) { // A pose is actually the local matrix for a joint
+			IQMPose *pPose = pPoses + j;
 			glm::vec3 translation = {};
 			glm::vec3 scale = {};
 			glm::quat rotation = {};
@@ -250,7 +265,7 @@ IQMModel LoadIQM(const char* file)
 			if (pPose->channelmask & 0x40) {
 				rotation.w += (float)*pFramedata * pPose->channelscale[6];
 				pFramedata += 1;
-			}			
+			}
 
 			scale.x = pPose->channeloffset[7];
 			if (pPose->channelmask & 0x80) {
@@ -282,10 +297,12 @@ IQMModel LoadIQM(const char* file)
 	result.numFrames = pHeader->numFrames;
 
 	for (int i = 0; i < pHeader->numAnims; i++) {
-		IQMAnim* pAnim = pAnims + i;
+		IQMAnim *pAnim = pAnims + i;
 
-		printf("Animation %d, name: %s, first frame: %d, last frame: %d, num frames: %d\n", 
-			i, pText + pAnim->name, pAnim->firstFrame, pAnim->firstFrame + pAnim->numFrames, pAnim->numFrames);
+		printf("Animation %d, name: %s, first frame: %d, last frame: %d, num "
+			   "frames: %d\n",
+			   i, pText + pAnim->name, pAnim->firstFrame,
+			   pAnim->firstFrame + pAnim->numFrames, pAnim->numFrames);
 
 		Anim anim = {};
 		anim.name = std::string(pText + pAnim->name);
@@ -301,6 +318,4 @@ IQMModel LoadIQM(const char* file)
 	return result;
 }
 
-void UnloadIQM(IQMModel* iqmModel)
-{
-}
+void UnloadIQM(IQMModel *iqmModel) {}
