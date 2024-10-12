@@ -56,7 +56,7 @@ jobs:
         with:
           cmake-version: '3.28.0'
 
-      - name: Install clang-tidy
+      - name: Install ninja
         run: |
           sudo apt-get update
           sudo apt-get install -y ninja-build

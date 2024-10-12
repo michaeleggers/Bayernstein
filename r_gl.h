@@ -117,4 +117,4 @@ class GLRender : public IRender {
 	int m_WindowHeight{};
 };
 
-#endif _RGL_H_
+#endif
