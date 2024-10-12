@@ -8,14 +8,14 @@
 
 class Camera {
   public:
-	Camera(glm::vec3 pos = glm::vec3(0.0f));
+	explicit Camera(glm::vec3 pos = glm::vec3(0.0f));
 
 	void Pan(glm::vec3 direction);
 	void Rotate(glm::quat quat);
 	void RotateAroundUp(float angle);
 	void RotateAroundSide(float angle);
 
-	glm::mat4 ViewMatrix(void) const;
+	[[nodiscard]] glm::mat4 ViewMatrix() const;
 
 	glm::vec3 m_Pos{};
 	glm::vec3 m_Forward{};

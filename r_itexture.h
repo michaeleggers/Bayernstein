@@ -1,7 +1,7 @@
 #ifndef _R_ITEXTURE_H_
 #define _R_ITEXTURE_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 class ITexture {

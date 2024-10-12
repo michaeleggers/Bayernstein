@@ -1,10 +1,10 @@
 #ifndef _IQM_LOADER_H_
-#define _IQM_LOADER_H_
+#define IQM_LOADER_H_
 
 #include <string>
 #include <vector>
 
-#include <stdint.h>
+#include <cstdint>
 
 #define GLM_FORCE_RADIANS
 #include "dependencies/glm/ext.hpp"

@@ -12,7 +12,7 @@
 #include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/gtx/quaternion.hpp"
 
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 
 class CWorld {

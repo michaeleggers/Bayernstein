@@ -28,34 +28,34 @@ struct GLModel {
 
 class GLRender : public IRender {
   public:
-	virtual bool Init(void) override;
-	virtual void Shutdown(void) override;
-	virtual int RegisterModel(HKD_Model *model) override;
-	virtual void SetActiveCamera(Camera *camera) override;
-	virtual std::vector<ITexture *> ModelTextures(int gpuModelHandle) override;
-	virtual std::vector<ITexture *> Textures(void) override;
-	virtual void ImDrawTris(Tri *tris, uint32_t numTris, bool cullFace = true,
+	bool Init() override;
+	void Shutdown() override;
+	int RegisterModel(HKD_Model *model) override;
+	void SetActiveCamera(Camera *camera) override;
+	std::vector<ITexture *> ModelTextures(int gpuModelHandle) override;
+	std::vector<ITexture *> Textures() override;
+	void ImDrawTris(Tri *tris, uint32_t numTris, bool cullFace = true,
 							DrawMode drawMode = DRAW_MODE_SOLID) override;
-	virtual void ImDrawTriPlanes(TriPlane *triPlanes, uint32_t numTriPlanes,
+	void ImDrawTriPlanes(TriPlane *triPlanes, uint32_t numTriPlanes,
 								 bool cullFace = true,
 								 DrawMode drawMode = DRAW_MODE_SOLID) override;
-	virtual void ImDrawIndexed(Vertex *verts, uint32_t numVerts,
+	void ImDrawIndexed(Vertex *verts, uint32_t numVerts,
 							   uint16_t *indices, uint32_t numIndices,
 							   bool cullFace = true,
 							   DrawMode drawMode = DRAW_MODE_SOLID) override;
-	virtual void ImDrawVerts(Vertex *verts, uint32_t numVerts) override;
-	virtual void ImDrawLines(Vertex *verts, uint32_t numVerts,
+	void ImDrawVerts(Vertex *verts, uint32_t numVerts) override;
+	void ImDrawLines(Vertex *verts, uint32_t numVerts,
 							 bool close = false) override;
-	virtual void ImDrawSphere(glm::vec3 pos, float radius,
+	void ImDrawSphere(glm::vec3 pos, float radius,
 							  glm::vec4 color = glm::vec4(1.0f, 0.0f, 0.0f,
 														  1.0f)) override;
-	virtual void RenderBegin(void) override;
-	virtual void Render(Camera *camera, HKD_Model **models,
+	void RenderBegin() override;
+	void Render(Camera *camera, HKD_Model **models,
 						uint32_t numModels) override;
-	virtual void RenderColliders(Camera *camera, HKD_Model **models,
+	void RenderColliders(Camera *camera, HKD_Model **models,
 								 uint32_t numModels) override;
-	virtual void RenderEnd(void) override;
-	virtual void SetWindowTitle(char *windowTitle) override;
+	void RenderEnd() override;
+	void SetWindowTitle(char *windowTitle) override;
 
 	void ExecuteDrawCmds(std::vector<GLBatchDrawCmd> &drawCmds,
 						 GeometryType geomType);

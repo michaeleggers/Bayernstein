@@ -11,10 +11,10 @@
 
 class ShapeSphere : public Shape {
   public:
-	ShapeSphere(float radius) : m_Radius(radius) {
+	explicit ShapeSphere(float radius) : m_Radius(radius) {
 		m_CenterOfMass = glm::vec3(0.0f);
 	};
-	ShapeType GetType() const override { return SHAPE_SPHERE; };
+	[[nodiscard]] ShapeType GetType() const override { return SHAPE_SPHERE; };
 
 	float m_Radius;
 };

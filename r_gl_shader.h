@@ -22,7 +22,7 @@ class Shader {
 			  uint32_t shaderFeatureBits = 0x0);
 	void Unload() const;
 	void Activate() const;
-	GLuint Program() const;
+	[[nodiscard]] GLuint Program() const;
 
 	static void SetViewProjMatrices(glm::mat4 view, glm::mat4 proj);
 	void SetMatrixPalette(glm::mat4 *palette, uint32_t numMatrices) const;
@@ -36,10 +36,10 @@ class Shader {
 	static void InitGlobalBuffers();
 
   private:
-	bool CompileShader(const std::string &fileName, GLenum shaderType,
+	static bool CompileShader(const std::string &fileName, GLenum shaderType,
 					   GLuint &outShader);
 	static bool IsCompiled(GLuint shader);
-	bool IsValidProgram() const;
+	[[nodiscard]] bool IsValidProgram() const;
 
 	GLuint m_VertexShader;
 	GLuint m_FragmentShader;

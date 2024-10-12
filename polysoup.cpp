@@ -48,8 +48,8 @@ static void writePolys(const std::string &fileName,
 	oFileStream.write((char *)&numPolys, sizeof(uint32_t));
 
 	for (auto &poly : polys) {
-		for (auto v = poly.vertices.begin(); v != poly.vertices.end(); v++) {
-			oFileStream.write((char *)&*v, sizeof(glm::f64vec3));
+		for (auto & vertice : poly.vertices) {
+			oFileStream.write((char *)&vertice, sizeof(glm::f64vec3));
 		}
 	}
 
@@ -67,9 +67,9 @@ static void writePolysOBJ(const std::string &fileName,
 	size_t count = 1;
 	for (auto &poly : polys) {
 		faces << "f";
-		for (auto v = poly.vertices.begin(); v != poly.vertices.end(); v++) {
-			oFileStream << "v " << std::to_string(v->x) << " "
-						<< std::to_string(v->y) << " " << std::to_string(v->z)
+		for (auto & vertice : poly.vertices) {
+			oFileStream << "v " << std::to_string(vertice.x) << " "
+						<< std::to_string(vertice.y) << " " << std::to_string(vertice.z)
 						<< std::endl;
 			faces << " " << count;
 			count++;
@@ -140,8 +140,8 @@ void insertVertexToPolygon(glm::f64vec3 v, MapPolygon *p) {
 	p->vertices.push_back(v);
 }
 
-bool isPointInsideBrush(Brush brush, glm::f64vec3 intersectionPoint) {
-	for (auto face : brush.faces) {
+bool isPointInsideBrush(const Brush& brush, glm::f64vec3 intersectionPoint) {
+	for (const auto& face : brush.faces) {
 		MapPlane plane = convertFaceToPlane(face);
 		glm::f64vec3 a = glm::normalize(intersectionPoint - plane.p0);
 		double dotProd = glm::dot(plane.n, a);
@@ -157,22 +157,21 @@ bool isPointInsideBrush(Brush brush, glm::f64vec3 intersectionPoint) {
 std::vector<MapPolygon> createPolysoup(Map map) {
 	std::vector<MapPolygon> polys;
 	for (auto &entitie : map.entities) {
-		for (auto b = entitie.brushes.begin(); b != entitie.brushes.end();
-			 b++) {
-			int faceCount = b->faces.size();
+		for (auto & brushe : entitie.brushes) {
+			int faceCount = brushe.faces.size();
 			for (int i = 0; i < faceCount; i++) {
-				MapPlane p0 = convertFaceToPlane(b->faces[i]);
+				MapPlane p0 = convertFaceToPlane(brushe.faces[i]);
 				MapPolygon poly = {};
 				poly.normal = p0.n;
 				for (int j = 0; j < faceCount; j++) {
-					MapPlane p1 = convertFaceToPlane(b->faces[j]);
+					MapPlane p1 = convertFaceToPlane(brushe.faces[j]);
 					for (int k = 0; k < faceCount; k++) {
 						glm::f64vec3 intersectionPoint;
-						MapPlane p2 = convertFaceToPlane(b->faces[k]);
+						MapPlane p2 = convertFaceToPlane(brushe.faces[k]);
 						if (i != j != k) {
 							if (intersectThreePlanes(p0, p1, p2,
 													 &intersectionPoint)) {
-								if (isPointInsideBrush(*b, intersectionPoint)) {
+								if (isPointInsideBrush(brushe, intersectionPoint)) {
 									// TODO: Calculate texture coordinates
 									insertVertexToPolygon(intersectionPoint,
 														  &poly);
@@ -280,7 +279,7 @@ MapPolygon sortVerticesCCW(MapPolygon poly) {
  *
  * TODO: Fix this with indexed data.
  */
-std::vector<MapPolygon> triangulate(std::vector<MapPolygon> polys) {
+std::vector<MapPolygon> triangulate(const std::vector<MapPolygon>& polys) {
 	std::vector<MapPolygon> tris = {};
 
 	for (auto &p : polys) {

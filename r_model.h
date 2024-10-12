@@ -1,7 +1,7 @@
 #ifndef _MODEL_H_
 #define _MODEL_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include <string>
 #include <vector>

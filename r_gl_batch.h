@@ -1,7 +1,7 @@
 #ifndef _R_GL_BATCH_H_
 #define _R_GL_BATCH_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include <vector>
 
@@ -15,7 +15,7 @@
 
 class GLBatch {
   public:
-	GLBatch(uint32_t maxVerts);
+	explicit GLBatch(uint32_t maxVerts);
 	GLBatch(uint32_t maxVerts, uint32_t maxIndices);
 
 	int Add(Tri *tris, uint32_t numTris, bool cullFace = true,
@@ -29,7 +29,7 @@ class GLBatch {
 	void Reset();
 	void Kill();
 
-	uint32_t VertCount() const;
+	[[nodiscard]] uint32_t VertCount() const;
 
   private:
 	GeometryType m_GeometryType;

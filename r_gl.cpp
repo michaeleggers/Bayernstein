@@ -184,7 +184,7 @@ int GLRender::RegisterModel(HKD_Model *model) {
 
 	for (auto &meshe : model->meshes) {
 		HKD_Mesh *mesh = &meshe;
-		GLTexture *texture =
+		auto *texture =
 			(GLTexture *)m_TextureManager->CreateTexture(mesh->textureFileName);
 		GLMesh gl_mesh = {.triOffset = offset / 3 + (int)mesh->firstTri,
 						  .triCount = (int)mesh->numTris,
@@ -347,7 +347,7 @@ void GLRender::ImDrawSphere(glm::vec3 pos, float radius, glm::vec4 color) {
 		10000.0f);
 
 	m_ColliderShader->Activate();
-	m_ColliderShader->SetViewProjMatrices(view, proj);
+	Shader::SetViewProjMatrices(view, proj);
 
 	m_ColliderBatch->Bind();
 	m_ColliderShader->SetVec4("uDebugColor", color);
@@ -425,13 +425,13 @@ void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd> &drawCmds,
 			if (drawCmd.drawMode == DRAW_MODE_WIREFRAME) {
 				glLineWidth(1.0f);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				m_ImPrimitivesShader->SetShaderSettingBits(SHADER_LINEMODE);
+				Shader::SetShaderSettingBits(SHADER_LINEMODE);
 				prevDrawMode = GL_LINE;
 				primitiveType = GL_TRIANGLES;
 			} else if (drawCmd.drawMode == DRAW_MODE_LINES) {
 				glLineWidth(5.0f);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				m_ImPrimitivesShader->SetShaderSettingBits(SHADER_LINEMODE);
+				Shader::SetShaderSettingBits(SHADER_LINEMODE);
 				prevDrawMode = GL_FILL;
 				primitiveType = GL_LINES;
 			} else { // DRAW_MODE_SOLID
@@ -452,7 +452,7 @@ void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd> &drawCmds,
 				drawCmd.offset);
 		}
 
-		m_ImPrimitivesShader->ResetShaderSettingBits(SHADER_LINEMODE);
+		Shader::ResetShaderSettingBits(SHADER_LINEMODE);
 	}
 }
 
@@ -487,8 +487,8 @@ void GLRender::Render(Camera *camera, HKD_Model **models, uint32_t numModels) {
 
 	m_ImPrimitiveBatch->Bind();
 	m_ImPrimitivesShader->Activate();
-	m_ImPrimitivesShader->DrawWireframe((uint32_t)drawWireframe);
-	m_ImPrimitivesShader->SetViewProjMatrices(view, proj);
+	Shader::DrawWireframe((uint32_t)drawWireframe);
+	Shader::SetViewProjMatrices(view, proj);
 	m_ImPrimitivesShader->SetMat4("model", glm::mat4(1));
 	m_ImPrimitivesShader->SetVec3("viewPos", camera->m_Pos);
 	ExecuteDrawCmds(m_PrimitiveDrawCmds, GEOM_TYPE_VERTEX_ONLY);
@@ -510,22 +510,22 @@ void GLRender::Render(Camera *camera, HKD_Model **models, uint32_t numModels) {
 
 	m_ModelBatch->Bind();
 	m_ModelShader->Activate();
-	m_ModelShader->SetViewProjMatrices(view, proj);
+	Shader::SetViewProjMatrices(view, proj);
 	if (drawWireframe) {
-		m_ModelShader->SetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
+		Shader::SetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
 	} else {
-		m_ModelShader->ResetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
+		Shader::ResetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
 	}
 	for (int i = 0; i < numModels; i++) {
 
 		GLModel model = m_Models[models[i]->gpuModelHandle];
 
 		if (models[i]->numJoints > 0) {
-			m_ModelShader->SetShaderSettingBits(SHADER_ANIMATED);
+			Shader::SetShaderSettingBits(SHADER_ANIMATED);
 			m_ModelShader->SetMatrixPalette(&models[i]->palette[0],
 											models[i]->numJoints);
 		} else {
-			m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
+			Shader::ResetShaderSettingBits(SHADER_ANIMATED);
 		}
 
 		glm::mat4 modelMatrix = CreateModelMatrix(models[i]);
@@ -535,15 +535,15 @@ void GLRender::Render(Camera *camera, HKD_Model **models, uint32_t numModels) {
 			GLMesh *mesh = &meshe;
 			if (!mesh->texture->m_Filename
 					 .empty()) { // TODO: Checking string of empty is not great.
-				m_ModelShader->SetShaderSettingBits(SHADER_IS_TEXTURED);
+				Shader::SetShaderSettingBits(SHADER_IS_TEXTURED);
 				glBindTexture(GL_TEXTURE_2D, mesh->texture->m_gl_Handle);
 			} else {
-				m_ModelShader->ResetShaderSettingBits(SHADER_IS_TEXTURED);
+				Shader::ResetShaderSettingBits(SHADER_IS_TEXTURED);
 			}
 			glDrawArrays(GL_TRIANGLES, 3 * mesh->triOffset, 3 * mesh->triCount);
 		}
 	}
-	m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
+	Shader::ResetShaderSettingBits(SHADER_ANIMATED);
 
 	// const std::vector<GLBatchDrawCmd>& modelDrawCmds =
 	// m_ModelBatch->DrawCmds(); for (int i = 0; i < modelDrawCmds.size(); i++)
@@ -564,7 +564,7 @@ void GLRender::RenderColliders(Camera *camera, HKD_Model **models,
 		10000.0f);
 
 	m_ColliderShader->Activate();
-	m_ColliderShader->SetViewProjMatrices(view, proj);
+	Shader::SetViewProjMatrices(view, proj);
 
 	m_ColliderBatch->Bind();
 	for (int i = 0; i < numModels; i++) {

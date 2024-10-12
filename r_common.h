@@ -1,7 +1,7 @@
 #ifndef _RCOMMON_H_
 #define _RCOMMON_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 
 #define GLM_FORCE_RADIANS
