@@ -56,7 +56,7 @@ jobs:
         with:
           cmake-version: '3.28.0'
 
-      - name: Install ninja
+      - name: Install build-essentials
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential
@@ -80,10 +80,10 @@ jobs:
         run: ls -la
 
       - name: Build
-        run: make
+        run: make VERBOSE=1
         working-directory: ${{ github.workspace }}/build/Release
 
       - uses: actions/upload-artifact@v4
         with:
-          name: game_test
+          name: game_linux
           path: ${{ github.workspace }}/bin
