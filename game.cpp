@@ -297,8 +297,6 @@ bool Game::RunFrame(double dt)
     HKD_Model* playerColliderModel[] = {&m_Player};
     m_Renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
 
-    m_Renderer->RenderEnd(); // TODO: This has to be *after* render2d etc and should superimpose the 2d offscreen texture onto default fbo.
-
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     {
         m_Renderer->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
@@ -309,6 +307,9 @@ bool Game::RunFrame(double dt)
 
         m_Renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
     } 
+    
+    m_Renderer->RenderEnd(); 
+
 
     return true;
 }

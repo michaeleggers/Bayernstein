@@ -650,14 +650,18 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     //glDrawArrays(GL_TRIANGLES, 0, 3*m_ModelBatch->TriCount());
 }
 
+// Draw 2d screenspace elements
 void GLRender::Begin2D() {
 
-    // Draw 2d screenspace elements
     
     m_2dFBO->Bind();
 
     m_Screenspace2dShader->Activate();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+    glClearColor(0.1f, 0.1f, 0.2f, 1.0f); 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
 
 }
 
@@ -669,11 +673,14 @@ void GLRender::End2D() {
 }
 
 void GLRender::SetFont(CFont* font) {
-    ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
-    glBindTexture(GL_TEXTURE0, fontTexture->m_hGPU);
+    //ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
+                ITexture* fontTexture = m_TextureManager->GetTexture("fonts/HackNerdFont-Bold.ttf");
+                glBindTexture(GL_TEXTURE_2D, (GLuint)fontTexture->m_hGPU);
+    //glBindTexture(GL_TEXTURE_2D, (GLuint)fontTexture->m_hGPU);
 }
 
 void GLRender::DrawText(std::string text, int x, int y) {
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels)
