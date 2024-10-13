@@ -97,6 +97,9 @@ void GLRender::Shutdown(void)
 
     m_ImPrimitiveBatch->Kill();
     delete m_ImPrimitiveBatch;
+
+    m_Screenspace2dBatch->Kill();
+    delete m_Screenspace2dBatch;
     
     m_ModelShader->Unload();
     delete m_ModelShader;
@@ -230,6 +233,7 @@ bool GLRender::Init(void)
     m_ImPrimitiveBatch = new GLBatch(1000 * 1000);
     m_ImPrimitiveBatchIndexed = new GLBatch(1000 * 1000, 1000 * 1000);
     m_ColliderBatch = new GLBatch(1000000);
+    m_Screenspace2dBatch = new GLBatch(1000, 1000);
 
     // Initialize shaders
 
@@ -680,6 +684,8 @@ void GLRender::SetFont(CFont* font) {
 
 void GLRender::DrawText(const std::string& text, int x, int y) {
    
+    // TODO: (Michael): Make sure that the correct shader is active.
+    //
     // Define the quad that the glyphs are rendered with.
     // The vertices stay the same here. In the shader the
     // quads get positioned via x, y and glyphscale.
@@ -692,23 +698,27 @@ void GLRender::DrawText(const std::string& text, int x, int y) {
 
     FaceQuad fq = CreateFaceQuadFromVerts(vertices);
 
-    uint32_t indices[6] = {
+    uint16_t indices[6] = {
         0, 1, 2,
         2, 3, 0
     };
+
+    float fX = (float)x;
+    float fY = (float)y;
     
     // go through each character in text and lookup the correct UV.
     for (int i = 0; i < text.size(); i++) {
-        const unsigned char c = text[ i ];
+        const char c = text[ i ];
         if (c >= 32 && c < 128) {
-            float dx;
-            float dy;
             stbtt_aligned_quad q;
-            stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, c-32, &dx, &dy, &q, 1);//1=opengl & d3d10+,0=d3d9
-            fq.a.uv = { q.s0, q.t0 };
+            stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, c-32, &fX, &fY, &q, 1);//1=opengl & d3d10+,0=d3d9
+            fq.a.uv = { q.s1, q.t1 };
             fq.b.uv = { q.s1, q.t0 };
-            fq.c.uv = { q.s1, q.t1 };
+            fq.c.uv = { q.s0, q.t0 };
             fq.d.uv = { q.s0, q.t1 };
+            int offsetIndices = 0;
+            int offsetVertices = 0;
+            m_Screenspace2dBatch->Add(fq.vertices, 4, indices, 6, &offsetVertices, &offsetIndices, false, DRAW_MODE_SOLID);
             //glTexCoord2f(q.s0,q.t0); glVertex2f(q.x0,q.y0);
             //glTexCoord2f(q.s1,q.t0); glVertex2f(q.x1,q.y0);
             //glTexCoord2f(q.s1,q.t1); glVertex2f(q.x1,q.y1);
@@ -716,8 +726,10 @@ void GLRender::DrawText(const std::string& text, int x, int y) {
         }
     }
 
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glDrawElements(GL_TRIANGLES, 4 * text.size(), GL_UNSIGNED_INT, indices); 
+    //glDrawArrays(GL_TRIANGLES, 0, 6);
+    m_Screenspace2dBatch->Bind();
+            glDrawElementsBaseVertex(GL_TRIANGLES, 6 * text.size(), GL_UNSIGNED_SHORT,
+                (GLvoid*)0, 0);
 }
 
 void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels)
@@ -764,6 +776,7 @@ void GLRender::RenderEnd(void)
 
     m_ImPrimitiveBatch->Reset();
     m_ImPrimitiveBatchIndexed->Reset();
+    m_Screenspace2dBatch->Reset();
     m_PrimitiveDrawCmds.clear();
     m_PrimitiveIndexdDrawCmds.clear();
 }

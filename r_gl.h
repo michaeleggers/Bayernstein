@@ -74,6 +74,8 @@ private:
 
 	GLBatch*					m_ImPrimitiveBatchIndexed;
 	std::vector<GLBatchDrawCmd>	m_PrimitiveIndexdDrawCmds;
+
+	GLBatch*	m_Screenspace2dBatch;
 	
 	Shader*						m_ModelShader;
 	std::vector<GLModel>		m_Models;

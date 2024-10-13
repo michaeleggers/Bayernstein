@@ -303,7 +303,7 @@ bool Game::RunFrame(double dt)
        
         //m_Renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
         m_Renderer->SetFont(m_ConsoleFont);
-        m_Renderer->DrawText("Hello there.", 200, 200);
+        m_Renderer->DrawText("D", 0, 0);
 
         m_Renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
     } 
