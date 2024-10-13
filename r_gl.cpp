@@ -682,7 +682,7 @@ void GLRender::SetFont(CFont* font) {
     m_CurrentFont = font;
 }
 
-void GLRender::DrawText(const std::string& text, int x, int y) {
+void GLRender::DrawText(const std::string& text, float x, float y) {
    
     // TODO: (Michael): Make sure that the correct shader is active.
     //
@@ -702,23 +702,32 @@ void GLRender::DrawText(const std::string& text, int x, int y) {
         0, 1, 2,
         2, 3, 0
     };
-
-    float fX = (float)x;
-    float fY = (float)y;
     
     // go through each character in text and lookup the correct UV.
+    int offsetIndices = 0; // TODO: Not needed here!
+    int offsetVertices = 0; // TODO: Not needed here!
     for (int i = 0; i < text.size(); i++) {
         const char c = text[ i ];
         if (c >= 32 && c < 128) {
+
             stbtt_aligned_quad q;
-            stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, c-32, &fX, &fY, &q, 1);//1=opengl & d3d10+,0=d3d9
-            fq.a.uv = { q.s1, q.t1 };
-            fq.b.uv = { q.s1, q.t0 };
-            fq.c.uv = { q.s0, q.t0 };
-            fq.d.uv = { q.s0, q.t1 };
-            int offsetIndices = 0;
-            int offsetVertices = 0;
+            stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, c-32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
+            fq.a.pos = { q.x1, q.y1, 0.0f };
+            fq.b.pos = { q.x1, q.y0, 0.0f };
+            fq.c.pos = { q.x0, q.y0, 0.0f };
+            fq.d.pos = { q.x0, q.y1, 0.0f };
+            fq.a.uv = { q.s1, q.t0 };
+            fq.b.uv = { q.s1, q.t1 };
+            fq.c.uv = { q.s0, q.t1 };
+            fq.d.uv = { q.s0, q.t0 };
             m_Screenspace2dBatch->Add(fq.vertices, 4, indices, 6, &offsetVertices, &offsetIndices, false, DRAW_MODE_SOLID);
+           
+            // Update the index bufer.
+            // TODO: Later on we should use instanced rendering!!!
+            for (int j = 0; j < 6; j++) {
+                indices[ j ] += 4;
+            }
+
             //glTexCoord2f(q.s0,q.t0); glVertex2f(q.x0,q.y0);
             //glTexCoord2f(q.s1,q.t0); glVertex2f(q.x1,q.y0);
             //glTexCoord2f(q.s1,q.t1); glVertex2f(q.x1,q.y1);

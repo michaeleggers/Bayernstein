@@ -48,7 +48,7 @@ public:
 	virtual void Begin2D() = 0;
 	virtual void End2D() = 0;
 	virtual void SetFont(CFont* font) = 0; 
-	virtual void DrawText(const std::string& text, int x, int y) = 0; 
+	virtual void DrawText(const std::string& text, float x, float y) = 0; 
 	virtual void Render(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
 	virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
 	virtual void RenderEnd(void) = 0;
