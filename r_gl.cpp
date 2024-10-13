@@ -677,6 +677,12 @@ void GLRender::Begin2D() {
 
 void GLRender::End2D() {
 
+    m_Screenspace2dBatch->Bind();
+    glDrawElementsBaseVertex(GL_TRIANGLES, 
+                             m_Screenspace2dBatch->IndexCount(), 
+                             GL_UNSIGNED_SHORT, 
+                             (GLvoid*)0, 0);
+    
     m_2dFBO->Unbind();
 
     // TODO: (Michael): Unbind bound (font-)textures?
@@ -704,18 +710,20 @@ void GLRender::DrawText(const std::string& text, float x, float y) {
 
     FaceQuad fq = CreateFaceQuadFromVerts(vertices);
 
-    uint16_t indices[6] = {
-        0, 1, 2,
-        2, 3, 0
-    };
-    
     // go through each character in text and lookup the correct UV.
     int offsetIndices = 0; // TODO: Not needed here!
     int offsetVertices = 0; // TODO: Not needed here!
+    uint16_t iOffset = (uint16_t)m_Screenspace2dBatch->m_LastIndex; // TODO: (Michael): Make indices uint32_t.
+    uint16_t lastIndex = iOffset;
     const char* c = text.c_str();
+    int i = 0;
     while ( *c != '\0' ) {
         if (*c >= 32 && *c < 128) {
 
+            uint16_t indices[6] = {
+                0 + iOffset + i*4, iOffset + 1 + i*4, iOffset + 2 + i*4,
+                iOffset + 2 + i*4, iOffset + 3 + i*4, 0 + iOffset + i*4
+            };
             stbtt_aligned_quad q;
             stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, *c-32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
             // NOTE: For some reason the positional 
@@ -729,20 +737,16 @@ void GLRender::DrawText(const std::string& text, float x, float y) {
             fq.c.uv = { q.s1, q.t1 };
             fq.d.uv = { q.s0, q.t1 };
             m_Screenspace2dBatch->Add(fq.vertices, 4, indices, 6, &offsetVertices, &offsetIndices, false, DRAW_MODE_SOLID);
+
+            lastIndex = iOffset + 3 + i*4;
            
-            // Update the index bufer.
-            // TODO: Later on we should use instanced rendering!!!
-            for (int j = 0; j < 6; j++) {
-                indices[ j ] += 4;
-            }
+            i++;
         }
         c++;
     }
+    m_Screenspace2dBatch->m_LastIndex = lastIndex + 1; // We need one *after* this batche's data for the next batch.
 
     //glDrawArrays(GL_TRIANGLES, 0, 6);
-    m_Screenspace2dBatch->Bind();
-            glDrawElementsBaseVertex(GL_TRIANGLES, 6 * text.size(), GL_UNSIGNED_SHORT,
-                (GLvoid*)0, 0);
 }
 
 void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels)

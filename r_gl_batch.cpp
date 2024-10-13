@@ -81,6 +81,7 @@ GLBatch::GLBatch(uint32_t maxVerts, uint32_t maxIndices)
 
     m_NumIndices = 0;
     m_IndexOffsetIndex = 0;
+    m_LastIndex = 0;
 
     glGenVertexArrays(1, &m_VAO);
     glBindVertexArray(m_VAO);
@@ -211,6 +212,7 @@ void GLBatch::Reset()
     m_VertOffsetIndex = 0;    
     m_NumIndices = 0;
     m_IndexOffsetIndex = 0;
+    m_LastIndex = 0;
 }
 
 void GLBatch::Kill()
@@ -222,6 +224,10 @@ void GLBatch::Kill()
 uint32_t GLBatch::VertCount()
 {
     return m_VertOffsetIndex;
+}
+
+uint32_t GLBatch::IndexCount() {
+    return m_IndexOffsetIndex;
 }
 
 
