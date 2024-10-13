@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include <stdint.h>
+#include <cstdint>
 
 #define GLM_FORCE_RADIANS
 #include "dependencies/glm/ext.hpp"
