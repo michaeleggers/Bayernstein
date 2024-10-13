@@ -160,7 +160,7 @@ bool Game::RunFrame(double dt) {
 	// Change player's velocity and animation state based on input
 
 	m_Player.velocity = glm::vec3(0.0f);
-	float t = (float) dt * followCamSpeed;
+	float t = (float)dt * followCamSpeed;
 	AnimState playerAnimState = ANIM_STATE_IDLE;
 	if (KeyPressed(SDLK_w)) {
 		m_Player.velocity += t * forward;
@@ -190,8 +190,8 @@ bool Game::RunFrame(double dt) {
 	// Test collision between player and world geometry
 	EllipsoidCollider ec = m_Player.ellipsoidColliders[m_Player.currentAnimIdx];
 	CollisionInfo collisionInfo =
-			CollideEllipsoidWithTriPlane(ec, m_Player.velocity, static_cast<float>(dt) * m_World.m_Gravity,
-			                             m_World.m_TriPlanes.data(), m_World.m_TriPlanes.size());
+		CollideEllipsoidWithTriPlane(ec, m_Player.velocity, static_cast<float>(dt) * m_World.m_Gravity,
+									 m_World.m_TriPlanes.data(), m_World.m_TriPlanes.size());
 
 	// Update the ellipsoid colliders for all animation states based on the new
 	// collision position
@@ -202,7 +202,7 @@ bool Game::RunFrame(double dt) {
 	m_Player.position.y = collisionInfo.basePos.y;
 	m_Player.position.z = collisionInfo.basePos.z - ec.radiusB;
 
-	UpdateModel(&m_Player, (float) dt);
+	UpdateModel(&m_Player, (float)dt);
 
 	// Fix camera position
 
@@ -219,16 +219,16 @@ bool Game::RunFrame(double dt) {
 		turnSpeed *= 0.25f;
 	}
 	if (KeyPressed(SDLK_w)) {
-		m_Camera.Pan((float) dt * camSpeed * m_Camera.m_Forward);
+		m_Camera.Pan((float)dt * camSpeed * m_Camera.m_Forward);
 	}
 	if (KeyPressed(SDLK_s)) {
-		m_Camera.Pan((float) dt * camSpeed * -m_Camera.m_Forward);
+		m_Camera.Pan((float)dt * camSpeed * -m_Camera.m_Forward);
 	}
 	if (KeyPressed(SDLK_d)) {
-		m_Camera.Pan((float) dt * camSpeed * m_Camera.m_Side);
+		m_Camera.Pan((float)dt * camSpeed * m_Camera.m_Side);
 	}
 	if (KeyPressed(SDLK_a)) {
-		m_Camera.Pan((float) dt * camSpeed * -m_Camera.m_Side);
+		m_Camera.Pan((float)dt * camSpeed * -m_Camera.m_Side);
 	}
 
 	if (KeyPressed(SDLK_RIGHT)) {

@@ -1,10 +1,10 @@
 #ifndef _POLYSOUP_H_
 #define _POLYSOUP_H_
 
+#include "map_parser.h"
+#include <glm/glm.hpp>
 #include <string>
 #include <vector>
-#include <glm/glm.hpp>
-#include "map_parser.h"
 
 struct MapPolygon {
 	std::vector<glm::f64vec3> vertices{};

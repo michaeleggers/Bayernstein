@@ -509,12 +509,12 @@ void GLRender::Render(Camera *camera, HKD_Model **models, uint32_t numModels) {
 	}
 	m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
 
-    //const std::vector<GLBatchDrawCmd>& modelDrawCmds = m_ModelBatch->DrawCmds();
-    //for (int i = 0; i < modelDrawCmds.size(); i++) {
-	//     glBindTexture(GL_TEXTURE_2D, modelDrawCmds[i].hTexture);
-    //    glDrawArrays(GL_TRIANGLES, 3*modelDrawCmds[i].offset, 3 * modelDrawCmds[i].numTris);
-	// }
-	// glDrawArrays(GL_TRIANGLES, 0, 3*m_ModelBatch->TriCount());
+	// const std::vector<GLBatchDrawCmd>& modelDrawCmds = m_ModelBatch->DrawCmds();
+	// for (int i = 0; i < modelDrawCmds.size(); i++) {
+	//      glBindTexture(GL_TEXTURE_2D, modelDrawCmds[i].hTexture);
+	//     glDrawArrays(GL_TRIANGLES, 3*modelDrawCmds[i].offset, 3 * modelDrawCmds[i].numTris);
+	//  }
+	//  glDrawArrays(GL_TRIANGLES, 0, 3*m_ModelBatch->TriCount());
 }
 
 void GLRender::RenderColliders(Camera *camera, HKD_Model **models, uint32_t numModels) {
@@ -538,7 +538,7 @@ void GLRender::RenderColliders(Camera *camera, HKD_Model **models, uint32_t numM
 		glm::mat4 M = T * S;
 		m_ColliderShader->SetMat4("model", M);
 		std::vector<GLBatchDrawCmd> drawCmds = {m_EllipsoidColliderDrawCmd};
-        //glDrawArrays(GL_TRIANGLES, m_EllipsoidColliderDrawCmd.offset, m_EllipsoidColliderDrawCmd.numVerts);
+		// glDrawArrays(GL_TRIANGLES, m_EllipsoidColliderDrawCmd.offset, m_EllipsoidColliderDrawCmd.numVerts);
 		ExecuteDrawCmds(drawCmds, GEOM_TYPE_VERTEX_ONLY);
 		// glDrawArrays(GL_LINES,
 		//     m_EllipsoidColliderDrawCmd.offset,

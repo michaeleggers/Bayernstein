@@ -46,7 +46,8 @@ bool Shader::Load(const std::string &vertName, const std::string &fragName, uint
 	GLuint bindingPoint = BIND_POINT_VIEW_PROJECTION;
 	m_ViewProjUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "ViewProjMatrices");
 	if (m_ViewProjUniformIndex == GL_INVALID_INDEX) {
-		printf("SHADER-WARNING: Not able to get index for UBO in shader program.\nShaders:\n %s\n %s\n", vertName.c_str(), fragName.c_str());
+		printf("SHADER-WARNING: Not able to get index for UBO in shader program.\nShaders:\n %s\n %s\n",
+			   vertName.c_str(), fragName.c_str());
 		// TODO: What to do in this case???
 	}
 	glUniformBlockBinding(m_ShaderProgram, m_ViewProjUniformIndex, bindingPoint);
@@ -58,7 +59,8 @@ bool Shader::Load(const std::string &vertName, const std::string &fragName, uint
 	GLuint settingsBindingPoint = BIND_POINT_SETTINGS;
 	m_SettingsUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "Settings");
 	if (m_SettingsUniformIndex == GL_INVALID_INDEX) {
-		printf("SHADER-WARNING: Not able to get index for UBO in shader program.\nShaders:\n %s\n %s\n", vertName.c_str(), fragName.c_str());		
+		printf("SHADER-WARNING: Not able to get index for UBO in shader program.\nShaders:\n %s\n %s\n",
+			   vertName.c_str(), fragName.c_str());
 		// TODO: What to do in this case???
 	}
 	glUniformBlockBinding(m_ShaderProgram, m_SettingsUniformIndex, settingsBindingPoint);
@@ -70,10 +72,12 @@ bool Shader::Load(const std::string &vertName, const std::string &fragName, uint
 	if (shaderFeatureBits & SHADER_FEATURE_MODEL_ANIMATION_BIT) {
 
 		// Per frame per model animation matrix palette
-		GLuint paletteBindingPoint = g_PaletteBindingPoint++; // If a UBO is not being shared between shaders we need separate binding points to these buffers
+		GLuint paletteBindingPoint = g_PaletteBindingPoint++; // If a UBO is not being shared between shaders we need
+															  // separate binding points to these buffers
 		m_PaletteUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "Palette");
 		if (m_PaletteUniformIndex == GL_INVALID_INDEX) {
-			printf("SHADER-WARNING: Not able to get index for UBO in shader program.\nShaders:\n %s\n %s\n", vertName.c_str(), fragName.c_str());
+			printf("SHADER-WARNING: Not able to get index for UBO in shader program.\nShaders:\n %s\n %s\n",
+				   vertName.c_str(), fragName.c_str());
 			// TODO: What to do in this case???
 		}
 		glUniformBlockBinding(m_ShaderProgram, m_PaletteUniformIndex, paletteBindingPoint);
