@@ -712,21 +712,21 @@ void GLRender::DrawText(const std::string& text, float x, float y) {
     // go through each character in text and lookup the correct UV.
     int offsetIndices = 0; // TODO: Not needed here!
     int offsetVertices = 0; // TODO: Not needed here!
-    for (int i = 0; i < text.size(); i++) {
-        const char c = text[ i ];
-        if (c >= 32 && c < 128) {
+    const char* c = text.c_str();
+    while ( *c != '\0' ) {
+        if (*c >= 32 && *c < 128) {
 
             stbtt_aligned_quad q;
-            stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, c-32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
+            stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, *c-32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
             // NOTE: For some reason the positional 
             // coordinates in aligned_quad are flipped vertically. Not sure why.
-            fq.a.pos = { q.x1, q.y0, 0.0f };
-            fq.b.pos = { q.x1, q.y1, 0.0f };
-            fq.c.pos = { q.x0, q.y1, 0.0f };
-            fq.d.pos = { q.x0, q.y0, 0.0f };
-            fq.a.uv = { q.s1, q.t1 };
+            fq.a.pos = { q.x0, q.y0, 0.0f };
+            fq.b.pos = { q.x1, q.y0, 0.0f };
+            fq.c.pos = { q.x1, q.y1, 0.0f };
+            fq.d.pos = { q.x0, q.y1, 0.0f };
+            fq.a.uv = { q.s0, q.t0 };
             fq.b.uv = { q.s1, q.t0 };
-            fq.c.uv = { q.s0, q.t0 };
+            fq.c.uv = { q.s1, q.t1 };
             fq.d.uv = { q.s0, q.t1 };
             m_Screenspace2dBatch->Add(fq.vertices, 4, indices, 6, &offsetVertices, &offsetIndices, false, DRAW_MODE_SOLID);
            
@@ -736,6 +736,7 @@ void GLRender::DrawText(const std::string& text, float x, float y) {
                 indices[ j ] += 4;
             }
         }
+        c++;
     }
 
     //glDrawArrays(GL_TRIANGLES, 0, 6);
