@@ -17,15 +17,13 @@
 // glm::vec4 blendweights;
 
 Vertex IQMVertexToVertex(IQMVertex iqmVert, glm::vec3 bc) {
-	Vertex vertex = {
-		.pos = glm::vec3(iqmVert.pos[0], iqmVert.pos[1], iqmVert.pos[2]),
-		.uv = glm::vec2(iqmVert.texCoord[0], iqmVert.texCoord[1]),
-		.bc = bc,
-		.normal = glm::vec3(iqmVert.normal[0], iqmVert.normal[1], iqmVert.normal[2]),
-		.color = glm::vec4(iqmVert.color[0], iqmVert.color[1], iqmVert.color[2], iqmVert.color[3]),
-		.blendweights = glm::vec4(iqmVert.blendweights[0], iqmVert.blendweights[1],
-		                          iqmVert.blendweights[2], iqmVert.blendweights[3])
-	};
+	Vertex vertex = {.pos = glm::vec3(iqmVert.pos[0], iqmVert.pos[1], iqmVert.pos[2]),
+					 .uv = glm::vec2(iqmVert.texCoord[0], iqmVert.texCoord[1]),
+					 .bc = bc,
+					 .normal = glm::vec3(iqmVert.normal[0], iqmVert.normal[1], iqmVert.normal[2]),
+					 .color = glm::vec4(iqmVert.color[0], iqmVert.color[1], iqmVert.color[2], iqmVert.color[3]),
+					 .blendweights = glm::vec4(iqmVert.blendweights[0], iqmVert.blendweights[1],
+											   iqmVert.blendweights[2], iqmVert.blendweights[3])};
 	vertex.blendweights /= 255.0f;
 	vertex.blendindices[0] = iqmVert.blendindices[0];
 	vertex.blendindices[1] = iqmVert.blendindices[1];
@@ -118,7 +116,7 @@ static glm::mat4 PoseToMatrix(Pose pose) {
 	glm::mat4 tMat = glm::translate(glm::mat4(1.0f), t); // TODO: Change to translation
 	glm::vec3 s = glm::vec3(pose.scale.x, pose.scale.y, pose.scale.z);
 	glm::mat4 sMat = glm::scale(glm::mat4(1.0f), s);
-	//glm::quat r = glm::quat(pose.rotation.w, pose.rotation.x, pose.rotation.y, pose.rotation.z);
+	// glm::quat r = glm::quat(pose.rotation.w, pose.rotation.x, pose.rotation.y, pose.rotation.z);
 	glm::mat4 rMat = glm::toMat4(pose.rotation);
 
 	return tMat * rMat * sMat;
@@ -172,7 +170,7 @@ void UpdateModel(HKD_Model *model, float dt) {
 		// end, we jump to the next animation.
 
 		if (currentFrame >= anim.firstFrame + anim.numFrames - 1) {
-			//model->currentAnimIdx = (model->currentAnimIdx + 1) % model->animations.size();
+			// model->currentAnimIdx = (model->currentAnimIdx + 1) % model->animations.size();
 			anim = model->animations[model->currentAnimIdx];
 			currentFrame = anim.firstFrame;
 		}
@@ -192,7 +190,7 @@ void UpdateModel(HKD_Model *model, float dt) {
 			Pose currentPoseTransform = model->poses[currentFrame * model->numJoints + i];
 			Pose nextPoseTransform = model->poses[nextFrame * model->numJoints + i];
 			glm::mat4 poseMat =
-					InterpolatePoses(currentPoseTransform, nextPoseTransform, model->pctFrameDone / msPerFrame);
+				InterpolatePoses(currentPoseTransform, nextPoseTransform, model->pctFrameDone / msPerFrame);
 			if (currentPoseTransform.parent >= 0) {
 				model->palette[i] = model->palette[currentPoseTransform.parent] * poseMat;
 			} else {
@@ -212,11 +210,11 @@ void UpdateModel(HKD_Model *model, float dt) {
 		// Update Ellipsoid Collider center
 		// TODO: Also entities that aren't animated should have this.
 		/*
-        EllipsoidCollider* ec = &model->ellipsoidColliders[model->currentAnimIdx];
-        ec->center = model->position + glm::vec3(
-            0.0f,
-            0.0f,
-            ec->radiusB);
+		EllipsoidCollider* ec = &model->ellipsoidColliders[model->currentAnimIdx];
+		ec->center = model->position + glm::vec3(
+			0.0f,
+			0.0f,
+			ec->radiusB);
 		*/
 	} // DONE WITH ANIMATION
 
@@ -227,8 +225,7 @@ void UpdateModel(HKD_Model *model, float dt) {
 	}
 }
 
-void ApplyPhysicsToModel(HKD_Model *model) {
-}
+void ApplyPhysicsToModel(HKD_Model *model) {}
 
 void UpdateRigidBodyTransform(HKD_Model *model) { model->position = model->body.m_Position; }
 
@@ -249,13 +246,13 @@ glm::mat4 CreateModelMatrix(glm::vec3 pos, glm::quat orientation, glm::vec3 scal
 }
 
 void SetAnimState(HKD_Model *model, AnimState animState) {
-	auto currentState = (AnimState) model->currentAnimIdx;
+	auto currentState = (AnimState)model->currentAnimIdx;
 
 	if (currentState == animState) {
 		return;
 	}
 
-	model->currentAnimIdx = (uint32_t) animState;
+	model->currentAnimIdx = (uint32_t)animState;
 	Anim anim = model->animations[model->currentAnimIdx];
 	uint32_t firstFrame = anim.firstFrame;
 	model->currentFrame = firstFrame;

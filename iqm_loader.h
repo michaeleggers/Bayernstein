@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include <cstdint>
+#include "stdint.h"
 
 #define GLM_FORCE_RADIANS
 #include "dependencies/glm/ext.hpp"
@@ -153,6 +153,7 @@ struct IQMBounds {
 };
 
 IQMModel LoadIQM(const char *file);
+
 void UnloadIQM(IQMModel *iqmModel);
 
 #endif

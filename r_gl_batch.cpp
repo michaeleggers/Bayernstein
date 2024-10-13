@@ -166,12 +166,13 @@ int GLBatch::Add(Vertex *verts, uint32_t numVerts, bool cullFace, DrawMode drawM
 bool GLBatch::Add(Vertex *verts, uint32_t numVerts, uint16_t *indices, uint32_t numIndices, int *out_offset,
 				  int *out_idxOffset, bool cullFace, DrawMode drawMode) {
 	if (m_VertOffsetIndex + numVerts > m_MaxVerts) {
-        printf("No more space on GPU to upload more vertices!\nSpace available: %d\n", m_MaxVerts - m_VertOffsetIndex);
+		printf("No more space on GPU to upload more vertices!\nSpace available: %d\n", m_MaxVerts - m_VertOffsetIndex);
 		return false;
 	}
 
 	if (m_IndexOffsetIndex + numIndices > m_MaxIndices) {
-        printf("No more space on GPU to upload more indices!\nSpace available: %d\n", m_MaxIndices - m_IndexOffsetIndex);
+		printf("No more space on GPU to upload more indices!\nSpace available: %d\n",
+			   m_MaxIndices - m_IndexOffsetIndex);
 		return false;
 	}
 

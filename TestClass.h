@@ -5,7 +5,7 @@
 #ifndef TESTCLASS_H
 #define TESTCLASS_H
 
-#include <cstdio>
+#include "stdio.h"
 
 class TestClass {
   public:
