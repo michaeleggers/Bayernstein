@@ -18,7 +18,7 @@ CFont::CFont(std::string fontFile, int size) {
     fread( (void*)ttfBuffer, 1, 1<<20, 
 	  fopen(fontFilePath.c_str(), "rb") );
     stbtt_InitFont( &m_FontInfo, ttfBuffer, stbtt_GetFontOffsetForIndex(ttfBuffer, 0) );
-    stbtt_BakeFontBitmap( ttfBuffer, 0, (float)size, m_Bitmap, 512, 512, size, 96, m_Cdata );
+    stbtt_BakeFontBitmap( ttfBuffer, 0, (float)size, m_Bitmap, 512, 512, 32, 96, m_Cdata );
 
     //memset( m_Bitmap, 128, 512 * 512 ); // Debug (Check bitmap of texture in Renderdoc)
     
