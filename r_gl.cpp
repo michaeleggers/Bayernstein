@@ -670,7 +670,7 @@ void GLRender::Begin2D() {
 
     m_Screenspace2dShader->Activate();
 
-    glm::mat4 ortho = glm::ortho(0.0f, (float)m_2dFBO->m_Width, 0.0f, (float)m_2dFBO->m_Height, -1.0f, 1.0f);
+    glm::mat4 ortho = glm::ortho(0.0f, (float)m_2dFBO->m_Width, (float)m_2dFBO->m_Height, 0.0f, -1.0f, 1.0f);
    
     m_Screenspace2dShader->SetViewProjMatrices( glm::mat4(1.0f), ortho );
 }
