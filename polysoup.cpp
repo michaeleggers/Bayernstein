@@ -19,7 +19,7 @@
 
 #include "polysoup.h"
 
-//#define MAP_PARSER_IMPLEMENTATION
+// #define MAP_PARSER_IMPLEMENTATION
 #include "map_parser.h"
 
 #define PS_FLOAT_EPSILON (0.0001)
