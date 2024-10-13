@@ -34,7 +34,7 @@ public:
 	void DrawWireframe(uint32_t yesOrNo);
 	void SetShaderSettingBits(uint32_t bits);
 	void ResetShaderSettingBits(uint32_t bits);
-
+	void InitializeScreenSpace2dUniforms();
 	static void InitGlobalBuffers();
 
 private:
@@ -52,6 +52,9 @@ private:
 	GLuint m_ViewProjUBO;
 	GLuint m_SettingsUBO;
 	GLuint m_PaletteUBO;
+
+	// 2d screenspace uniforms
+	GLuint m_ScreenspaceUBO;
 };
 
 

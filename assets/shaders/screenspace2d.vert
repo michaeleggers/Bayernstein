@@ -41,6 +41,9 @@ layout (std140) uniform Settings {
     uvec4 bitFields;
 };
 
+layout (std140) uniform screenspaceUBO {
+    vec2 someData;
+};
 
 void main() {
     gl_Position = vec4(quad[gl_VertexID], 1.0f);

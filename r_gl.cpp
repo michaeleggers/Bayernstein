@@ -699,7 +699,7 @@ void GLRender::DrawText(const std::string& text, int x, int y) {
     
     // go through each character in text and lookup the correct UV.
     for (int i = 0; i < text.size(); i++) {
-        const char c = text[ i ];
+        const unsigned char c = text[ i ];
         if (c >= 32 && c < 128) {
             float dx;
             float dy;
@@ -822,7 +822,7 @@ void GLRender::InitShaders()
         )) {
         printf("Problems initializing screenspace2d shader!\n");
     }
-
+    m_Screenspace2dShader->InitializeScreenSpace2dUniforms();
 }
 
 void GLRender::SetWindowTitle(char* windowTitle)
