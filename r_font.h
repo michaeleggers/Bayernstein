@@ -4,6 +4,7 @@
 #include "stb_truetype.h"
 
 #include <string>
+#include <vector>
 
 class CFont {
 

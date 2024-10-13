@@ -48,7 +48,7 @@ public:
 	virtual void Begin2D() override;
 	virtual void End2D() override;
 	virtual void SetFont(CFont* font) override;
-	virtual void DrawText(std::string text, int x, int y) override;
+	virtual void DrawText(const std::string& text, int x, int y) override;
 	virtual void RenderEnd(void)						override;
 	virtual void SetWindowTitle(char* windowTitle) override;
 
@@ -90,6 +90,9 @@ private:
 	CglFBO*		                m_2dFBO;
 	int							m_WindowWidth;
 	int							m_WindowHeight;
+
+	// 2D Rendering state
+	CFont*		m_CurrentFont;
 
 
 };

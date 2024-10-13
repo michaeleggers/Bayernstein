@@ -673,14 +673,51 @@ void GLRender::End2D() {
 }
 
 void GLRender::SetFont(CFont* font) {
-    //ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
-                ITexture* fontTexture = m_TextureManager->GetTexture("fonts/HackNerdFont-Bold.ttf");
-                glBindTexture(GL_TEXTURE_2D, (GLuint)fontTexture->m_hGPU);
-    //glBindTexture(GL_TEXTURE_2D, (GLuint)fontTexture->m_hGPU);
+    ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
+    glBindTexture(GL_TEXTURE_2D, (GLuint)fontTexture->m_hGPU);
+    m_CurrentFont = font;
 }
 
-void GLRender::DrawText(std::string text, int x, int y) {
+void GLRender::DrawText(const std::string& text, int x, int y) {
+   
+    // Define the quad that the glyphs are rendered with.
+    // The vertices stay the same here. In the shader the
+    // quads get positioned via x, y and glyphscale.
+    Vertex vertices[4] = {
+        { glm::vec3(1.0f, -1.0f, 0.0f) },
+        { glm::vec3(1.0f, 1.0f, 0.0f) },
+        { glm::vec3(-1.0f, 1.0f, 0.0f) },
+        { glm::vec3( -1.0f, -1.0f, 0.0f) }
+    };
+
+    FaceQuad fq = CreateFaceQuadFromVerts(vertices);
+
+    uint32_t indices[6] = {
+        0, 1, 2,
+        2, 3, 0
+    };
+    
+    // go through each character in text and lookup the correct UV.
+    for (int i = 0; i < text.size(); i++) {
+        const char c = text[ i ];
+        if (c >= 32 && c < 128) {
+            float dx;
+            float dy;
+            stbtt_aligned_quad q;
+            stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, c-32, &dx, &dy, &q, 1);//1=opengl & d3d10+,0=d3d9
+            fq.a.uv = { q.s0, q.t0 };
+            fq.b.uv = { q.s1, q.t0 };
+            fq.c.uv = { q.s1, q.t1 };
+            fq.d.uv = { q.s0, q.t1 };
+            //glTexCoord2f(q.s0,q.t0); glVertex2f(q.x0,q.y0);
+            //glTexCoord2f(q.s1,q.t0); glVertex2f(q.x1,q.y0);
+            //glTexCoord2f(q.s1,q.t1); glVertex2f(q.x1,q.y1);
+            //glTexCoord2f(q.s0,q.t1); glVertex2f(q.x0,q.y1);
+        }
+    }
+
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawElements(GL_TRIANGLES, 4 * text.size(), GL_UNSIGNED_INT, indices); 
 }
 
 void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels)

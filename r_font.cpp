@@ -8,6 +8,7 @@
 
 extern std::string  g_GameDir;
 
+// TODO: (Michael): Set bitmap size through ctor
 CFont::CFont(std::string fontFile, int size) {
     m_Filename = fontFile;
     m_Cdata = (stbtt_bakedchar*)malloc( 96 * sizeof(stbtt_bakedchar) );
