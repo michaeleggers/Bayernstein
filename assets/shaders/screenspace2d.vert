@@ -46,7 +46,7 @@ layout (std140) uniform screenspaceUBO {
 };
 
 void main() {
-    gl_Position = vec4(0.05*pos, 1.0f);
+    gl_Position = proj * vec4(pos, 1.0f);
     out_uv = uv; 
 }
 

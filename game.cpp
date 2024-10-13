@@ -36,7 +36,7 @@ void Game::Init()
     m_AccumTime = 0.0f;
 
     // Load a font file from disk
-    m_ConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 20);
+    m_ConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 100);
     m_Renderer->RegisterFont(m_ConsoleFont);
 	
     // Load world triangles from Quake .MAP file
@@ -303,7 +303,7 @@ bool Game::RunFrame(double dt)
        
         //m_Renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
         m_Renderer->SetFont(m_ConsoleFont);
-        m_Renderer->DrawText("DA", 0.0f, 0.0f);
+        m_Renderer->DrawText("D", 100.0f, 100.0f);
 
         m_Renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
     } 

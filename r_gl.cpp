@@ -170,7 +170,7 @@ bool GLRender::Init(void)
     printf("OpenGL Version active (via glGetString): %s\n", glGetString(GL_VERSION));
 
     // Allow OpenGL to send us debug information.
-    //EnableOpenGLDebugCallback();
+    EnableOpenGLDebugCallback();
 
 
     // Check that the window was successfully created
@@ -656,17 +656,23 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
 
 // Draw 2d screenspace elements
 void GLRender::Begin2D() {
-
     
     m_2dFBO->Bind();
 
-    m_Screenspace2dShader->Activate();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glClearColor(0.1f, 0.1f, 0.2f, 1.0f); 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+    //glDisable(GL_CULL_FACE);
 
+    glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
+
+    m_Screenspace2dShader->Activate();
+
+    glm::mat4 ortho = glm::ortho(0.0f, (float)m_2dFBO->m_Width, 0.0f, (float)m_2dFBO->m_Height, -1.0f, 1.0f);
+   
+    m_Screenspace2dShader->SetViewProjMatrices( glm::mat4(1.0f), ortho );
 }
 
 void GLRender::End2D() {
@@ -712,14 +718,16 @@ void GLRender::DrawText(const std::string& text, float x, float y) {
 
             stbtt_aligned_quad q;
             stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, c-32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
-            fq.a.pos = { q.x1, q.y1, 0.0f };
-            fq.b.pos = { q.x1, q.y0, 0.0f };
-            fq.c.pos = { q.x0, q.y0, 0.0f };
-            fq.d.pos = { q.x0, q.y1, 0.0f };
-            fq.a.uv = { q.s1, q.t0 };
-            fq.b.uv = { q.s1, q.t1 };
-            fq.c.uv = { q.s0, q.t1 };
-            fq.d.uv = { q.s0, q.t0 };
+            // NOTE: For some reason the positional 
+            // coordinates in aligned_quad are flipped vertically. Not sure why.
+            fq.a.pos = { q.x1, q.y0, 0.0f };
+            fq.b.pos = { q.x1, q.y1, 0.0f };
+            fq.c.pos = { q.x0, q.y1, 0.0f };
+            fq.d.pos = { q.x0, q.y0, 0.0f };
+            fq.a.uv = { q.s1, q.t1 };
+            fq.b.uv = { q.s1, q.t0 };
+            fq.c.uv = { q.s0, q.t0 };
+            fq.d.uv = { q.s0, q.t1 };
             m_Screenspace2dBatch->Add(fq.vertices, 4, indices, 6, &offsetVertices, &offsetIndices, false, DRAW_MODE_SOLID);
            
             // Update the index bufer.
@@ -727,11 +735,6 @@ void GLRender::DrawText(const std::string& text, float x, float y) {
             for (int j = 0; j < 6; j++) {
                 indices[ j ] += 4;
             }
-
-            //glTexCoord2f(q.s0,q.t0); glVertex2f(q.x0,q.y0);
-            //glTexCoord2f(q.s1,q.t0); glVertex2f(q.x1,q.y0);
-            //glTexCoord2f(q.s1,q.t1); glVertex2f(q.x1,q.y1);
-            //glTexCoord2f(q.s0,q.t1); glVertex2f(q.x0,q.y1);
         }
     }
 
@@ -844,7 +847,7 @@ void GLRender::InitShaders()
         )) {
         printf("Problems initializing screenspace2d shader!\n");
     }
-    m_Screenspace2dShader->InitializeScreenSpace2dUniforms();
+    //m_Screenspace2dShader->InitializeScreenSpace2dUniforms();
 }
 
 void GLRender::SetWindowTitle(char* windowTitle)

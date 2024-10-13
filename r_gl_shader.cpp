@@ -92,8 +92,8 @@ void Shader::InitializeScreenSpace2dUniforms() {
 	// TODO: (Michael): Uniform Binding happens quite often (see init shader above). Simplify this.
     
 	GLuint bindingPoint = BIND_POINT_SCREENSPACE_2D; 
-	m_ViewProjUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "screenspaceUBO");
-	if (m_ViewProjUniformIndex == GL_INVALID_INDEX) {
+	m_ScreenspaceUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "screenspaceUBO");
+	if (m_ScreenspaceUniformIndex == GL_INVALID_INDEX) {
 		//printf("SHADER-WARNING: Not able to get index for UBO in shader program.\nShaders:\n %s\n %s\n", vertName.c_str(), fragName.c_str());
         printf("Not able to bind screenspaceUBO!\n");
 		// TODO: What to do in this case???

@@ -54,6 +54,7 @@ private:
 	GLuint m_PaletteUBO;
 
 	// 2d screenspace uniforms
+	GLuint m_ScreenspaceUniformIndex;
 	GLuint m_ScreenspaceUBO;
 };
 
