@@ -42,7 +42,7 @@ layout (std140) uniform Settings {
 };
 
 layout (std140) uniform screenspaceUBO {
-    vec2 someData;
+    vec4 someData;
 };
 
 void main() {

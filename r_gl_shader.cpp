@@ -103,7 +103,7 @@ void Shader::InitializeScreenSpace2dUniforms() {
     glGenBuffers(1, &m_ScreenspaceUBO);
     glBindBuffer(GL_UNIFORM_BUFFER, m_ScreenspaceUBO);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::vec2), nullptr, GL_DYNAMIC_DRAW);
-    glBindBufferRange(GL_UNIFORM_BUFFER, bindingPoint, m_ScreenspaceUBO, 0, sizeof(glm::vec2));
+    glBindBufferRange(GL_UNIFORM_BUFFER, bindingPoint, m_ScreenspaceUBO, 0, sizeof(glm::vec4));
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 

@@ -923,8 +923,13 @@ void GLRender::InitShaders()
         )) {
         printf("Problems initializing screenspace2d shader!\n");
     }
-    //
-    m_Screenspace2dShader->InitializeScreenSpace2dUniforms(); // FIX: Breaks viewProjUniform!
+    // TODO: We could think about actually creating a subclass
+    //       for a dedicated screenspace shader so we don't have
+    //       to do this weird call. It is easy to forget and
+    //       also the main shader class has all these things related
+    //       to 2d screenspace rendering which it doesn't need.
+    //       But more things are to come so don't over-abstract things for now!
+    m_Screenspace2dShader->InitializeScreenSpace2dUniforms();
 
     m_CompositeShader = new Shader();
     if ( !m_CompositeShader->Load(
