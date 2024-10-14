@@ -848,7 +848,7 @@ void GLRender::InitShaders()
     // Models
 
     m_ModelShader = new Shader();
-    if (!m_ModelShader->Load(
+    if ( !m_ModelShader->Load(
         "shaders/entities.vert",
         "shaders/entities.frag",
         SHADER_FEATURE_MODEL_ANIMATION_BIT
@@ -859,7 +859,7 @@ void GLRender::InitShaders()
     // Immediate mode Primitives: Lines, Tris, ...
 
     m_ImPrimitivesShader = new Shader();
-    if (!m_ImPrimitivesShader->Load(
+    if ( !m_ImPrimitivesShader->Load(
         "shaders/primitives.vert",
         "shaders/primitives.frag"
     )) {
@@ -869,7 +869,7 @@ void GLRender::InitShaders()
     // Colliders (for now: Ellipsoids, but can also be AABBs, etc.)
 
     m_ColliderShader = new Shader();
-    if (!m_ColliderShader->Load(
+    if ( !m_ColliderShader->Load(
         "shaders/colliders.vert",
         "shaders/colliders.frag"
         )) {
@@ -878,7 +878,7 @@ void GLRender::InitShaders()
 
     // TODO: Just to test if shaders overwrite data from each other. Delete later!
     Shader* foo = new Shader(); 
-    if (!foo->Load(
+    if ( !foo->Load(
         "shaders/entities.vert",
         "shaders/entities.frag",
         SHADER_FEATURE_MODEL_ANIMATION_BIT
@@ -889,7 +889,7 @@ void GLRender::InitShaders()
     // 2D Screenspace: UI, Console, etc.
 
     m_Screenspace2dShader = new Shader();
-    if (!m_Screenspace2dShader->Load(
+    if ( !m_Screenspace2dShader->Load(
         "shaders/screenspace2d.vert",
         "shaders/screenspace2d.frag"
         )) {
@@ -899,7 +899,7 @@ void GLRender::InitShaders()
     //m_Screenspace2dShader->InitializeScreenSpace2dUniforms(); FIX: Breaks viewProjUniform!
 
     m_CompositeShader = new Shader();
-    if (m_CompositeShader->Load(
+    if ( !m_CompositeShader->Load(
         "shaders/composite.vert",
         "shaders/composite.frag"
     )) {
