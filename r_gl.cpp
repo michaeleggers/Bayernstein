@@ -626,7 +626,7 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     glEnable(GL_CULL_FACE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glLineWidth(1.0f);
-
+    glEnable(GL_DEPTH_TEST);
 
     // Draw Models
     
@@ -814,19 +814,45 @@ void GLRender::RenderEnd(void)
     // At this point the GL default FBO must be active!
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
+    glDepthFunc(GL_LESS);
+    
     // Composite all the FBOs together
     m_CompositeShader->Activate();
 
+    GLuint texLoc3d = glGetUniformLocation(m_CompositeShader->Program(),
+                                           "main3dSceneTexture");
+
+    GLuint texLoc2d = glGetUniformLocation(m_CompositeShader->Program(),
+                                           "screenspace2dTexture");
+    
+    glUniform1i(texLoc3d, 0);
     // Bind the 3d scene FBO and draw it.
     CglRenderTexture main3dSceneTexture = m_3dFBO->m_ColorTexture;
+    glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, main3dSceneTexture.m_gl_Handle );
      
+    glUniform1i(texLoc2d, 1);
     // Bind the 2d screenspace FBO texture and draw on top.
     CglRenderTexture screenSpace2dTexture = m_2dFBO->m_ColorTexture;
+    glActiveTexture( GL_TEXTURE1 );
     glBindTexture( GL_TEXTURE_2D, screenSpace2dTexture.m_gl_Handle ); 
 
+    glDrawArrays( GL_TRIANGLES, 0, 6 );
 
-    // TODO: Draw with composite shader.
+    // FIX: This is the reason why textures in OpenGL suck!!! If we are
+    // not careful, and *don't* set the state back, then the following
+    // rendercommands for the next frame are all messed up due to the wrong
+    // texture unit being set from the previous call 
+    // ( glActiveTexture( GL_TEXTURE1 ); It is very easy to forget
+    // (I just did!). Luckily, we can use bindless
+    // textures in OpenGL which we *definitely* want to use in a
+    // facelift of the renderer.
+    glBindTexture( GL_TEXTURE_2D, 0 );
+    glActiveTexture( GL_TEXTURE0 );
 
     // Render ImGui Elements ontop of everything.
     ImGui::Render();
