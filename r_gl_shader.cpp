@@ -98,7 +98,7 @@ void Shader::InitializeScreenSpace2dUniforms() {
         printf("Not able to bind screenspaceUBO!\n");
 		// TODO: What to do in this case???
 	}
-	glUniformBlockBinding(m_ShaderProgram, m_ScreenspaceUBO, bindingPoint);
+	glUniformBlockBinding(m_ShaderProgram, m_ScreenspaceUniformIndex, bindingPoint);
 
     glGenBuffers(1, &m_ScreenspaceUBO);
     glBindBuffer(GL_UNIFORM_BUFFER, m_ScreenspaceUBO);

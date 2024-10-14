@@ -924,7 +924,7 @@ void GLRender::InitShaders()
         printf("Problems initializing screenspace2d shader!\n");
     }
     //
-    //m_Screenspace2dShader->InitializeScreenSpace2dUniforms(); FIX: Breaks viewProjUniform!
+    m_Screenspace2dShader->InitializeScreenSpace2dUniforms(); // FIX: Breaks viewProjUniform!
 
     m_CompositeShader = new Shader();
     if ( !m_CompositeShader->Load(
