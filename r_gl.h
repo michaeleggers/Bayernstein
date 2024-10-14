@@ -85,11 +85,13 @@ private:
 	Shader*						m_ColliderShader;
 	GLBatch*					m_ColliderBatch;
 
+	Shader*				m_CompositeShader;
 	Shader*		                m_Screenspace2dShader;
 	// Offsets into collider batch
 	GLBatchDrawCmd				m_EllipsoidColliderDrawCmd;
 
 	CglFBO*		                m_2dFBO;
+	CglFBO*				m_3dFBO;
 	int							m_WindowWidth;
 	int							m_WindowHeight;
 

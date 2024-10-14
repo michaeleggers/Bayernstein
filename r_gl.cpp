@@ -245,6 +245,10 @@ bool GLRender::Init(void)
 
     // Create FBOs for 3D/2D Rendering
 
+    // FBO for rendering the 3d scene.
+    m_3dFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
+    // FBO for rendering text and other 2d elements (shapes, sprites, ...)
+    // on top of the 3d scene.
     m_2dFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     return true;
@@ -645,7 +649,6 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     }
     m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
 
-
     //const std::vector<GLBatchDrawCmd>& modelDrawCmds = m_ModelBatch->DrawCmds();
     //for (int i = 0; i < modelDrawCmds.size(); i++) {
     //    glBindTexture(GL_TEXTURE_2D, modelDrawCmds[i].hTexture);
@@ -786,6 +789,23 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
 
 void GLRender::RenderEnd(void)
 {
+    // Composite all the FBOs together
+    m_CompositeShader->Activate();
+
+    // Bind the 3d scene FBO and draw it.
+
+    CglRenderTexture main3dSceneTexture = m_3dFBO->m_ColorTexture;
+    glBindTexture( GL_TEXTURE_2D, main3dSceneTexture.m_gl_Handle );
+     
+    // Bind the 2d screenspace FBO texture and draw on top.
+
+    CglRenderTexture screenSpace2dTexture = m_2dFBO->m_ColorTexture;
+    glBindTexture( GL_TEXTURE_2D, screenSpace2dTexture.m_gl_Handle ); 
+
+
+    // TODO: Draw with composite shader.
+
+    // Render ImGui Elements ontop of everything.
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -852,7 +872,16 @@ void GLRender::InitShaders()
         )) {
         printf("Problems initializing screenspace2d shader!\n");
     }
-    //m_Screenspace2dShader->InitializeScreenSpace2dUniforms();
+    //
+    //m_Screenspace2dShader->InitializeScreenSpace2dUniforms(); FIX: Breaks viewProjUniform!
+
+    m_CompositeShader = new Shader();
+    if (m_CompositeShader->Load(
+        "shaders/composite.vert",
+        "shaders/composite.frag"
+    )) {
+        printf("Problems initializing composite shader!\n");
+    }
 }
 
 void GLRender::SetWindowTitle(char* windowTitle)
