@@ -254,50 +254,58 @@ bool Game::RunFrame(double dt)
     }
 
     // Render stuff
-
+    
+    // ImGUI stuff goes into GL default FBO
     m_Renderer->RenderBegin();
 
     ImGui::ShowDemoWindow();
 
-
-    // Draw Debug Line for player veloctiy vector
-    Line velocityDebugLine = {
-        Vertex(ec.center), Vertex(ec.center + 200.0f * m_Player.velocity)
-    };
-    velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-    velocityDebugLine.b.color = velocityDebugLine.a.color;
-    m_Renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
-
-
-    // Render World geometry
-    m_Renderer->ImDrawTriPlanes(m_World.m_TriPlanes.data(), m_World.m_TriPlanes.size(),
-        true, DRAW_MODE_SOLID);
+    // Main 3D: This is where all the 3D rendering happens (in its own FBO)
+    {
+        m_Renderer->Begin3D();
+        
+        // Draw Debug Line for player veloctiy vector
+        Line velocityDebugLine = {
+            Vertex(ec.center), Vertex(ec.center + 200.0f * m_Player.velocity)
+        };
+        velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+        velocityDebugLine.b.color = velocityDebugLine.a.color;
+        m_Renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
 
 
-    DrawCoordinateSystem(m_Renderer);
+        // Render World geometry
+        m_Renderer->ImDrawTriPlanes(m_World.m_TriPlanes.data(), m_World.m_TriPlanes.size(),
+            true, DRAW_MODE_SOLID);
 
-    HKD_Model* renderModels[1];
-    renderModels[0] = &m_Player;
 
-    m_Renderer->Render(
-        &m_FollowCamera,
-        renderModels, 1);
+        DrawCoordinateSystem(m_Renderer);
 
-    if (collisionInfo.didCollide) {
-        m_Player.debugColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); // red
+        HKD_Model* renderModels[1];
+        renderModels[0] = &m_Player;
+
+        m_Renderer->Render(
+            &m_FollowCamera,
+            renderModels, 1);
+
+        if (collisionInfo.didCollide) {
+            m_Player.debugColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); // red
+            m_Renderer->SetActiveCamera(&m_FollowCamera);
+            m_Renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
+                    //printf("hitpoint: %f, %f, %f\n", collisionInfo.hitPoint.x, collisionInfo.hitPoint.y, collisionInfo.hitPoint.z);
+        } else {
+            m_Player.debugColor = glm::vec4(1.0f); // white
+        }
+
+            // Render Player's ellipsoid collider
         m_Renderer->SetActiveCamera(&m_FollowCamera);
-        m_Renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
-		//printf("hitpoint: %f, %f, %f\n", collisionInfo.hitPoint.x, collisionInfo.hitPoint.y, collisionInfo.hitPoint.z);
-    } else {
-        m_Player.debugColor = glm::vec4(1.0f); // white
+        HKD_Model* playerColliderModel[] = {&m_Player};
+        m_Renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
+
+        m_Renderer->End3D();
     }
 
-	// Render Player's ellipsoid collider
-    m_Renderer->SetActiveCamera(&m_FollowCamera);
-    HKD_Model* playerColliderModel[] = {&m_Player};
-    m_Renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
-
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
+    // 2D stuff also has its own, dedicated FBO!
     {
         m_Renderer->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
        
@@ -310,7 +318,9 @@ bool Game::RunFrame(double dt)
 
         m_Renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
     } 
-    
+   
+    // This call composits 2D and 3D together into the default FBO
+    // (along with ImGUI).
     m_Renderer->RenderEnd(); 
 
 

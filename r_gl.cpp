@@ -494,6 +494,8 @@ GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t 
 
 void GLRender::RenderBegin(void)
 {   
+    // Render into the GL default FBO.
+
     // SDL_GetWindowSize(m_Window, &m_WindowWidth, &m_WindowHeight);
     
     // See: https://wiki.libsdl.org/SDL2/SDL_GL_GetDrawableSize
@@ -508,6 +510,23 @@ void GLRender::RenderBegin(void)
     ImGui_ImplSDL2_NewFrame();
 
     ImGui::NewFrame();
+}
+
+void GLRender::Begin3D(void) {
+    // Render into the 3D scene FBO
+    m_3dFBO->Bind();
+    
+    SDL_GL_GetDrawableSize(m_Window, &m_WindowWidth, &m_WindowHeight);
+    float windowAspect = (float)m_WindowWidth / (float)m_WindowHeight;
+    glViewport(0, 0, m_WindowWidth, m_WindowHeight);
+
+    glClearColor(0.1f, 0.1f, 0.2f, 1.0f); 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+}
+
+void GLRender::End3D(void) {
+    m_3dFBO->Unbind(); // Set state back to GL default FBO.
 }
 
 void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType) 
@@ -673,7 +692,9 @@ void GLRender::Begin2D() {
 
     m_Screenspace2dShader->Activate();
 
-    glm::mat4 ortho = glm::ortho(0.0f, (float)m_2dFBO->m_Width, (float)m_2dFBO->m_Height, 0.0f, -1.0f, 1.0f);
+    glm::mat4 ortho = glm::ortho(0.0f, (float)m_2dFBO->m_Width, 
+                                 (float)m_2dFBO->m_Height, 0.0f, 
+                                 -1.0f, 1.0f);
    
     m_Screenspace2dShader->SetViewProjMatrices( glm::mat4(1.0f), ortho );
 }
@@ -686,7 +707,7 @@ void GLRender::End2D() {
                              GL_UNSIGNED_SHORT, 
                              (GLvoid*)0, 0);
     
-    m_2dFBO->Unbind();
+    m_2dFBO->Unbind(); // Set state back to GL default FBO.
 
     // TODO: (Michael): Unbind bound (font-)textures?
 }
@@ -789,16 +810,18 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
 
 void GLRender::RenderEnd(void)
 {
+
+    // At this point the GL default FBO must be active!
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     // Composite all the FBOs together
     m_CompositeShader->Activate();
 
     // Bind the 3d scene FBO and draw it.
-
     CglRenderTexture main3dSceneTexture = m_3dFBO->m_ColorTexture;
     glBindTexture( GL_TEXTURE_2D, main3dSceneTexture.m_gl_Handle );
      
     // Bind the 2d screenspace FBO texture and draw on top.
-
     CglRenderTexture screenSpace2dTexture = m_2dFBO->m_ColorTexture;
     glBindTexture( GL_TEXTURE_2D, screenSpace2dTexture.m_gl_Handle ); 
 
