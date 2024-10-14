@@ -18,6 +18,6 @@ layout (location = 0) in vec2 in_uv;
 void main() {
 
     vec4 color = texture( glyphsTexture, in_uv );
-    out_color = vec4(color.a, 0.0f, 0.0f, 1.0f);
+    out_color = vec4( color.aaa, 1.0f-color.a );
 }
 

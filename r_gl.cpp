@@ -1,5 +1,7 @@
 #include "r_gl.h"
 
+#include <stdint.h>
+
 #include <SDL.h>
 #include <SDL_egl.h>
 #include <glad/glad.h>
@@ -129,7 +131,7 @@ bool GLRender::Init(void)
         SDL_WINDOWPOS_UNDEFINED,
         WINDOW_WIDTH,
         WINDOW_HEIGHT,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI
+        SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
     );
 
     // BEWARE! These flags must be set AFTER SDL_CreateWindow. Otherwise SDL
@@ -520,7 +522,7 @@ void GLRender::Begin3D(void) {
     float windowAspect = (float)m_WindowWidth / (float)m_WindowHeight;
     glViewport(0, 0, m_WindowWidth, m_WindowHeight);
 
-    glClearColor(0.1f, 0.1f, 0.2f, 1.0f); 
+    glClearColor(0.1f, 0.1f, 0.9f, 1.0f); 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 }
@@ -683,7 +685,7 @@ void GLRender::Begin2D() {
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    glClearColor(0.1f, 0.1f, 0.2f, 1.0f); 
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f); 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     //glDisable(GL_CULL_FACE);
