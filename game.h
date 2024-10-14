@@ -3,37 +3,36 @@
 
 #include <string>
 
-#include "irender.h" 
+#include "CWorld.h"
 #include "camera.h"
 #include "hkd_interface.h"
-#include "CWorld.h"
+#include "irender.h"
 
 class Game {
-public:
-	Game(std::string exePath, hkdInterface* interface, IRender* renderer);
+  public:
+	Game(std::string exePath, hkdInterface *interface, IRender *renderer);
 
 	void Init();
 	bool RunFrame(double dt);
 	void Shutdown();
 
-private:
-	IRender* m_Renderer;
-	hkdInterface* m_Interface;
-	std::string		m_ExePath;
+  private:
+	IRender *m_Renderer;
+	hkdInterface *m_Interface;
+	std::string m_ExePath;
 
-	HKD_Model		m_Player;
+	HKD_Model m_Player;
 
-	Camera			m_Camera;
-	Camera			m_FollowCamera;
+	Camera m_Camera;
+	Camera m_FollowCamera;
 
-	std::vector<HKD_Model*> m_Models;
+	std::vector<HKD_Model *> m_Models;
 
 	Box m_SkyBox{};
-	
-	double			m_AccumTime;
 
-	CWorld			m_World;
+	double m_AccumTime{};
+
+	CWorld m_World;
 };
 
 #endif
-
