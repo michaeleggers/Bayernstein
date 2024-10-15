@@ -17,6 +17,7 @@
 #define SHADER_FEATURE_MODEL_ANIMATION_BIT (0x00000001)
 #define SHADER_FEATURE_MAX				   (0x00000001 << 1)
 
+
 // TODO: (Michael): Change classname to CglShader or something like that to make clear this is GL specific.
 class Shader {
 public:
@@ -37,6 +38,11 @@ public:
 	void InitializeScreenSpace2dUniforms();
 	static void InitGlobalBuffers();
 
+	// Some people would say this must be private. But I find it
+	// a bit dumb to have a getter for this. Just don't assign
+	// a new value to this UBO handle, ok? Thanks!
+	GLuint m_Screenspace2dUBO;
+
 private:
 	bool CompileShader(const std::string& fileName, GLenum shaderType, GLuint& outShader);
 	bool IsCompiled(GLuint shader);
@@ -54,9 +60,9 @@ private:
 	GLuint m_PaletteUBO;
 
 	// 2d screenspace uniforms
-	GLuint m_ScreenspaceUniformIndex;
-	GLuint m_ScreenspaceUBO;
+	GLuint m_Screenspace2dUniformIndex;
 };
 
 
 #endif
+

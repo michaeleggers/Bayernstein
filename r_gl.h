@@ -49,7 +49,7 @@ public:
 	virtual void End3D()   override;
 	virtual void Begin2D() override;
 	virtual void End2D() override;
-	virtual void SetFont(CFont* font) override;
+	virtual void SetFont(CFont* font, glm::vec4 color = glm::vec4(1.0f)) override;
 	virtual void DrawText(const std::string& text, float x, float y) override;
 	virtual void RenderEnd(void)						override;
 	virtual void SetWindowTitle(char* windowTitle) override;

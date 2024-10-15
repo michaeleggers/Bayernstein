@@ -17,7 +17,7 @@ extern std::string g_GameDir;
 
 #define BIND_POINT_VIEW_PROJECTION    0
 #define BIND_POINT_SETTINGS			  1
-#define BIND_POINT_SCREENSPACE_2D	3
+#define BIND_POINT_SCREENSPACE_2D	  3
 static GLuint g_PaletteBindingPoint = 2;
 
 static GLuint   g_ViewProjUBO;
@@ -92,18 +92,18 @@ void Shader::InitializeScreenSpace2dUniforms() {
 	// TODO: (Michael): Uniform Binding happens quite often (see init shader above). Simplify this.
     
 	GLuint bindingPoint = BIND_POINT_SCREENSPACE_2D; 
-	m_ScreenspaceUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "screenspaceUBO");
-	if (m_ScreenspaceUniformIndex == GL_INVALID_INDEX) {
+	m_Screenspace2dUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "screenspaceUBO");
+	if (m_Screenspace2dUniformIndex == GL_INVALID_INDEX) {
 		//printf("SHADER-WARNING: Not able to get index for UBO in shader program.\nShaders:\n %s\n %s\n", vertName.c_str(), fragName.c_str());
         printf("Not able to bind screenspaceUBO!\n");
 		// TODO: What to do in this case???
 	}
-	glUniformBlockBinding(m_ShaderProgram, m_ScreenspaceUniformIndex, bindingPoint);
+	glUniformBlockBinding(m_ShaderProgram, m_Screenspace2dUniformIndex, bindingPoint);
 
-    glGenBuffers(1, &m_ScreenspaceUBO);
-    glBindBuffer(GL_UNIFORM_BUFFER, m_ScreenspaceUBO);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::vec2), nullptr, GL_DYNAMIC_DRAW);
-    glBindBufferRange(GL_UNIFORM_BUFFER, bindingPoint, m_ScreenspaceUBO, 0, sizeof(glm::vec4));
+    glGenBuffers(1, &m_Screenspace2dUBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, m_Screenspace2dUBO);
+    glBufferData( GL_UNIFORM_BUFFER, sizeof(Screenspace2dUB), nullptr, GL_DYNAMIC_DRAW );
+    glBindBufferRange( GL_UNIFORM_BUFFER, bindingPoint, m_Screenspace2dUBO, 0, sizeof(Screenspace2dUB) );
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 

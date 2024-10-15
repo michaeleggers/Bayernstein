@@ -714,9 +714,19 @@ void GLRender::End2D() {
     // TODO: (Michael): Unbind bound (font-)textures?
 }
 
-void GLRender::SetFont(CFont* font) {
+void GLRender::SetFont(CFont* font, glm::vec4 color) {
     ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
     glBindTexture(GL_TEXTURE_2D, (GLuint)fontTexture->m_hGPU);
+   
+    Screenspace2dUB screenspaceShaderData = {
+        color,
+        glm::vec4(1.0f)
+    };
+
+    glBindBuffer( GL_UNIFORM_BUFFER, m_Screenspace2dShader->m_Screenspace2dUBO );
+    glBufferSubData( GL_UNIFORM_BUFFER, 0, sizeof(Screenspace2dUB), (void*)&screenspaceShaderData );
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
     m_CurrentFont = font;
 }
 
@@ -821,7 +831,10 @@ void GLRender::RenderEnd(void)
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
     glDepthFunc(GL_LESS);
-    
+   
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
     // Composite all the FBOs together
     m_CompositeShader->Activate();
 

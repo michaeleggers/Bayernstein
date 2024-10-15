@@ -1,14 +1,15 @@
 #version 460 core
 
-layout (location = 0) in vec3 pos;
-layout (location = 1) in vec2 uv;
-layout (location = 2) in vec3 bc;
-layout (location = 3) in vec3 normal;
-layout (location = 4) in vec4 color;
-layout (location = 5) in uvec4 blendindices;
-layout (location = 6) in vec4 blendweights;
+layout (location = 0) in vec3  in_pos;
+layout (location = 1) in vec2  in_uv;
+layout (location = 2) in vec3  in_bc;
+layout (location = 3) in vec3  in_normal;
+layout (location = 4) in vec4  in_color;
+layout (location = 5) in uvec4 in_blendindices;
+layout (location = 6) in vec4  in_blendweights;
 
 layout (location = 0) out vec2 out_uv;
+layout (location = 1) out vec4 out_color;
 
 vec3 quad[6] = vec3[6](
     // lower left tri
@@ -42,11 +43,13 @@ layout (std140) uniform Settings {
 };
 
 layout (std140) uniform screenspaceUBO {
-    vec4 someData;
+    vec4 color;
+    vec4 size; // x = size, yzw = free (unused for now)
 };
 
 void main() {
-    gl_Position = proj * vec4(pos, 1.0f);
-    out_uv = uv; 
+    gl_Position = proj * vec4(in_pos, 1.0f);
+    out_uv = in_uv; 
+    out_color = color;
 }
 

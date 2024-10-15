@@ -13,5 +13,6 @@ void main() {
     vec4 screen2dColor = texture( screenspace2dTexture, in_uv );
 
     out_Color = vec4( main3dColor.rgb + screen2dColor.rgb, 1.0 );
+    out_Color = screen2dColor;
 }
 
