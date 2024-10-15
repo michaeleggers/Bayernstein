@@ -684,7 +684,10 @@ void GLRender::Begin2D() {
     m_2dFBO->Bind();
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+    
+    // NOTE: Important to have alpha = 0.0f, otherwise we will end up with 
+    // a base framebuffer that is fully opaque. But only the glyphs must 
+    // be opaque after the fragment shader has run!
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f); 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
@@ -833,7 +836,7 @@ void GLRender::RenderEnd(void)
     glDepthFunc(GL_LESS);
    
     glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Composite all the FBOs together
     m_CompositeShader->Activate();

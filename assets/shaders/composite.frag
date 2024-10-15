@@ -12,7 +12,11 @@ void main() {
     vec4 main3dColor = texture( main3dSceneTexture, in_uv );
     vec4 screen2dColor = texture( screenspace2dTexture, in_uv );
 
-    out_Color = vec4( main3dColor.rgb + screen2dColor.rgb, 1.0 );
-    out_Color = screen2dColor;
+    vec3 compositeColor = mix( main3dColor.rgb, screen2dColor.rgb, screen2dColor.a );
+    float alpha = screen2dColor.a + main3dColor.a * (1.0f - screen2dColor.a);
+
+    //out_Color = vec4( main3dColor.rgb + screen2dColor.rgb * screen2dColor.a, 1.0f );
+    //out_Color = screen2dColor;
+    out_Color = vec4( compositeColor, alpha );
 }
 
