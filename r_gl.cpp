@@ -726,7 +726,7 @@ void GLRender::End2D() {
     // TODO: (Michael): Unbind bound (font-)textures?
 }
 
-void GLRender::SetFont(CFont* font, glm::vec4 color) {
+void GLRender::SetFont(CFont* font, float size, glm::vec4 color) {
     
     // A state change means we need to flush the previous Daw-calls!
     Flush2D();
@@ -736,7 +736,7 @@ void GLRender::SetFont(CFont* font, glm::vec4 color) {
    
     Screenspace2dUB screenspaceShaderData = {
         color,
-        glm::vec4(1.0f)
+        glm::vec4(size, 0.0f, 0.0f, 0.0f) // NOTE: yzw unused atm.
     };
 
     glBindBuffer( GL_UNIFORM_BUFFER, m_Screenspace2dShader->m_Screenspace2dUBO );
@@ -759,18 +759,8 @@ void GLRender::Flush2D() {
 void GLRender::DrawText(const std::string& text, float x, float y) {
    
     // TODO: (Michael): Make sure that the correct shader is active.
-    //
-    // Define the quad that the glyphs are rendered with.
-    // The vertices stay the same here. In the shader the
-    // quads get positioned via x, y and glyphscale.
-    Vertex vertices[4] = {
-        { glm::vec3(1.0f, -1.0f, 0.0f) },
-        { glm::vec3(1.0f, 1.0f, 0.0f) },
-        { glm::vec3(-1.0f, 1.0f, 0.0f) },
-        { glm::vec3( -1.0f, -1.0f, 0.0f) }
-    };
-
-    FaceQuad fq = CreateFaceQuadFromVerts(vertices);
+    
+    FaceQuad fq{}; // = CreateFaceQuadFromVerts(vertices);
 
     // go through each character in text and lookup the correct UV.
     int offsetIndices = 0; // TODO: Not needed here!
@@ -783,8 +773,8 @@ void GLRender::DrawText(const std::string& text, float x, float y) {
         if (*c >= 32 && *c < 128) {
 
             uint16_t indices[6] = {
-                0 + iOffset + i*4, iOffset + 1 + i*4, iOffset + 2 + i*4,
-                iOffset + 2 + i*4, iOffset + 3 + i*4, 0 + iOffset + i*4
+                iOffset + 0 + i*4, iOffset + 1 + i*4, iOffset + 2 + i*4,
+                iOffset + 2 + i*4, iOffset + 3 + i*4, iOffset + 0 + i*4
             };
             stbtt_aligned_quad q;
             stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, *c-32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9

@@ -49,7 +49,7 @@ public:
 	virtual void End3D() = 0;
 	virtual void Begin2D() = 0;
 	virtual void End2D() = 0;
-	virtual void SetFont(CFont* font, glm::vec4 color = glm::vec4(1.0f)) = 0; 
+	virtual void SetFont(CFont* font, float size = 1.0f, glm::vec4 color = glm::vec4(1.0f)) = 0; 
 	virtual void DrawText(const std::string& text, float x, float y) = 0; 
 	virtual void Render(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
 	virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
