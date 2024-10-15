@@ -54,6 +54,7 @@ public:
 	virtual void RenderEnd(void)						override;
 	virtual void SetWindowTitle(char* windowTitle) override;
 
+	void Flush2D();
 	void ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType);
 	void InitShaders();
 	void RegisterColliderModels();

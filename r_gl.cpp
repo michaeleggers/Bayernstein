@@ -719,19 +719,18 @@ void GLRender::Begin2D() {
 
 void GLRender::End2D() {
 
-    m_Screenspace2dBatch->Bind();
-    glDrawElementsBaseVertex(GL_TRIANGLES, 
-                             m_Screenspace2dBatch->IndexCount(), 
-                             GL_UNSIGNED_SHORT, 
-                             (GLvoid*)0, 0);
-    
-    m_Screenspace2dBatch->Reset();
-    m_2dFBO->Unbind(); // Set state back to GL default FBO.
-    
+    Flush2D();
+
+    m_2dFBO->Unbind();
+
     // TODO: (Michael): Unbind bound (font-)textures?
 }
 
 void GLRender::SetFont(CFont* font, glm::vec4 color) {
+    
+    // A state change means we need to flush the previous Daw-calls!
+    Flush2D();
+
     ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
     glBindTexture(GL_TEXTURE_2D, (GLuint)fontTexture->m_hGPU);
    
@@ -745,6 +744,16 @@ void GLRender::SetFont(CFont* font, glm::vec4 color) {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     m_CurrentFont = font;
+}
+
+void GLRender::Flush2D() {
+    m_Screenspace2dBatch->Bind();
+    glDrawElementsBaseVertex(GL_TRIANGLES, 
+                             m_Screenspace2dBatch->IndexCount(), 
+                             GL_UNSIGNED_SHORT, 
+                             (GLvoid*)0, 0);
+    
+    m_Screenspace2dBatch->Reset();
 }
 
 void GLRender::DrawText(const std::string& text, float x, float y) {
