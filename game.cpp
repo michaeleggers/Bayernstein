@@ -1,6 +1,7 @@
 #include "game.h"
 
 #include <SDL.h>
+#include <string>
 
 #include "r_itexture.h"
 #include "camera.h"
@@ -41,13 +42,19 @@ void Game::Init()
 	std::vector<TriPlane> worldTris{};
 	MapVersion mapVersion = VALVE_220; // TODO: Change to MAP_TYPE_QUAKE
 	
-	std::string mapData = loadTextFile(m_ExePath + "../assets/maps/room.map"); // TODO: Sane loading of Maps based on path
+    // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
+#ifdef _WIN32
+	std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/room.map"); 
+#elif __LINUX__
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/room.map"); 
+#endif
+
 	size_t inputLength = mapData.length();
 	Map map = getMap(&mapData[0], inputLength, mapVersion);	
 	std::vector<MapPolygon> polysoup = createPolysoup(map);
 	std::vector<MapPolygon> tris = triangulate(polysoup);
 	
-	glm::vec4 triColor = glm::vec4( RandBetween(0.0f, 1.0f), RandBetween(0.0f, 1.0f), RandBetween(0.0f, 1.0f), 1.0f);
+	glm::vec4 triColor = glm::vec4( 0.1f, 0.8f, 1.0f, 1.0f );
 	for (int i = 0; i < tris.size(); i++) {
 		MapPolygon mapPoly = tris[ i ];
 		Vertex A = { glm::vec3(mapPoly.vertices[0].x, mapPoly.vertices[0].y, mapPoly.vertices[0].z) };
