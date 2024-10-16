@@ -769,16 +769,28 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
     uint16_t lastIndex = iOffset;
     const char* c = text.c_str();
     int i = 0;
-    float currentX = x;
+    float xOffset = x;
+    float yOffset = y;
     while ( *c != '\0' ) {
         if (*c >= 32 && *c < 128) {
-
+            
             uint16_t indices[6] = {
                 iOffset + 0 + i*4, iOffset + 1 + i*4, iOffset + 2 + i*4,
                 iOffset + 2 + i*4, iOffset + 3 + i*4, iOffset + 0 + i*4
             };
             stbtt_aligned_quad q;
-            stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, *c-32, &currentX, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
+            
+            // Newbe API
+            //stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, *c-32, &currentX, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
+
+            // More advanced API
+            stbtt_GetPackedQuad(m_CurrentFont->m_PackedCharData, 
+                                512, 512,     
+                                *c - 32,             // character to display
+                                &xOffset, &yOffset,
+                                // pointers to current position in screen pixel space
+                                &q,      // output: quad to draw
+                                1);
 
             float x0 = q.x0 * scale;
             float y0 = q.y0 * scale;
@@ -796,8 +808,6 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
             fq.c.uv = { q.s1, q.t1 };
             fq.d.uv = { q.s0, q.t1 };
             m_Screenspace2dBatch->Add(fq.vertices, 4, indices, 6, &offsetVertices, &offsetIndices, false, DRAW_MODE_SOLID);
-
-            currentX += (q.x1 - q.x0) * scale;
 
             lastIndex = iOffset + 3 + i*4;
            

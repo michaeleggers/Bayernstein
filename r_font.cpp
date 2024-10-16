@@ -49,5 +49,6 @@ CFont::CFont(std::string fontFile, float size) {
 CFont::~CFont() {
     free(m_Cdata);
     free(m_Bitmap);
+    free(m_PackedCharData);
 }
 
