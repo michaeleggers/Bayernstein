@@ -17,8 +17,11 @@ jobs:
       - name: Set up Clang
         uses: egor-tensin/setup-clang@v1
         with:
-          version: 17
+          version: 18.1.8
           platform: x64
+
+      - name: check clang version
+        run: clang --version
 
       - name: Install CMake
         uses: jwlawson/actions-setup-cmake@v2
@@ -56,8 +59,12 @@ jobs:
       - name: Set up Clang
         uses: egor-tensin/setup-clang@v1
         with:
-          version: 17
+          version: 18.1.8
           platform: x64
+
+      - name: check clang version
+        run: clang --version
+
 
       - name: Install CMake
         uses: jwlawson/actions-setup-cmake@v2
