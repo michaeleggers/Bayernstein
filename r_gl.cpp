@@ -726,7 +726,7 @@ void GLRender::End2D() {
     // TODO: (Michael): Unbind bound (font-)textures?
 }
 
-void GLRender::SetFont(CFont* font, float size, glm::vec4 color) {
+void GLRender::SetFont(CFont* font, glm::vec4 color) {
     
     // A state change means we need to flush the previous Daw-calls!
     Flush2D();
@@ -736,7 +736,7 @@ void GLRender::SetFont(CFont* font, float size, glm::vec4 color) {
    
     Screenspace2dUB screenspaceShaderData = {
         color,
-        glm::vec4(size, 0.0f, 0.0f, 0.0f) // NOTE: yzw unused atm.
+        glm::vec4(0.0f) // NOTE: unused at the moment. 
     };
 
     glBindBuffer( GL_UNIFORM_BUFFER, m_Screenspace2dShader->m_Screenspace2dUBO );
@@ -756,7 +756,7 @@ void GLRender::Flush2D() {
     m_Screenspace2dBatch->Reset();
 }
 
-void GLRender::DrawText(const std::string& text, float x, float y) {
+void GLRender::DrawText(const std::string& text, float x, float y, float scale) {
    
     // TODO: (Michael): Make sure that the correct shader is active.
     
@@ -769,6 +769,7 @@ void GLRender::DrawText(const std::string& text, float x, float y) {
     uint16_t lastIndex = iOffset;
     const char* c = text.c_str();
     int i = 0;
+    float currentX = x;
     while ( *c != '\0' ) {
         if (*c >= 32 && *c < 128) {
 
@@ -778,17 +779,25 @@ void GLRender::DrawText(const std::string& text, float x, float y) {
             };
             stbtt_aligned_quad q;
             stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, *c-32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
+
+            float x0 = q.x0 * scale;
+            float y0 = q.y0 * scale;
+            float x1 = q.x1 * scale;
+            float y1 = q.y1 * scale;
+
             // NOTE: For some reason the positional 
             // coordinates in aligned_quad are flipped vertically. Not sure why.
-            fq.a.pos = { q.x0, q.y0, 0.0f };
-            fq.b.pos = { q.x1, q.y0, 0.0f };
-            fq.c.pos = { q.x1, q.y1, 0.0f };
-            fq.d.pos = { q.x0, q.y1, 0.0f };
+            fq.a.pos = { x0, y0, 0.0f };
+            fq.b.pos = { x1, y0, 0.0f };
+            fq.c.pos = { x1, y1, 0.0f };
+            fq.d.pos = { x0, y1, 0.0f };
             fq.a.uv = { q.s0, q.t0 };
             fq.b.uv = { q.s1, q.t0 };
             fq.c.uv = { q.s1, q.t1 };
             fq.d.uv = { q.s0, q.t1 };
             m_Screenspace2dBatch->Add(fq.vertices, 4, indices, 6, &offsetVertices, &offsetIndices, false, DRAW_MODE_SOLID);
+
+            currentX += (q.x1 - q.x0) * scale;
 
             lastIndex = iOffset + 3 + i*4;
            

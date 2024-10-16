@@ -28,6 +28,7 @@ private:
 
 	std::vector<HKD_Model*> m_Models;
 	CFont*                  m_ConsoleFont;
+	CFont*          m_ConsoleFont30;
 	Box			    m_SkyBox{};
 	
 	double			m_AccumTime;
