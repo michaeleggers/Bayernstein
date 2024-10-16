@@ -36,7 +36,7 @@ void Game::Init()
     m_AccumTime = 0.0f;
 
     // Load a font file from disk
-    m_ConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 30);
+    m_ConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 60);
     //m_ConsoleFont30 = new CFont("fonts/HackNerdFont-Bold.ttf", 30); // FIX: Name is registered -> Overwrites prev. Font texture!
     m_Renderer->RegisterFont(m_ConsoleFont);
     //m_Renderer->RegisterFont(m_ConsoleFont30);
@@ -312,17 +312,9 @@ bool Game::RunFrame(double dt)
         m_Renderer->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
        
         //m_Renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
-        m_Renderer->SetFont( m_ConsoleFont, glm::vec4(0.3f, 0.8f, 0.1f, 1.0f) );
-        m_Renderer->DrawText("ABV=", 0.0f, 50.0f, 1.0f);
-        m_Renderer->SetFont( m_ConsoleFont, glm::vec4(0.3f, 0.8f, 0.1f, 1.0f) );
-        m_Renderer->DrawText("FONT RabcdeENDERING `~!@#$%^&*()-_=+", 100.0f, 300.0f);
-        m_Renderer->DrawText("[]{}\\|/?.>,< halloJDIWEjddje efdi JIEf ifje", 200.0f, 500.0f);
+        m_Renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f) );
+        m_Renderer->DrawText("ABV=jJa HallO !@#$%^&*()_+}}{", 10.0f, 100.0f, 1.0f);
         
-        m_Renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 0.1f, 0.1f, 1.0f) );
-        m_Renderer->DrawText("Servus mitanand!", 500.0f, 600.0f, 1.0f); 
-        
-        m_Renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 0.8f, 0.1f, 1.0f) );
-        m_Renderer->DrawText("0123456789", 300.0f, 800.0f);
 
         m_Renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
     } 

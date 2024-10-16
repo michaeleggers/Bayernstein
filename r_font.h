@@ -17,6 +17,8 @@ public:
     stbtt_bakedchar*  m_Cdata; // glyphs
     stbtt_fontinfo    m_FontInfo;
     stbtt_packedchar* m_PackedCharData;
+    int               m_Ascender;
+    int		      m_Descender;
 };
 
 #endif

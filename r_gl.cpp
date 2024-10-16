@@ -6,6 +6,8 @@
 #include <SDL_egl.h>
 #include <glad/glad.h>
 
+#include "stb_truetype.h"
+
 #include "imgui.h"
 #include <imgui/backends/imgui_impl_sdl2.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
@@ -711,7 +713,7 @@ void GLRender::Begin2D() {
     m_Screenspace2dShader->Activate();
 
     glm::mat4 ortho = glm::ortho(0.0f, (float)m_2dFBO->m_Width, 
-                                 (float)m_2dFBO->m_Height, 0.0f, 
+                                 (float)m_2dFBO->m_Height, 0.0f,
                                  -1.0f, 1.0f);
    
     m_Screenspace2dShader->SetViewProjMatrices( glm::mat4(1.0f), ortho );
@@ -771,6 +773,9 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
     int i = 0;
     float xOffset = x;
     float yOffset = y;
+    float ascender = (float)m_CurrentFont->m_Ascender;
+    float descender = glm::abs( (float)m_CurrentFont->m_Descender );
+    float tallestGlyph = ascender + descender;
     while ( *c != '\0' ) {
         if (*c >= 32 && *c < 128) {
             
@@ -797,12 +802,17 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
             float x1 = q.x1 * scale;
             float y1 = q.y1 * scale;
 
+            float rx = q.x0;
+            float ry = q.y0;
+            float w = q.x1 - q.x0;
+            float h = q.y1 - q.y0;
+
             // NOTE: For some reason the positional 
             // coordinates in aligned_quad are flipped vertically. Not sure why.
-            fq.a.pos = { x0, y0, 0.0f };
-            fq.b.pos = { x1, y0, 0.0f };
-            fq.c.pos = { x1, y1, 0.0f };
-            fq.d.pos = { x0, y1, 0.0f };
+            fq.a.pos = { x0, y0 + tallestGlyph, 0.0f };
+            fq.b.pos = { x1, y0 + tallestGlyph, 0.0f };
+            fq.c.pos = { x1, y1 + tallestGlyph, 0.0f };
+            fq.d.pos = { x0, y1 + tallestGlyph, 0.0f };
             fq.a.uv = { q.s0, q.t0 };
             fq.b.uv = { q.s1, q.t0 };
             fq.c.uv = { q.s1, q.t1 };
