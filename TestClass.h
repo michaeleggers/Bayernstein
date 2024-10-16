@@ -8,10 +8,8 @@
 #include <stdio.h>
 
 class TestClass {
-public:
-    TestClass();
+  public:
+	TestClass();
 };
 
-
-
-#endif //TESTCLASS_H
+#endif // TESTCLASS_H
