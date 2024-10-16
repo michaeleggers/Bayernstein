@@ -43,13 +43,13 @@ CFont::CFont(std::string fontFile, float size) {
     stbtt_PackEnd(&pc);
 
     // Get global ascender. The highest vertical offset to the baseline.
-    //float scale = stbtt_ScaleForPixelHeight( &m_FontInfo, 30 );
+    float scale = stbtt_ScaleForPixelHeight( &m_FontInfo, size );
     stbtt_GetFontVMetrics( &m_FontInfo, &m_Ascender, &m_Descender, 0 );
-    m_Ascender /= 64;
-    m_Descender /= 64;
-    printf("Ascender is: %d\n", m_Ascender);
-    printf("Descender is: %d\n", m_Descender);
     
+    // Scale to pixel values
+    m_Ascender = (float)m_Ascender * scale;
+    m_Descender = (float)m_Ascender * scale;
+
     // Cleanup
     free(ttfFileData);
 }

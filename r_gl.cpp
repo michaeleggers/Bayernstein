@@ -775,7 +775,7 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
     float yOffset = y;
     float ascender = (float)m_CurrentFont->m_Ascender;
     float descender = glm::abs( (float)m_CurrentFont->m_Descender );
-    float tallestGlyph = ascender + descender;
+    float tallestGlyph = ascender * scale;
     while ( *c != '\0' ) {
         if (*c >= 32 && *c < 128) {
             
