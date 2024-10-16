@@ -117,7 +117,7 @@ void SubdivTri(Tri* tri, Tri out_tris[], uint32_t numIterations)
 
 // out_verts are expect to hold 6 vertices
 // out_indices are expected to hold 12 indices
-void SubdivIndexedTri(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, Vertex* out_verts, uint16_t* out_indices)
+void SubdivIndexedTri(Vertex* verts, uint32_t numVerts, const uint16_t* indices, uint32_t numIndices, Vertex* out_verts, uint16_t* out_indices)
 {
 	if (numVerts < 3) {
 		return;

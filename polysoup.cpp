@@ -26,7 +26,7 @@
 #define PS_FLOAT_EPSILON	(0.0001)
 
 
-static std::string loadTextFile(std::string file)
+static std::string loadTextFile(const std::string& file)
 {
 	std::ifstream iFileStream;
 	std::stringstream ss;
@@ -42,7 +42,7 @@ static std::string loadTextFile(std::string file)
 	return data;
 }
 
-static void writePolys(std::string fileName, std::vector<MapPolygon> polys)
+static void writePolys(const std::string& fileName, std::vector<MapPolygon> polys)
 {
 	std::ofstream oFileStream;
 	oFileStream.open(fileName, std::ios::binary | std::ios::out);
@@ -59,7 +59,7 @@ static void writePolys(std::string fileName, std::vector<MapPolygon> polys)
 	oFileStream.close();
 }
 
-static void writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys)
+static void writePolysOBJ(const std::string& fileName, std::vector<MapPolygon> polys)
 {
 	std::stringstream faces;
 	std::ofstream oFileStream;
@@ -94,10 +94,10 @@ MapPlane createPlane(glm::f64vec3 p0, glm::f64vec3 p1, glm::f64vec3 p2)
 
 static inline glm::f64vec3 convertVertexToVec3(MapVertex v)
 {
-	return glm::f64vec3(v.x, v.y, v.z);
+	return {v.x, v.y, v.z};
 }
 
-MapPlane convertFaceToPlane(Face face)
+MapPlane convertFaceToPlane(const Face& face)
 {
 	glm::f64vec3 p0 = convertVertexToVec3(face.vertices[0]);
 	glm::f64vec3 p1 = convertVertexToVec3(face.vertices[1]);
@@ -110,8 +110,9 @@ bool intersectThreePlanes(MapPlane p0, MapPlane p1, MapPlane p2, glm::f64vec3* i
 	glm::f64vec3 n0xn1 = glm::cross(p0.n, p1.n);
 	double det = glm::dot(n0xn1, p2.n);
 
-	if (fabs(det) < PS_FLOAT_EPSILON) // Early out if planes do not intersect at single point
+	if (fabs(det) < PS_FLOAT_EPSILON) { // Early out if planes do not intersect at single point
 		return false;
+}
 
 	*intersectionPoint = (
 		-p0.d * (glm::cross(p1.n, p2.n))
@@ -152,8 +153,9 @@ bool isPointInsideBrush(Brush brush, glm::f64vec3 intersectionPoint)
 		MapPlane plane = convertFaceToPlane(face);
 		glm::f64vec3 a = glm::normalize(intersectionPoint - plane.p0);
 		double dotProd = glm::dot(plane.n, a);
-		if (glm::dot(plane.n, intersectionPoint) + plane.d > PS_FLOAT_EPSILON) // FIXME: HOW DO WE GET IT NUMERICALLY GOOD ENOUGH??
+		if (glm::dot(plane.n, intersectionPoint) + plane.d > PS_FLOAT_EPSILON) { // FIXME: HOW DO WE GET IT NUMERICALLY GOOD ENOUGH??
 			return false;
+}
 	}
 
 	return true;
@@ -184,8 +186,9 @@ std::vector<MapPolygon> createPolysoup(Map map)
 						}
 					}
 				}
-				if (poly.vertices.size() > 0)
+				if (!poly.vertices.empty()) {
 					polys.push_back(poly);
+}
 			}
 		}
 	}
@@ -218,8 +221,9 @@ MapPolygon sortVerticesCCW(MapPolygon poly)
 	MapPolygon result;
 	size_t vertCount = poly.vertices.size();
 	
-	if (vertCount < 3)
+	if (vertCount < 3) {
 		return poly; // Actually not a valid polygon
+}
 
 	// Center of poly
 	glm::f64vec3 center(0.0f);

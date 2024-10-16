@@ -88,7 +88,7 @@ void SortDoubles(double* a, double* b) {
 }
 
 #define SortValues(a, b, t) do { \
-        t(&a, &b); \
+        t(&(a), &(b)); \
     } while(0); \
 
 bool GetSmallestRoot(float a, float b, float c, float maxRoot, float* root)
@@ -182,7 +182,8 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri)
     glm::vec3 basePos = ci->basePos;
 	glm::vec3 velocity = ci->velocity;
 
-	if ( glm::dot( glm::normalize(velocity), normal ) >= 0.0f ) return;
+	if ( glm::dot( glm::normalize(velocity), normal ) >= 0.0f ) { return;
+}
     // Signed distance from plane to unit sphere's center
     float sD = glm::dot(normal, basePos - ptOnPlane);
 
@@ -344,7 +345,7 @@ CollisionInfo CollideEllipsoidWithTriPlane(EllipsoidCollider ec, glm::vec3 veloc
     // From now on the Radius of the ellipsoid is 1.0 in X, Y, Z.
 	// Thus, it is a unit sphere.
 	
-	CollisionInfo ci;
+	CollisionInfo ci{};
 	ci.didCollide = false;
 	ci.nearestDistance = 0.0f;
 	ci.velocity = esVelocity;
@@ -370,8 +371,9 @@ CollisionInfo CollideEllipsoidWithTriPlane(EllipsoidCollider ec, glm::vec3 veloc
 // Assume all data in ci to be in ellipsoid space, that is, a unit-sphere. Same goes for esBasePos.
 glm::vec3 CollideEllipsoidWithTriPlaneRec(CollisionInfo* ci, glm::vec3 esBasePos, glm::vec3 velocity, Tri* tris, int triCount, int depth, int maxDepth)
 {
-	if ( depth > maxDepth ) 
+	if ( depth > maxDepth ) { 
 		return esBasePos;
+}
 
 
 	ci->didCollide = false;

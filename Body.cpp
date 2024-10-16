@@ -15,7 +15,7 @@ glm::vec3 Body::GetCenterOfMassModelSpace() const {
     return m_Shape->GetCenterOfMass();
 }
 
-glm::vec3 Body::WorldSpaceToBodySpace(glm::vec3 &pt) {
+glm::vec3 Body::WorldSpaceToBodySpace(glm::vec3 &pt) const {
     glm::vec3 tmp = pt - GetCenterOfMassWorldSpace();
 
     // m_Orientation is the rotation in WorldSpace.
@@ -27,14 +27,15 @@ glm::vec3 Body::WorldSpaceToBodySpace(glm::vec3 &pt) {
     return bodySpace;
 }
 
-glm::vec3 Body::BodySpaceToWorldSpace(glm::vec3 &pt) {
+glm::vec3 Body::BodySpaceToWorldSpace(glm::vec3 &pt) const {
     glm::mat3 r = glm::mat3_cast(m_Orientation);
     glm::vec3 ptWorld = r * pt;
     return GetCenterOfMassWorldSpace() + ptWorld;
 }
 
 void Body::ApplyImpulseLinear(glm::vec3 &impulse) {
-    if (m_InvMass <= 0.0f) return;
+    if (m_InvMass <= 0.0f) { return;
+}
 
     m_LinearVelocity += impulse * m_InvMass;
 }

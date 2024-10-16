@@ -14,7 +14,7 @@ static bool   g_PrevScancodes[SDL_NUM_SCANCODES];
 static Uint8  g_MouseButtons;
 static Uint8  g_PrevMouseButtons;
 
-void HandleInput(void)
+void HandleInput()
 {
     memcpy(g_PrevScancodes, g_Scancodes, SDL_NUM_SCANCODES * sizeof(bool));
     g_PrevMouseButtons = g_MouseButtons;
@@ -83,12 +83,12 @@ bool MousePressed(Uint8 button)
     return g_MouseButtons & SDL_BUTTON(button);
 }
 
-bool RightMouseWentDown(void)
+bool RightMouseWentDown()
 {
     return false;
 }
 
-bool ShouldClose(void)
+bool ShouldClose()
 {    
     return g_Events & SDL_QUIT;
 }

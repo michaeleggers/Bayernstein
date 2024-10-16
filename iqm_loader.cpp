@@ -20,7 +20,7 @@ IQMModel LoadIQM(const char* file)
 	IQMModel result = {};
 	result.filename = g_GameDir + std::string(file);
 
-	HKD_File iqmFile;
+	HKD_File iqmFile{};
 	if (hkd_read_file(result.filename.c_str() , &iqmFile) != HKD_FILE_SUCCESS) {
 		printf("Could not read IQM file: %s\n", file);
 		exit(-1);
@@ -45,15 +45,15 @@ IQMModel LoadIQM(const char* file)
 
 	printf("IQM Header: %s\n", pHeader->magic);
 
-	uint8_t* pPositions = NULL;
+	uint8_t* pPositions = nullptr;
 	uint32_t positionStride = 0;
-	uint8_t* pTexCoords = NULL;
+	uint8_t* pTexCoords = nullptr;
 	uint32_t texCoordStride = 0;
-	uint8_t* pNormals = NULL;
+	uint8_t* pNormals = nullptr;
 	uint32_t normalStride = 0;
-	uint8_t* pBlendIndices = NULL;
+	uint8_t* pBlendIndices = nullptr;
 	uint32_t blendIndexStride = 0;
-	uint8_t* pBlendWeights = NULL;
+	uint8_t* pBlendWeights = nullptr;
 	uint32_t blendWeightStride = 0;
 
 	for (int i = 0; i < pHeader->numVertArrays; i++) {

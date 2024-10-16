@@ -15,8 +15,8 @@ public:
     glm::vec3 GetCenterOfMassWorldSpace() const;
     glm::vec3 GetCenterOfMassModelSpace() const;
 
-    glm::vec3 WorldSpaceToBodySpace(glm::vec3& pt);
-    glm::vec3 BodySpaceToWorldSpace(glm::vec3& pt);
+    glm::vec3 WorldSpaceToBodySpace(glm::vec3& pt) const;
+    glm::vec3 BodySpaceToWorldSpace(glm::vec3& pt) const;
 
     void ApplyImpulseLinear(glm::vec3& impulse);
 

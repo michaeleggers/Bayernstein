@@ -219,7 +219,7 @@ void GLBatch::Kill()
     glDeleteVertexArrays(1, &m_VAO);
 }
 
-uint32_t GLBatch::VertCount()
+uint32_t GLBatch::VertCount() const
 {
     return m_VertOffsetIndex;
 }

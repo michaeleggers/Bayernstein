@@ -31,7 +31,7 @@ void phys_Update(float dt) {
                 continue;
             }
 
-            Contact contact;
+            Contact contact{};
             if (Intersect(bodyA, bodyB, contact)) {
                 phys_ResolveContact(contact);
             }

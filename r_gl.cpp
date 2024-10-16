@@ -27,8 +27,9 @@ const int WINDOW_HEIGHT = 1080;
 void GLAPIENTRY OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
 									const GLchar *message, const void *userParam) {
 	// Ignore non-significant error/warning codes (e.g., vendor-specific warnings)
-	if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+	if (id == 131169 || id == 131185 || id == 131218 || id == 131204) {
 		return;
+}
 
 	printf("--------------------- OpenGL Debug Output ---------------------\n");
 	printf("Message: %s\n", message);
@@ -110,13 +111,13 @@ static void EnableOpenGLDebugCallback() {
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // Make sure OpenGL calls this callback in the same thread
 
 	// Register the debug callback function
-	glDebugMessageCallback(OpenGLDebugCallback, NULL);
+	glDebugMessageCallback(OpenGLDebugCallback, nullptr);
 
 	// You can optionally control which types of messages are logged
-	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 }
 
-void GLRender::Shutdown(void) {
+void GLRender::Shutdown() {
 	// Deinit ImGui
 
 	ImGui_ImplOpenGL3_Shutdown();
@@ -141,7 +142,7 @@ void GLRender::Shutdown(void) {
 	delete m_ImPrimitivesShader;
 }
 
-bool GLRender::Init(void) {
+bool GLRender::Init() {
 	SDL_Init(SDL_INIT_EVERYTHING);
 
 	// From 2.0.18: Enable native IME.
@@ -197,7 +198,7 @@ bool GLRender::Init(void) {
 
 	// Check that the window was successfully created
 
-	if (m_Window == NULL) {
+	if (m_Window == nullptr) {
 		// In the case that the window could not be made...
 		SDL_Log("Could not create window: %s\n", SDL_GetError());
 		return false;
@@ -304,10 +305,11 @@ void GLRender::RegisterColliderModels() {
 std::vector<ITexture *> GLRender::ModelTextures(int gpuModelHandle) {
 	std::vector<ITexture *> results;
 
-	if (gpuModelHandle >= m_Models.size())
+	if (gpuModelHandle >= m_Models.size()) {
 		return results;
-	else if (gpuModelHandle < 0)
+	} else if (gpuModelHandle < 0) {
 		return results;
+}
 
 	GLModel *model = &m_Models[gpuModelHandle];
 	for (auto &mesh : model->meshes) {
@@ -317,9 +319,10 @@ std::vector<ITexture *> GLRender::ModelTextures(int gpuModelHandle) {
 	return results;
 }
 
-std::vector<ITexture *> GLRender::Textures(void) {
+std::vector<ITexture *> GLRender::Textures() {
 	std::vector<ITexture *> result;
-	for (auto &elem : m_TextureManager->m_NameToTexture) {
+	result.reserve(m_TextureManager->m_NameToTexture.size());
+for (auto &elem : m_TextureManager->m_NameToTexture) {
 		result.push_back(elem.second);
 	}
 
@@ -456,7 +459,7 @@ GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch *batch, Vertex *verts, uint32_t 
 	return drawCmd;
 }
 
-void GLRender::RenderBegin(void) {
+void GLRender::RenderBegin() {
 	// SDL_GetWindowSize(m_Window, &m_WindowWidth, &m_WindowHeight);
 
 	// See: https://wiki.libsdl.org/SDL2/SDL_GL_GetDrawableSize
@@ -640,7 +643,7 @@ void GLRender::RenderColliders(Camera *camera, HKD_Model **models, uint32_t numM
 	}
 }
 
-void GLRender::RenderEnd(void) {
+void GLRender::RenderEnd() {
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

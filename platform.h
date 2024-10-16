@@ -18,7 +18,7 @@ struct HKD_File
 	uint32_t   size;
 };
 
-std::string			hkd_GetExePath(void);
+std::string			hkd_GetExePath();
 HKD_FileStatus      hkd_read_file(char const* filename, HKD_File* out_File);
 HKD_FileStatus      hkd_destroy_file(HKD_File* file);
 

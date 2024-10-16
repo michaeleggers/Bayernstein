@@ -21,15 +21,15 @@ class Shader {
 public:
 	
 	bool Load(const std::string& vertName, const std::string& fragName, uint32_t shaderFeatureBits = 0x0);
-	void Unload();
-	void Activate();
+	void Unload() const;
+	void Activate() const;
 	GLuint Program() const;
 
 	void SetViewProjMatrices(glm::mat4 view, glm::mat4 proj);
-	void SetMatrixPalette(glm::mat4* palette, uint32_t numMatrices);
-	void SetMat4(std::string uniformName, glm::mat4 mat4);
-	void SetVec3(std::string uniformName, glm::vec3 vec3);
-	void SetVec4(std::string uniformName, glm::vec4 vec4);
+	void SetMatrixPalette(glm::mat4* palette, uint32_t numMatrices) const;
+	void SetMat4(const std::string& uniformName, glm::mat4 mat4) const;
+	void SetVec3(const std::string& uniformName, glm::vec3 vec3) const;
+	void SetVec4(const std::string& uniformName, glm::vec4 vec4) const;
 	void DrawWireframe(uint32_t yesOrNo);
 	void SetShaderSettingBits(uint32_t bits);
 	void ResetShaderSettingBits(uint32_t bits);
@@ -39,7 +39,7 @@ public:
 private:
 	bool CompileShader(const std::string& fileName, GLenum shaderType, GLuint& outShader);
 	bool IsCompiled(GLuint shader);
-	bool IsValidProgram();
+	bool IsValidProgram() const;
 
 	GLuint m_VertexShader;
 	GLuint m_FragmentShader;

@@ -16,7 +16,7 @@
 
 class GLBatch {
 public:
-	GLBatch(uint32_t maxVerts);
+	explicit GLBatch(uint32_t maxVerts);
 	GLBatch(uint32_t maxVerts, uint32_t maxIndices);
 
 	int				Add(Tri* tris, uint32_t numTris, bool cullFace = true, DrawMode drawMode = DRAW_MODE_SOLID);
@@ -26,20 +26,20 @@ public:
 	void			Reset();
 	void			Kill();
 
-	uint32_t		VertCount();
+	uint32_t		VertCount() const;
 	
 private:
 	GeometryType m_GeometryType;
 
-	GLuint		m_VBO, m_VAO;
-	GLuint      m_iVBO;
+	GLuint		m_VBO{}, m_VAO{};
+	GLuint      m_iVBO{};
 
 	uint32_t	m_MaxVerts;
 	uint32_t	m_NumVerts;
 	int			m_VertOffsetIndex;	
 
 	uint32_t	m_MaxIndices;
-	uint32_t	m_NumIndices;
+	uint32_t	m_NumIndices{};
 	int			m_IndexOffsetIndex;
 };
 

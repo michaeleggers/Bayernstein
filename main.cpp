@@ -44,7 +44,7 @@ static bool         g_GameWantsToQuit;
 std::string         g_GameDir;
 
 
-static bool QuitGameFunc(void) {
+static bool QuitGameFunc() {
     g_GameWantsToQuit = true;
     return true;
 }

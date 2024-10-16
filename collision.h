@@ -31,7 +31,7 @@ void CollideUnitSphereWithPlane(CollisionInfo* ci, glm::vec3 pos, Plane p, Tri t
 glm::vec3 CollideEllipsoidWithTriPlaneRec(CollisionInfo* ci, glm::vec3 esBasePos, glm::vec3 velocity, Tri* tris, int triCount, int depth, int maxDepth);
 CollisionInfo CollideEllipsoidWithTriPlane(EllipsoidCollider ec, glm::vec3 velocity, glm::vec3 gravity, TriPlane* triPlanes, int triPlaneCount);
 Tri  TriToEllipsoidSpace(Tri tri, glm::mat3 toESPace);
-Plane CreatePlaneFromTri(Tri tri);
+
 bool IsPointInTriangle(glm::vec3 point, Tri tri, glm::vec3 triNormal);
 
 #endif //COLLISION_H

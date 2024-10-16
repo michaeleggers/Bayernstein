@@ -145,7 +145,7 @@ void TransformTri(Tri* tri, glm::mat4 modelMatrix);
 void SetTriColor(Tri* tri, glm::vec4 color);
 void SubdivTri(Tri* tri, Tri out_tris[]);
 void SubdivTri(Tri* tri, Tri out_tris[], uint32_t numIterations);
-void SubdivIndexedTri(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, Vertex* out_verts, uint16_t* out_indices);
+void SubdivIndexedTri(Vertex* verts, uint32_t numVerts, const uint16_t* indices, uint32_t numIndices, Vertex* out_verts, uint16_t* out_indices);
 void SubdivIndexedTri(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, Vertex* out_verts, uint16_t* out_indices, uint32_t numIterations);
 Quad CreateQuad(glm::vec3 pos = glm::vec3(0, 0, 0), float width = 1.0f, float height = 1.0f, glm::vec4 color = glm::vec4(1, 0, 0, 1));
 void RotateQuad(Quad* quad, glm::vec3 axis, float angle);

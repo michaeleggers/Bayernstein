@@ -36,7 +36,8 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName, uint
 	glAttachShader(m_ShaderProgram, m_FragmentShader);
 	glLinkProgram(m_ShaderProgram);
 
-	if (!IsValidProgram()) return false;
+	if (!IsValidProgram()) { return false;
+}
 
 	// Uniforms
 
@@ -87,14 +88,14 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName, uint
 	return true;
 }
 
-void Shader::Unload()
+void Shader::Unload() const
 {
 	glDeleteProgram(m_ShaderProgram);
 	glDeleteShader(m_VertexShader);
 	glDeleteShader(m_FragmentShader);
 }
 
-void Shader::Activate()
+void Shader::Activate() const
 {
 	glUseProgram(m_ShaderProgram);
 }
@@ -112,26 +113,26 @@ void Shader::SetViewProjMatrices(glm::mat4 view, glm::mat4 proj)
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void Shader::SetMatrixPalette(glm::mat4* palette, uint32_t numMatrices)
+void Shader::SetMatrixPalette(glm::mat4* palette, uint32_t numMatrices) const
 {
 	glBindBuffer(GL_UNIFORM_BUFFER, m_PaletteUBO);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, numMatrices*sizeof(glm::mat4), palette);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void Shader::SetMat4(std::string uniformName, glm::mat4 mat4)
+void Shader::SetMat4(const std::string& uniformName, glm::mat4 mat4) const
 {
 	GLuint loc = glGetUniformLocation(m_ShaderProgram, uniformName.c_str());
 	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&mat4);
 }
 
-void Shader::SetVec3(std::string uniformName, glm::vec3 vec3)
+void Shader::SetVec3(const std::string& uniformName, glm::vec3 vec3) const
 {
 	GLuint loc = glGetUniformLocation(m_ShaderProgram, uniformName.c_str());
 	glUniform3fv(loc, 1, (float*)&vec3);
 }
 
-void Shader::SetVec4(std::string uniformName, glm::vec4 vec4) {
+void Shader::SetVec4(const std::string& uniformName, glm::vec4 vec4) const {
 	GLuint loc = glGetUniformLocation(m_ShaderProgram, uniformName.c_str());
 	glUniform4fv(loc, 1, (float*)&vec4);
 }
@@ -149,7 +150,7 @@ void Shader::DrawWireframe(uint32_t yesOrNo)
 void Shader::SetShaderSettingBits(uint32_t bits)
 {
 	g_SettingsBits |= bits;
-	ShaderSettings settings;
+	ShaderSettings settings{};
 	settings.u32bitMasks.x = g_SettingsBits;
 	glBindBuffer(GL_UNIFORM_BUFFER, g_SettingsUBO);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, 4 * sizeof(uint32_t), (void*)&settings);
@@ -186,7 +187,7 @@ void Shader::InitGlobalBuffers()
 bool Shader::CompileShader(const std::string& fileName, GLenum shaderType, GLuint& outShader)
 {
 	std::string shaderFilePath = g_GameDir + fileName;
-	HKD_File shaderCode;
+	HKD_File shaderCode{};
 	if (hkd_read_file(shaderFilePath.c_str(), &shaderCode) != HKD_FILE_SUCCESS) {
 		printf("Could not read file: %s!\n", fileName.c_str());
 		return false;
@@ -220,7 +221,7 @@ bool Shader::IsCompiled(GLuint shader)
 	return true;
 }
 
-bool Shader::IsValidProgram()
+bool Shader::IsValidProgram() const
 {
 	GLint status;
 	glGetProgramiv(m_ShaderProgram, GL_LINK_STATUS, &status);
