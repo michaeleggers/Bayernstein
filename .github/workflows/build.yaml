@@ -15,13 +15,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Clang
-        uses: egor-tensin/setup-clang@v1
-        with:
-          version: 18.1.8
-          platform: x64
+        run: wget -qO- https://apt.llvm.org/llvm.sh | bash -s -- 18
 
       - name: check clang version
-        run: clang --version
+        run: clang-18 --version
 
       - name: Install CMake
         uses: jwlawson/actions-setup-cmake@v2
@@ -41,8 +38,8 @@ jobs:
         run: |
           cmake -B build \
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-          -DCMAKE_C_COMPILER=$(which clang) \
-          -DCMAKE_CXX_COMPILER=$(which clang++) \
+          -DCMAKE_C_COMPILER=$(which clang-18) \
+          -DCMAKE_CXX_COMPILER=$(which clang++-18) \
           -DCMAKE_BUILD_TYPE=Release \
       - name: Run clang-tidy
         run: ./tools/lint.sh
@@ -57,14 +54,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up Clang
-        uses: egor-tensin/setup-clang@v1
-        with:
-          version: 18.1.8
-          platform: x64
+        run: wget -qO- https://apt.llvm.org/llvm.sh | bash -s -- 18
 
       - name: check clang version
-        run: clang --version
-
+        run: clang-18 --version
 
       - name: Install CMake
         uses: jwlawson/actions-setup-cmake@v2
@@ -83,8 +76,8 @@ jobs:
         shell: bash
         run: |
           cmake ${{ github.workspace }} \
-          -DCMAKE_C_COMPILER=$(which clang) \
-          -DCMAKE_CXX_COMPILER=$(which clang++) \
+          -DCMAKE_C_COMPILER=$(which clang-18) \
+          -DCMAKE_CXX_COMPILER=$(which clang++-18) \
           -DCMAKE_BUILD_TYPE=Release \
           -B ${{ github.workspace }}/build/Release
         working-directory: ${{ github.workspace }}/build
