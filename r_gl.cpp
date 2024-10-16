@@ -778,7 +778,7 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
                 iOffset + 2 + i*4, iOffset + 3 + i*4, iOffset + 0 + i*4
             };
             stbtt_aligned_quad q;
-            stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, *c-32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
+            stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, *c-32, &currentX, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
 
             float x0 = q.x0 * scale;
             float y0 = q.y0 * scale;
