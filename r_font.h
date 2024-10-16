@@ -9,13 +9,15 @@
 class CFont {
 
 public:
-    CFont(std::string fontFile, int size);
+    CFont(std::string fontFile, float size);
     ~CFont();
 
-    std::string     m_Filename;
-    unsigned char*  m_Bitmap;
-    stbtt_bakedchar* m_Cdata; // glyphs
-    stbtt_fontinfo  m_FontInfo;
+    std::string	      m_Filename;
+    unsigned char*    m_Bitmap;
+    stbtt_bakedchar*  m_Cdata; // glyphs
+    stbtt_fontinfo    m_FontInfo;
+    stbtt_packedchar* m_PackedCharData;
 };
 
 #endif
+
