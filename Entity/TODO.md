@@ -1,0 +1,2 @@
+- Time Handling -> clock
+- is everything an entity? player,enenmy, items, guns, doors etc?

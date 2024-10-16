@@ -5,11 +5,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(HKD VERSION 1.0)
 
-macro(ADD_SRC_HEADER_FILES )
+macro(ADD_SRC_HEADER_FILES)
 	file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false RELATIVE
-		${CMAKE_CURRENT_SOURCE_DIR} *.c??)
+			${CMAKE_CURRENT_SOURCE_DIR} *.c??)
 	file(GLOB_RECURSE HEADER_FILES LIST_DIRECTORIES false RELATIVE
-		${CMAKE_CURRENT_SOURCE_DIR} *.h)    
+			${CMAKE_CURRENT_SOURCE_DIR} *.h)
 endmacro()
 
 # ADD_SRC_HEADER_FILES()
@@ -19,10 +19,10 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 
 # set(CMAKE_CXX_FLAGS "-fms-extensions")
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	message("############## Using Clang compiler ##############")
 	add_compile_options(-fms-extensions)
-endif()
+endif ()
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -44,11 +44,11 @@ if (WIN32)
 			collision.cpp
 			collision.h
 	)
-endif()
+endif ()
 
 if (MSVC)
-    add_compile_options(/W4)
-endif()
+	add_compile_options(/W4)
+endif ()
 
 add_subdirectory(dependencies/SDL2.28.4)
 
@@ -59,72 +59,71 @@ add_subdirectory(dependencies/SDL2.28.4)
 # )	
 
 
-
 add_executable(Game
 
-	main.cpp
-	hkd_interface.h
-	platform.h
-	platform.cpp
-	input.h
-	input.cpp
-	iqm_loader.h
-	iqm_loader.cpp
-	irender.h
-	r_itexture.h
-	r_gl.h
-	r_gl.cpp
-	r_model.h
-	r_model.cpp
-	r_common.h
-	r_common.cpp
-	r_gl_batch.h
-	r_gl_batch.cpp
-	r_gl_shader.h
-	r_gl_shader.cpp
-	r_gl_texture.h
-	r_gl_texture.cpp
-	r_gl_texture_mgr.h
-	r_gl_texture_mgr.cpp
-	camera.h
-	camera.cpp
-	physics.h
-	physics.cpp
-	utils.h
-	utils.cpp
-	polysoup.h
-	polysoup.cpp
-	map_parser.h
-	game.h
-	game.cpp	
+		main.cpp
+		hkd_interface.h
+		platform.h
+		platform.cpp
+		input.h
+		input.cpp
+		iqm_loader.h
+		iqm_loader.cpp
+		irender.h
+		r_itexture.h
+		r_gl.h
+		r_gl.cpp
+		r_model.h
+		r_model.cpp
+		r_common.h
+		r_common.cpp
+		r_gl_batch.h
+		r_gl_batch.cpp
+		r_gl_shader.h
+		r_gl_shader.cpp
+		r_gl_texture.h
+		r_gl_texture.cpp
+		r_gl_texture_mgr.h
+		r_gl_texture_mgr.cpp
+		camera.h
+		camera.cpp
+		physics.h
+		physics.cpp
+		utils.h
+		utils.cpp
+		polysoup.h
+		polysoup.cpp
+		map_parser.h
+		game.h
+		game.cpp
 
-    dependencies/stb_image.h
-	dependencies/stb_image_write.h
+		dependencies/stb_image.h
+		dependencies/stb_image_write.h
 
-	dependencies/imgui/imgui.h
-	dependencies/imgui/imconfig.h
-	dependencies/imgui/imgui_internal.h
-	dependencies/imgui/imstb_rectpack.h
-	dependencies/imgui/imstb_textedit.h
-	dependencies/imgui/imstb_truetype.h
+		dependencies/imgui/imgui.h
+		dependencies/imgui/imconfig.h
+		dependencies/imgui/imgui_internal.h
+		dependencies/imgui/imstb_rectpack.h
+		dependencies/imgui/imstb_textedit.h
+		dependencies/imgui/imstb_truetype.h
 
-	dependencies/imgui/misc/cpp/imgui_stdlib.h
-	dependencies/imgui/misc/cpp/imgui_stdlib.cpp
+		dependencies/imgui/misc/cpp/imgui_stdlib.h
+		dependencies/imgui/misc/cpp/imgui_stdlib.cpp
 
-	dependencies/imgui/imgui.cpp
-	dependencies/imgui/imgui_draw.cpp
-	dependencies/imgui/imgui_tables.cpp
-	dependencies/imgui/imgui_widgets.cpp
-	dependencies/imgui/imgui_demo.cpp
+		dependencies/imgui/imgui.cpp
+		dependencies/imgui/imgui_draw.cpp
+		dependencies/imgui/imgui_tables.cpp
+		dependencies/imgui/imgui_widgets.cpp
+		dependencies/imgui/imgui_demo.cpp
 
-	dependencies/imgui/backends/imgui_impl_opengl3.cpp
-	dependencies/imgui/backends/imgui_impl_opengl3.h
-	dependencies/imgui/backends/imgui_impl_sdl2.cpp
-	dependencies/imgui/backends/imgui_impl_sdl2.h
+		dependencies/imgui/backends/imgui_impl_opengl3.cpp
+		dependencies/imgui/backends/imgui_impl_opengl3.h
+		dependencies/imgui/backends/imgui_impl_sdl2.cpp
+		dependencies/imgui/backends/imgui_impl_sdl2.h
 
-	dependencies/glad/src/glad.c
+		dependencies/glad/src/glad.c
 
-	${RESOURCE_FILES}
+		${RESOURCE_FILES}
 		TestClass.cpp
 		TestClass.h
 		Shape.cpp
@@ -139,20 +138,36 @@ add_executable(Game
 		CWorld.h
 		collision.cpp
 		collision.h
+		Entity/Message/MessageDispatcher.cpp
+		Entity/Message/MessageDispatcher.h
+		Entity/Message/Telegram.h
+		Entity/BaseGameEntity.cpp
+		Entity/BaseGameEntity.h
+		Entity/FSM/StateMachine.h
+		Entity/FSM/State.h
+		Entity/EntityManager.cpp
+		Entity/EntityManager.h
+		Entity/Player/PlayerStates.cpp
+		Entity/Player/PlayerStates.h
+		Entity/Player/Player.cpp
+		Entity/Player/Player.h
+		Entity/Enemy/EnemyStates.cpp
+		Entity/Enemy/EnemyStates.h
+		Entity/Enemy/Enemy.cpp
+		Entity/Enemy/Enemy.h
 )
 
 target_include_directories(Game
-    PUBLIC dependencies
-	PUBLIC dependencies/glad/include
-	PUBLIC dependencies/imgui
-	PUBLIC dependencies/SDL2.28.4/include	
+		PUBLIC dependencies
+		PUBLIC dependencies/glad/include
+		PUBLIC dependencies/imgui
+		PUBLIC dependencies/SDL2.28.4/include
 )
 
 
-
 target_link_libraries(Game PUBLIC
-    SDL2
-    SDL2main
+		SDL2
+		SDL2main
 )
 
 # if (WIN32)
