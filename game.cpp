@@ -27,7 +27,7 @@ static int hkd_Clamp(int val, int clamp) {
 	return val;
 }
 
-Game::Game(std::string exePath, hkdInterface *interface, IRender *renderer) {
+Game::Game(std::string exePath, hkdInterface* interface, IRender* renderer) {
 	m_Renderer = renderer;
 	m_Interface = interface;
 	m_ExePath = exePath;
@@ -50,7 +50,7 @@ void Game::Init() {
 
 	glm::vec4 triColor = glm::vec4(RandBetween(0.0f, 1.0f), RandBetween(0.0f, 1.0f), RandBetween(0.0f, 1.0f), 1.0f);
 	for (int i = 0; i < tris.size(); i++) {
-		const MapPolygon &mapPoly = tris[i];
+		const MapPolygon& mapPoly = tris[i];
 		Vertex A = {glm::vec3(mapPoly.vertices[0].x, mapPoly.vertices[0].y, mapPoly.vertices[0].z)};
 		Vertex B = {glm::vec3(mapPoly.vertices[1].x, mapPoly.vertices[1].y, mapPoly.vertices[1].z)};
 		Vertex C = {glm::vec3(mapPoly.vertices[2].x, mapPoly.vertices[2].y, mapPoly.vertices[2].z)};
@@ -81,7 +81,7 @@ void Game::Init() {
 	m_Player.position = glm::vec3(-48.0f, 352.0f, 48.0f);
 	m_Player.scale = glm::vec3(22.0f);
 	for (int i = 0; i < m_Player.animations.size(); i++) {
-		EllipsoidCollider *ec = &m_Player.ellipsoidColliders[i];
+		EllipsoidCollider* ec = &m_Player.ellipsoidColliders[i];
 		ec->radiusA *= m_Player.scale.x;
 		ec->radiusB *= m_Player.scale.z;
 		ec->center = m_Player.position + glm::vec3(0.0f, 0.0f, ec->radiusB);
@@ -108,7 +108,7 @@ void Game::Init() {
 	m_FollowCamera.RotateAroundUp(180.0f);
 }
 
-static void DrawCoordinateSystem(IRender *renderer) {
+static void DrawCoordinateSystem(IRender* renderer) {
 	Vertex origin = {glm::vec3(0.0f)};
 	origin.color = glm::vec4(1.0f);
 	Vertex X = {glm::vec3(100.0f, 0.0f, 0.0f)};
@@ -263,7 +263,7 @@ bool Game::RunFrame(double dt) {
 
 	DrawCoordinateSystem(m_Renderer);
 
-	HKD_Model *renderModels[1];
+	HKD_Model* renderModels[1];
 	renderModels[0] = &m_Player;
 
 	m_Renderer->Render(&m_FollowCamera, renderModels, 1);
@@ -280,7 +280,7 @@ bool Game::RunFrame(double dt) {
 
 	// Render Player's ellipsoid collider
 	m_Renderer->SetActiveCamera(&m_FollowCamera);
-	HKD_Model *playerColliderModel[] = {&m_Player};
+	HKD_Model* playerColliderModel[] = {&m_Player};
 	m_Renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
 
 	m_Renderer->RenderEnd();

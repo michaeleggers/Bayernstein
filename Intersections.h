@@ -19,10 +19,10 @@ struct Contact {
 	float separationDistance; // + when non-penetrating, - otherwise
 	float timeOfImpact;
 
-	Body *bodyA;
-	Body *bodyB;
+	Body* bodyA;
+	Body* bodyB;
 };
 
-bool Intersect(Body *bodyA, Body *bodyB, Contact &contact);
+bool Intersect(Body* bodyA, Body* bodyB, Contact& contact);
 
 #endif

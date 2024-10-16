@@ -48,7 +48,7 @@ static bool QuitGameFunc() {
 	return true;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
 
 #if WIN32
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 		g_GameDir += std::string(argv[1]);
 	}
 
-	IRender *renderer = new GLRender();
+	IRender* renderer = new GLRender();
 	if (!renderer->Init()) {
 		SDL_Log("Could not initialize renderer.\n");
 		return -1;

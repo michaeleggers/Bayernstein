@@ -10,7 +10,7 @@
 #include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/gtx/quaternion.hpp"
 
-void RotateTri(Tri *tri, glm::vec3 axis, float angle) {
+void RotateTri(Tri* tri, glm::vec3 axis, float angle) {
 	glm::quat q = glm::angleAxis(glm::radians(angle), glm::normalize(axis));
 	tri->a.pos = glm::rotate(q, tri->a.pos);
 	tri->b.pos = glm::rotate(q, tri->b.pos);
@@ -20,25 +20,25 @@ void RotateTri(Tri *tri, glm::vec3 axis, float angle) {
 	tri->c.normal = glm::rotate(q, tri->c.normal);
 }
 
-void TranslateTri(Tri *tri, glm::vec3 t) {
+void TranslateTri(Tri* tri, glm::vec3 t) {
 	tri->a.pos += t;
 	tri->b.pos += t;
 	tri->c.pos += t;
 }
 
-void TransformTri(Tri *tri, glm::mat4 modelMatrix) {
+void TransformTri(Tri* tri, glm::mat4 modelMatrix) {
 	tri->a.pos = modelMatrix * glm::vec4(tri->a.pos, 1.0f);
 	tri->b.pos = modelMatrix * glm::vec4(tri->b.pos, 1.0f);
 	tri->c.pos = modelMatrix * glm::vec4(tri->c.pos, 1.0f);
 }
 
-void SetTriColor(Tri *tri, glm::vec4 color) {
+void SetTriColor(Tri* tri, glm::vec4 color) {
 	tri->a.color = color;
 	tri->b.color = color;
 	tri->c.color = color;
 }
 
-void SubdivTri(Tri *tri, Tri out_tris[]) {
+void SubdivTri(Tri* tri, Tri out_tris[]) {
 	glm::vec3 A = tri->a.pos;
 	glm::vec3 B = tri->b.pos;
 	glm::vec3 C = tri->c.pos;
@@ -86,7 +86,7 @@ void SubdivTri(Tri *tri, Tri out_tris[]) {
 	out_tris[3] = t4;
 }
 
-void SubdivTri(Tri *tri, Tri out_tris[], uint32_t numIterations) {
+void SubdivTri(Tri* tri, Tri out_tris[], uint32_t numIterations) {
 	// each iteration makes one tri to four tris -> 4 tris -> 16 tris and so on.
 	// so each iteration will multiply the current tricount by 4.
 
@@ -94,7 +94,7 @@ void SubdivTri(Tri *tri, Tri out_tris[], uint32_t numIterations) {
 
 	// SubdivTri(tri, out_tris);
 
-	Tri *tmp = (Tri *)malloc(maxTris * sizeof(Tri));
+	Tri* tmp = (Tri*)malloc(maxTris * sizeof(Tri));
 	out_tris[0] = *tri;
 	tmp[0] = *tri;
 	uint32_t numTris = 1;
@@ -110,8 +110,8 @@ void SubdivTri(Tri *tri, Tri out_tris[], uint32_t numIterations) {
 
 // out_verts are expect to hold 6 vertices
 // out_indices are expected to hold 12 indices
-void SubdivIndexedTri(Vertex *verts, uint32_t numVerts, const uint16_t *indices, uint32_t numIndices, Vertex *out_verts,
-					  uint16_t *out_indices) {
+void SubdivIndexedTri(Vertex* verts, uint32_t numVerts, const uint16_t* indices, uint32_t numIndices, Vertex* out_verts,
+					  uint16_t* out_indices) {
 	if (numVerts < 3) {
 		return;
 	}
@@ -166,8 +166,8 @@ void SubdivIndexedTri(Vertex *verts, uint32_t numVerts, const uint16_t *indices,
 	out_verts[5] = {.pos = mBC};
 }
 
-void SubdivIndexedTri(Vertex *verts, uint32_t numVerts, uint16_t *indices, uint32_t numIndices, Vertex *out_verts,
-					  uint16_t *out_indices, uint32_t numIterations) {
+void SubdivIndexedTri(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, Vertex* out_verts,
+					  uint16_t* out_indices, uint32_t numIterations) {
 	// TODO: implement
 }
 
@@ -211,19 +211,19 @@ Quad CreateQuad(glm::vec3 pos, float width, float height, glm::vec4 color) {
 	return result;
 }
 
-void RotateQuad(Quad *quad, glm::vec3 axis, float angle) {
+void RotateQuad(Quad* quad, glm::vec3 axis, float angle) {
 	RotateTri(&quad->a, axis, angle);
 	RotateTri(&quad->b, axis, angle);
 }
 
-void TranslateQuad(Quad *quad, glm::vec3 t) {
+void TranslateQuad(Quad* quad, glm::vec3 t) {
 	TranslateTri(&quad->a, t);
 	TranslateTri(&quad->b, t);
 }
 
-FaceQuad QuadToFace(Quad *quad) { return {quad->tl, quad->tr, quad->br, quad->bl}; }
+FaceQuad QuadToFace(Quad* quad) { return {quad->tl, quad->tr, quad->br, quad->bl}; }
 
-void SetQuadColor(Quad *quad, glm::vec4 color) {
+void SetQuadColor(Quad* quad, glm::vec4 color) {
 	SetTriColor(&quad->a, color);
 	SetTriColor(&quad->b, color);
 }
@@ -310,7 +310,7 @@ MeshEllipsoid CreateUnitEllipsoid(uint32_t numSubdivs) {
 
 	// Project box vertices onto unit sphere
 	for (int i = 0; i < unitNbox.tris.size(); i++) {
-		Tri *tri = &unitNbox.tris[i];
+		Tri* tri = &unitNbox.tris[i];
 		tri->a.pos = glm::normalize(tri->a.pos);
 		tri->b.pos = glm::normalize(tri->b.pos);
 		tri->c.pos = glm::normalize(tri->c.pos);
@@ -324,25 +324,25 @@ MeshEllipsoid CreateUnitEllipsoid(uint32_t numSubdivs) {
 	return result;
 }
 
-void TranslateBox(Box *box, glm::vec3 t) {
+void TranslateBox(Box* box, glm::vec3 t) {
 	for (int i = 0; i < 6; i++) {
-		Quad *q = &box->quads[i];
+		Quad* q = &box->quads[i];
 		TranslateQuad(q, t);
 	}
 }
 
-void TransformBox(Box *box, glm::mat4 modelMatrix) {
+void TransformBox(Box* box, glm::mat4 modelMatrix) {
 	for (int i = 0; i < 6; i++) {
-		Quad *q = &box->quads[i];
+		Quad* q = &box->quads[i];
 		for (int j = 0; j < 2; j++) {
 			TransformTri(&q->tris[j], modelMatrix);
 		}
 	}
 }
 
-void TransformEllipsoid(Ellipsoid *ellipsoid, glm::mat4 modelMatrix) {
+void TransformEllipsoid(Ellipsoid* ellipsoid, glm::mat4 modelMatrix) {
 	for (int i = 0; i < ELLIPSOID_VERT_COUNT; i++) {
-		Vertex *v = &ellipsoid->vertices[i];
+		Vertex* v = &ellipsoid->vertices[i];
 		v->pos = modelMatrix * glm::vec4(v->pos, 1.0f);
 	}
 }

@@ -14,7 +14,7 @@
 
 extern std::string g_GameDir;
 
-IQMModel LoadIQM(const char *file) {
+IQMModel LoadIQM(const char* file) {
 	IQMModel result = {};
 	result.filename = g_GameDir + std::string(file);
 
@@ -24,39 +24,39 @@ IQMModel LoadIQM(const char *file) {
 		exit(-1);
 	}
 
-	uint8_t *iqmData = (uint8_t *)iqmFile.data;
+	uint8_t* iqmData = (uint8_t*)iqmFile.data;
 
-	IQMHeader *pHeader = (IQMHeader *)iqmFile.data;
-	char *pText = (char *)(iqmData + pHeader->ofsText);
-	IQMMeshData *pMeshes = (IQMMeshData *)(iqmData + pHeader->ofsMeshes);
-	IQMVertArray *pVertArrays = (IQMVertArray *)(iqmData + pHeader->ofsVertArrays);
+	IQMHeader* pHeader = (IQMHeader*)iqmFile.data;
+	char* pText = (char*)(iqmData + pHeader->ofsText);
+	IQMMeshData* pMeshes = (IQMMeshData*)(iqmData + pHeader->ofsMeshes);
+	IQMVertArray* pVertArrays = (IQMVertArray*)(iqmData + pHeader->ofsVertArrays);
 	uint32_t numVertices = pHeader->numVertices;
-	IQMTri *pTris = (IQMTri *)(iqmData + pHeader->ofsTris);
-	uint8_t *pAdjacency = (uint8_t *)(iqmData + pHeader->ofsAdjacency);
-	IQMJoint *pJoints = (IQMJoint *)(iqmData + pHeader->ofsJoints);
-	IQMPose *pPoses = (IQMPose *)(iqmData + pHeader->ofsPoses);
-	IQMAnim *pAnims = (IQMAnim *)(iqmData + pHeader->ofsAnims);
-	uint16_t *pFrames = (uint16_t *)(iqmData + pHeader->ofsFrames);
-	IQMBounds *pBounds = (IQMBounds *)(iqmData + pHeader->ofsBounds);
-	char *pComments = (char *)(iqmData + pHeader->ofsComment);
-	uint8_t *pExt = (uint8_t *)(iqmData + pHeader->ofsExt);
+	IQMTri* pTris = (IQMTri*)(iqmData + pHeader->ofsTris);
+	uint8_t* pAdjacency = (uint8_t*)(iqmData + pHeader->ofsAdjacency);
+	IQMJoint* pJoints = (IQMJoint*)(iqmData + pHeader->ofsJoints);
+	IQMPose* pPoses = (IQMPose*)(iqmData + pHeader->ofsPoses);
+	IQMAnim* pAnims = (IQMAnim*)(iqmData + pHeader->ofsAnims);
+	uint16_t* pFrames = (uint16_t*)(iqmData + pHeader->ofsFrames);
+	IQMBounds* pBounds = (IQMBounds*)(iqmData + pHeader->ofsBounds);
+	char* pComments = (char*)(iqmData + pHeader->ofsComment);
+	uint8_t* pExt = (uint8_t*)(iqmData + pHeader->ofsExt);
 
 	printf("IQM Header: %s\n", pHeader->magic);
 
-	uint8_t *pPositions = nullptr;
+	uint8_t* pPositions = nullptr;
 	uint32_t positionStride = 0;
-	uint8_t *pTexCoords = nullptr;
+	uint8_t* pTexCoords = nullptr;
 	uint32_t texCoordStride = 0;
-	uint8_t *pNormals = nullptr;
+	uint8_t* pNormals = nullptr;
 	uint32_t normalStride = 0;
-	uint8_t *pBlendIndices = nullptr;
+	uint8_t* pBlendIndices = nullptr;
 	uint32_t blendIndexStride = 0;
-	uint8_t *pBlendWeights = nullptr;
+	uint8_t* pBlendWeights = nullptr;
 	uint32_t blendWeightStride = 0;
 
 	for (int i = 0; i < pHeader->numVertArrays; i++) {
 
-		IQMVertArray *pVertArray = pVertArrays + i;
+		IQMVertArray* pVertArray = pVertArrays + i;
 		IQMVertArrayType type = static_cast<IQMVertArrayType>(pVertArray->type);
 		IQMVertArrayFormat format = static_cast<IQMVertArrayFormat>(pVertArray->format);
 		uint32_t numComponents = pVertArray->size;
@@ -109,7 +109,7 @@ IQMModel LoadIQM(const char *file) {
 	}
 
 	for (int i = 0; i < pHeader->numMeshes; i++) {
-		IQMMeshData *iqmMesh = pMeshes + i;
+		IQMMeshData* iqmMesh = pMeshes + i;
 		uint32_t firstTri = iqmMesh->firstTri;
 		uint32_t numTris = iqmMesh->numTris;
 		IQMMesh mesh = {};
@@ -119,7 +119,7 @@ IQMModel LoadIQM(const char *file) {
 		mesh.numTris = numTris;
 
 		for (int j = 0; j < numTris; j++) {
-			IQMTri *tri = pTris + firstTri + j;
+			IQMTri* tri = pTris + firstTri + j;
 
 			IQMVertex vertA = {};
 			IQMVertex vertB = {};
@@ -159,7 +159,7 @@ IQMModel LoadIQM(const char *file) {
 	std::vector<glm::mat4> invBindPoses;
 	bindPoses.resize(pHeader->numJoints);
 	for (int i = 0; i < pHeader->numJoints; i++) {
-		IQMJoint *pJoint = pJoints + i;
+		IQMJoint* pJoint = pJoints + i;
 		printf("Joint %d name: %s\n", i, pText + pJoint->name);
 
 		glm::vec3 translation = glm::vec3(pJoint->translate[0], pJoint->translate[1], pJoint->translate[2]);
@@ -188,10 +188,10 @@ IQMModel LoadIQM(const char *file) {
 	result.invBindPoses = invBindPoses;
 
 	std::vector<Pose> poses;
-	uint16_t *pFramedata = pFrames;
+	uint16_t* pFramedata = pFrames;
 	for (int i = 0; i < pHeader->numFrames; i++) {
 
-		IQMBounds *pBound = pBounds + i;
+		IQMBounds* pBound = pBounds + i;
 
 		Frame frame = {};
 		frame.bbmins = glm::vec3(pBound->bbmins[0], pBound->bbmins[1], pBound->bbmins[2]);
@@ -201,7 +201,7 @@ IQMModel LoadIQM(const char *file) {
 		result.frameData.push_back(frame);
 
 		for (int j = 0; j < pHeader->numPoses; j++) { // A pose is actually the local matrix for a joint
-			IQMPose *pPose = pPoses + j;
+			IQMPose* pPose = pPoses + j;
 			glm::vec3 translation = {};
 			glm::vec3 scale = {};
 			glm::quat rotation = {};
@@ -273,7 +273,7 @@ IQMModel LoadIQM(const char *file) {
 	result.numFrames = pHeader->numFrames;
 
 	for (int i = 0; i < pHeader->numAnims; i++) {
-		IQMAnim *pAnim = pAnims + i;
+		IQMAnim* pAnim = pAnims + i;
 
 		printf("Animation %d, name: %s, first frame: %d, last frame: %d, num frames: %d\n", i, pText + pAnim->name,
 			   pAnim->firstFrame, pAnim->firstFrame + pAnim->numFrames, pAnim->numFrames);
@@ -292,4 +292,4 @@ IQMModel LoadIQM(const char *file) {
 	return result;
 }
 
-void UnloadIQM(IQMModel *iqmModel) {}
+void UnloadIQM(IQMModel* iqmModel) {}

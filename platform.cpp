@@ -23,7 +23,7 @@ std::string hkd_GetExePath(void) {
 	}
 
 	// strip actual name of the .exe
-	char *last = out_buffer + len;
+	char* last = out_buffer + len;
 	while (*last != '\\') {
 		*last-- = '\0';
 	}
@@ -44,7 +44,7 @@ std::string hkd_GetExePath(void) {
 		// TOOO: handle error
 	}
 	int len = strlen(out_buffer);
-	char *slash = out_buffer + len + 1;
+	char* slash = out_buffer + len + 1;
 	while (len >= 0 && *slash != '/') {
 		slash--;
 		len--;
@@ -62,14 +62,14 @@ std::string hkd_GetExePath(void) {
 std::string hkd_GetExePath() {
 	char out_buffer[256];
 	int buffer_size = 256;
-	char *basePath = SDL_GetBasePath();
+	char* basePath = SDL_GetBasePath();
 
 	return std::string(basePath);
 }
 #endif
 
-HKD_FileStatus hkd_read_file(char const *filename, HKD_File *out_File) {
-	FILE *file = nullptr;
+HKD_FileStatus hkd_read_file(char const* filename, HKD_File* out_File) {
+	FILE* file = nullptr;
 	file = fopen(filename, "rb");
 	if (file == nullptr) {
 		printf("Failed to open file: %s\n", filename);
@@ -78,7 +78,7 @@ HKD_FileStatus hkd_read_file(char const *filename, HKD_File *out_File) {
 	fseek(file, 0L, SEEK_END);
 	out_File->size = ftell(file);
 	fseek(file, 0L, SEEK_SET);
-	out_File->data = (uint8_t *)malloc(out_File->size + 1);
+	out_File->data = (uint8_t*)malloc(out_File->size + 1);
 	fread(out_File->data, sizeof(uint8_t), out_File->size, file);
 	fclose(file);
 
@@ -87,7 +87,7 @@ HKD_FileStatus hkd_read_file(char const *filename, HKD_File *out_File) {
 	return HKD_FILE_SUCCESS;
 }
 
-HKD_FileStatus hkd_destroy_file(HKD_File *file) {
+HKD_FileStatus hkd_destroy_file(HKD_File* file) {
 	if (file->data != nullptr) {
 		free(file->data);
 		file->size = 0;

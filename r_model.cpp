@@ -33,11 +33,11 @@ Vertex IQMVertexToVertex(IQMVertex iqmVert, glm::vec3 bc) {
 	return vertex;
 }
 
-HKD_Model CreateModelFromIQM(IQMModel *model) {
+HKD_Model CreateModelFromIQM(IQMModel* model) {
 	HKD_Model result = {};
 
 	for (int i = 0; i < model->meshes.size(); i++) {
-		IQMMesh *iqmMesh = &model->meshes[i];
+		IQMMesh* iqmMesh = &model->meshes[i];
 		HKD_Mesh mesh = {};
 		if (iqmMesh->material.empty()) {
 			mesh.isTextured = false;
@@ -136,7 +136,7 @@ static glm::mat4 InterpolatePoses(Pose a, Pose b, float pct) {
 	return transMat * rotMat * scaleMat;
 }
 
-void UpdateModel(HKD_Model *model, float dt) {
+void UpdateModel(HKD_Model* model, float dt) {
 	if (model->type == HKD_MODEL_TYPE_ANIMATED) {
 		uint32_t currentFrame = model->currentFrame;
 		uint32_t animIdx = model->currentAnimIdx;
@@ -226,11 +226,11 @@ void UpdateModel(HKD_Model *model, float dt) {
 	}
 }
 
-void ApplyPhysicsToModel(HKD_Model *model) {}
+void ApplyPhysicsToModel(HKD_Model* model) {}
 
-void UpdateRigidBodyTransform(HKD_Model *model) { model->position = model->body.m_Position; }
+void UpdateRigidBodyTransform(HKD_Model* model) { model->position = model->body.m_Position; }
 
-glm::mat4 CreateModelMatrix(HKD_Model *model) {
+glm::mat4 CreateModelMatrix(HKD_Model* model) {
 	glm::mat4 transMat = glm::translate(glm::mat4(1.0f), model->position);
 	glm::mat4 rotMat = glm::toMat4(model->orientation);
 	glm::mat4 scaleMat = glm::scale(glm::mat4(1.0f), model->scale);
@@ -246,7 +246,7 @@ glm::mat4 CreateModelMatrix(glm::vec3 pos, glm::quat orientation, glm::vec3 scal
 	return T * R * S;
 }
 
-void SetAnimState(HKD_Model *model, AnimState animState) {
+void SetAnimState(HKD_Model* model, AnimState animState) {
 	AnimState currentState = (AnimState)model->currentAnimIdx;
 
 	if (currentState == animState) {

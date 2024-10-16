@@ -10,15 +10,15 @@
 
 class Game {
   public:
-	Game(std::string exePath, hkdInterface *interface, IRender *renderer);
+	Game(std::string exePath, hkdInterface* interface, IRender* renderer);
 
 	void Init();
 	bool RunFrame(double dt);
 	void Shutdown();
 
   private:
-	IRender *m_Renderer;
-	hkdInterface *m_Interface;
+	IRender* m_Renderer;
+	hkdInterface* m_Interface;
 	std::string m_ExePath;
 
 	HKD_Model m_Player;
@@ -26,7 +26,7 @@ class Game {
 	Camera m_Camera;
 	Camera m_FollowCamera;
 
-	std::vector<HKD_Model *> m_Models;
+	std::vector<HKD_Model*> m_Models;
 
 	Box m_SkyBox{};
 

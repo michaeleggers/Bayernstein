@@ -152,7 +152,7 @@ struct IQMBounds {
 	float radius;	// spherical radius
 };
 
-IQMModel LoadIQM(const char *file);
-void UnloadIQM(IQMModel *iqmModel);
+IQMModel LoadIQM(const char* file);
+void UnloadIQM(IQMModel* iqmModel);
 
 #endif

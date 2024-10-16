@@ -66,7 +66,7 @@ bool IsPointInTriangle(glm::vec3 point, Tri tri, glm::vec3 triNormal) {
 
 // If a > b then the two will be swapped.
 // Otherwise, nothing happens.
-void SortFloats(float *a, float *b) {
+void SortFloats(float* a, float* b) {
 	if (*a > *b) {
 		float tmp = *a;
 		*a = *b;
@@ -74,7 +74,7 @@ void SortFloats(float *a, float *b) {
 	}
 }
 
-void SortDoubles(double *a, double *b) {
+void SortDoubles(double* a, double* b) {
 	if (*a > *b) {
 		double tmp = *a;
 		*a = *b;
@@ -87,7 +87,7 @@ void SortDoubles(double *a, double *b) {
 		t(&(a), &(b));                                                                                                 \
 	} while (0);
 
-bool GetSmallestRoot(float a, float b, float c, float maxRoot, float *root) {
+bool GetSmallestRoot(float a, float b, float c, float maxRoot, float* root) {
 	float D = b * b - 4.0f * a * c;
 	if (D < 0.0f) {
 		return false;
@@ -137,7 +137,7 @@ bool IsPointOnLineSegment(glm::vec3 p, glm::vec3 a, glm::vec3 b) {
 }
 
 bool CheckSweptSphereVsLinesegment(glm::vec3 p0, glm::vec3 p1, glm::vec3 sphereBase, glm::vec3 velocity, float maxT,
-								   float *out_newT, glm::vec3 *out_hitPoint) {
+								   float* out_newT, glm::vec3* out_hitPoint) {
 	// Check sphere against tri's line-segments
 
 	glm::vec3 e = p1 - p0;
@@ -166,7 +166,7 @@ bool CheckSweptSphereVsLinesegment(glm::vec3 p0, glm::vec3 p1, glm::vec3 sphereB
 	return false;
 }
 
-void CollideUnitSphereWithTri(CollisionInfo *ci, Tri tri) {
+void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri) {
 	Plane p = CreatePlaneFromTri(tri);
 	glm::vec3 normal = p.normal;
 	glm::vec3 ptOnPlane = p.d * normal;
@@ -321,7 +321,7 @@ void CollideUnitSphereWithTri(CollisionInfo *ci, Tri tri) {
 }
 
 CollisionInfo CollideEllipsoidWithTriPlane(EllipsoidCollider ec, glm::vec3 velocity, glm::vec3 gravity,
-										   TriPlane *triPlanes, int triPlaneCount) {
+										   TriPlane* triPlanes, int triPlaneCount) {
 	// Convert to ellipsoid space
 	std::vector<Tri> tris;
 	for (int i = 0; i < triPlaneCount; i++) {
@@ -360,7 +360,7 @@ CollisionInfo CollideEllipsoidWithTriPlane(EllipsoidCollider ec, glm::vec3 veloc
 }
 
 // Assume all data in ci to be in ellipsoid space, that is, a unit-sphere. Same goes for esBasePos.
-glm::vec3 CollideEllipsoidWithTriPlaneRec(CollisionInfo *ci, glm::vec3 esBasePos, glm::vec3 velocity, Tri *tris,
+glm::vec3 CollideEllipsoidWithTriPlaneRec(CollisionInfo* ci, glm::vec3 esBasePos, glm::vec3 velocity, Tri* tris,
 										  int triCount, int depth, int maxDepth) {
 	if (depth > maxDepth) {
 		return esBasePos;

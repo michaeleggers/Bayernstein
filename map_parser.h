@@ -80,7 +80,7 @@ struct Map {
 	std::vector<Entity> entities;
 };
 
-Map getMap(char *mapData, size_t mapDataLength, MapVersion mapVersion = QUAKE);
+Map getMap(char* mapData, size_t mapDataLength, MapVersion mapVersion = QUAKE);
 
 /*
  *
@@ -94,7 +94,7 @@ static int g_InputLength;
 static int g_LineNo;
 static MapVersion g_MapVersion;
 
-static int advanceCursor(int *pos, int steps) {
+static int advanceCursor(int* pos, int steps) {
 	int advanceable = g_InputLength - *pos + steps;
 	if (advanceable > 0) {
 		*pos += advanceable;
@@ -103,8 +103,8 @@ static int advanceCursor(int *pos, int steps) {
 	return 0;
 }
 
-static void advanceToNextNonWhitespace(char *c, int *pos) {
-	char *cur = c + *pos;
+static void advanceToNextNonWhitespace(char* c, int* pos) {
+	char* cur = c + *pos;
 	while (isspace(*cur)) {
 		if (*cur == '\n') { // TODO: Get Env-Newline?
 			g_LineNo++;
@@ -114,15 +114,15 @@ static void advanceToNextNonWhitespace(char *c, int *pos) {
 	}
 }
 
-static void advanceToNextWhitespaceOrLinebreak(char **c, int *pos) {
+static void advanceToNextWhitespaceOrLinebreak(char** c, int* pos) {
 	while (!isspace(**c) && **c != '\n' && **c != '\r') {
 		*c += 1;
 		*pos += 1;
 	}
 }
 
-static void skipLinebreaks(char *c, int *pos) {
-	char *cur = c + *pos;
+static void skipLinebreaks(char* c, int* pos) {
+	char* cur = c + *pos;
 	while (*cur == '\r' || *cur == '\n') {
 		cur++;
 		*pos += 1;
@@ -130,8 +130,8 @@ static void skipLinebreaks(char *c, int *pos) {
 	}
 }
 
-static void advanceToNextLine(char *c, int *pos) {
-	char *cur = c + *pos;
+static void advanceToNextLine(char* c, int* pos) {
+	char* cur = c + *pos;
 	while (*cur != '\r' && *cur != '\n') {
 		cur++;
 		*pos += 1;
@@ -147,8 +147,8 @@ static void advanceToNextLine(char *c, int *pos) {
 	}
 }
 
-static std::string getString(char *c, int *pos) {
-	char *cur = c + *pos;
+static std::string getString(char* c, int* pos) {
+	char* cur = c + *pos;
 
 	cur++;
 	*pos += 1; // advance over "
@@ -163,7 +163,7 @@ static std::string getString(char *c, int *pos) {
 	return result;
 }
 
-static TokenType getToken(char *c, int *pos) {
+static TokenType getToken(char* c, int* pos) {
 	if (*pos >= g_InputLength) {
 		return END_OF_INPUT;
 	}
@@ -178,7 +178,7 @@ static TokenType getToken(char *c, int *pos) {
 		advanceToNextNonWhitespace(c, pos);
 	}
 
-	char *cur = c + *pos;
+	char* cur = c + *pos;
 
 	if (*cur == '{') {
 		result = LBRACE;
@@ -250,8 +250,8 @@ static bool check(TokenType got, TokenType expected) {
 	return true;
 }
 
-static double parseNumber(char *c, int *pos) {
-	char *cur = c + *pos;
+static double parseNumber(char* c, int* pos) {
+	char* cur = c + *pos;
 	std::string number = "";
 	while (*cur == '-' || *cur >= '0' && *cur <= '9' || *cur == '.') {
 		number += *cur;
@@ -261,7 +261,7 @@ static double parseNumber(char *c, int *pos) {
 	return atof(number.c_str());
 }
 
-static MapVertex getVertex(char *c, int *pos) {
+static MapVertex getVertex(char* c, int* pos) {
 	MapVertex v = {};
 	std::vector<double> values;
 	for (int i = 0; i < 3; i++) { // A face is defined by 3 vertices.
@@ -277,8 +277,8 @@ static MapVertex getVertex(char *c, int *pos) {
 	return v;
 }
 
-static double getNumber(char *c, int *pos) {
-	char *cur = c + *pos;
+static double getNumber(char* c, int* pos) {
+	char* cur = c + *pos;
 	std::string number = "";
 	while (*cur == '-' || *cur >= '0' && *cur <= '9' || *cur == '.' || *cur == 'e') {
 		number += *cur;
@@ -288,11 +288,11 @@ static double getNumber(char *c, int *pos) {
 	return atof(number.c_str());
 }
 
-static std::string getTextureName(char *c, int *pos) {
-	char *cur = c + *pos;
+static std::string getTextureName(char* c, int* pos) {
+	char* cur = c + *pos;
 
 	std::string textureName = "";
-	char *end = cur;
+	char* end = cur;
 	advanceToNextWhitespaceOrLinebreak(&end, pos);
 	while (cur != end) {
 		textureName += *cur;
@@ -302,7 +302,7 @@ static std::string getTextureName(char *c, int *pos) {
 	return textureName;
 }
 
-static Property getProperty(char *c, int *pos) {
+static Property getProperty(char* c, int* pos) {
 	check(getToken(c, pos), STRING);
 	std::string key = getString(c, pos);
 	check(getToken(c, pos), STRING);
@@ -314,7 +314,7 @@ static Property getProperty(char *c, int *pos) {
 /*
  * TODO: getFace and getFaceValve220 are fairly similar. Try to compress this?
  */
-static Face getFace(char *c, int *pos) {
+static Face getFace(char* c, int* pos) {
 	Face face = {};
 
 	/* 3 Vertices defining the plane */
@@ -355,7 +355,7 @@ static Face getFace(char *c, int *pos) {
 	 *
 	 * TODO: Figure out what those 3 extra numbers are in Q2.
 	 */
-	int *currentPos = pos; // save original (eg. do a lookahead)
+	int* currentPos = pos; // save original (eg. do a lookahead)
 	if (getToken(c, currentPos) == NUMBER) {
 
 		getToken(c, pos); // if the lookahead returned a NUMBER get the token again to advance pos.
@@ -369,7 +369,7 @@ static Face getFace(char *c, int *pos) {
 	return face;
 }
 
-static Face getFaceValve220(char *c, int *pos) {
+static Face getFaceValve220(char* c, int* pos) {
 	Face face = {};
 
 	/* 3 Vertices defining the plane */
@@ -427,7 +427,7 @@ static Face getFaceValve220(char *c, int *pos) {
 	return face;
 }
 
-static Brush getBrush(char *c, int *pos) {
+static Brush getBrush(char* c, int* pos) {
 	Brush brush = {};
 
 	while (getToken(c, pos) == LPAREN) {
@@ -449,7 +449,7 @@ static Brush getBrush(char *c, int *pos) {
 /**
  * I assume that the grammar does not allow a brush *before* a property within an entity!
  */
-static Entity getEntity(char *c, int *pos) {
+static Entity getEntity(char* c, int* pos) {
 	Entity e = {};
 
 	while (getToken(c, pos) == STRING) {
@@ -469,7 +469,7 @@ static Entity getEntity(char *c, int *pos) {
 	return e;
 }
 
-Map getMap(char *mapData, size_t mapDataLength, MapVersion mapVersion) {
+Map getMap(char* mapData, size_t mapDataLength, MapVersion mapVersion) {
 	Map map = {};
 
 	g_InputLength = mapDataLength;

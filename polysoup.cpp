@@ -24,7 +24,7 @@
 
 #define PS_FLOAT_EPSILON (0.0001)
 
-static std::string loadTextFile(const std::string &file) {
+static std::string loadTextFile(const std::string& file) {
 	std::ifstream iFileStream;
 	std::stringstream ss;
 	iFileStream.open(file, std::ifstream::in);
@@ -39,23 +39,23 @@ static std::string loadTextFile(const std::string &file) {
 	return data;
 }
 
-static void writePolys(const std::string &fileName, std::vector<MapPolygon> polys) {
+static void writePolys(const std::string& fileName, std::vector<MapPolygon> polys) {
 	std::ofstream oFileStream;
 	oFileStream.open(fileName, std::ios::binary | std::ios::out);
 
 	uint32_t numPolys = polys.size();
-	oFileStream.write((char *)&numPolys, sizeof(uint32_t));
+	oFileStream.write((char*)&numPolys, sizeof(uint32_t));
 
 	for (auto p = polys.begin(); p != polys.end(); p++) {
 		for (auto v = p->vertices.begin(); v != p->vertices.end(); v++) {
-			oFileStream.write((char *)&*v, sizeof(glm::f64vec3));
+			oFileStream.write((char*)&*v, sizeof(glm::f64vec3));
 		}
 	}
 
 	oFileStream.close();
 }
 
-static void writePolysOBJ(const std::string &fileName, std::vector<MapPolygon> polys) {
+static void writePolysOBJ(const std::string& fileName, std::vector<MapPolygon> polys) {
 	std::stringstream faces;
 	std::ofstream oFileStream;
 	oFileStream.open(fileName, std::ios::out);
@@ -89,14 +89,14 @@ MapPlane createPlane(glm::f64vec3 p0, glm::f64vec3 p1, glm::f64vec3 p2) {
 
 static inline glm::f64vec3 convertVertexToVec3(MapVertex v) { return {v.x, v.y, v.z}; }
 
-MapPlane convertFaceToPlane(const Face &face) {
+MapPlane convertFaceToPlane(const Face& face) {
 	glm::f64vec3 p0 = convertVertexToVec3(face.vertices[0]);
 	glm::f64vec3 p1 = convertVertexToVec3(face.vertices[1]);
 	glm::f64vec3 p2 = convertVertexToVec3(face.vertices[2]);
 	return createPlane(p0, p1, p2);
 }
 
-bool intersectThreePlanes(MapPlane p0, MapPlane p1, MapPlane p2, glm::f64vec3 *intersectionPoint) {
+bool intersectThreePlanes(MapPlane p0, MapPlane p1, MapPlane p2, glm::f64vec3* intersectionPoint) {
 	glm::f64vec3 n0xn1 = glm::cross(p0.n, p1.n);
 	double det = glm::dot(n0xn1, p2.n);
 
@@ -110,12 +110,12 @@ bool intersectThreePlanes(MapPlane p0, MapPlane p1, MapPlane p2, glm::f64vec3 *i
 	return true;
 }
 
-bool vec3IsEqual(const glm::f64vec3 &lhs, const glm::f64vec3 &rhs) {
+bool vec3IsEqual(const glm::f64vec3& lhs, const glm::f64vec3& rhs) {
 	return (glm::abs(lhs.x - rhs.x) < PS_FLOAT_EPSILON && glm::abs(lhs.y - rhs.y) < PS_FLOAT_EPSILON &&
 			glm::abs(lhs.z - rhs.z) < PS_FLOAT_EPSILON);
 }
 
-void insertVertexToPolygon(glm::f64vec3 v, MapPolygon *p) {
+void insertVertexToPolygon(glm::f64vec3 v, MapPolygon* p) {
 	auto v0 = p->vertices.begin();
 	if (v0 == p->vertices.end()) {
 		p->vertices.push_back(v);

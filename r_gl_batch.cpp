@@ -43,25 +43,25 @@ GLBatch::GLBatch(uint32_t maxVerts) {
 	// Input assembly for vertex shader
 
 	glEnableVertexAttribArray(0); // pos
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)VERT_POS_OFFSET);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_POS_OFFSET);
 
 	glEnableVertexAttribArray(1); // uv
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)VERT_UV_OFFSET);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_UV_OFFSET);
 
 	glEnableVertexAttribArray(2); // bc
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)VERT_BC_OFFSET);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BC_OFFSET);
 
 	glEnableVertexAttribArray(3); // normal
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)VERT_NORMAL_OFFSET);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_NORMAL_OFFSET);
 
 	glEnableVertexAttribArray(4); // color
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)VERT_COLOR_OFFSET);
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_COLOR_OFFSET);
 
 	glEnableVertexAttribArray(5); // blendindices
-	glVertexAttribIPointer(5, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void *)VERT_BLENDINDICES_OFFSET);
+	glVertexAttribIPointer(5, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void*)VERT_BLENDINDICES_OFFSET);
 
 	glEnableVertexAttribArray(6); // blendweights
-	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)VERT_BLENDWEIGHTS_OFFSET);
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BLENDWEIGHTS_OFFSET);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -90,25 +90,25 @@ GLBatch::GLBatch(uint32_t maxVerts, uint32_t maxIndices) {
 	// Input assembly for vertex shader
 
 	glEnableVertexAttribArray(0); // pos
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)VERT_POS_OFFSET);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_POS_OFFSET);
 
 	glEnableVertexAttribArray(1); // uv
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)VERT_UV_OFFSET);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_UV_OFFSET);
 
 	glEnableVertexAttribArray(2); // bc
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)VERT_BC_OFFSET);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BC_OFFSET);
 
 	glEnableVertexAttribArray(3); // normal
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)VERT_NORMAL_OFFSET);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_NORMAL_OFFSET);
 
 	glEnableVertexAttribArray(4); // color
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)VERT_COLOR_OFFSET);
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_COLOR_OFFSET);
 
 	glEnableVertexAttribArray(5); // blendindices
-	glVertexAttribIPointer(5, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void *)VERT_BLENDINDICES_OFFSET);
+	glVertexAttribIPointer(5, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void*)VERT_BLENDINDICES_OFFSET);
 
 	glEnableVertexAttribArray(6); // blendweights
-	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)VERT_BLENDWEIGHTS_OFFSET);
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BLENDWEIGHTS_OFFSET);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -123,7 +123,7 @@ GLBatch::GLBatch(uint32_t maxVerts, uint32_t maxIndices) {
 }
 
 // TODO: cullFace and drawMode not used!
-int GLBatch::Add(Tri *tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
+int GLBatch::Add(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
 	if (m_VertOffsetIndex + 3 * numTris > m_MaxVerts) {
 		printf("No more space on GPU to upload more triangles!\nSpace available: %d\n", m_MaxVerts - m_VertOffsetIndex);
 		return -1;
@@ -141,7 +141,7 @@ int GLBatch::Add(Tri *tris, uint32_t numTris, bool cullFace, DrawMode drawMode) 
 	return offset;
 }
 
-int GLBatch::Add(Vertex *verts, uint32_t numVerts, bool cullFace, DrawMode drawMode) {
+int GLBatch::Add(Vertex* verts, uint32_t numVerts, bool cullFace, DrawMode drawMode) {
 	if (m_VertOffsetIndex + numVerts > m_MaxVerts) {
 		printf("No more space on GPU to upload more vertices!\nSpace available: %d\n", m_MaxVerts - m_VertOffsetIndex);
 		return -1;
@@ -159,8 +159,8 @@ int GLBatch::Add(Vertex *verts, uint32_t numVerts, bool cullFace, DrawMode drawM
 	return offset;
 }
 
-bool GLBatch::Add(Vertex *verts, uint32_t numVerts, uint16_t *indices, uint32_t numIndices, int *out_offset,
-				  int *out_idxOffset, bool cullFace, DrawMode drawMode) {
+bool GLBatch::Add(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, int* out_offset,
+				  int* out_idxOffset, bool cullFace, DrawMode drawMode) {
 	if (m_VertOffsetIndex + numVerts > m_MaxVerts) {
 		printf("No more space on GPU to upload more vertices!\nSpace available: %d\n", m_MaxVerts - m_VertOffsetIndex);
 		return false;

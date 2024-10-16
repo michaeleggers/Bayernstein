@@ -6,7 +6,7 @@
 #include "Body.h"
 #include "ShapeSphere.h"
 
-bool Intersect(Body *bodyA, Body *bodyB, Contact &contact) {
+bool Intersect(Body* bodyA, Body* bodyB, Contact& contact) {
 	contact.bodyA = bodyA;
 	contact.bodyB = bodyB;
 
@@ -14,8 +14,8 @@ bool Intersect(Body *bodyA, Body *bodyB, Contact &contact) {
 	contact.normal = glm::normalize(ab);
 	float distanceAB = glm::length(ab);
 
-	ShapeSphere *shapeA = (ShapeSphere *)bodyA->m_Shape;
-	ShapeSphere *shapeB = (ShapeSphere *)bodyB->m_Shape;
+	ShapeSphere* shapeA = (ShapeSphere*)bodyA->m_Shape;
+	ShapeSphere* shapeB = (ShapeSphere*)bodyB->m_Shape;
 
 	contact.ptOnA_WorldSpace = bodyA->m_Position + shapeA->m_Radius * contact.normal;
 	contact.ptOnB_WorldSpace = bodyB->m_Position - shapeB->m_Radius * contact.normal;

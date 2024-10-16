@@ -8,13 +8,13 @@
 
 class GLTextureManager {
   public:
-	static GLTextureManager *Instance();
+	static GLTextureManager* Instance();
 
-	ITexture *CreateTexture(const std::string &filename);
+	ITexture* CreateTexture(const std::string& filename);
 
 	// TODO: Shutdown methods
 
-	std::unordered_map<std::string, ITexture *> m_NameToTexture;
+	std::unordered_map<std::string, ITexture*> m_NameToTexture;
 
   private:
 	GLTextureManager();

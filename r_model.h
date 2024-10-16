@@ -64,12 +64,12 @@ struct HKD_Model {
 	Body body;
 };
 
-HKD_Model CreateModelFromIQM(IQMModel *model);
-void UpdateModel(HKD_Model *model, float dt);
-void ApplyPhysicsToModel(HKD_Model *model);
-void UpdateRigidBodyTransform(HKD_Model *model);
-glm::mat4 CreateModelMatrix(HKD_Model *model);
+HKD_Model CreateModelFromIQM(IQMModel* model);
+void UpdateModel(HKD_Model* model, float dt);
+void ApplyPhysicsToModel(HKD_Model* model);
+void UpdateRigidBodyTransform(HKD_Model* model);
+glm::mat4 CreateModelMatrix(HKD_Model* model);
 glm::mat4 CreateModelMatrix(glm::vec3 pos, glm::quat orientation, glm::vec3 scale);
-void SetAnimState(HKD_Model *model, AnimState animState);
+void SetAnimState(HKD_Model* model, AnimState animState);
 
 #endif

@@ -25,7 +25,7 @@ const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
 
 void GLAPIENTRY OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
-									const GLchar *message, const void *userParam) {
+									const GLchar* message, const void* userParam) {
 	// Ignore non-significant error/warning codes (e.g., vendor-specific warnings)
 	if (id == 131169 || id == 131185 || id == 131218 || id == 131204) {
 		return;
@@ -237,8 +237,8 @@ bool GLRender::Init() {
 
 	// Some OpenGL Info
 
-	const GLubyte *vendor = glGetString(GL_VENDOR);
-	const GLubyte *renderer = glGetString(GL_RENDERER);
+	const GLubyte* vendor = glGetString(GL_VENDOR);
+	const GLubyte* renderer = glGetString(GL_RENDERER);
 	SDL_Log("%s, %s\n", vendor, renderer);
 
 	// Create batches
@@ -269,13 +269,13 @@ bool GLRender::Init() {
 
 // At the moment we don't generate a drawCmd for a model. We just but all of
 // the meshes into a GPU buffer and draw all of them exactly the same way.
-int GLRender::RegisterModel(HKD_Model *model) {
+int GLRender::RegisterModel(HKD_Model* model) {
 	GLModel gl_model = {};
 	int offset = m_ModelBatch->Add(&model->tris[0], model->tris.size());
 
 	for (int i = 0; i < model->meshes.size(); i++) {
-		HKD_Mesh *mesh = &model->meshes[i];
-		GLTexture *texture = (GLTexture *)m_TextureManager->CreateTexture(mesh->textureFileName);
+		HKD_Mesh* mesh = &model->meshes[i];
+		GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(mesh->textureFileName);
 		GLMesh gl_mesh = {
 			.triOffset = offset / 3 + (int)mesh->firstTri, .triCount = (int)mesh->numTris, .texture = texture};
 		gl_model.meshes.push_back(gl_mesh);
@@ -289,7 +289,7 @@ int GLRender::RegisterModel(HKD_Model *model) {
 	return gpuModelHandle;
 }
 
-void GLRender::SetActiveCamera(Camera *camera) { m_ActiveCamera = camera; }
+void GLRender::SetActiveCamera(Camera* camera) { m_ActiveCamera = camera; }
 
 void GLRender::RegisterColliderModels() {
 	// Generate vertices for a circle. Used for ellipsoid colliders.
@@ -302,8 +302,8 @@ void GLRender::RegisterColliderModels() {
 
 // Maybe return a void* as GPU handle, because usually APIs that use the handle of
 // a specific graphics API don't expect it to be in int or whatever.
-std::vector<ITexture *> GLRender::ModelTextures(int gpuModelHandle) {
-	std::vector<ITexture *> results;
+std::vector<ITexture*> GLRender::ModelTextures(int gpuModelHandle) {
+	std::vector<ITexture*> results;
 
 	if (gpuModelHandle >= m_Models.size()) {
 		return results;
@@ -311,25 +311,25 @@ std::vector<ITexture *> GLRender::ModelTextures(int gpuModelHandle) {
 		return results;
 	}
 
-	GLModel *model = &m_Models[gpuModelHandle];
-	for (auto &mesh : model->meshes) {
+	GLModel* model = &m_Models[gpuModelHandle];
+	for (auto& mesh : model->meshes) {
 		results.push_back(mesh.texture);
 	}
 
 	return results;
 }
 
-std::vector<ITexture *> GLRender::Textures() {
-	std::vector<ITexture *> result;
+std::vector<ITexture*> GLRender::Textures() {
+	std::vector<ITexture*> result;
 	result.reserve(m_TextureManager->m_NameToTexture.size());
-	for (auto &elem : m_TextureManager->m_NameToTexture) {
+	for (auto& elem : m_TextureManager->m_NameToTexture) {
 		result.push_back(elem.second);
 	}
 
 	return result;
 }
 
-void GLRender::ImDrawTris(Tri *tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
+void GLRender::ImDrawTris(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
 	int offset = m_ImPrimitiveBatch->Add(tris, numTris, cullFace, drawMode);
 
 	GLBatchDrawCmd drawCmd = {.offset = offset, .numVerts = 3 * numTris, .cullFace = cullFace, .drawMode = drawMode};
@@ -337,7 +337,7 @@ void GLRender::ImDrawTris(Tri *tris, uint32_t numTris, bool cullFace, DrawMode d
 	m_PrimitiveDrawCmds.push_back(drawCmd);
 }
 
-void GLRender::ImDrawTriPlanes(TriPlane *triPlanes, uint32_t numTriPlanes, bool cullFace, DrawMode drawMode) {
+void GLRender::ImDrawTriPlanes(TriPlane* triPlanes, uint32_t numTriPlanes, bool cullFace, DrawMode drawMode) {
 	std::vector<Tri> tris;
 	tris.resize(numTriPlanes);
 	for (int i = 0; i < numTriPlanes; i++) {
@@ -346,7 +346,7 @@ void GLRender::ImDrawTriPlanes(TriPlane *triPlanes, uint32_t numTriPlanes, bool 
 	ImDrawTris(tris.data(), numTriPlanes, cullFace, drawMode);
 }
 
-GLBatchDrawCmd GLRender::AddTrisToBatch(GLBatch *batch, Tri *tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
+GLBatchDrawCmd GLRender::AddTrisToBatch(GLBatch* batch, Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
 	int offset = batch->Add(tris, numTris, cullFace, drawMode);
 
 	GLBatchDrawCmd drawCmd = {.offset = offset, .numVerts = 3 * numTris, .cullFace = cullFace, .drawMode = drawMode};
@@ -355,7 +355,7 @@ GLBatchDrawCmd GLRender::AddTrisToBatch(GLBatch *batch, Tri *tris, uint32_t numT
 }
 
 // Draw triangles with indexed geometry :)
-void GLRender::ImDrawIndexed(Vertex *verts, uint32_t numVerts, uint16_t *indices, uint32_t numIndices, bool cullFace,
+void GLRender::ImDrawIndexed(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, bool cullFace,
 							 DrawMode drawMode) {
 	int offset = 0;
 	int offsetIndices = 0;
@@ -375,7 +375,7 @@ void GLRender::ImDrawIndexed(Vertex *verts, uint32_t numVerts, uint16_t *indices
 }
 
 // TODO: not done
-void GLRender::ImDrawVerts(Vertex *verts, uint32_t numVerts) {
+void GLRender::ImDrawVerts(Vertex* verts, uint32_t numVerts) {
 	int offset = m_ImPrimitiveBatch->Add(verts, numVerts);
 
 	GLBatchDrawCmd drawCmd = {.offset = offset, .numVerts = numVerts, .cullFace = false, .drawMode = DRAW_MODE_SOLID};
@@ -383,12 +383,12 @@ void GLRender::ImDrawVerts(Vertex *verts, uint32_t numVerts) {
 
 // We have separate draw cmds from the batch. This function generate unneccessary many
 // draw cmds (each Add is a new one!).
-void GLRender::ImDrawLines(Vertex *verts, uint32_t numVerts, bool close) {
+void GLRender::ImDrawLines(Vertex* verts, uint32_t numVerts, bool close) {
 	if (numVerts < 2) { // This won't work, man.
 		return;
 	}
 
-	Vertex *v = verts;
+	Vertex* v = verts;
 	// TODO: DRAW_MODEL_LINES doesn't do anything to the batch!
 	int offset = m_ImPrimitiveBatch->Add(v, 2, false, DRAW_MODE_LINES);
 	v += 1;
@@ -431,12 +431,12 @@ void GLRender::ImDrawSphere(glm::vec3 pos, float radius, glm::vec4 color) {
 	glDrawArrays(GL_TRIANGLES, m_EllipsoidColliderDrawCmd.offset, m_EllipsoidColliderDrawCmd.numVerts);
 }
 
-GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch *batch, Vertex *verts, uint32_t numVerts, bool close) {
+GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t numVerts, bool close) {
 	if (numVerts < 2) { // This won't work, man.
 		return {-1};
 	}
 
-	Vertex *v = verts;
+	Vertex* v = verts;
 	// TODO: DRAW_MODEL_LINES doesn't do anything to the batch!
 	int offset = batch->Add(v, 2, false, DRAW_MODE_LINES);
 	v += 1;
@@ -476,7 +476,7 @@ void GLRender::RenderBegin() {
 	ImGui::NewFrame();
 }
 
-void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd> &drawCmds, GeometryType geomType) {
+void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType) {
 	uint32_t prevDrawMode = GL_FILL;
 	uint32_t primitiveType = GL_TRIANGLES;
 	for (int i = 0; i < drawCmds.size(); i++) {
@@ -514,14 +514,14 @@ void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd> &drawCmds, GeometryTy
 		} else if (geomType == GEOM_TYPE_INDEXED) {
 			uint32_t indexBufferUSOffset = drawCmd.indexOffset * sizeof(uint16_t);
 			glDrawElementsBaseVertex(primitiveType, drawCmd.numIndices, GL_UNSIGNED_SHORT,
-									 (GLvoid *)(drawCmd.indexOffset * sizeof(uint16_t)), drawCmd.offset);
+									 (GLvoid*)(drawCmd.indexOffset * sizeof(uint16_t)), drawCmd.offset);
 		}
 
 		m_ImPrimitivesShader->ResetShaderSettingBits(SHADER_LINEMODE);
 	}
 }
 
-void GLRender::Render(Camera *camera, HKD_Model **models, uint32_t numModels) {
+void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels) {
 	// Camera and render settings
 
 	static uint32_t drawWireframe = 0;
@@ -536,7 +536,7 @@ void GLRender::Render(Camera *camera, HKD_Model **models, uint32_t numModels) {
 	ImGui::SliderFloat("y", &camera->m_Pos.y, -500.0f, 500.0f);
 	ImGui::SliderFloat("z", &camera->m_Pos.z, -500.0f, 500.0f);
 	ImGui::Text("Render settings:");
-	ImGui::Checkbox("wireframe", (bool *)&drawWireframe);
+	ImGui::Checkbox("wireframe", (bool*)&drawWireframe);
 	ImGui::End();
 
 	glm::mat4 view = camera->ViewMatrix();
@@ -594,7 +594,7 @@ void GLRender::Render(Camera *camera, HKD_Model **models, uint32_t numModels) {
 		m_ModelShader->SetMat4("model", modelMatrix);
 
 		for (int j = 0; j < model.meshes.size(); j++) {
-			GLMesh *mesh = &model.meshes[j];
+			GLMesh* mesh = &model.meshes[j];
 			if (!mesh->texture->m_Filename.empty()) { // TODO: Checking string of empty is not great.
 				m_ModelShader->SetShaderSettingBits(SHADER_IS_TEXTURED);
 				glBindTexture(GL_TEXTURE_2D, mesh->texture->m_gl_Handle);
@@ -614,7 +614,7 @@ void GLRender::Render(Camera *camera, HKD_Model **models, uint32_t numModels) {
 	// glDrawArrays(GL_TRIANGLES, 0, 3*m_ModelBatch->TriCount());
 }
 
-void GLRender::RenderColliders(Camera *camera, HKD_Model **models, uint32_t numModels) {
+void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) {
 	glm::mat4 view = camera->ViewMatrix();
 	// TODO: Global Setting for perspective values
 	glm::mat4 proj =
@@ -625,7 +625,7 @@ void GLRender::RenderColliders(Camera *camera, HKD_Model **models, uint32_t numM
 
 	m_ColliderBatch->Bind();
 	for (int i = 0; i < numModels; i++) {
-		HKD_Model *model = models[i];
+		HKD_Model* model = models[i];
 		m_ColliderShader->SetVec4("uDebugColor", model->debugColor);
 		EllipsoidCollider ec = model->ellipsoidColliders[model->currentAnimIdx];
 		glm::vec3 scale = glm::vec3(ec.radiusA, ec.radiusA, ec.radiusB);
@@ -680,10 +680,10 @@ void GLRender::InitShaders() {
 	}
 
 	// TODO: Just to test if shaders overwrite data from each other. Delete later!
-	Shader *foo = new Shader();
+	Shader* foo = new Shader();
 	if (!foo->Load("shaders/entities.vert", "shaders/entities.frag", SHADER_FEATURE_MODEL_ANIMATION_BIT)) {
 		printf("Problems initializing model shaders!\n");
 	}
 }
 
-void GLRender::SetWindowTitle(char *windowTitle) { SDL_SetWindowTitle(m_Window, windowTitle); }
+void GLRender::SetWindowTitle(char* windowTitle) { SDL_SetWindowTitle(m_Window, windowTitle); }

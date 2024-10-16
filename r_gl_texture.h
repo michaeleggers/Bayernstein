@@ -10,7 +10,7 @@
 
 class GLTexture : public ITexture {
   public:
-	explicit GLTexture(const std::string &filename);
+	explicit GLTexture(const std::string& filename);
 
 	// TODO: Kill texture
 
