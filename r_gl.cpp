@@ -29,7 +29,7 @@ void GLAPIENTRY OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenu
 	// Ignore non-significant error/warning codes (e.g., vendor-specific warnings)
 	if (id == 131169 || id == 131185 || id == 131218 || id == 131204) {
 		return;
-}
+	}
 
 	printf("--------------------- OpenGL Debug Output ---------------------\n");
 	printf("Message: %s\n", message);
@@ -309,7 +309,7 @@ std::vector<ITexture *> GLRender::ModelTextures(int gpuModelHandle) {
 		return results;
 	} else if (gpuModelHandle < 0) {
 		return results;
-}
+	}
 
 	GLModel *model = &m_Models[gpuModelHandle];
 	for (auto &mesh : model->meshes) {
@@ -322,7 +322,7 @@ std::vector<ITexture *> GLRender::ModelTextures(int gpuModelHandle) {
 std::vector<ITexture *> GLRender::Textures() {
 	std::vector<ITexture *> result;
 	result.reserve(m_TextureManager->m_NameToTexture.size());
-for (auto &elem : m_TextureManager->m_NameToTexture) {
+	for (auto &elem : m_TextureManager->m_NameToTexture) {
 		result.push_back(elem.second);
 	}
 

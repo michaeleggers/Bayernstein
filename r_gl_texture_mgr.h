@@ -7,17 +7,17 @@
 #include "r_itexture.h"
 
 class GLTextureManager {
-public:
-	static GLTextureManager* Instance();
-	
-	ITexture* CreateTexture(const std::string& filename);
+  public:
+	static GLTextureManager *Instance();
+
+	ITexture *CreateTexture(const std::string &filename);
 
 	// TODO: Shutdown methods
 
-	std::unordered_map<std::string, ITexture*> m_NameToTexture;
-private:
+	std::unordered_map<std::string, ITexture *> m_NameToTexture;
+
+  private:
 	GLTextureManager();
-	
 };
 
 #endif

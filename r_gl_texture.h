@@ -9,14 +9,12 @@
 #include "r_itexture.h"
 
 class GLTexture : public ITexture {
-public:
-    explicit GLTexture(const std::string& filename); 
+  public:
+	explicit GLTexture(const std::string &filename);
 
-    // TODO: Kill texture
+	// TODO: Kill texture
 
-    GLuint      m_gl_Handle;
+	GLuint m_gl_Handle;
 };
-
-
 
 #endif
