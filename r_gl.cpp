@@ -525,7 +525,7 @@ void GLRender::RenderBegin(void)
     float windowAspect = (float)m_WindowWidth / (float)m_WindowHeight;
     glViewport(0, 0, m_WindowWidth, m_WindowHeight);
 
-    glClearColor(0.1f, 0.1f, 0.2f, 1.0f); 
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ImGui_ImplOpenGL3_NewFrame();
@@ -542,7 +542,7 @@ void GLRender::Begin3D(void) {
     float windowAspect = (float)m_WindowWidth / (float)m_WindowHeight;
     glViewport(0, 0, m_WindowWidth, m_WindowHeight);
 
-    glClearColor(0.1f, 0.1f, 0.9f, 1.0f); 
+    glClearColor(0.f, 0.f, 1.0f, 1.0f); 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 }
@@ -878,7 +878,7 @@ void GLRender::RenderEnd(void)
     glDepthFunc(GL_LESS);
    
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     // Composite all the FBOs together
     m_CompositeShader->Activate();

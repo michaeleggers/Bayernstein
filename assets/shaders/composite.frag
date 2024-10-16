@@ -17,6 +17,7 @@ void main() {
 
     //out_Color = vec4( main3dColor.rgb + screen2dColor.rgb * screen2dColor.a, 1.0f );
     //out_Color = screen2dColor;
-    out_Color = vec4( compositeColor, alpha );
+    out_Color = vec4( compositeColor, 1.0f );
+
 }
 
