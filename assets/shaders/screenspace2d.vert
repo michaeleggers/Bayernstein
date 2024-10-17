@@ -44,7 +44,7 @@ layout (std140) uniform Settings {
 
 layout (std140) uniform screenspaceUBO {
     vec4 color;
-    vec4 size; // x = size, yzw = free (unused for now)
+    vec4 scale; // x = scale, yzw = free (unused for now)
 };
 
 void main() {

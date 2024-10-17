@@ -811,12 +811,17 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
             float dWidth = ( scaledWidth - width );
             float absDWidth = glm::abs(dWidth);
 
+            float x0SP = 0.0f;
+            float x1SP = width*scale;
+            float y0SP = 0.0f;
+            float y1SP = height*scale;
+
             // NOTE: For some reason the positional 
             // coordinates in aligned_quad are flipped vertically. Not sure why.
-            fq.a.pos = { x0, y0 + tallestGlyph, 0.0f };
-            fq.b.pos = { x1 + dWidth, y0 + tallestGlyph, 0.0f };
-            fq.c.pos = { x1 + dWidth, y1 + tallestGlyph*scale, 0.0f };
-            fq.d.pos = { x0, y1 + tallestGlyph*scale, 0.0f };
+            fq.c.pos = { x0, y0 + tallestGlyph, 0.0f };
+            fq.d.pos = { x0 + x1SP, y0 + tallestGlyph, 0.0f };
+            fq.a.pos = { x0 + x1SP, y1 + tallestGlyph, 0.0f };
+            fq.b.pos = { x0, y1 + tallestGlyph, 0.0f };
             fq.a.uv = { q.s0, q.t0 };
             fq.b.uv = { q.s1, q.t0 };
             fq.c.uv = { q.s1, q.t1 };
@@ -825,6 +830,8 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
                                       indices, 6, 
                                       &offsetVertices, &offsetIndices, 
                                       false, DRAW_MODE_SOLID);
+
+            xOffset = x0 + x1SP;
 
             lastIndex = iOffset + 3 + i*4;
            
