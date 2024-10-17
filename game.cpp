@@ -312,7 +312,7 @@ bool Game::RunFrame(double dt)
         m_Renderer->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
        
         //m_Renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
-        m_Renderer->SetFont( m_ConsoleFont, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f) );
+        m_Renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) );
         m_Renderer->DrawText("ABCDEFGHIJKLMNOajdidjST*~`!/]}]|!#@#=;'\"$%%^&*():L", 0.0f, 0.0f, 1.0f);
         
         //m_Renderer->SetFont( m_ConsoleFont, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f) );

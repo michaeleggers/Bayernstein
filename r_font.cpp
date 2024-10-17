@@ -36,7 +36,7 @@ CFont::CFont(std::string fontFile, float size) {
     stbtt_PackBegin( &pc, m_Bitmap, 512, 512, 0, 1, 0 );
 
     m_PackedCharData = (stbtt_packedchar*)malloc( NUM_GLYPHS * sizeof(stbtt_packedchar) );
-    if ( stbtt_PackFontRange( &pc, ttfFileData, 0, (float)size, 32, NUM_GLYPHS, m_PackedCharData ) != 1 ) {
+    if ( stbtt_PackFontRange( &pc, ttfFileData, 0, STBTT_POINT_SIZE(size), 32, NUM_GLYPHS, m_PackedCharData ) != 1 ) {
 	printf("STBTT (PackFontRange): Failed to pack font data\n");
     }
 
