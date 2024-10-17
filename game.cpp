@@ -313,14 +313,14 @@ bool Game::RunFrame(double dt)
        
         //m_Renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
         m_Renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) );
-        m_Renderer->DrawText("ABCDEFGHIJKLMNOajdidjST*~`!/]}]|!#@#=;'\"$%%^&*():L", 0.0f, 0.0f, 1.0f);
+        m_Renderer->DrawText("ABCDEFGHIJKLMNOajdidjST*~`!/]}]|!#@#=;'\"$%%^&*():L", 0.0f, 0.0f);
         
         m_Renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) );
-        m_Renderer->DrawText("Same font scaled by 1/2 (and in yellow!)", 0.0f, 200.0f, 0.5f);
+        m_Renderer->DrawText("Same font scaled by 1/2 (and in yellow!)", 0.0f, 200.0f);
         
-        m_Renderer->DrawText(">>>>>>>>aaaa scaled up by 1.0 at pos 100, 300", 100.0f, 300.0f, 1.0f);
+        m_Renderer->DrawText(">>>>>>>>aaaa scaled up by 1.0 at pos 100, 300", 100.0f, 300.0f);
         m_Renderer->SetFont( m_ConsoleFont, glm::vec4(0.3f, 1.0f, 0.3f, 1.0f) );
-        m_Renderer->DrawText(">>>>>>>>aaaa scaled up by 2.0 at pos 100, 300", 100.0f, 300.0f, 2.0f);
+        m_Renderer->DrawText(">>>>>>>>aaaa scaled up by 2.0 at pos 100, 300", 106.0f, 306.0f);
         //m_Renderer->SetFont( m_ConsoleFont, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f) );
         //m_Renderer->DrawText("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 20.0f, 100.0f, 2.0f);
 

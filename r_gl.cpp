@@ -705,7 +705,8 @@ void GLRender::Begin2D() {
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     
-    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     //glDisable(GL_CULL_FACE);
 
     glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
@@ -724,6 +725,8 @@ void GLRender::End2D() {
     Flush2D();
 
     m_2dFBO->Unbind();
+
+    glEnable(GL_DEPTH_TEST);
 
     // TODO: (Michael): Unbind bound (font-)textures?
 }
