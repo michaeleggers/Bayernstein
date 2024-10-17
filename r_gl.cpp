@@ -734,6 +734,7 @@ void GLRender::End2D() {
 void GLRender::SetFont(CFont* font, glm::vec4 color) {
     
     // A state change means we need to flush the previous Daw-calls!
+    // Otherwise they get affected by the things happening here!
     Flush2D();
 
     ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
@@ -777,10 +778,13 @@ void GLRender::DrawText(const std::string& text, float x, float y, ScreenSpaceCo
     FaceQuad fq{}; // = CreateFaceQuadFromVerts(vertices);
 
     // go through each character in text and lookup the correct UV.
-    int offsetIndices = 0; // TODO: Not needed here!
-    int offsetVertices = 0; // TODO: Not needed here!
-    uint16_t iOffset = (uint16_t)m_Screenspace2dBatch->m_LastIndex; // TODO: (Michael): Make indices uint32_t.
+    int out_OffsetIndices = 0; // TODO: Not needed here!
+    int out_OffsetVertices = 0; // TODO: Not needed here!
+   
+    // TODO: (Michael): Make indices uint32_t.
+    uint16_t iOffset = (uint16_t)m_Screenspace2dBatch->m_LastIndex; 
     uint16_t lastIndex = iOffset;
+    
     const char* c = text.c_str();
     int i = 0;
     float ascender = (float)m_CurrentFont->m_Ascender;
@@ -823,7 +827,7 @@ void GLRender::DrawText(const std::string& text, float x, float y, ScreenSpaceCo
             fq.d.uv = { q.s1, q.t0 };
             m_Screenspace2dBatch->Add(fq.vertices, 4, 
                                       indices, 6, 
-                                      &offsetVertices, &offsetIndices, 
+                                      &out_OffsetVertices, &out_OffsetIndices, 
                                       false, DRAW_MODE_SOLID);
 
             lastIndex = iOffset + 3 + i*4;
@@ -832,9 +836,39 @@ void GLRender::DrawText(const std::string& text, float x, float y, ScreenSpaceCo
         }
         c++;
     }
-    m_Screenspace2dBatch->m_LastIndex = lastIndex + 1; // We need one *after* this batche's data for the next batch.
+   
+    // We need one *after* this batche's data for the next batch.
+    m_Screenspace2dBatch->m_LastIndex = lastIndex + 1; 
+}
 
-    //glDrawArrays(GL_TRIANGLES, 0, 6);
+void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode) {
+
+    Vertex verts[4] = {
+        { glm::vec3(x, y, 0.0f) },
+        { glm::vec3(x, y + height, 0.0f) },
+        { glm::vec3(x + width, y + height, 0.0f) },
+        { glm::vec3(x + width, y, 0.0f) }
+    };
+    FaceQuad fq = CreateFaceQuadFromVerts( verts );
+    
+    uint16_t iOffset = (uint16_t)m_Screenspace2dBatch->m_LastIndex; 
+    uint16_t indices[6] = {
+        iOffset + 0, iOffset + 1, iOffset + 2,
+        iOffset + 2, iOffset + 3, iOffset + 0
+    };
+
+    // NOTE: (Michael): The batch interface is going to change once we have
+    // the first prototype going. So no need to fix those inconvenciences
+    // of unused (and unwanted) out_* variables for now!
+    int out_OffsetIndices = 0; // TODO: Not needed here!
+    int out_OffsetVertices = 0; // TODO: Not needed here!
+    m_Screenspace2dBatch->Add(fq.vertices, 4,
+                              indices, 6,
+                              &out_OffsetVertices, &out_OffsetIndices,
+                              false, DRAW_MODE_SOLID);
+    
+    m_Screenspace2dBatch->m_LastIndex += 4;
+
 }
 
 void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels)

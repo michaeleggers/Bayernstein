@@ -53,6 +53,8 @@ public:
 	virtual void DrawText(const std::string& text,
 				float x, float y, 
 				ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
+	virtual void DrawBox(float x, float y, float width, float height,
+					  ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
 	virtual void RenderEnd(void)						override;
 	virtual void SetWindowTitle(char* windowTitle) override;
 
