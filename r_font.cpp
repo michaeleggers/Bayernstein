@@ -6,7 +6,6 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 
-static const int NUM_GLYPHS = 96;
 
 extern std::string  g_GameDir;
 
@@ -15,7 +14,7 @@ extern std::string  g_GameDir;
 CFont::CFont(std::string fontFile, float size) { 
     m_Filename = fontFile;
     m_Cdata = (stbtt_bakedchar*)malloc( NUM_GLYPHS * sizeof(stbtt_bakedchar) ); 
-    m_Bitmap = (unsigned char*)malloc( 512 * 512 );
+    m_Bitmap = (unsigned char*)malloc( FONT_TEX_SIZE * FONT_TEX_SIZE );
     
     // Read TTF file into buffer.
     unsigned char* ttfFileData = (unsigned char*)malloc( 1<<20 );
@@ -33,11 +32,14 @@ CFont::CFont(std::string fontFile, float size) {
     // Better API (apparently)
 
     stbtt_pack_context pc;
-    stbtt_PackBegin( &pc, m_Bitmap, 512, 512, 0, 1, 0 );
+    stbtt_PackBegin( &pc, m_Bitmap, FONT_TEX_SIZE, FONT_TEX_SIZE, 0, 1, 0 );
 
     m_PackedCharData = (stbtt_packedchar*)malloc( NUM_GLYPHS * sizeof(stbtt_packedchar) );
-    if ( stbtt_PackFontRange( &pc, ttfFileData, 0, STBTT_POINT_SIZE(size), 32, NUM_GLYPHS, m_PackedCharData ) != 1 ) {
-	printf("STBTT (PackFontRange): Failed to pack font data\n");
+    if ( stbtt_PackFontRange( 
+	    &pc, ttfFileData, 0, STBTT_POINT_SIZE(size), 
+	    FIRST_CODE_POINT, NUM_GLYPHS, 
+	    m_PackedCharData ) != 1 ) {
+	printf("STBTT (PackFontRange): Failed to pack font data.\n");
     }
 
     stbtt_PackEnd(&pc);

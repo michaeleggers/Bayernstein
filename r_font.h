@@ -6,6 +6,11 @@
 #include <string>
 #include <vector>
 
+const int FIRST_CODE_POINT = 32; // Space (ASCII and Unicode overlap)
+const int NUM_GLYPHS = 96;
+const int LAST_CODE_POINT = FIRST_CODE_POINT + NUM_GLYPHS;
+const int FONT_TEX_SIZE = 1024;
+
 class CFont {
 
 public:

@@ -50,8 +50,8 @@ GLTexture::GLTexture(CFont* font)
     
     assert( font->m_Bitmap != NULL && "GLTexture: Cannot create GLTexture from font, because the font-bitmap is NULL!" );
 
-    int x = 512;
-    int y = 512;
+    int x = FONT_TEX_SIZE;
+    int y = FONT_TEX_SIZE;
     GLuint glTextureHandle;
     glGenTextures(1, &glTextureHandle);
     glBindTexture(GL_TEXTURE_2D, glTextureHandle);

@@ -775,9 +775,9 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
     float yOffset = y;
     float ascender = (float)m_CurrentFont->m_Ascender;
     float descender = glm::abs( (float)m_CurrentFont->m_Descender );
-    float tallestGlyph = ascender * scale;
+    float tallestGlyph = ascender;
     while ( *c != '\0' ) {
-        if (*c >= 32 && *c < 128) {
+        if ( *c >= FIRST_CODE_POINT && *c < LAST_CODE_POINT ) {
             
             uint16_t indices[6] = {
                 iOffset + 0 + i*4, iOffset + 1 + i*4, iOffset + 2 + i*4,
@@ -790,17 +790,17 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
 
             // More advanced API
             stbtt_GetPackedQuad(m_CurrentFont->m_PackedCharData, 
-                                512, 512,     
-                                *c - 32,             // character to display
+                                FONT_TEX_SIZE, FONT_TEX_SIZE,     
+                                *c - FIRST_CODE_POINT,             // character to display
                                 &xOffset, &yOffset,
                                 // pointers to current position in screen pixel space
                                 &q,      // output: quad to draw
                                 1);
 
-            float x0 = q.x0 * scale;
-            float y0 = q.y0 * scale;
-            float x1 = q.x1 * scale;
-            float y1 = q.y1 * scale;
+            float x0 = q.x0;
+            float y0 = q.y0;
+            float x1 = q.x1;
+            float y1 = q.y1;
 
             float rx = q.x0;
             float ry = q.y0;
@@ -811,13 +811,16 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
             // coordinates in aligned_quad are flipped vertically. Not sure why.
             fq.a.pos = { x0, y0 + tallestGlyph, 0.0f };
             fq.b.pos = { x1, y0 + tallestGlyph, 0.0f };
-            fq.c.pos = { x1, y1 + tallestGlyph, 0.0f };
-            fq.d.pos = { x0, y1 + tallestGlyph, 0.0f };
+            fq.c.pos = { x1, y1 + tallestGlyph*scale, 0.0f };
+            fq.d.pos = { x0, y1 + tallestGlyph*scale, 0.0f };
             fq.a.uv = { q.s0, q.t0 };
             fq.b.uv = { q.s1, q.t0 };
             fq.c.uv = { q.s1, q.t1 };
             fq.d.uv = { q.s0, q.t1 };
-            m_Screenspace2dBatch->Add(fq.vertices, 4, indices, 6, &offsetVertices, &offsetIndices, false, DRAW_MODE_SOLID);
+            m_Screenspace2dBatch->Add(fq.vertices, 4, 
+                                      indices, 6, 
+                                      &offsetVertices, &offsetIndices, 
+                                      false, DRAW_MODE_SOLID);
 
             lastIndex = iOffset + 3 + i*4;
            
