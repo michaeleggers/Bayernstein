@@ -804,14 +804,18 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
 
             float rx = q.x0;
             float ry = q.y0;
-            float w = q.x1 - q.x0;
-            float h = q.y1 - q.y0;
+            float width = q.x1 - q.x0;
+            float height = q.y1 - q.y0;
+
+            float scaledWidth = scale*width;
+            float dWidth = ( scaledWidth - width );
+            float absDWidth = glm::abs(dWidth);
 
             // NOTE: For some reason the positional 
             // coordinates in aligned_quad are flipped vertically. Not sure why.
             fq.a.pos = { x0, y0 + tallestGlyph, 0.0f };
-            fq.b.pos = { x1, y0 + tallestGlyph, 0.0f };
-            fq.c.pos = { x1, y1 + tallestGlyph*scale, 0.0f };
+            fq.b.pos = { x1 + dWidth, y0 + tallestGlyph, 0.0f };
+            fq.c.pos = { x1 + dWidth, y1 + tallestGlyph*scale, 0.0f };
             fq.d.pos = { x0, y1 + tallestGlyph*scale, 0.0f };
             fq.a.uv = { q.s0, q.t0 };
             fq.b.uv = { q.s1, q.t0 };
