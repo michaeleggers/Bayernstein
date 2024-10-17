@@ -13,15 +13,15 @@ class EntityManager {
 
   private:
 	EntityMap m_EntityMap;
-	EntityManager(){};
-
-	// copy ctor and assignment should be private
-	EntityManager(const EntityManager &);
-	EntityManager &operator=(const EntityManager &);
+	EntityManager() = default;
 
   public:
-	static EntityManager *Instance();
+	// copy ctor and assignment should be private
+	EntityManager(const EntityManager &) = delete;
+	EntityManager &operator=(const EntityManager &) = delete;
 	~EntityManager();
+
+	static EntityManager *Instance();
 
 	void RegisterEntity(BaseGameEntity *NewEntity);
 
