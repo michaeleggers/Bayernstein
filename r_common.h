@@ -8,6 +8,11 @@
 #include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/ext.hpp"
 
+enum ScreenSpaceCoordMode {
+	COORD_MODE_ABS,
+	COORD_MODE_REL
+};
+
 enum GeometryType {
 	GEOM_TYPE_VERTEX_ONLY,
 	GEOM_TYPE_INDEXED

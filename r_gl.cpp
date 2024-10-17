@@ -761,9 +761,18 @@ void GLRender::Flush2D() {
     m_Screenspace2dBatch->Reset();
 }
 
-void GLRender::DrawText(const std::string& text, float x, float y, float scale) {
+void GLRender::DrawText(const std::string& text, float x, float y, ScreenSpaceCoordMode coordMode) {
    
     // TODO: (Michael): Make sure that the correct shader is active.
+    
+    
+    float xOffset = WINDOW_WIDTH * x;
+    float yOffset = WINDOW_HEIGHT* y;
+
+    if ( coordMode == COORD_MODE_ABS ) {
+        xOffset = x;
+        yOffset = y;
+    }
     
     FaceQuad fq{}; // = CreateFaceQuadFromVerts(vertices);
 
@@ -774,8 +783,6 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
     uint16_t lastIndex = iOffset;
     const char* c = text.c_str();
     int i = 0;
-    float xOffset = x;
-    float yOffset = y;
     float ascender = (float)m_CurrentFont->m_Ascender;
     float tallestGlyph = ascender;
     while ( *c != '\0' ) {
