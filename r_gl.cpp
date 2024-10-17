@@ -774,7 +774,6 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
     float xOffset = x;
     float yOffset = y;
     float ascender = (float)m_CurrentFont->m_Ascender;
-    float descender = glm::abs( (float)m_CurrentFont->m_Descender );
     float tallestGlyph = ascender;
     while ( *c != '\0' ) {
         if ( *c >= FIRST_CODE_POINT && *c < LAST_CODE_POINT ) {
@@ -802,36 +801,20 @@ void GLRender::DrawText(const std::string& text, float x, float y, float scale) 
             float x1 = q.x1;
             float y1 = q.y1;
 
-            float rx = q.x0;
-            float ry = q.y0;
-            float width = q.x1 - q.x0;
-            float height = q.y1 - q.y0;
-
-            float scaledWidth = scale*width;
-            float dWidth = ( scaledWidth - width );
-            float absDWidth = glm::abs(dWidth);
-
-            float x0SP = 0.0f;
-            float x1SP = width*scale;
-            float y0SP = 0.0f;
-            float y1SP = height*scale;
-
             // NOTE: For some reason the positional 
             // coordinates in aligned_quad are flipped vertically. Not sure why.
             fq.c.pos = { x0, y0 + tallestGlyph, 0.0f };
-            fq.d.pos = { x0 + x1SP, y0 + tallestGlyph, 0.0f };
-            fq.a.pos = { x0 + x1SP, y1 + tallestGlyph, 0.0f };
+            fq.d.pos = { x1, y0 + tallestGlyph, 0.0f };
+            fq.a.pos = { x1, y1 + tallestGlyph, 0.0f };
             fq.b.pos = { x0, y1 + tallestGlyph, 0.0f };
-            fq.a.uv = { q.s0, q.t0 };
-            fq.b.uv = { q.s1, q.t0 };
-            fq.c.uv = { q.s1, q.t1 };
-            fq.d.uv = { q.s0, q.t1 };
+            fq.a.uv = { q.s1, q.t1 };
+            fq.b.uv = { q.s0, q.t1 };
+            fq.c.uv = { q.s0, q.t0 };
+            fq.d.uv = { q.s1, q.t0 };
             m_Screenspace2dBatch->Add(fq.vertices, 4, 
                                       indices, 6, 
                                       &offsetVertices, &offsetIndices, 
                                       false, DRAW_MODE_SOLID);
-
-            xOffset = x0 + x1SP;
 
             lastIndex = iOffset + 3 + i*4;
            
