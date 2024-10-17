@@ -12,7 +12,8 @@ extern std::string  g_GameDir;
 // TODO: (Michael): Set bitmap size through ctor
 // or compute it through provided size to fit all glyphs.
 CFont::CFont(std::string fontFile, float size) { 
-    m_Filename = fontFile;
+    m_Filename = fontFile + std::to_string(size);
+    m_Size = size;
     m_Cdata = (stbtt_bakedchar*)malloc( NUM_GLYPHS * sizeof(stbtt_bakedchar) ); 
     m_Bitmap = (unsigned char*)malloc( FONT_TEX_SIZE * FONT_TEX_SIZE );
     

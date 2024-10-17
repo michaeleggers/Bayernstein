@@ -37,9 +37,9 @@ void Game::Init()
 
     // Load a font file from disk
     m_ConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 72);
-    //m_ConsoleFont30 = new CFont("fonts/HackNerdFont-Bold.ttf", 30); // FIX: Name is registered -> Overwrites prev. Font texture!
+    m_ConsoleFont30 = new CFont("fonts/HackNerdFont-Bold.ttf", 30); // Same font at different size
     m_Renderer->RegisterFont(m_ConsoleFont);
-    //m_Renderer->RegisterFont(m_ConsoleFont30);
+    m_Renderer->RegisterFont(m_ConsoleFont30);
     
     // Load world triangles from Quake .MAP file
 
@@ -319,8 +319,9 @@ bool Game::RunFrame(double dt)
         m_Renderer->DrawText("Same font scaled by 1/2 (and in yellow!)", 0.0f, 200.0f);
         
         m_Renderer->DrawText(">>>>>>>>aaaa scaled up by 1.0 at pos 100, 300", 100.0f, 300.0f);
-        m_Renderer->SetFont( m_ConsoleFont, glm::vec4(0.3f, 1.0f, 0.3f, 1.0f) );
-        m_Renderer->DrawText(">>>>>>>>aaaa scaled up by 2.0 at pos 100, 300", 106.0f, 306.0f);
+
+        m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
+        m_Renderer->DrawText("Waaay smaller text here!!!!", 1920.0f/2.0f, 1080.0f/2.0f);
         //m_Renderer->SetFont( m_ConsoleFont, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f) );
         //m_Renderer->DrawText("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 20.0f, 100.0f, 2.0f);
 

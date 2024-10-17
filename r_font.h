@@ -17,6 +17,7 @@ public:
     CFont(std::string fontFile, float size);
     ~CFont();
 
+    float	      m_Size;
     std::string	      m_Filename;
     unsigned char*    m_Bitmap;
     stbtt_bakedchar*  m_Cdata; // glyphs
