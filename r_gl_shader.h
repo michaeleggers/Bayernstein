@@ -4,8 +4,8 @@
 #include <glad/glad.h>
 
 #define GLM_FORCE_RADIANS
-#include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/ext.hpp"
+#include "dependencies/glm/glm.hpp"
 
 #include <string>
 
@@ -13,13 +13,11 @@
 
 #define MAX_BONES 96
 
-
 #define SHADER_FEATURE_MODEL_ANIMATION_BIT (0x00000001)
-#define SHADER_FEATURE_MAX				   (0x00000001 << 1)
+#define SHADER_FEATURE_MAX (0x00000001 << 1)
 
 class Shader {
-public:
-	
+  public:
 	bool Load(const std::string& vertName, const std::string& fragName, uint32_t shaderFeatureBits = 0x0);
 	void Unload();
 	void Activate();
@@ -36,7 +34,7 @@ public:
 
 	static void InitGlobalBuffers();
 
-private:
+  private:
 	bool CompileShader(const std::string& fileName, GLenum shaderType, GLuint& outShader);
 	bool IsCompiled(GLuint shader);
 	bool IsValidProgram();
@@ -52,6 +50,5 @@ private:
 	GLuint m_SettingsUBO;
 	GLuint m_PaletteUBO;
 };
-
 
 #endif

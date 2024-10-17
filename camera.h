@@ -2,13 +2,12 @@
 #define _CAMERA_H_
 
 #define GLM_FORCE_RADIANS
-#include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/ext.hpp"
+#include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/gtx/quaternion.hpp"
 
 class Camera {
-public:
-	
+  public:
 	Camera(glm::vec3 pos = glm::vec3(0.0f));
 
 	void Pan(glm::vec3 direction);
