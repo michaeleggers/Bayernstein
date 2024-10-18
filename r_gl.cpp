@@ -1032,6 +1032,14 @@ void GLRender::InitShaders()
     //       But more things are to come so don't over-abstract things for now!
     m_FontShader->InitializeFontUniforms();
 
+    m_ShapesShader = new Shader();
+    if ( !m_ShapesShader->Load(
+        "shaders/shapes2d.vert",
+        "shaders/shapes2d.frag"
+    )) {
+        printf("Problems initializing shapes2d shader!\n");
+    }
+    
     m_CompositeShader = new Shader();
     if ( !m_CompositeShader->Load(
         "shaders/composite.vert",
