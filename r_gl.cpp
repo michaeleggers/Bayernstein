@@ -191,7 +191,7 @@ bool GLRender::Init(void) {
     SDL_ShowWindow(m_Window);
 
     // GL Vsync on
-    if (SDL_GL_SetSwapInterval(0) != 0) {
+    if (SDL_GL_SetSwapInterval(1) != 0) {
         SDL_Log("Failed to enable vsync!\n");
     }
     else {
@@ -878,11 +878,19 @@ void GLRender::DrawText(const std::string& text,
 
 void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode) {
 
+    float xPos = WINDOW_WIDTH * x;
+    float yPos = WINDOW_HEIGHT* y;
+
+    if ( coordMode == COORD_MODE_ABS ) {
+        xPos = x;
+        yPos = y;
+    }
+
     Vertex verts[4] = {
-        { glm::vec3(x, y, 0.0f) },
-        { glm::vec3(x, y + height, 0.0f) },
-        { glm::vec3(x + width, y + height, 0.0f) },
-        { glm::vec3(x + width, y, 0.0f) }
+        { glm::vec3(xPos, yPos, 0.0f) },
+        { glm::vec3(xPos, yPos + height, 0.0f) },
+        { glm::vec3(xPos + width, yPos + height, 0.0f) },
+        { glm::vec3(xPos + width, yPos, 0.0f) }
     };
     FaceQuad fq = CreateFaceQuadFromVerts( verts );
     
