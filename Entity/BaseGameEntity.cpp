@@ -3,10 +3,7 @@
 //
 
 #include "BaseGameEntity.h"
-#include <cassert>
-#include <iostream>
-
-
+#include "assert.h"
 
 int BaseGameEntity::m_iNextValidID = 0;
 
@@ -20,7 +17,7 @@ int BaseGameEntity::m_iNextValidID = 0;
 void BaseGameEntity::SetID(int value) {
 	// make sure the val is equal to or greater than the next available ID
 	assert((value >= m_iNextValidID) && "<BaseGameEntity::SetID>: invalid ID");
-	std::cout << "value: " << value << " next valid: " << m_iNextValidID << "\n";
+	printf("new id selected: %i,  next valid: %i\n", value, m_iNextValidID);
 
 	m_ID = value;
 

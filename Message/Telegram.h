@@ -4,8 +4,8 @@
 
 #ifndef TELEGRAM_H
 #define TELEGRAM_H
-#include <cmath>
-#include <ostream>
+#include "math.h"
+#include "stdio.h"
 
 struct Telegram {
 	// messages can be dispatched immediately or delayed for a specified amount
@@ -30,6 +30,13 @@ struct Telegram {
 
 	Telegram(const double time, const int sender, const int receiver, const int msg, void *info = nullptr)
 		: DispatchTime(time), Sender(sender), Receiver(receiver), Message(msg), ExtraInfo(info) {}
+
+	char c_str() {
+		char buffer[100];
+		sprintf(buffer, "telegram = time: %f, Sender: %i, Receiver %i, Message: %i", DispatchTime, Sender, Receiver,
+				Message);
+		return *buffer;
+	}
 };
 
 // these telegrams will be stored in a priority queue. Therefore the >
@@ -51,13 +58,6 @@ inline bool operator<(const Telegram &t1, const Telegram &t2) {
 	else {
 		return (t1.DispatchTime < t2.DispatchTime);
 	}
-}
-
-inline std::ostream &operator<<(std::ostream &os, const Telegram &t) {
-	os << "time: " << t.DispatchTime << "  Sender: " << t.Sender << "   Receiver: " << t.Receiver
-	   << "   Message: " << t.Message;
-
-	return os;
 }
 
 // handy helper function for dereferencing the ExtraInfo field of the Telegram

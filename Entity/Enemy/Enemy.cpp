@@ -4,11 +4,10 @@
 
 #include "Enemy.h"
 #include "EnemyStates.h"
-#include <iostream>
 
 void Enemy::Update() {
 	m_pStateMachine->Update();
-	std::cout << "Enemy Health: " << m_Health << "\n";
+	printf("Enemy Health: %f\n", m_Health);
 }
 
 Enemy::Enemy(const int id) : BaseGameEntity(id), m_pStateMachine(nullptr) {

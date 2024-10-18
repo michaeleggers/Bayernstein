@@ -6,7 +6,7 @@
 #define STATEMACHINE_H
 
 #include "State.h"
-#include <cassert>
+#include "assert.h"
 #include <typeinfo>
 
 template <class entity_type> class StateMachine {

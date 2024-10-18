@@ -6,20 +6,18 @@
 
 #include "../../Message/MessageType.h"
 
-#include <iostream>
-
 EnemyIdle *EnemyIdle::Instance() {
 	static EnemyIdle instance;
 
 	return &instance;
 }
 
-void EnemyIdle::Enter(Enemy *pEnemy) { std::cout << "Enemy entered Idle State\n"; }
+void EnemyIdle::Enter(Enemy *pEnemy) { printf("Enemy entered Idle State\n"); }
 
-void EnemyIdle::Execute(Enemy *pEnemy) { std::cout << "Enemy is executing Idle State\n"; }
-void EnemyIdle::Exit(Enemy *pEnemy) { std::cout << "Enemy is exiting Idle State\n"; }
+void EnemyIdle::Execute(Enemy *pEnemy) { printf("Enemy is executing Idle State\n"); }
+void EnemyIdle::Exit(Enemy *pEnemy) { printf("Enemy is exiting Idle State\n"); }
 bool EnemyIdle::OnMessage(Enemy *agent, const Telegram &telegram) {
-	std::cout << "\nEnemy received telegram " << MessageToString(telegram.Message) << "\n";
+	printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
 	switch (telegram.Message) {
 	case message_type::Attack: {
 		agent->DecreaseHealth(*(double *)telegram.ExtraInfo * 2.0);
@@ -43,10 +41,10 @@ EnemyRunning *EnemyRunning::Instance() {
 	return &instance;
 }
 
-void EnemyRunning::Enter(Enemy *pEnemy) { std::cout << "Enemy entered Running State\n"; }
+void EnemyRunning::Enter(Enemy *pEnemy) { printf("Enemy entered Running State\n"); }
 
-void EnemyRunning::Execute(Enemy *pEnemy) { std::cout << "Enemy is executing Running State\n"; }
-void EnemyRunning::Exit(Enemy *pEnemy) { std::cout << "Player is exiting Running State\n"; }
+void EnemyRunning::Execute(Enemy *pEnemy) { printf("Enemy is executing Running State\n"); }
+void EnemyRunning::Exit(Enemy *pEnemy) { printf("Player is exiting Running State\n"); }
 bool EnemyRunning::OnMessage(Enemy *agent, const Telegram &telegram) { return false; }
 
 EnemyAttacking *EnemyAttacking::Instance() {
@@ -55,12 +53,12 @@ EnemyAttacking *EnemyAttacking::Instance() {
 	return &instance;
 }
 
-void EnemyAttacking::Enter(Enemy *pEnemy) { std::cout << "Enemy entered Attacking State\n"; }
+void EnemyAttacking::Enter(Enemy *pEnemy) { printf("Enemy entered Attacking State\n"); }
 
-void EnemyAttacking::Execute(Enemy *pEnemy) { std::cout << "Enemy is executing Attacking State\n"; }
-void EnemyAttacking::Exit(Enemy *pEnemy) { std::cout << "Player is exiting Attacking State\n"; }
+void EnemyAttacking::Execute(Enemy *pEnemy) { printf("Enemy is executing Attacking State\n"); }
+void EnemyAttacking::Exit(Enemy *pEnemy) { printf("Player is exiting Attacking State\n"); }
 bool EnemyAttacking::OnMessage(Enemy *agent, const Telegram &telegram) {
-	std::cout << "\nEnemy received telegram " << MessageToString(telegram.Message) << "\n";
+	printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
 	switch (telegram.Message) {
 	case message_type::Attack: {
 		agent->DecreaseHealth(*(double *)telegram.ExtraInfo);
@@ -82,8 +80,8 @@ EnemyDead *EnemyDead::Instance() {
 	return &instance;
 }
 
-void EnemyDead::Enter(Enemy *pEnemy) { std::cout << "Enemy entered Dead State\n"; }
+void EnemyDead::Enter(Enemy *pEnemy) { printf("Enemy entered Dead State\n"); }
 
-void EnemyDead::Execute(Enemy *pEnemy) { std::cout << "Enemy is executing Dead State\n"; }
-void EnemyDead::Exit(Enemy *pEnemy) { std::cout << "Player is exiting Dead State\n"; }
+void EnemyDead::Execute(Enemy *pEnemy) { printf("Enemy is executing Dead State\n"); }
+void EnemyDead::Exit(Enemy *pEnemy) { printf("Player is exiting Dead State\n"); }
 bool EnemyDead::OnMessage(Enemy *agent, const Telegram &telegram) { return false; }
