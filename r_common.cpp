@@ -231,7 +231,12 @@ void TranslateQuad(Quad* quad, glm::vec3 t) {
 }
 
 FaceQuad QuadToFace(Quad* quad) {
-	return { quad->tl, quad->tr, quad->br, quad->bl };
+	return {
+		quad->tl,
+		quad->tr,
+		quad->br,
+		quad->bl,
+	};
 }
 
 void SetQuadColor(Quad* quad, glm::vec4 color) {
