@@ -42,9 +42,9 @@ layout (std140) uniform Settings {
     uvec4 bitFields;
 };
 
-layout (std140) uniform screenspaceUBO {
+layout (std140) uniform fontUBO {
     vec4 color;
-    vec4 scale; // x = scale, yzw = free (unused for now)
+    vec4 scale; // x = scale (unused for now), yzw = free (unused for now)
 };
 
 void main() {

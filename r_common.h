@@ -54,7 +54,7 @@ struct ShaderSettings {
 	glm::uvec4 u32bitMasks; // TODO: This is just to make the Shader happy (Wants 16 bytes by default, not only 4).
 };
 
-struct Screenspace2dUB {
+struct FontUB {
 	glm::vec4 color;
 	glm::vec4 size; // x = size, yzw = unused
 };

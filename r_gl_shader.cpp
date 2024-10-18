@@ -13,13 +13,23 @@
 
 extern std::string g_GameDir;
 
-// GLOBAL SHADER BUFFERS (USED BY ALL SHADERS)
+// Shader binding points. We define them here to always know in advance
+// where to bind Uniforms to.
+// TODO: These are not used to their full extent right now as we
+// still query the uniform locations. There are new features in OpenGL
+// that can optimize this.
+// TODO: Those BIND_POINT definitions should probably in a non-open-gl
+// header file in the future when creating a new backend with a different API.
 
 #define BIND_POINT_VIEW_PROJECTION    0
 #define BIND_POINT_SETTINGS			  1
-#define BIND_POINT_SCREENSPACE_2D	  3
-static GLuint g_PaletteBindingPoint = 2;
+#define BIND_POINT_FONT			3
 
+static GLuint g_PaletteBindingPoint = 2; // FIX: Not sure about this one.
+
+// Global uniforms that ALL shaders share.
+// NOTE: We can change this in the future but it has proven to be
+// beneficial if some uniforms can easily used in all shaders.
 static GLuint   g_ViewProjUBO;
 static GLuint   g_SettingsUBO;
 static uint32_t g_SettingsBits;
@@ -88,22 +98,22 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName, uint
 	return true;
 }
 
-void Shader::InitializeScreenSpace2dUniforms() {
+void Shader::InitializeFontUniforms() {
 	// TODO: (Michael): Uniform Binding happens quite often (see init shader above). Simplify this.
     
-	GLuint bindingPoint = BIND_POINT_SCREENSPACE_2D; 
-	m_Screenspace2dUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "screenspaceUBO");
-	if (m_Screenspace2dUniformIndex == GL_INVALID_INDEX) {
+	GLuint bindingPoint = BIND_POINT_FONT; 
+	m_FontUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "fontUBO");
+	if (m_FontUniformIndex == GL_INVALID_INDEX) {
 		//printf("SHADER-WARNING: Not able to get index for UBO in shader program.\nShaders:\n %s\n %s\n", vertName.c_str(), fragName.c_str());
-        printf("Not able to bind screenspaceUBO!\n");
+        printf("Not able to bind fontUBO!\n");
 		// TODO: What to do in this case???
 	}
-	glUniformBlockBinding(m_ShaderProgram, m_Screenspace2dUniformIndex, bindingPoint);
+	glUniformBlockBinding(m_ShaderProgram, m_FontUniformIndex, bindingPoint);
 
-    glGenBuffers(1, &m_Screenspace2dUBO);
-    glBindBuffer(GL_UNIFORM_BUFFER, m_Screenspace2dUBO);
-    glBufferData( GL_UNIFORM_BUFFER, sizeof(Screenspace2dUB), nullptr, GL_DYNAMIC_DRAW );
-    glBindBufferRange( GL_UNIFORM_BUFFER, bindingPoint, m_Screenspace2dUBO, 0, sizeof(Screenspace2dUB) );
+    glGenBuffers(1, &m_FontUBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, m_FontUBO);
+    glBufferData( GL_UNIFORM_BUFFER, sizeof(FontUB), nullptr, GL_DYNAMIC_DRAW );
+    glBindBufferRange( GL_UNIFORM_BUFFER, bindingPoint, m_FontUBO, 0, sizeof(FontUB) );
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 

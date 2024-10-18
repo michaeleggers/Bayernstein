@@ -102,8 +102,10 @@ void GLRender::Shutdown(void)
     m_ImPrimitiveBatch->Kill();
     delete m_ImPrimitiveBatch;
 
-    m_Screenspace2dBatch->Kill();
-    delete m_Screenspace2dBatch;
+    m_FontBatch->Kill();
+    delete m_FontBatch;
+
+    m_FontShader->Unload();
     
     m_ModelShader->Unload();
     delete m_ModelShader;
@@ -237,7 +239,7 @@ bool GLRender::Init(void)
     m_ImPrimitiveBatch = new GLBatch(1000 * 1000);
     m_ImPrimitiveBatchIndexed = new GLBatch(1000 * 1000, 1000 * 1000);
     m_ColliderBatch = new GLBatch(1000000);
-    m_Screenspace2dBatch = new GLBatch(1000, 1000);
+    m_FontBatch = new GLBatch(1000, 1000);
 
     // Initialize shaders
 
@@ -711,13 +713,13 @@ void GLRender::Begin2D() {
 
     glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
 
-    m_Screenspace2dShader->Activate();
+    m_FontShader->Activate();
 
     glm::mat4 ortho = glm::ortho(0.0f, (float)m_2dFBO->m_Width, 
                                  (float)m_2dFBO->m_Height, 0.0f,
                                  -1.0f, 1.0f);
    
-    m_Screenspace2dShader->SetViewProjMatrices( glm::mat4(1.0f), ortho );
+    m_FontShader->SetViewProjMatrices( glm::mat4(1.0f), ortho );
 }
 
 void GLRender::End2D() {
@@ -740,26 +742,26 @@ void GLRender::SetFont(CFont* font, glm::vec4 color) {
     ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
     glBindTexture(GL_TEXTURE_2D, (GLuint)fontTexture->m_hGPU);
    
-    Screenspace2dUB screenspaceShaderData = {
+    FontUB fontShaderData = {
         color,
         glm::vec4(0.0f) // NOTE: unused at the moment. 
     };
 
-    glBindBuffer( GL_UNIFORM_BUFFER, m_Screenspace2dShader->m_Screenspace2dUBO );
-    glBufferSubData( GL_UNIFORM_BUFFER, 0, sizeof(Screenspace2dUB), (void*)&screenspaceShaderData );
+    glBindBuffer( GL_UNIFORM_BUFFER, m_FontShader->m_FontUBO );
+    glBufferSubData( GL_UNIFORM_BUFFER, 0, sizeof(FontUB), (void*)&fontShaderData );
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     m_CurrentFont = font;
 }
 
 void GLRender::Flush2D() {
-    m_Screenspace2dBatch->Bind();
+    m_FontBatch->Bind();
     glDrawElementsBaseVertex(GL_TRIANGLES, 
-                             m_Screenspace2dBatch->IndexCount(), 
+                             m_FontBatch->IndexCount(), 
                              GL_UNSIGNED_SHORT, 
                              (GLvoid*)0, 0);
     
-    m_Screenspace2dBatch->Reset();
+    m_FontBatch->Reset();
 }
 
 void GLRender::DrawText(const std::string& text, float x, float y, ScreenSpaceCoordMode coordMode) {
@@ -782,7 +784,7 @@ void GLRender::DrawText(const std::string& text, float x, float y, ScreenSpaceCo
     int out_OffsetVertices = 0; // TODO: Not needed here!
    
     // TODO: (Michael): Make indices uint32_t.
-    uint16_t iOffset = (uint16_t)m_Screenspace2dBatch->m_LastIndex; 
+    uint16_t iOffset = (uint16_t)m_FontBatch->m_LastIndex; 
     uint16_t lastIndex = iOffset;
     
     const char* c = text.c_str();
@@ -825,7 +827,7 @@ void GLRender::DrawText(const std::string& text, float x, float y, ScreenSpaceCo
             fq.b.uv = { q.s0, q.t1 };
             fq.c.uv = { q.s0, q.t0 };
             fq.d.uv = { q.s1, q.t0 };
-            m_Screenspace2dBatch->Add(fq.vertices, 4, 
+            m_FontBatch->Add(fq.vertices, 4, 
                                       indices, 6, 
                                       &out_OffsetVertices, &out_OffsetIndices, 
                                       false, DRAW_MODE_SOLID);
@@ -838,7 +840,7 @@ void GLRender::DrawText(const std::string& text, float x, float y, ScreenSpaceCo
     }
    
     // We need one *after* this batche's data for the next batch.
-    m_Screenspace2dBatch->m_LastIndex = lastIndex + 1; 
+    m_FontBatch->m_LastIndex = lastIndex + 1; 
 }
 
 void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode) {
@@ -851,7 +853,7 @@ void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceC
     };
     FaceQuad fq = CreateFaceQuadFromVerts( verts );
     
-    uint16_t iOffset = (uint16_t)m_Screenspace2dBatch->m_LastIndex; 
+    uint16_t iOffset = (uint16_t)m_FontBatch->m_LastIndex; 
     uint16_t indices[6] = {
         iOffset + 0, iOffset + 1, iOffset + 2,
         iOffset + 2, iOffset + 3, iOffset + 0
@@ -862,12 +864,12 @@ void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceC
     // of unused (and unwanted) out_* variables for now!
     int out_OffsetIndices = 0; // TODO: Not needed here!
     int out_OffsetVertices = 0; // TODO: Not needed here!
-    m_Screenspace2dBatch->Add(fq.vertices, 4,
+    m_FontBatch->Add(fq.vertices, 4,
                               indices, 6,
                               &out_OffsetVertices, &out_OffsetIndices,
                               false, DRAW_MODE_SOLID);
     
-    m_Screenspace2dBatch->m_LastIndex += 4;
+    m_FontBatch->m_LastIndex += 4;
 
 }
 
@@ -963,7 +965,7 @@ void GLRender::RenderEnd(void)
 
     m_ImPrimitiveBatch->Reset();
     m_ImPrimitiveBatchIndexed->Reset();
-    m_Screenspace2dBatch->Reset();
+    m_FontBatch->Reset();
     m_PrimitiveDrawCmds.clear();
     m_PrimitiveIndexdDrawCmds.clear();
 }
@@ -1015,12 +1017,12 @@ void GLRender::InitShaders()
 
     // 2D Screenspace: UI, Console, etc.
 
-    m_Screenspace2dShader = new Shader();
-    if ( !m_Screenspace2dShader->Load(
-        "shaders/screenspace2d.vert",
-        "shaders/screenspace2d.frag"
+    m_FontShader = new Shader();
+    if ( !m_FontShader->Load(
+        "shaders/font.vert",
+        "shaders/font.frag"
         )) {
-        printf("Problems initializing screenspace2d shader!\n");
+        printf("Problems initializing font shader!\n");
     }
     // TODO: We could think about actually creating a subclass
     //       for a dedicated screenspace shader so we don't have
@@ -1028,7 +1030,7 @@ void GLRender::InitShaders()
     //       also the main shader class has all these things related
     //       to 2d screenspace rendering which it doesn't need.
     //       But more things are to come so don't over-abstract things for now!
-    m_Screenspace2dShader->InitializeScreenSpace2dUniforms();
+    m_FontShader->InitializeFontUniforms();
 
     m_CompositeShader = new Shader();
     if ( !m_CompositeShader->Load(

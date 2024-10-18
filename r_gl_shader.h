@@ -35,13 +35,13 @@ public:
 	void DrawWireframe(uint32_t yesOrNo);
 	void SetShaderSettingBits(uint32_t bits);
 	void ResetShaderSettingBits(uint32_t bits);
-	void InitializeScreenSpace2dUniforms();
+	void InitializeFontUniforms();
 	static void InitGlobalBuffers();
 
 	// Some people would say this must be private. But I find it
 	// a bit dumb to have a getter for this. Just don't assign
 	// a new value to this UBO handle, ok? Thanks!
-	GLuint m_Screenspace2dUBO;
+	GLuint m_FontUBO;
 
 private:
 	bool CompileShader(const std::string& fileName, GLenum shaderType, GLuint& outShader);
@@ -60,7 +60,7 @@ private:
 	GLuint m_PaletteUBO;
 
 	// 2d screenspace uniforms
-	GLuint m_Screenspace2dUniformIndex;
+	GLuint m_FontUniformIndex;
 };
 
 

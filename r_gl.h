@@ -82,7 +82,7 @@ private:
 	GLBatch*					m_ImPrimitiveBatchIndexed;
 	std::vector<GLBatchDrawCmd>	m_PrimitiveIndexdDrawCmds;
 
-	GLBatch*	m_Screenspace2dBatch;
+	GLBatch*	m_FontBatch;
 	
 	Shader*						m_ModelShader;
 	std::vector<GLModel>		m_Models;
@@ -93,7 +93,7 @@ private:
 	GLBatch*					m_ColliderBatch;
 
 	Shader*				m_CompositeShader;
-	Shader*		                m_Screenspace2dShader;
+	Shader*		                m_FontShader;
 	// Offsets into collider batch
 	GLBatchDrawCmd				m_EllipsoidColliderDrawCmd;
 
