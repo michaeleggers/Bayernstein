@@ -320,12 +320,11 @@ bool Game::RunFrame(double dt)
         // previous calls to DrawText automatically.
         m_Renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) );
         m_Renderer->DrawText("Some more text in yellow :)", 0.0f, 200.0f, COORD_MODE_ABS); 
-        m_Renderer->DrawText("MOAR TEXT", 100.0f, 300.0f, COORD_MODE_ABS);
+        m_Renderer->DrawText("And blended with box on top", 100.0f, 300.0f, COORD_MODE_ABS);
         // Done with fonts. Need to flush.
         m_Renderer->FlushFonts();
 
-        m_Renderer->SetShapeColor( glm::vec4(0.7f, 0.3f, 0.3f, 1.0) );
-        m_Renderer->DrawBox( 10.0f, 100.0f, 500.0f, 500.0f );
+        m_Renderer->SetShapeColor( glm::vec4(0.7f, 0.3f, 0.7f, 0.7) );
         m_Renderer->DrawBox( 200.0f, 200.0f, 800.0f, 200.0f );
         m_Renderer->FlushShapes();
 
@@ -341,7 +340,7 @@ bool Game::RunFrame(double dt)
         m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
         m_Renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 
                              600.0f, 600.0f, COORD_MODE_ABS);
-        m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(1.0f, 0.1f, 0.0f, 1.0f) );
+        m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(0.0f, 0.0f, 1.0f, 0.5f) );
         m_Renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 
                              605.0f, 605.0f, COORD_MODE_ABS);
         m_Renderer->FlushFonts();

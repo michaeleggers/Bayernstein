@@ -19,7 +19,7 @@ layout (location = 1) in vec4 in_color;
 void main() {
 
     vec4 color = texture( glyphsTexture, in_uv );
-    out_color = vec4( in_color.rgb, color.a );
+    out_color = vec4( in_color.rgb, in_color.a*color.a );
 
 }
 

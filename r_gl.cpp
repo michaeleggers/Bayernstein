@@ -710,7 +710,7 @@ void GLRender::Begin2D() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     
     glDisable(GL_DEPTH_TEST);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //glDisable(GL_CULL_FACE);
 
     glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
