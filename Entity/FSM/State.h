@@ -4,8 +4,7 @@
 
 #ifndef STATE_H
 #define STATE_H
-
-
+#include "../Message/Telegram.h"
 
 template <class entity_type> class State {
   public:
@@ -22,9 +21,7 @@ template <class entity_type> class State {
 
 	// this executes if the agent receives a message from the
 	// message dispatcher
-	//	virtual bool OnMessage(entity_type*, const Telegram&)=0;
+	virtual bool OnMessage(entity_type *, const Telegram &) = 0;
 };
-
-
 
 #endif // STATE_H

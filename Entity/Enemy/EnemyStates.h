@@ -7,8 +7,6 @@
 #include "../FSM/State.h"
 #include "Enemy.h"
 
-
-
 class EnemyIdle : public State<Enemy> {
   private:
 	EnemyIdle() = default;
@@ -26,7 +24,7 @@ class EnemyIdle : public State<Enemy> {
 
 	void Exit(Enemy *pEnemy) override;
 
-	//	virtual bool OnMessage(Enemy* agent, const Telegram& msg);
+	bool OnMessage(Enemy *agent, const Telegram &telegram) override;
 };
 
 class EnemyRunning : public State<Enemy> {
@@ -46,7 +44,7 @@ class EnemyRunning : public State<Enemy> {
 
 	void Exit(Enemy *pEnemy) override;
 
-	//	virtual bool OnMessage(Enemy* agent, const Telegram& msg);
+	bool OnMessage(Enemy *agent, const Telegram &telegram) override;
 };
 
 class EnemyAttacking : public State<Enemy> {
@@ -66,9 +64,29 @@ class EnemyAttacking : public State<Enemy> {
 
 	void Exit(Enemy *pEnemy) override;
 
-	//	virtual bool OnMessage(Enemy* agent, const Telegram& msg);
+	bool OnMessage(Enemy *agent, const Telegram &telegram) override;
 };
 
+class EnemyDead : public State<Enemy> {
+  private:
+	EnemyDead() = default;
 
+	// copy ctor and assignment should be private
+	EnemyDead(const EnemyDead &);
+	EnemyDead &operator=(const EnemyDead &);
+
+  public:
+	// copy ctor and assignment should be private
+	// this is a singleton
+	static EnemyDead *Instance();
+
+	void Enter(Enemy *pEnemy) override;
+
+	void Execute(Enemy *pEnemy) override;
+
+	void Exit(Enemy *pEnemy) override;
+
+	bool OnMessage(Enemy *agent, const Telegram &telegram) override;
+};
 
 #endif // ENEMYSTATES_H

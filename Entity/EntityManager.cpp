@@ -26,16 +26,15 @@ void EntityManager::RegisterEntity(BaseGameEntity *NewEntity) {
 }
 
 BaseGameEntity *EntityManager::GetEntityFromID(int id) const {
-	// find the entity
-	EntityMap::const_iterator ent = m_EntityMap.find(id);
+	EntityMap::const_iterator entity = m_EntityMap.find(id);
 
 	// assert that the entity is a member of the map
-	assert((ent != m_EntityMap.end()) && "<EntityManager::GetEntityFromID>: invalid ID");
+	assert((entity != m_EntityMap.end()) && "<EntityManager::GetEntityFromID>: invalid ID");
 
-	return ent->second;
+	return entity->second;
 }
 
-void EntityManager::RemoveEntity(BaseGameEntity *pEntity) { m_EntityMap.erase(m_EntityMap.find(pEntity->ID())); }
+void EntityManager::RemoveEntity(const BaseGameEntity *pEntity) { m_EntityMap.erase(m_EntityMap.find(pEntity->ID())); }
 
 void EntityManager::UpdateEntities() {
 	for (auto [id, entity] : m_EntityMap) {

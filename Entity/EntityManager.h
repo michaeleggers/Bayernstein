@@ -29,7 +29,7 @@ class EntityManager {
 	[[nodiscard]] BaseGameEntity *GetEntityFromID(int id) const;
 
 	// this method removes the entity from the list
-	void RemoveEntity(BaseGameEntity *pEntity);
+	void RemoveEntity(const BaseGameEntity *pEntity);
 
 	void UpdateEntities();
 };

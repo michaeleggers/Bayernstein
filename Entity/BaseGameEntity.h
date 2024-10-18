@@ -6,8 +6,6 @@
 #define BASEGAMEENTITY_H
 #include "Message/Telegram.h"
 
-
-
 class BaseGameEntity {
   private:
 	int m_ID{};
@@ -32,11 +30,9 @@ class BaseGameEntity {
 
 	// all entities can communicate using messages. They are sent
 	// using the MessageDispatcher singleton class
-	virtual bool HandleMessage(const Telegram &message) = 0;
+	virtual bool HandleMessage(const Telegram &telegram) = 0;
 
 	[[nodiscard]] int ID() const { return m_ID; }
 };
-
-
 
 #endif // BASEGAMEENTITY_H

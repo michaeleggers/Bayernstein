@@ -138,6 +138,8 @@ add_executable(Game
 		CWorld.h
 		collision.cpp
 		collision.h
+		Clock/Clock.cpp
+		Clock/Clock.h
 		Entity/Message/MessageDispatcher.cpp
 		Entity/Message/MessageDispatcher.h
 		Entity/Message/Telegram.h

@@ -18,6 +18,10 @@ void Player::Update() {
 	if (KeyPressed(SDLK_s)) {
 		m_pStateMachine->ChangeState(PlayerIdle::Instance());
 	}
+
+	if (KeyPressed(SDLK_SPACE)) {
+		m_pStateMachine->ChangeState(PlayerAttacking::Instance());
+	}
 	m_pStateMachine->Update();
 }
 
@@ -26,7 +30,4 @@ Player::Player() : BaseGameEntity(0), m_pStateMachine(nullptr) {
 	m_pStateMachine->SetCurrentState(PlayerIdle::Instance());
 }
 
-bool Player::HandleMessage(const Telegram &message) {
-	std::cout << "Message Recieved" << message << std::endl;
-	return true;
-}
+bool Player::HandleMessage(const Telegram &telegram) { return m_pStateMachine->HandleMessage(telegram); }

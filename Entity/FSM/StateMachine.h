@@ -9,8 +9,6 @@
 #include <cassert>
 #include <typeinfo>
 
-
-
 template <class entity_type> class StateMachine {
   private:
 	entity_type *m_pOwner;
@@ -67,7 +65,7 @@ template <class entity_type> class StateMachine {
 
 	// returns true if the current state's type is equal to the type of the
 	// class passed as a parameter.
-	bool isInState(const State<entity_type> &state) const {
+	bool IsInState(const State<entity_type> &state) const {
 		if (typeid(*m_pCurrentState) == typeid(state)) {
 			return true;
 		}
@@ -77,8 +75,22 @@ template <class entity_type> class StateMachine {
 	State<entity_type> *CurrentState() const { return m_pCurrentState; }
 	State<entity_type> *GlobalState() const { return m_pGlobalState; }
 	State<entity_type> *PreviousState() const { return m_pPreviousState; }
+
+	bool HandleMessage(const Telegram &message) const {
+		// first see if the current state is valid and that it can handle
+		// the message
+		if (m_pCurrentState && m_pCurrentState->OnMessage(m_pOwner, message)) {
+			return true;
+		}
+
+		// if not, and if a global state has been implemented, send
+		// the message to the global state
+		if (m_pGlobalState && m_pGlobalState->OnMessage(m_pOwner, message)) {
+			return true;
+		}
+
+		return false;
+	}
 };
-
-
 
 #endif // STATEMACHINE_H

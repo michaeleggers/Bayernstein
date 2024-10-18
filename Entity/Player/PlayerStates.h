@@ -7,8 +7,6 @@
 #include "../FSM/State.h"
 #include "Player.h"
 
-
-
 class PlayerIdle : public State<Player> {
   private:
 	PlayerIdle() = default;
@@ -26,7 +24,7 @@ class PlayerIdle : public State<Player> {
 
 	void Exit(Player *pPlayer) override;
 
-	//	virtual bool OnMessage(Player* agent, const Telegram& msg);
+	bool OnMessage(Player *agent, const Telegram &telegram) override;
 };
 
 class PlayerRunning : public State<Player> {
@@ -46,7 +44,7 @@ class PlayerRunning : public State<Player> {
 
 	void Exit(Player *pPlayer) override;
 
-	//	virtual bool OnMessage(Player* agent, const Telegram& msg);
+	bool OnMessage(Player *agent, const Telegram &telegram) override;
 };
 
 class PlayerAttacking : public State<Player> {
@@ -66,8 +64,7 @@ class PlayerAttacking : public State<Player> {
 
 	void Exit(Player *pPlayer) override;
 
-	//	virtual bool OnMessage(Player* agent, const Telegram& msg);
+	bool OnMessage(Player *agent, const Telegram &telegram) override;
 };
-
 
 #endif // PLAYERSTATES_H
