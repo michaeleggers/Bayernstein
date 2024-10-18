@@ -48,6 +48,9 @@ HKD_Model CreateModelFromIQM(IQMModel* model)
         else {
             mesh.isTextured = true;
         }
+        
+        // Just load the font here so that it gets bound. TODO: Remove commented code below later.
+        // mesh.textureFileName = "fonts/HackNerdFont-Bold.ttf"; // iqmMesh->material;
         mesh.textureFileName = iqmMesh->material;
         mesh.firstTri = iqmMesh->firstTri;
         mesh.numTris = iqmMesh->numTris;

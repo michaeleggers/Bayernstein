@@ -13,12 +13,24 @@
 
 extern std::string g_GameDir;
 
-// GLOBAL SHADER BUFFERS (USED BY ALL SHADERS)
+// Shader binding points. We define them here to always know in advance
+// where to bind Uniforms to.
+// TODO: These are not used to their full extent right now as we
+// still query the uniform locations. There are new features in OpenGL
+// that can optimize this.
+// TODO: Those BIND_POINT definitions should probably in a non-open-gl
+// header file in the future when creating a new backend with a different API.
 
 #define BIND_POINT_VIEW_PROJECTION    0
 #define BIND_POINT_SETTINGS			  1
-static GLuint g_PaletteBindingPoint = 2;
+#define BIND_POINT_FONT			3
+#define BIND_POINT_SHAPES		4
 
+static GLuint g_PaletteBindingPoint = 2; // FIX: Not sure about this one.
+
+// Global uniforms that ALL shaders share.
+// NOTE: We can change this in the future but it has proven to be
+// beneficial if some uniforms can easily used in all shaders.
 static GLuint   g_ViewProjUBO;
 static GLuint   g_SettingsUBO;
 static uint32_t g_SettingsBits;
@@ -87,6 +99,43 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName, uint
 	return true;
 }
 
+void Shader::InitializeFontUniforms() {
+	// TODO: (Michael): Uniform Binding happens quite often (see init shader above). Simplify this.
+    
+	GLuint bindingPoint = BIND_POINT_FONT; 
+	m_FontUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "fontUB");
+	if (m_FontUniformIndex == GL_INVALID_INDEX) {
+		//printf("SHADER-WARNING: Not able to get index for UBO in shader program.\nShaders:\n %s\n %s\n", vertName.c_str(), fragName.c_str());
+        printf("Not able to bind fontUBO!\n");
+		// TODO: What to do in this case???
+	}
+	glUniformBlockBinding(m_ShaderProgram, m_FontUniformIndex, bindingPoint);
+
+    glGenBuffers(1, &m_FontUBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, m_FontUBO);
+    glBufferData( GL_UNIFORM_BUFFER, sizeof(FontUB), nullptr, GL_DYNAMIC_DRAW );
+    glBindBufferRange( GL_UNIFORM_BUFFER, bindingPoint, m_FontUBO, 0, sizeof(FontUB) );
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+void Shader::InitializeShapesUniforms() {
+	// TODO: (Michael): Uniform Binding happens quite often (see init shader above). Simplify this.
+    
+	GLuint bindingPoint = BIND_POINT_SHAPES; 
+	m_ShapesUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "shapesUB");
+	if (m_ShapesUniformIndex == GL_INVALID_INDEX) {
+		//printf("SHADER-WARNING: Not able to get index for UBO in shader program.\nShaders:\n %s\n %s\n", vertName.c_str(), fragName.c_str());
+        printf("Not able to bind shapesUB! n");
+		// TODO: What to do in this case???
+	}
+	glUniformBlockBinding(m_ShaderProgram, m_ShapesUniformIndex, bindingPoint);
+
+    glGenBuffers(1, &m_ShapesUBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, m_ShapesUBO);
+    glBufferData( GL_UNIFORM_BUFFER, sizeof(ShapesUB), nullptr, GL_DYNAMIC_DRAW );
+    glBindBufferRange( GL_UNIFORM_BUFFER, bindingPoint, m_ShapesUBO, 0, sizeof(ShapesUB) );
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
 void Shader::Unload()
 {
 	glDeleteProgram(m_ShaderProgram);

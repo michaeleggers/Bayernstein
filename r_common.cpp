@@ -238,6 +238,13 @@ FaceQuad QuadToFace(Quad* quad)
 	};
 }
 
+FaceQuad CreateFaceQuadFromVerts(Vertex* vertices) {
+	FaceQuad fq{};
+	memcpy( fq.vertices, vertices, 4 * sizeof(Vertex) );
+	
+	return fq;
+}
+
 void SetQuadColor(Quad* quad, glm::vec4 color)
 {
 	SetTriColor(&quad->a, color);

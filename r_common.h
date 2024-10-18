@@ -8,6 +8,11 @@
 #include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/ext.hpp"
 
+enum ScreenSpaceCoordMode {
+	COORD_MODE_ABS,
+	COORD_MODE_REL
+};
+
 enum GeometryType {
 	GEOM_TYPE_VERTEX_ONLY,
 	GEOM_TYPE_INDEXED
@@ -47,6 +52,16 @@ struct Vertex {
 
 struct ShaderSettings {
 	glm::uvec4 u32bitMasks; // TODO: This is just to make the Shader happy (Wants 16 bytes by default, not only 4).
+};
+
+struct FontUB {
+	glm::vec4 color;
+	glm::vec4 size;
+};
+
+struct ShapesUB {
+	glm::vec4 color;
+	glm::vec4 scale;
 };
 
 struct Tri {
@@ -151,6 +166,7 @@ Quad CreateQuad(glm::vec3 pos = glm::vec3(0, 0, 0), float width = 1.0f, float he
 void RotateQuad(Quad* quad, glm::vec3 axis, float angle);
 void TranslateQuad(Quad* quad, glm::vec3 t);
 FaceQuad QuadToFace(Quad* quad);
+FaceQuad CreateFaceQuadFromVerts(Vertex* vertices);
 void SetQuadColor(Quad* quad, glm::vec4 color);
 Box	 CreateBox(glm::vec3 scale = glm::vec3(1.0f), glm::vec4 color = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
 Box  CreateBoxFromAABB(glm::vec3 mins, glm::vec3 maxs);
