@@ -740,10 +740,6 @@ void GLRender::SetFont(CFont* font, glm::vec4 color) {
    
     m_FontShader->Activate();
 
-    // A state change means we need to flush the previous Daw-calls!
-    // Otherwise they get affected by the things happening here!
-    FlushFonts();
-
     ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
     glBindTexture(GL_TEXTURE_2D, (GLuint)fontTexture->m_hGPU);
    
@@ -875,6 +871,9 @@ void GLRender::DrawText(const std::string& text,
    
     // We need one *after* this batche's data for the next batch.
     m_FontBatch->m_LastIndex = lastIndex + 1; 
+
+    // TODO: See DrawBox() function!
+    FlushFonts();
 }
 
 void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode) {
@@ -904,7 +903,15 @@ void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceC
                               false, DRAW_MODE_SOLID);
     
     m_ShapesBatch->m_LastIndex += 4;
-
+    
+    // TODO: We can batch multiple calls to DrawBox together but this
+    // also makes the renderer more complicated! We *really* need to
+    // keep things simple so we don't fall over our own abstractions.
+    // Especially because so many variables are unknown to us at this point!
+    // We will see what we can optimize when we actually have gameplay
+    // code and a running game! One could argue that the batching system
+    // in place is already too high-level!
+    FlushShapes(); 
 }
 
 void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels)
