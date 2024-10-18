@@ -4,8 +4,8 @@
 
 #ifndef ENEMY_H
 #define ENEMY_H
+#include "../../FSM/StateMachine.h"
 #include "../BaseGameEntity.h"
-#include "../FSM/StateMachine.h"
 
 class Enemy : public BaseGameEntity {
   private:

@@ -6,9 +6,9 @@
 #define PLAYER_H
 
 #include "../../Clock/Clock.h"
+#include "../../FSM/StateMachine.h"
+#include "../../Message/MessageDispatcher.h"
 #include "../BaseGameEntity.h"
-#include "../FSM/StateMachine.h"
-#include "../Message/MessageDispatcher.h"
 
 class Player : public BaseGameEntity {
   private:

@@ -4,7 +4,7 @@
 
 #ifndef PLAYERSTATES_H
 #define PLAYERSTATES_H
-#include "../FSM/State.h"
+#include "../../FSM/State.h"
 #include "Player.h"
 
 class PlayerIdle : public State<Player> {

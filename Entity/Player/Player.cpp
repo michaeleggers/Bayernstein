@@ -6,7 +6,6 @@
 
 #include "../input.h"
 #include "PlayerStates.h"
-#include "iostream"
 #include <SDL.h>
 
 void Player::Update() {

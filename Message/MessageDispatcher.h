@@ -5,8 +5,8 @@
 #ifndef MESSAGEDISPATCHER_H
 #define MESSAGEDISPATCHER_H
 
-#include "../BaseGameEntity.h"
-#include "../EntityManager.h"
+#include "../Entity/BaseGameEntity.h"
+#include "../Entity/EntityManager.h"
 #include "Telegram.h"
 #include <set>
 

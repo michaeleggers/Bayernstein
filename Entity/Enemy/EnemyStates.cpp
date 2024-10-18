@@ -4,7 +4,7 @@
 
 #include "EnemyStates.h"
 
-#include "../Message/MessageType.h"
+#include "../../Message/MessageType.h"
 
 #include <iostream>
 

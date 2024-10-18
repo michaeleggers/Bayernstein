@@ -140,13 +140,13 @@ add_executable(Game
 		collision.h
 		Clock/Clock.cpp
 		Clock/Clock.h
-		Entity/Message/MessageDispatcher.cpp
-		Entity/Message/MessageDispatcher.h
-		Entity/Message/Telegram.h
+		Message/MessageDispatcher.cpp
+		Message/MessageDispatcher.h
+		Message/Telegram.h
 		Entity/BaseGameEntity.cpp
 		Entity/BaseGameEntity.h
-		Entity/FSM/StateMachine.h
-		Entity/FSM/State.h
+		FSM/StateMachine.h
+		FSM/State.h
 		Entity/EntityManager.cpp
 		Entity/EntityManager.h
 		Entity/Player/PlayerStates.cpp

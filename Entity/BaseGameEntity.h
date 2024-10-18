@@ -4,7 +4,7 @@
 
 #ifndef BASEGAMEENTITY_H
 #define BASEGAMEENTITY_H
-#include "Message/Telegram.h"
+#include "../Message/Telegram.h"
 
 class BaseGameEntity {
   private:
