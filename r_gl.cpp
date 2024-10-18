@@ -878,19 +878,23 @@ void GLRender::DrawText(const std::string& text,
 
 void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode) {
 
-    float xPos = WINDOW_WIDTH * x;
-    float yPos = WINDOW_HEIGHT* y;
+    float x0 = WINDOW_WIDTH * x;
+    float y0 = WINDOW_HEIGHT* y;
+    float x1 = WINDOW_WIDTH * (x + width);
+    float y1 = WINDOW_HEIGHT * (y + height);
 
     if ( coordMode == COORD_MODE_ABS ) {
-        xPos = x;
-        yPos = y;
+        x0 = x;
+        y0 = y;
+        x1 = x + width;
+        y1 = y + height;
     }
 
     Vertex verts[4] = {
-        { glm::vec3(xPos, yPos, 0.0f) },
-        { glm::vec3(xPos, yPos + height, 0.0f) },
-        { glm::vec3(xPos + width, yPos + height, 0.0f) },
-        { glm::vec3(xPos + width, yPos, 0.0f) }
+        { glm::vec3(x0, y0, 0.0f) },
+        { glm::vec3(x0, y1, 0.0f) },
+        { glm::vec3(x1, y1, 0.0f) },
+        { glm::vec3(x1, y0, 0.0f) }
     };
     FaceQuad fq = CreateFaceQuadFromVerts( verts );
     

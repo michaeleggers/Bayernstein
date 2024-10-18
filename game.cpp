@@ -326,6 +326,9 @@ bool Game::RunFrame(double dt)
         m_Renderer->SetShapeColor( glm::vec4(0.7f, 0.3f, 0.7f, 0.7) );
         m_Renderer->DrawBox( 200.0f, 200.0f, 800.0f, 200.0f, COORD_MODE_ABS );
 
+        m_Renderer->SetShapeColor( glm::vec4(1.0f, 0.0f, 0.0f, 1.0f) );
+        m_Renderer->DrawBox( 0.5f, 0.5f, 0.25f, 0.5f );
+
         m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
 
         // Use Relative coords (the default). Independent from screen resolution.
