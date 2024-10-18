@@ -52,7 +52,6 @@ void MessageDispatcher::DispatchMessage(double delay, int sender, int receiver, 
 			   pSender->ID(), pReceiver->ID(), MessageToString(message).c_str());
 		Discharge(pReceiver, telegram);
 	} else {
-		// TODO add the delay
 		double currentTime = Clock->GetTime();
 
 		telegram.DispatchTime = currentTime + delay;

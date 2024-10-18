@@ -31,7 +31,7 @@ struct Telegram {
 	Telegram(const double time, const int sender, const int receiver, const int msg, void *info = nullptr)
 		: DispatchTime(time), Sender(sender), Receiver(receiver), Message(msg), ExtraInfo(info) {}
 
-	char c_str() {
+	[[nodiscard]] char c_str() const {
 		char buffer[100];
 		sprintf(buffer, "telegram = time: %f, Sender: %i, Receiver %i, Message: %i", DispatchTime, Sender, Receiver,
 				Message);
