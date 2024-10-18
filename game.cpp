@@ -306,6 +306,8 @@ bool Game::RunFrame(double dt)
         m_Renderer->End3D();
     }
 
+    #if 1 // Toggle 2D Font/Box renderingtest
+    
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     // 2D stuff also has its own, dedicated FBO!
     {
@@ -347,7 +349,8 @@ bool Game::RunFrame(double dt)
 
         m_Renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
     } 
-   
+    #endif
+
     // This call composits 2D and 3D together into the default FBO
     // (along with ImGUI).
     m_Renderer->RenderEnd(); 

@@ -191,7 +191,7 @@ bool GLRender::Init(void) {
     SDL_ShowWindow(m_Window);
 
     // GL Vsync on
-    if (SDL_GL_SetSwapInterval(1) != 0) {
+    if (SDL_GL_SetSwapInterval(0) != 0) {
         SDL_Log("Failed to enable vsync!\n");
     }
     else {
@@ -948,12 +948,12 @@ void GLRender::RenderEnd(void)
     // At this point the GL default FBO must be active!
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
     glDepthFunc(GL_LESS);
-   
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     
