@@ -50,15 +50,17 @@ public:
 	virtual void Begin2D() override;
 	virtual void End2D() override;
 	virtual void SetFont(CFont* font, glm::vec4 color = glm::vec4(1.0f)) override;
+	virtual void SetShapeColor(glm::vec4 color = glm::vec4(1.0f)) override;
 	virtual void DrawText(const std::string& text,
 				float x, float y, 
 				ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
+	virtual void FlushFonts() override;
+	virtual void FlushShapes() override;
 	virtual void DrawBox(float x, float y, float width, float height,
 					  ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
 	virtual void RenderEnd(void)						override;
 	virtual void SetWindowTitle(char* windowTitle) override;
 
-	void Flush2D();
 	void ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType);
 	void InitShaders();
 	void RegisterColliderModels();
@@ -82,7 +84,8 @@ private:
 	GLBatch*					m_ImPrimitiveBatchIndexed;
 	std::vector<GLBatchDrawCmd>	m_PrimitiveIndexdDrawCmds;
 
-	GLBatch*	m_FontBatch;
+	GLBatch*					m_FontBatch;
+	GLBatch*					m_ShapesBatch;
 	
 	Shader*						m_ModelShader;
 	std::vector<GLModel>		m_Models;
@@ -92,18 +95,19 @@ private:
 	Shader*						m_ColliderShader;
 	GLBatch*					m_ColliderBatch;
 
-	Shader*				m_CompositeShader;
+	Shader*						m_CompositeShader;
 	Shader*		                m_FontShader;
+	Shader*						m_ShapesShader;
 	// Offsets into collider batch
 	GLBatchDrawCmd				m_EllipsoidColliderDrawCmd;
 
 	CglFBO*		                m_2dFBO;
-	CglFBO*				m_3dFBO;
+	CglFBO*						m_3dFBO;
 	int							m_WindowWidth;
 	int							m_WindowHeight;
 
 	// 2D Rendering state
-	CFont*		m_CurrentFont;
+	CFont*						m_CurrentFont;
 
 
 };

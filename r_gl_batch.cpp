@@ -206,8 +206,11 @@ void GLBatch::Bind()
     }
 }
 
-void GLBatch::Reset()
-{
+void GLBatch::Unbind() {
+    glBindVertexArray( 0 );
+}
+
+void GLBatch::Reset() {
     m_NumVerts = 0;
     m_VertOffsetIndex = 0;    
     m_NumIndices = 0;
@@ -215,8 +218,7 @@ void GLBatch::Reset()
     m_LastIndex = 0;
 }
 
-void GLBatch::Kill()
-{
+void GLBatch::Kill() {
     glDeleteBuffers(1, &m_VBO);
     glDeleteVertexArrays(1, &m_VAO);
 }

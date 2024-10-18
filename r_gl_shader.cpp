@@ -24,6 +24,7 @@ extern std::string g_GameDir;
 #define BIND_POINT_VIEW_PROJECTION    0
 #define BIND_POINT_SETTINGS			  1
 #define BIND_POINT_FONT			3
+#define BIND_POINT_SHAPES		4
 
 static GLuint g_PaletteBindingPoint = 2; // FIX: Not sure about this one.
 
@@ -102,7 +103,7 @@ void Shader::InitializeFontUniforms() {
 	// TODO: (Michael): Uniform Binding happens quite often (see init shader above). Simplify this.
     
 	GLuint bindingPoint = BIND_POINT_FONT; 
-	m_FontUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "fontUBO");
+	m_FontUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "fontUB");
 	if (m_FontUniformIndex == GL_INVALID_INDEX) {
 		//printf("SHADER-WARNING: Not able to get index for UBO in shader program.\nShaders:\n %s\n %s\n", vertName.c_str(), fragName.c_str());
         printf("Not able to bind fontUBO!\n");
@@ -117,6 +118,24 @@ void Shader::InitializeFontUniforms() {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
+void Shader::InitializeShapesUniforms() {
+	// TODO: (Michael): Uniform Binding happens quite often (see init shader above). Simplify this.
+    
+	GLuint bindingPoint = BIND_POINT_SHAPES; 
+	m_ShapesUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "shapesUB");
+	if (m_ShapesUniformIndex == GL_INVALID_INDEX) {
+		//printf("SHADER-WARNING: Not able to get index for UBO in shader program.\nShaders:\n %s\n %s\n", vertName.c_str(), fragName.c_str());
+        printf("Not able to bind shapesUB! n");
+		// TODO: What to do in this case???
+	}
+	glUniformBlockBinding(m_ShaderProgram, m_ShapesUniformIndex, bindingPoint);
+
+    glGenBuffers(1, &m_ShapesUBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, m_ShapesUBO);
+    glBufferData( GL_UNIFORM_BUFFER, sizeof(ShapesUB), nullptr, GL_DYNAMIC_DRAW );
+    glBindBufferRange( GL_UNIFORM_BUFFER, bindingPoint, m_ShapesUBO, 0, sizeof(ShapesUB) );
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
 void Shader::Unload()
 {
 	glDeleteProgram(m_ShaderProgram);

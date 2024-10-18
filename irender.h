@@ -50,6 +50,9 @@ public:
 	virtual void Begin2D() = 0;
 	virtual void End2D() = 0;
 	virtual void SetFont(CFont* font, glm::vec4 color = glm::vec4(1.0f)) = 0; 
+	virtual void SetShapeColor(glm::vec4 color = glm::vec4(1.0f)) = 0;
+	virtual void FlushFonts() = 0;
+	virtual void FlushShapes() = 0;
 	virtual void DrawText(const std::string& text, float x, float y, ScreenSpaceCoordMode = COORD_MODE_REL) = 0; 
 	virtual void DrawBox(float x, float y, float width, float height,
 					  ScreenSpaceCoordMode coordMode = COORD_MODE_REL) = 0;

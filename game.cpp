@@ -37,7 +37,7 @@ void Game::Init()
 
     // Load a font file from disk
     m_ConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 72);
-    m_ConsoleFont30 = new CFont("fonts/HackNerdFont-Bold.ttf", 30); // Same font at different size
+    m_ConsoleFont30 = new CFont("fonts/HackNerdFont-Bold.ttf", 150); // Same font at different size
     m_Renderer->RegisterFont(m_ConsoleFont);
     m_Renderer->RegisterFont(m_ConsoleFont30);
     
@@ -48,7 +48,7 @@ void Game::Init()
     
     std::string mapData = loadTextFile(m_ExePath + "../assets/maps/room.map"); // TODO: Sane loading of Maps based on path
     size_t inputLength = mapData.length();
-    Map map = getMap(&mapData[0], inputLength, mapVersion);	
+    Map map = getMap(&mapData[0], inputLength, mapVersion);
     std::vector<MapPolygon> polysoup = createPolysoup(map);
     std::vector<MapPolygon> tris = triangulate(polysoup);
     
@@ -316,17 +316,35 @@ bool Game::RunFrame(double dt)
         m_Renderer->DrawText("ABCDEFGHIJKLMNOajdidjST*~`!/]}]|!#@#=;'\"$%%^&*():L", 0.0f, 0.0f);
         
         // If you want to draw in absolute coordinates then you have to specify it.
-        // Depends on the resolution of the render window!
+        // Depends on the resolution of the render window! SetFont() flushes
+        // previous calls to DrawText automatically.
         m_Renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) );
-        m_Renderer->DrawText("Some more text in yellow :)", 0.0f, 200.0f, COORD_MODE_ABS);
-        
+        m_Renderer->DrawText("Some more text in yellow :)", 0.0f, 200.0f, COORD_MODE_ABS); 
         m_Renderer->DrawText("MOAR TEXT", 100.0f, 300.0f, COORD_MODE_ABS);
+        // Done with fonts. Need to flush.
+        m_Renderer->FlushFonts();
 
+        m_Renderer->SetShapeColor( glm::vec4(0.7f, 0.3f, 0.3f, 1.0) );
         m_Renderer->DrawBox( 10.0f, 100.0f, 500.0f, 500.0f );
+        m_Renderer->DrawBox( 200.0f, 200.0f, 800.0f, 200.0f );
+        m_Renderer->FlushShapes();
+
         m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
         // Use Relative coords (the default). Independent from screen resolution.
         // Goes from 0 (top/left) to 1 (bottom/right).
-        m_Renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 0.5f, 0.5f);
+        m_Renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 0.5f, 0.5f); 
+        m_Renderer->FlushFonts();
+
+        m_Renderer->SetShapeColor( glm::vec4(0.3f, 0.3f, 0.7f, 1.0) );
+        m_Renderer->DrawBox( 600, 600, 200, 100 );
+        m_Renderer->FlushShapes();
+        m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
+        m_Renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 
+                             600.0f, 600.0f, COORD_MODE_ABS);
+        m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(1.0f, 0.1f, 0.0f, 1.0f) );
+        m_Renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 
+                             605.0f, 605.0f, COORD_MODE_ABS);
+        m_Renderer->FlushFonts();
 
         m_Renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
     } 

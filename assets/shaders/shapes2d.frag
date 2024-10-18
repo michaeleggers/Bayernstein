@@ -15,7 +15,7 @@ layout (location = 0) in vec4 in_color;
 
 void main() {
 
-    out_color = vec4( in_color );
+    out_color = in_color;
 
 }
 

@@ -56,7 +56,12 @@ struct ShaderSettings {
 
 struct FontUB {
 	glm::vec4 color;
-	glm::vec4 size; // x = size, yzw = unused
+	glm::vec4 size;
+};
+
+struct ShapesUB {
+	glm::vec4 color;
+	glm::vec4 scale;
 };
 
 struct Tri {

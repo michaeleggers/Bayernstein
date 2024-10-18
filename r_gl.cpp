@@ -83,8 +83,7 @@ static void EnableOpenGLDebugCallback() {
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
 }
 
-void GLRender::Shutdown(void)
-{
+void GLRender::Shutdown(void) {
     // Deinit ImGui
 
     ImGui_ImplOpenGL3_Shutdown();
@@ -105,6 +104,9 @@ void GLRender::Shutdown(void)
     m_FontBatch->Kill();
     delete m_FontBatch;
 
+    m_ShapesBatch->Kill();
+    delete m_ShapesBatch;
+
     m_FontShader->Unload();
     
     m_ModelShader->Unload();
@@ -117,8 +119,7 @@ void GLRender::Shutdown(void)
     delete m_2dFBO;
 }
 
-bool GLRender::Init(void)
-{
+bool GLRender::Init(void) {
     SDL_Init(SDL_INIT_EVERYTHING);
 
     // From 2.0.18: Enable native IME.
@@ -240,6 +241,7 @@ bool GLRender::Init(void)
     m_ImPrimitiveBatchIndexed = new GLBatch(1000 * 1000, 1000 * 1000);
     m_ColliderBatch = new GLBatch(1000000);
     m_FontBatch = new GLBatch(1000, 1000);
+    m_ShapesBatch = new GLBatch(1000, 1000);
 
     // Initialize shaders
 
@@ -713,20 +715,21 @@ void GLRender::Begin2D() {
 
     glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
 
-    m_FontShader->Activate();
 
     glm::mat4 ortho = glm::ortho(0.0f, (float)m_2dFBO->m_Width, 
                                  (float)m_2dFBO->m_Height, 0.0f,
                                  -1.0f, 1.0f);
-   
+    m_FontShader->Activate();   
     m_FontShader->SetViewProjMatrices( glm::mat4(1.0f), ortho );
+    m_ShapesShader->Activate();
+    m_ShapesShader->SetViewProjMatrices( glm::mat4(1.0f), ortho );
 }
 
 void GLRender::End2D() {
 
-    Flush2D();
 
     m_2dFBO->Unbind();
+    //m_FontBatch->Unbind();
 
     glEnable(GL_DEPTH_TEST);
 
@@ -734,10 +737,12 @@ void GLRender::End2D() {
 }
 
 void GLRender::SetFont(CFont* font, glm::vec4 color) {
-    
+   
+    m_FontShader->Activate();
+
     // A state change means we need to flush the previous Daw-calls!
     // Otherwise they get affected by the things happening here!
-    Flush2D();
+    FlushFonts();
 
     ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
     glBindTexture(GL_TEXTURE_2D, (GLuint)fontTexture->m_hGPU);
@@ -754,8 +759,23 @@ void GLRender::SetFont(CFont* font, glm::vec4 color) {
     m_CurrentFont = font;
 }
 
-void GLRender::Flush2D() {
+void GLRender::SetShapeColor(glm::vec4 color) {
+    m_ShapesShader->Activate();
+
+    ShapesUB shapesShaderData = {
+        color,
+        glm::vec4(0.0f) // NOTE: unused at the moment.
+    };
+    
+    glBindBuffer( GL_UNIFORM_BUFFER, m_ShapesShader->m_ShapesUBO );
+    glBufferSubData( GL_UNIFORM_BUFFER, 0, sizeof(ShapesUB), (void*)&shapesShaderData );
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+void GLRender::FlushFonts() {
     m_FontBatch->Bind();
+    m_FontShader->Activate();
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDrawElementsBaseVertex(GL_TRIANGLES, 
                              m_FontBatch->IndexCount(), 
                              GL_UNSIGNED_SHORT, 
@@ -764,7 +784,21 @@ void GLRender::Flush2D() {
     m_FontBatch->Reset();
 }
 
-void GLRender::DrawText(const std::string& text, float x, float y, ScreenSpaceCoordMode coordMode) {
+void GLRender::FlushShapes() {
+    m_ShapesBatch->Bind();
+    m_ShapesShader->Activate();
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    glDrawElementsBaseVertex(GL_TRIANGLES, 
+                             m_ShapesBatch->IndexCount(), 
+                             GL_UNSIGNED_SHORT, 
+                             (GLvoid*)0, 0);
+
+    m_ShapesBatch->Reset();
+}
+
+void GLRender::DrawText(const std::string& text, 
+                        float x, float y, 
+                        ScreenSpaceCoordMode coordMode) {
    
     // TODO: (Michael): Make sure that the correct shader is active.
     
@@ -853,7 +887,7 @@ void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceC
     };
     FaceQuad fq = CreateFaceQuadFromVerts( verts );
     
-    uint16_t iOffset = (uint16_t)m_FontBatch->m_LastIndex; 
+    uint16_t iOffset = (uint16_t)m_ShapesBatch->m_LastIndex; 
     uint16_t indices[6] = {
         iOffset + 0, iOffset + 1, iOffset + 2,
         iOffset + 2, iOffset + 3, iOffset + 0
@@ -864,12 +898,12 @@ void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceC
     // of unused (and unwanted) out_* variables for now!
     int out_OffsetIndices = 0; // TODO: Not needed here!
     int out_OffsetVertices = 0; // TODO: Not needed here!
-    m_FontBatch->Add(fq.vertices, 4,
+    m_ShapesBatch->Add(fq.vertices, 4,
                               indices, 6,
                               &out_OffsetVertices, &out_OffsetIndices,
                               false, DRAW_MODE_SOLID);
     
-    m_FontBatch->m_LastIndex += 4;
+    m_ShapesBatch->m_LastIndex += 4;
 
 }
 
@@ -922,6 +956,11 @@ void GLRender::RenderEnd(void)
    
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    
+    // FIX: Some buffer *HAS* to be bound apparently before a draw call 
+    // so OpenGL doesn't freak out... So this buffer is not even used 
+    // duing drawing because the compositing step is completely GPU driven.
+    m_FontBatch->Bind();
 
     // Composite all the FBOs together
     m_CompositeShader->Activate();
@@ -1039,6 +1078,7 @@ void GLRender::InitShaders()
     )) {
         printf("Problems initializing shapes2d shader!\n");
     }
+    m_ShapesShader->InitializeShapesUniforms();
     
     m_CompositeShader = new Shader();
     if ( !m_CompositeShader->Load(

@@ -27,6 +27,8 @@ public:
 	void Activate();
 	GLuint Program() const;
 
+	bool operator==(const Shader& rhs) { return m_ShaderProgram == rhs.m_ShaderProgram; }
+
 	void SetViewProjMatrices(glm::mat4 view, glm::mat4 proj);
 	void SetMatrixPalette(glm::mat4* palette, uint32_t numMatrices);
 	void SetMat4(std::string uniformName, glm::mat4 mat4);
@@ -36,12 +38,14 @@ public:
 	void SetShaderSettingBits(uint32_t bits);
 	void ResetShaderSettingBits(uint32_t bits);
 	void InitializeFontUniforms();
+	void InitializeShapesUniforms();
 	static void InitGlobalBuffers();
 
 	// Some people would say this must be private. But I find it
 	// a bit dumb to have a getter for this. Just don't assign
 	// a new value to this UBO handle, ok? Thanks!
 	GLuint m_FontUBO;
+	GLuint m_ShapesUBO;
 
 private:
 	bool CompileShader(const std::string& fileName, GLenum shaderType, GLuint& outShader);
@@ -61,6 +65,7 @@ private:
 
 	// 2d screenspace uniforms
 	GLuint m_FontUniformIndex;
+	GLuint m_ShapesUniformIndex;
 };
 
 

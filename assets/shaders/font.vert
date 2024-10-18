@@ -42,7 +42,7 @@ layout (std140) uniform Settings {
     uvec4 bitFields;
 };
 
-layout (std140) uniform fontUBO {
+layout (std140) uniform fontUB {
     vec4 color;
     vec4 scale; // x = scale (unused for now), yzw = free (unused for now)
 };

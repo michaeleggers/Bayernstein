@@ -26,7 +26,6 @@ layout (std140) uniform shapesUB {
 
 void main() {
     gl_Position = proj * vec4( in_pos, 1.0f );
-    out_uv = in_uv; 
     out_color = color;
 }
 
