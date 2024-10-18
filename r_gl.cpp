@@ -156,7 +156,11 @@ bool GLRender::Init(void) {
 	*/
 
 	// Create an application window with the following settings:
-	m_Window = SDL_CreateWindow("HKD", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT,
+	m_Window = SDL_CreateWindow("HKD",
+								SDL_WINDOWPOS_UNDEFINED,
+								SDL_WINDOWPOS_UNDEFINED,
+								WINDOW_WIDTH,
+								WINDOW_HEIGHT,
 								SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 
 	// BEWARE! These flags must be set AFTER SDL_CreateWindow. Otherwise SDL
@@ -279,8 +283,9 @@ int GLRender::RegisterModel(HKD_Model* model) {
 	for (int i = 0; i < model->meshes.size(); i++) {
 		HKD_Mesh* mesh = &model->meshes[i];
 		GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(mesh->textureFileName);
-		GLMesh gl_mesh = {
-			.triOffset = offset / 3 + (int)mesh->firstTri, .triCount = (int)mesh->numTris, .texture = texture};
+		GLMesh gl_mesh = { .triOffset = offset / 3 + (int)mesh->firstTri,
+						   .triCount = (int)mesh->numTris,
+						   .texture = texture };
 		gl_model.meshes.push_back(gl_mesh);
 	}
 
@@ -301,8 +306,8 @@ void GLRender::RegisterColliderModels() {
 
 	MeshEllipsoid unitEllipsoid = CreateUnitEllipsoid(2);
 
-	m_EllipsoidColliderDrawCmd = AddTrisToBatch(m_ColliderBatch, unitEllipsoid.tris.data(), unitEllipsoid.tris.size(),
-												false, DRAW_MODE_WIREFRAME);
+	m_EllipsoidColliderDrawCmd = AddTrisToBatch(
+		m_ColliderBatch, unitEllipsoid.tris.data(), unitEllipsoid.tris.size(), false, DRAW_MODE_WIREFRAME);
 }
 
 // Maybe return a void* as GPU handle, because usually APIs that use the handle of
@@ -335,7 +340,12 @@ std::vector<ITexture*> GLRender::Textures(void) {
 void GLRender::ImDrawTris(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
 	int offset = m_ImPrimitiveBatch->Add(tris, numTris, cullFace, drawMode);
 
-	GLBatchDrawCmd drawCmd = {.offset = offset, .numVerts = 3 * numTris, .cullFace = cullFace, .drawMode = drawMode};
+	GLBatchDrawCmd drawCmd = {
+		.offset = offset,
+		.numVerts = 3 * numTris,
+		.cullFace = cullFace,
+		.drawMode = drawMode,
+	};
 
 	m_PrimitiveDrawCmds.push_back(drawCmd);
 }
@@ -352,7 +362,12 @@ void GLRender::ImDrawTriPlanes(TriPlane* triPlanes, uint32_t numTriPlanes, bool 
 GLBatchDrawCmd GLRender::AddTrisToBatch(GLBatch* batch, Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
 	int offset = batch->Add(tris, numTris, cullFace, drawMode);
 
-	GLBatchDrawCmd drawCmd = {.offset = offset, .numVerts = 3 * numTris, .cullFace = cullFace, .drawMode = drawMode};
+	GLBatchDrawCmd drawCmd = {
+		.offset = offset,
+		.numVerts = 3 * numTris,
+		.cullFace = cullFace,
+		.drawMode = drawMode,
+	};
 
 	return drawCmd;
 }
@@ -362,17 +377,19 @@ void GLRender::ImDrawIndexed(
 	Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, bool cullFace, DrawMode drawMode) {
 	int offset = 0;
 	int offsetIndices = 0;
-	if (!m_ImPrimitiveBatchIndexed->Add(verts, numVerts, indices, numIndices, &offset, &offsetIndices, cullFace,
-										drawMode)) {
+	if (!m_ImPrimitiveBatchIndexed->Add(
+			verts, numVerts, indices, numIndices, &offset, &offsetIndices, cullFace, drawMode)) {
 		return;
 	}
 
-	GLBatchDrawCmd drawCmd = {.offset = offset,
-							  .indexOffset = offsetIndices,
-							  .numVerts = numVerts,
-							  .numIndices = numIndices,
-							  .cullFace = cullFace,
-							  .drawMode = drawMode};
+	GLBatchDrawCmd drawCmd = {
+		.offset = offset,
+		.indexOffset = offsetIndices,
+		.numVerts = numVerts,
+		.numIndices = numIndices,
+		.cullFace = cullFace,
+		.drawMode = drawMode,
+	};
 
 	m_PrimitiveIndexdDrawCmds.push_back(drawCmd);
 }
@@ -381,7 +398,12 @@ void GLRender::ImDrawIndexed(
 void GLRender::ImDrawVerts(Vertex* verts, uint32_t numVerts) {
 	int offset = m_ImPrimitiveBatch->Add(verts, numVerts);
 
-	GLBatchDrawCmd drawCmd = {.offset = offset, .numVerts = numVerts, .cullFace = false, .drawMode = DRAW_MODE_SOLID};
+	GLBatchDrawCmd drawCmd = {
+		.offset = offset,
+		.numVerts = numVerts,
+		.cullFace = false,
+		.drawMode = DRAW_MODE_SOLID,
+	};
 }
 
 // We have separate draw cmds from the batch. This function generate unneccessary many
@@ -403,13 +425,17 @@ void GLRender::ImDrawLines(Vertex* verts, uint32_t numVerts, bool close) {
 	}
 
 	if (close) {
-		Vertex endAndStart[] = {*v, verts[0]};
+		Vertex endAndStart[] = { *v, verts[0] };
 		m_ImPrimitiveBatch->Add(endAndStart, 2, false, DRAW_MODE_LINES);
 		moreVerts += 2;
 	}
 
 	GLBatchDrawCmd drawCmd = {
-		.offset = offset, .numVerts = numVerts + moreVerts, .cullFace = false, .drawMode = DRAW_MODE_LINES};
+		.offset = offset,
+		.numVerts = numVerts + moreVerts,
+		.cullFace = false,
+		.drawMode = DRAW_MODE_LINES,
+	};
 
 	m_PrimitiveDrawCmds.push_back(drawCmd);
 }
@@ -436,7 +462,7 @@ void GLRender::ImDrawSphere(glm::vec3 pos, float radius, glm::vec4 color) {
 
 GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t numVerts, bool close) {
 	if (numVerts < 2) { // This won't work, man.
-		return {-1};
+		return { -1 };
 	}
 
 	Vertex* v = verts;
@@ -451,13 +477,14 @@ GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t 
 	}
 
 	if (close) {
-		Vertex endAndStart[] = {*v, verts[0]};
+		Vertex endAndStart[] = { *v, verts[0] };
 		batch->Add(endAndStart, 2, false, DRAW_MODE_LINES);
 		moreVerts += 2;
 	}
 
 	GLBatchDrawCmd drawCmd = {
-		.offset = offset, .numVerts = numVerts + moreVerts, .cullFace = false, .drawMode = DRAW_MODE_LINES};
+		.offset = offset, .numVerts = numVerts + moreVerts, .cullFace = false, .drawMode = DRAW_MODE_LINES
+	};
 
 	return drawCmd;
 }
@@ -516,8 +543,11 @@ void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryTy
 			glDrawArrays(primitiveType, drawCmd.offset, drawCmd.numVerts);
 		} else if (geomType == GEOM_TYPE_INDEXED) {
 			uint32_t indexBufferUSOffset = drawCmd.indexOffset * sizeof(uint16_t);
-			glDrawElementsBaseVertex(primitiveType, drawCmd.numIndices, GL_UNSIGNED_SHORT,
-									 (GLvoid*)(drawCmd.indexOffset * sizeof(uint16_t)), drawCmd.offset);
+			glDrawElementsBaseVertex(primitiveType,
+									 drawCmd.numIndices,
+									 GL_UNSIGNED_SHORT,
+									 (GLvoid*)(drawCmd.indexOffset * sizeof(uint16_t)),
+									 drawCmd.offset);
 		}
 
 		m_ImPrimitivesShader->ResetShaderSettingBits(SHADER_LINEMODE);
@@ -637,7 +667,7 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
 		glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
 		glm::mat4 M = T * S;
 		m_ColliderShader->SetMat4("model", M);
-		std::vector<GLBatchDrawCmd> drawCmds = {m_EllipsoidColliderDrawCmd};
+		std::vector<GLBatchDrawCmd> drawCmds = { m_EllipsoidColliderDrawCmd };
 		// glDrawArrays(GL_TRIANGLES, m_EllipsoidColliderDrawCmd.offset, m_EllipsoidColliderDrawCmd.numVerts);
 		ExecuteDrawCmds(drawCmds, GEOM_TYPE_VERTEX_ONLY);
 		// glDrawArrays(GL_LINES,

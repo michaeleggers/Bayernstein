@@ -187,8 +187,8 @@ bool GLBatch::Add(Vertex* verts,
 	m_VertOffsetIndex += numVerts;
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iVBO);
-	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, m_IndexOffsetIndex * sizeof(uint16_t), numIndices * sizeof(uint16_t),
-					indices);
+	glBufferSubData(
+		GL_ELEMENT_ARRAY_BUFFER, m_IndexOffsetIndex * sizeof(uint16_t), numIndices * sizeof(uint16_t), indices);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	*out_idxOffset = m_IndexOffsetIndex;

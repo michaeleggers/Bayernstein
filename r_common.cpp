@@ -63,10 +63,10 @@ void SubdivTri(Tri* tri, Tri out_tris[]) {
 
 	// New tris
 
-	Tri t1 = {.vertices = {{.pos = A}, {.pos = mAB}, {.pos = mCA}}};
-	Tri t2 = {.vertices = {{.pos = mAB}, {.pos = B}, {.pos = mBC}}};
-	Tri t3 = {.vertices = {{.pos = mBC}, {.pos = C}, {.pos = mCA}}};
-	Tri t4 = {.vertices = {{.pos = mCA}, {.pos = mAB}, {.pos = mBC}}};
+	Tri t1 = { .vertices = { { .pos = A }, { .pos = mAB }, { .pos = mCA } } };
+	Tri t2 = { .vertices = { { .pos = mAB }, { .pos = B }, { .pos = mBC } } };
+	Tri t3 = { .vertices = { { .pos = mBC }, { .pos = C }, { .pos = mCA } } };
+	Tri t4 = { .vertices = { { .pos = mCA }, { .pos = mAB }, { .pos = mBC } } };
 	t1.a.color = tri->a.color;
 	t1.b.color = cAB;
 	t1.c.color = cCA;
@@ -165,9 +165,9 @@ void SubdivIndexedTri(Vertex* verts,
 	out_verts[0] = verts[0];
 	out_verts[1] = verts[1];
 	out_verts[2] = verts[2];
-	out_verts[3] = {.pos = mAB};
-	out_verts[4] = {.pos = mCA};
-	out_verts[5] = {.pos = mBC};
+	out_verts[3] = { .pos = mAB };
+	out_verts[4] = { .pos = mCA };
+	out_verts[5] = { .pos = mBC };
 }
 
 void SubdivIndexedTri(Vertex* verts,
@@ -231,7 +231,7 @@ void TranslateQuad(Quad* quad, glm::vec3 t) {
 }
 
 FaceQuad QuadToFace(Quad* quad) {
-	return {quad->tl, quad->tr, quad->br, quad->bl};
+	return { quad->tl, quad->tr, quad->br, quad->bl };
 }
 
 void SetQuadColor(Quad* quad, glm::vec4 color) {
@@ -394,5 +394,5 @@ Plane CreatePlaneFromTri(Tri tri) {
 	// of the plane from the origin..
 	float d = glm::dot(A, normal);
 
-	return {normal, d};
+	return { normal, d };
 }

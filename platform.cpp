@@ -15,8 +15,12 @@ std::string hkd_GetExePath(void) {
 	if (!len) {
 		DWORD error = GetLastError();
 		char errorMsgBuf[256];
-		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, error,
-					  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), errorMsgBuf, (sizeof(errorMsgBuf) / sizeof(char)),
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+					  NULL,
+					  error,
+					  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+					  errorMsgBuf,
+					  (sizeof(errorMsgBuf) / sizeof(char)),
 					  NULL);
 
 		printf("%s\n", errorMsgBuf);

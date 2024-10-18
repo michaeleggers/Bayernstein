@@ -17,13 +17,15 @@
 //glm::vec4 blendweights;
 
 Vertex IQMVertexToVertex(IQMVertex iqmVert, glm::vec3 bc) {
-	Vertex vertex = {.pos = glm::vec3(iqmVert.pos[0], iqmVert.pos[1], iqmVert.pos[2]),
-					 .uv = glm::vec2(iqmVert.texCoord[0], iqmVert.texCoord[1]),
-					 .bc = bc,
-					 .normal = glm::vec3(iqmVert.normal[0], iqmVert.normal[1], iqmVert.normal[2]),
-					 .color = glm::vec4(iqmVert.color[0], iqmVert.color[1], iqmVert.color[2], iqmVert.color[3]),
-					 .blendweights = glm::vec4(iqmVert.blendweights[0], iqmVert.blendweights[1],
-											   iqmVert.blendweights[2], iqmVert.blendweights[3])};
+	Vertex vertex = { .pos = glm::vec3(iqmVert.pos[0], iqmVert.pos[1], iqmVert.pos[2]),
+					  .uv = glm::vec2(iqmVert.texCoord[0], iqmVert.texCoord[1]),
+					  .bc = bc,
+					  .normal = glm::vec3(iqmVert.normal[0], iqmVert.normal[1], iqmVert.normal[2]),
+					  .color = glm::vec4(iqmVert.color[0], iqmVert.color[1], iqmVert.color[2], iqmVert.color[3]),
+					  .blendweights = glm::vec4(iqmVert.blendweights[0],
+												iqmVert.blendweights[1],
+												iqmVert.blendweights[2],
+												iqmVert.blendweights[3]) };
 	vertex.blendweights /= 255.0f;
 	vertex.blendindices[0] = iqmVert.blendindices[0];
 	vertex.blendindices[1] = iqmVert.blendindices[1];
@@ -61,7 +63,7 @@ HKD_Model CreateModelFromIQM(IQMModel* model) {
 			// But we use a Blender coordinate system! Note that by doing this
 			// Triangles will appear in CW order in RenderDoc (because it uses
 			// the same "OpenGL" coordinate system.
-			Tri tri = {vertA, vertC, vertB};
+			Tri tri = { vertA, vertC, vertB };
 
 			result.tris.push_back(tri);
 		}
@@ -75,7 +77,7 @@ HKD_Model CreateModelFromIQM(IQMModel* model) {
 	for (; i < model->animations.size(); i++) {
 		Anim a = model->animations[i];
 		Frame f = model->frameData[a.firstFrame];
-		result.aabbs.push_back({f.bbmins, f.bbmins});
+		result.aabbs.push_back({ f.bbmins, f.bbmins });
 		Box aabbBox = CreateBoxFromAABB(f.bbmins, f.bbmaxs);
 		result.aabbBoxes.push_back(aabbBox);
 		EllipsoidCollider ec = CreateEllipsoidColliderFromAABB(f.bbmins, f.bbmaxs);

@@ -106,7 +106,10 @@ int main(int argc, char** argv) {
 		updateIntervalMs += msPerFrame;
 		if (updateIntervalMs >= 1000.0f) {
 			char windowTitle[256];
-			sprintf(windowTitle, "Device: %s, frametime (ms): %f, FPS: %f", glGetString(GL_RENDERER), msPerFrame,
+			sprintf(windowTitle,
+					"Device: %s, frametime (ms): %f, FPS: %f",
+					glGetString(GL_RENDERER),
+					msPerFrame,
 					1000.0f / msPerFrame);
 			renderer->SetWindowTitle(windowTitle);
 			updateIntervalMs = 0.0f;

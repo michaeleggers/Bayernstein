@@ -17,7 +17,7 @@ ITexture* GLTextureManager::CreateTexture(std::string filename) {
 
 	ITexture* result = new GLTexture(filename);
 
-	m_NameToTexture.insert({filename, result});
+	m_NameToTexture.insert({ filename, result });
 
 	return result;
 }

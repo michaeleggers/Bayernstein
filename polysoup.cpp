@@ -84,7 +84,7 @@ MapPlane createPlane(glm::f64vec3 p0, glm::f64vec3 p1, glm::f64vec3 p2) {
 	glm::f64vec3 n = glm::normalize(glm::cross(v0, v1));
 	double d = -glm::dot(n, p0);
 
-	return {n, p0, d};
+	return { n, p0, d };
 }
 
 static inline glm::f64vec3 convertVertexToVec3(MapVertex v) {
@@ -106,7 +106,7 @@ bool intersectThreePlanes(MapPlane p0, MapPlane p1, MapPlane p2, glm::f64vec3* i
 		return false;
 
 	*intersectionPoint =
-		(-p0.d * (glm::cross(p1.n, p2.n)) - p1.d * (glm::cross(p2.n, p0.n)) - p2.d * (glm::cross(p0.n, p1.n))) / det;
+		(-p0.d * (glm::cross(p1.n, p2.n))-p1.d * (glm::cross(p2.n, p0.n))-p2.d * (glm::cross(p0.n, p1.n))) / det;
 
 	return true;
 }

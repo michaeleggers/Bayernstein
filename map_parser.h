@@ -245,8 +245,11 @@ static std::string tokenToString(TokenType tokenType) {
 
 static bool check(TokenType got, TokenType expected) {
 	if (expected != got) {
-		fprintf(stderr, "ERROR: Expected Token: %s, but got: %s in line %d\n", tokenToString(expected).c_str(),
-				tokenToString(got).c_str(), g_LineNo);
+		fprintf(stderr,
+				"ERROR: Expected Token: %s, but got: %s in line %d\n",
+				tokenToString(expected).c_str(),
+				tokenToString(got).c_str(),
+				g_LineNo);
 		exit(-1);
 	}
 
@@ -311,7 +314,7 @@ static Property getProperty(char* c, int* pos) {
 	check(getToken(c, pos), STRING);
 	std::string value = getString(c, pos);
 
-	return {key, value};
+	return { key, value };
 }
 
 /*
@@ -332,7 +335,7 @@ static Face getFace(char* c, int* pos) {
 		double z = getNumber(c, pos);
 		check(getToken(c, pos), RPAREN);
 		*pos += 1;
-		face.vertices[i] = {x, y, z};
+		face.vertices[i] = { x, y, z };
 	}
 
 	/* Texture stuff */
@@ -387,7 +390,7 @@ static Face getFaceValve220(char* c, int* pos) {
 		double z = getNumber(c, pos);
 		check(getToken(c, pos), RPAREN);
 		*pos += 1;
-		face.vertices[i] = {x, y, z};
+		face.vertices[i] = { x, y, z };
 	}
 
 	check(getToken(c, pos), TEXNAME);

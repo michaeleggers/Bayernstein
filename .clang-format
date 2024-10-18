@@ -26,7 +26,7 @@ AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: MultiLine
 AttributeMacros:
   - __capability
-BinPackArguments: true
+BinPackArguments: false
 BinPackParameters: false
 BraceWrapping:
   AfterCaseLabel: false
@@ -63,7 +63,7 @@ QualifierAlignment: Leave
 CompactNamespaces: false
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
-Cpp11BracedListStyle: true
+Cpp11BracedListStyle: false
 DeriveLineEnding: true
 DerivePointerAlignment: false
 DisableFormat: false
@@ -105,7 +105,7 @@ IndentExternBlock: AfterExternBlock
 IndentRequires: false
 IndentWidth: 4
 IndentWrappedFunctionNames: false
-InsertTrailingCommas: None
+InsertTrailingCommas: Wrapped
 JavaScriptQuotes: Leave
 JavaScriptWrapImports: true
 KeepEmptyLinesAtTheStartOfBlocks: true
