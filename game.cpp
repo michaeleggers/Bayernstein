@@ -171,7 +171,7 @@ bool Game::RunFrame(double dt)
     // Change player's velocity and animation state based on input
 
     m_Player.velocity = glm::vec3(0.0f);
-    float t = (float)dt * followCamSpeed;
+    float t = followCamSpeed;
     AnimState playerAnimState = ANIM_STATE_IDLE;
     if (KeyPressed(SDLK_w)) {          
         m_Player.velocity += t * forward;
@@ -201,16 +201,18 @@ bool Game::RunFrame(double dt)
 
     // Test collision between player and world geometry
     EllipsoidCollider ec = m_Player.ellipsoidColliders[m_Player.currentAnimIdx];
-    CollisionInfo collisionInfo = CollideEllipsoidWithTriPlane(
-			ec, m_Player.velocity, static_cast<float>(dt)*m_World.m_Gravity, m_World.m_TriPlanes.data(), m_World.m_TriPlanes.size());
+    CollisionInfo collisionInfo = CollideEllipsoidWithTriPlane(ec,
+                                                               static_cast<float>(dt)*m_Player.velocity, 
+                                                               static_cast<float>(dt)*m_World.m_Gravity, 
+                                                               m_World.m_TriPlanes.data(), m_World.m_TriPlanes.size());
 
-	// Update the ellipsoid colliders for all animation states based on the new collision position
-	for (int i = 0; i < m_Player.animations.size(); i++) {
-		m_Player.ellipsoidColliders[ i ].center = collisionInfo.basePos;
-	}
+    // Update the ellipsoid colliders for all animation states based on the new collision position
+    for (int i = 0; i < m_Player.animations.size(); i++) {
+        m_Player.ellipsoidColliders[ i ].center = collisionInfo.basePos;
+    }
     m_Player.position.x = collisionInfo.basePos.x;
-	m_Player.position.y = collisionInfo.basePos.y;
-	m_Player.position.z = collisionInfo.basePos.z - ec.radiusB;
+    m_Player.position.y = collisionInfo.basePos.y;
+    m_Player.position.z = collisionInfo.basePos.z - ec.radiusB;
 
     UpdateModel(&m_Player, (float)dt);
     
