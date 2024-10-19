@@ -12,15 +12,12 @@ void Player::Update() {
 
 	if (KeyPressed(SDLK_w)) {
 		m_pStateMachine->ChangeState(PlayerRunning::Instance());
-	}
-
-	if (KeyPressed(SDLK_s)) {
+	} else if (KeyPressed(SDLK_SPACE)) {
+		m_pStateMachine->ChangeState(PlayerAttacking::Instance());
+	} else {
 		m_pStateMachine->ChangeState(PlayerIdle::Instance());
 	}
 
-	if (KeyPressed(SDLK_SPACE)) {
-		m_pStateMachine->ChangeState(PlayerAttacking::Instance());
-	}
 	m_pStateMachine->Update();
 }
 

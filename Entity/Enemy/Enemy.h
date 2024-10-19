@@ -9,24 +9,31 @@
 
 class Enemy : public BaseGameEntity {
   private:
-	StateMachine<Enemy> *m_pStateMachine;
+	StateMachine<Enemy>* m_pStateMachine;
 	double m_Health = 100;
 
   public:
 	void Update() override;
 	explicit Enemy(int id);
 
-	~Enemy() override { delete m_pStateMachine; }
-	[[nodiscard]] StateMachine<Enemy> *GetFSM() const { return m_pStateMachine; }
+	~Enemy() override {
+		delete m_pStateMachine;
+	}
+	[[nodiscard]] StateMachine<Enemy>* GetFSM() const {
+		return m_pStateMachine;
+	}
 
-	bool HandleMessage(const Telegram &message) override;
+	bool HandleMessage(const Telegram& message) override;
 
+  public:
 	bool DecreaseHealth(double amount) {
 		m_Health = m_Health - amount;
 		return true;
 	}
 
-	bool IsDead() { return m_Health <= 0.0; }
+	bool IsDead() {
+		return m_Health <= 0.0;
+	}
 };
 
 #endif // ENEMY_H

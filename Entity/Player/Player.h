@@ -12,7 +12,7 @@
 
 class Player : public BaseGameEntity {
   private:
-	StateMachine<Player> *m_pStateMachine;
+	StateMachine<Player>* m_pStateMachine;
 	double m_AttackDelay = 100;
 	double m_LastAttack = 0;
 
@@ -20,11 +20,16 @@ class Player : public BaseGameEntity {
 	void Update() override;
 	explicit Player();
 
-	~Player() override { delete m_pStateMachine; }
-	[[nodiscard]] StateMachine<Player> *GetFSM() const { return m_pStateMachine; }
+	~Player() override {
+		delete m_pStateMachine;
+	}
+	[[nodiscard]] StateMachine<Player>* GetFSM() const {
+		return m_pStateMachine;
+	}
 
-	bool HandleMessage(const Telegram &telegram) override;
+	bool HandleMessage(const Telegram& telegram) override;
 
+  public:
 	bool CanAttack() {
 		double currentTime = Clock->GetTime();
 		if (currentTime >= m_LastAttack + m_AttackDelay) {

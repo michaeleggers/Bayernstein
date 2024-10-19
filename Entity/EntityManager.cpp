@@ -3,7 +3,7 @@
 //
 
 #include "EntityManager.h"
-#include <cassert>
+#include "assert.h"
 
 //--------------------------- Instance ----------------------------------------
 //
