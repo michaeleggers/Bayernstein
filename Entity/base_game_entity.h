@@ -4,7 +4,7 @@
 
 #ifndef BASEGAMEENTITY_H
 #define BASEGAMEENTITY_H
-#include "../Message/Telegram.h"
+#include "../Message/telegram.h"
 
 class BaseGameEntity {
   private:
@@ -21,7 +21,9 @@ class BaseGameEntity {
 	// this value is updated
 	static int m_iNextValidID;
 
-	explicit BaseGameEntity(const int id) { SetID(id); }
+	explicit BaseGameEntity(const int id) {
+		SetID(id);
+	}
 
 	virtual ~BaseGameEntity() = default;
 
@@ -30,9 +32,11 @@ class BaseGameEntity {
 
 	// all entities can communicate using messages. They are sent
 	// using the MessageDispatcher singleton class
-	virtual bool HandleMessage(const Telegram &telegram) = 0;
+	virtual bool HandleMessage(const Telegram& telegram) = 0;
 
-	[[nodiscard]] int ID() const { return m_ID; }
+	[[nodiscard]] int ID() const {
+		return m_ID;
+	}
 };
 
 #endif // BASEGAMEENTITY_H

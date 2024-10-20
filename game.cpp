@@ -19,12 +19,11 @@
 #include "polysoup.h"
 
 static int hkd_Clamp(int val, int clamp) {
-	if (val > clamp || val < clamp)
-		return clamp;
+	if (val > clamp || val < clamp) return clamp;
 	return val;
 }
 
-Game::Game(std::string exePath, hkdInterface *interface, IRender *renderer) {
+Game::Game(std::string exePath, hkdInterface* interface, IRender* renderer) {
 	m_Renderer = renderer;
 	m_Interface = interface;
 	m_ExePath = exePath;
@@ -39,8 +38,8 @@ void Game::Init() {
 	std::vector<TriPlane> worldTris{};
 	MapVersion mapVersion = VALVE_220; // TODO: Change to MAP_TYPE_QUAKE
 
-	std::string mapData =
-		loadTextFile(m_ExePath + "../assets/maps/room.map"); // TODO: Sane loading of Maps based on path
+	std::string mapData
+		= loadTextFile(m_ExePath + "../assets/maps/room.map"); // TODO: Sane loading of Maps based on path
 	size_t inputLength = mapData.length();
 	Map map = getMap(&mapData[0], inputLength, mapVersion);
 	std::vector<MapPolygon> polysoup = createPolysoup(map);
@@ -49,13 +48,13 @@ void Game::Init() {
 	glm::vec4 triColor = glm::vec4(RandBetween(0.0f, 1.0f), RandBetween(0.0f, 1.0f), RandBetween(0.0f, 1.0f), 1.0f);
 	for (int i = 0; i < tris.size(); i++) {
 		MapPolygon mapPoly = tris[i];
-		Vertex A = {glm::vec3(mapPoly.vertices[0].x, mapPoly.vertices[0].y, mapPoly.vertices[0].z)};
-		Vertex B = {glm::vec3(mapPoly.vertices[1].x, mapPoly.vertices[1].y, mapPoly.vertices[1].z)};
-		Vertex C = {glm::vec3(mapPoly.vertices[2].x, mapPoly.vertices[2].y, mapPoly.vertices[2].z)};
+		Vertex A = { glm::vec3(mapPoly.vertices[0].x, mapPoly.vertices[0].y, mapPoly.vertices[0].z) };
+		Vertex B = { glm::vec3(mapPoly.vertices[1].x, mapPoly.vertices[1].y, mapPoly.vertices[1].z) };
+		Vertex C = { glm::vec3(mapPoly.vertices[2].x, mapPoly.vertices[2].y, mapPoly.vertices[2].z) };
 		A.color = triColor;
 		B.color = triColor;
 		C.color = triColor;
-		Tri tri = {A, B, C};
+		Tri tri = { A, B, C };
 
 		TriPlane triPlane{};
 		triPlane.tri = tri;
@@ -79,7 +78,7 @@ void Game::Init() {
 	m_Player.position = glm::vec3(-48.0f, 352.0f, 48.0f);
 	m_Player.scale = glm::vec3(22.0f);
 	for (int i = 0; i < m_Player.animations.size(); i++) {
-		EllipsoidCollider *ec = &m_Player.ellipsoidColliders[i];
+		EllipsoidCollider* ec = &m_Player.ellipsoidColliders[i];
 		ec->radiusA *= m_Player.scale.x;
 		ec->radiusB *= m_Player.scale.z;
 		ec->center = m_Player.position + glm::vec3(0.0f, 0.0f, ec->radiusB);
@@ -109,18 +108,18 @@ void Game::Init() {
 	m_pEntityManager->RegisterEntity(new Enemy(1));
 }
 
-static void DrawCoordinateSystem(IRender *renderer) {
-	Vertex origin = {glm::vec3(0.0f)};
+static void DrawCoordinateSystem(IRender* renderer) {
+	Vertex origin = { glm::vec3(0.0f) };
 	origin.color = glm::vec4(1.0f);
-	Vertex X = {glm::vec3(100.0f, 0.0f, 0.0f)};
+	Vertex X = { glm::vec3(100.0f, 0.0f, 0.0f) };
 	X.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-	Vertex Y = {glm::vec3(0.0f, 100.0f, 0.0f)};
+	Vertex Y = { glm::vec3(0.0f, 100.0f, 0.0f) };
 	Y.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-	Vertex Z = {glm::vec3(0.0f, 0.0f, 100.0f)};
+	Vertex Z = { glm::vec3(0.0f, 0.0f, 100.0f) };
 	Z.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-	Vertex OX[] = {origin, X};
-	Vertex OY[] = {origin, Y};
-	Vertex OZ[] = {origin, Z};
+	Vertex OX[] = { origin, X };
+	Vertex OY[] = { origin, Y };
+	Vertex OZ[] = { origin, Z };
 	renderer->ImDrawLines(OX, 2);
 	renderer->ImDrawLines(OY, 2);
 	renderer->ImDrawLines(OZ, 2);
@@ -192,9 +191,11 @@ bool Game::RunFrame(double dt) {
 
 	// Test collision between player and world geometry
 	EllipsoidCollider ec = m_Player.ellipsoidColliders[m_Player.currentAnimIdx];
-	CollisionInfo collisionInfo =
-		CollideEllipsoidWithTriPlane(ec, m_Player.velocity, static_cast<float>(dt) * m_World.m_Gravity,
-									 m_World.m_TriPlanes.data(), m_World.m_TriPlanes.size());
+	CollisionInfo collisionInfo = CollideEllipsoidWithTriPlane(ec,
+															   m_Player.velocity,
+															   static_cast<float>(dt) * m_World.m_Gravity,
+															   m_World.m_TriPlanes.data(),
+															   m_World.m_TriPlanes.size());
 
 	// Update the ellipsoid colliders for all animation states based on the new collision position
 	for (int i = 0; i < m_Player.animations.size(); i++) {
@@ -254,7 +255,7 @@ bool Game::RunFrame(double dt) {
 	ImGui::ShowDemoWindow();
 
 	// Draw Debug Line for player veloctiy vector
-	Line velocityDebugLine = {Vertex(ec.center), Vertex(ec.center + 200.0f * m_Player.velocity)};
+	Line velocityDebugLine = { Vertex(ec.center), Vertex(ec.center + 200.0f * m_Player.velocity) };
 	velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
 	velocityDebugLine.b.color = velocityDebugLine.a.color;
 	m_Renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
@@ -264,7 +265,7 @@ bool Game::RunFrame(double dt) {
 
 	DrawCoordinateSystem(m_Renderer);
 
-	HKD_Model *renderModels[1];
+	HKD_Model* renderModels[1];
 	renderModels[0] = &m_Player;
 
 	m_Renderer->Render(&m_FollowCamera, renderModels, 1);
@@ -281,7 +282,7 @@ bool Game::RunFrame(double dt) {
 
 	// Render Player's ellipsoid collider
 	m_Renderer->SetActiveCamera(&m_FollowCamera);
-	HKD_Model *playerColliderModel[] = {&m_Player};
+	HKD_Model* playerColliderModel[] = { &m_Player };
 	m_Renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
 
 	m_Renderer->RenderEnd();

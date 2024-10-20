@@ -2,8 +2,8 @@
 // Created by benek on 10/15/24.
 //
 
-#include "EntityManager.h"
-#include "assert.h"
+#include "entity_manager.h"
+#include <assert.h>
 
 //--------------------------- Instance ----------------------------------------
 //

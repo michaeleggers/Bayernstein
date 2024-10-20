@@ -138,25 +138,25 @@ add_executable(Game
 		CWorld.h
 		collision.cpp
 		collision.h
-		Clock/Clock.cpp
-		Clock/Clock.h
-		Message/MessageDispatcher.cpp
-		Message/MessageDispatcher.h
-		Message/Telegram.h
-		Entity/BaseGameEntity.cpp
-		Entity/BaseGameEntity.h
-		FSM/StateMachine.h
-		FSM/State.h
-		Entity/EntityManager.cpp
-		Entity/EntityManager.h
-		Entity/Player/PlayerStates.cpp
-		Entity/Player/PlayerStates.h
-		Entity/Player/Player.cpp
-		Entity/Player/Player.h
-		Entity/Enemy/EnemyStates.cpp
-		Entity/Enemy/EnemyStates.h
-		Entity/Enemy/Enemy.cpp
-		Entity/Enemy/Enemy.h
+		Clock/clock.cpp
+		Clock/clock.h
+		Message/message_dispatcher.cpp
+		Message/message_dispatcher.h
+		Message/telegram.h
+		Entity/base_game_entity.cpp
+		Entity/base_game_entity.h
+		FSM/state_machine.h
+		FSM/istate.h
+		Entity/entity_manager.cpp
+		Entity/entity_manager.h
+		Entity/Player/g_player_states.cpp
+		Entity/Player/g_player_states.h
+		Entity/Player/player.cpp
+		Entity/Player/player.h
+		Entity/Enemy/g_enemy_states.cpp
+		Entity/Enemy/g_enemy_states.h
+		Entity/Enemy/enemy.cpp
+		Entity/Enemy/enemy.h
 )
 
 target_include_directories(Game

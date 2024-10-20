@@ -2,10 +2,11 @@
 // Created by benek on 10/14/24.
 //
 
-#include "PlayerStates.h"
+#include "g_player_states.h"
 
+#include <stdio.h>
 #include "../../utils.h"
-#include "../Message/MessageType.h"
+#include "../Message/message_type.h"
 
 PlayerIdle *PlayerIdle::Instance() {
 	static PlayerIdle instance;
@@ -46,7 +47,7 @@ void PlayerAttacking::Execute(Player *pPlayer) {
 		double *value = new double(10.0);
 		if (RandBetween(0.0, 1.0) < 0.9) {
 			*value = 10.0;
-			Dispatcher->DispatchMessage(0.0, pPlayer->ID(), enemy->ID(), message_type::Attack, value);
+			Dispatcher->DispatchMessage(SEND_MSG_IMMEDIATELY, pPlayer->ID(), enemy->ID(), message_type::Attack, value);
 		} else {
 			*value = 50.0;
 			Dispatcher->DispatchMessage(50.0, pPlayer->ID(), enemy->ID(), message_type::Attack, value);

@@ -2,10 +2,10 @@
 // Created by benek on 10/14/24.
 //
 
-#include "Player.h"
+#include "player.h"
 
 #include "../input.h"
-#include "PlayerStates.h"
+#include "g_player_states.h"
 #include <SDL.h>
 
 void Player::Update() {

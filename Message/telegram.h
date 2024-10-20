@@ -4,8 +4,8 @@
 
 #ifndef TELEGRAM_H
 #define TELEGRAM_H
-#include "math.h"
-#include "stdio.h"
+#include <math.h>
+#include <stdio.h>
 
 struct Telegram {
 	// messages can be dispatched immediately or delayed for a specified amount
@@ -24,16 +24,20 @@ struct Telegram {
 	int Message;
 
 	// any additional information that may accompany the message
-	void *ExtraInfo;
+	void* ExtraInfo;
 
 	Telegram() : DispatchTime(-1), Sender(-1), Receiver(-1), Message(-1), ExtraInfo(nullptr) {}
 
-	Telegram(const double time, const int sender, const int receiver, const int msg, void *info = nullptr)
+	Telegram(const double time, const int sender, const int receiver, const int msg, void* info = nullptr)
 		: DispatchTime(time), Sender(sender), Receiver(receiver), Message(msg), ExtraInfo(info) {}
 
 	[[nodiscard]] char c_str() const {
 		char buffer[100];
-		sprintf(buffer, "telegram = time: %f, Sender: %i, Receiver %i, Message: %i", DispatchTime, Sender, Receiver,
+		sprintf(buffer,
+				"telegram = time: %f, Sender: %i, Receiver %i, Message: %i",
+				DispatchTime,
+				Sender,
+				Receiver,
 				Message);
 		return *buffer;
 	}
@@ -45,12 +49,12 @@ struct Telegram {
 // SmallestDelay apart before two Telegrams are considered unique.
 const double SmallestDelay = 0.25;
 
-inline bool operator==(const Telegram &t1, const Telegram &t2) {
-	return (fabs(t1.DispatchTime - t2.DispatchTime) < SmallestDelay) && (t1.Sender == t2.Sender) &&
-		   (t1.Receiver == t2.Receiver) && (t1.Message == t2.Message);
+inline bool operator==(const Telegram& t1, const Telegram& t2) {
+	return (fabs(t1.DispatchTime - t2.DispatchTime) < SmallestDelay) && (t1.Sender == t2.Sender)
+		   && (t1.Receiver == t2.Receiver) && (t1.Message == t2.Message);
 }
 
-inline bool operator<(const Telegram &t1, const Telegram &t2) {
+inline bool operator<(const Telegram& t1, const Telegram& t2) {
 	if (t1 == t2) {
 		return false;
 	}
@@ -62,6 +66,8 @@ inline bool operator<(const Telegram &t1, const Telegram &t2) {
 
 // handy helper function for dereferencing the ExtraInfo field of the Telegram
 // to the required type.
-template <class T> inline T DereferenceToType(void *p) { return *(T *)(p); }
+template <class T> inline T DereferenceToType(void* p) {
+	return *(T*)(p);
+}
 
 #endif // TELEGRAM_H

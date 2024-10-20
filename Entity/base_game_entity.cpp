@@ -2,8 +2,9 @@
 // Created by benek on 10/14/24.
 //
 
-#include "BaseGameEntity.h"
-#include "assert.h"
+#include "base_game_entity.h"
+#include <assert.h>
+#include <stdio.h>
 
 int BaseGameEntity::m_iNextValidID = 0;
 

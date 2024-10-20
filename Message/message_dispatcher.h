@@ -5,9 +5,9 @@
 #ifndef MESSAGEDISPATCHER_H
 #define MESSAGEDISPATCHER_H
 
-#include "../Entity/BaseGameEntity.h"
-#include "../Entity/EntityManager.h"
-#include "Telegram.h"
+#include "../Entity/base_game_entity.h"
+#include "../Entity/entity_manager.h"
+#include "telegram.h"
 #include <set>
 
 // to make life easier...
@@ -21,17 +21,17 @@ constexpr int SENDER_ID_IRRELEVANT = -1;
 class MessageDispatcher {
   private:
 	std::set<Telegram> m_DelayedMessages;
-	void Discharge(BaseGameEntity *pReciever, const Telegram &message);
+	void Discharge(BaseGameEntity* pReciever, const Telegram& message);
 	MessageDispatcher() = default;
 
 	// copy ctor and assignment should be private
-	MessageDispatcher(const MessageDispatcher &);
-	MessageDispatcher &operator=(const MessageDispatcher &);
+	MessageDispatcher(const MessageDispatcher&);
+	MessageDispatcher& operator=(const MessageDispatcher&);
 
   public:
-	static MessageDispatcher *Instance();
+	static MessageDispatcher* Instance();
 
-	void DispatchMessage(double delay, int sender, int reciever, int message, void *extraInfo);
+	void DispatchMessage(double delay, int sender, int reciever, int message, void* extraInfo);
 
 	void DispatchDelayedMessages();
 };

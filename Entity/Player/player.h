@@ -5,10 +5,10 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "../../Clock/Clock.h"
-#include "../../FSM/StateMachine.h"
-#include "../../Message/MessageDispatcher.h"
-#include "../BaseGameEntity.h"
+#include "../../Clock/clock.h"
+#include "../../FSM/state_machine.h"
+#include "../../Message/message_dispatcher.h"
+#include "../base_game_entity.h"
 
 class Player : public BaseGameEntity {
   private:

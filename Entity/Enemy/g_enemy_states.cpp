@@ -2,9 +2,10 @@
 // Created by benek on 10/14/24.
 //
 
-#include "EnemyStates.h"
 
-#include "../../Message/MessageType.h"
+#include "g_enemy_states.h"
+#include <stdio.h>
+#include "../../Message/message_type.h"
 
 EnemyIdle *EnemyIdle::Instance() {
 	static EnemyIdle instance;
