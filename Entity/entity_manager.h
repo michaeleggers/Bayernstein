@@ -5,7 +5,12 @@
 #ifndef ENTITYMANAGER_H
 #define ENTITYMANAGER_H
 #include "base_game_entity.h"
+
+#include "Player/g_player.h"
 #include <map>
+
+// I don't know why we need this here?
+class Player; // Forward declaration of Player class
 
 class EntityManager {
   private:
@@ -23,15 +28,17 @@ class EntityManager {
 
 	static EntityManager* Instance();
 
-	void RegisterEntity(BaseGameEntity* NewEntity);
+	void RegisterEntity(BaseGameEntity* NewEntity, CWorld* world);
 
 	// returns a pointer to the entity with the ID given as a parameter
 	[[nodiscard]] BaseGameEntity* GetEntityFromID(int id) const;
 
+	[[nodiscard]] Player* GetPlayerEntity() const;
+
 	// this method removes the entity from the list
 	void RemoveEntity(const BaseGameEntity* pEntity);
 
-	void UpdateEntities();
+	void UpdateEntities(double dt);
 };
 
 #endif // ENTITYMANAGER_H

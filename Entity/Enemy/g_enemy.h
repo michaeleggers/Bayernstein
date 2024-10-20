@@ -13,7 +13,7 @@ class Enemy : public BaseGameEntity {
 	double m_Health = 100;
 
   public:
-	void Update() override;
+	void Update(double dt) override;
 	explicit Enemy(int id);
 
 	~Enemy() override {

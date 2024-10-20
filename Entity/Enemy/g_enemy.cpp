@@ -6,7 +6,7 @@
 #include "g_enemy_states.h"
 #include <stdio.h>
 
-void Enemy::Update() {
+void Enemy::Update(double dt) {
 	m_pStateMachine->Update();
 	printf("Enemy Health: %f\n", m_Health);
 }

@@ -46,7 +46,6 @@ struct HKD_Model {
 	glm::vec3				position;
 	glm::quat				orientation;
 	glm::vec3				scale;
-	glm::vec3				velocity; // TODO: Move out to Entity later
 	int						gpuModelHandle; // -1: Data not yet on GPU
 	std::vector<Pose>		poses; // A POSE IS JUST A LOCAL TRANSFORM FOR A SINGLE JOINT!!! IT IS NOT THE SKELETON STATE AT A CERTAIN FRAME!
 	uint32_t				currentFrame;
