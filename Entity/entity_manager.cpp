@@ -3,13 +3,14 @@
 //
 
 #include "entity_manager.h"
+#include "Player/g_player.h"
 #include <assert.h>
 
 //--------------------------- Instance ----------------------------------------
 //
 //   this class is a singleton
 //-----------------------------------------------------------------------------
-EntityManager *EntityManager::Instance() {
+EntityManager* EntityManager::Instance() {
 	static EntityManager instance;
 
 	return &instance;
@@ -21,11 +22,12 @@ EntityManager::~EntityManager() {
 	}
 }
 
-void EntityManager::RegisterEntity(BaseGameEntity *NewEntity) {
+void EntityManager::RegisterEntity(BaseGameEntity* NewEntity, CWorld* world) {
+	NewEntity->SetWorld(world);
 	m_EntityMap.insert(std::make_pair(NewEntity->ID(), NewEntity));
 }
 
-BaseGameEntity *EntityManager::GetEntityFromID(int id) const {
+BaseGameEntity* EntityManager::GetEntityFromID(int id) const {
 	EntityMap::const_iterator entity = m_EntityMap.find(id);
 
 	// assert that the entity is a member of the map
@@ -33,11 +35,16 @@ BaseGameEntity *EntityManager::GetEntityFromID(int id) const {
 
 	return entity->second;
 }
+Player* EntityManager::GetPlayerEntity() const {
+	return (Player*)GetEntityFromID(0);
+}
 
-void EntityManager::RemoveEntity(const BaseGameEntity *pEntity) { m_EntityMap.erase(m_EntityMap.find(pEntity->ID())); }
+void EntityManager::RemoveEntity(const BaseGameEntity* pEntity) {
+	m_EntityMap.erase(m_EntityMap.find(pEntity->ID()));
+}
 
-void EntityManager::UpdateEntities() {
+void EntityManager::UpdateEntities(double dt) {
 	for (auto [id, entity] : m_EntityMap) {
-		entity->Update();
+		entity->Update(dt);
 	}
 }

@@ -4,7 +4,9 @@
 
 #ifndef BASEGAMEENTITY_H
 #define BASEGAMEENTITY_H
+
 #include "../Message/telegram.h"
+#include "../CWorld.h"
 
 class BaseGameEntity {
   private:
@@ -17,6 +19,7 @@ class BaseGameEntity {
 	void SetID(int value);
 
   public:
+	CWorld* m_World;
 	// this is the next valid ID. Each time a BaseGameEntity is instantiated
 	// this value is updated
 	static int m_iNextValidID;
@@ -28,7 +31,7 @@ class BaseGameEntity {
 	virtual ~BaseGameEntity() = default;
 
 	// all entities must implement an update function
-	virtual void Update() = 0;
+	virtual void Update(double dt) = 0;
 
 	// all entities can communicate using messages. They are sent
 	// using the MessageDispatcher singleton class
@@ -36,6 +39,10 @@ class BaseGameEntity {
 
 	[[nodiscard]] int ID() const {
 		return m_ID;
+	}
+
+	void SetWorld(CWorld* world) {
+		m_World = world;
 	}
 };
 
