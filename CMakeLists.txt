@@ -28,23 +28,8 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 if (WIN32)
 	# res/app.rc
-	SET(RESOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/res/app.rc
-			TestClass.cpp
-			TestClass.h
-			Shape.cpp
-			Shape.h
-			ShapeSphere.cpp
-			ShapeSphere.h
-			Body.cpp
-			Body.h
-			Intersections.cpp
-			Intersections.h
-			CWorld.cpp
-			CWorld.h
-			collision.cpp
-			collision.h
-	)
-endif ()
+	SET(RESOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/res/app.rc)
+endif()
 
 if (MSVC)
 	add_compile_options(/W4)
