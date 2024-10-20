@@ -5,7 +5,7 @@
 #ifndef ENEMYSTATES_H
 #define ENEMYSTATES_H
 #include "../FSM/istate.h"
-#include "enemy.h"
+#include "g_enemy.h"
 
 class EnemyIdle : public State<Enemy> {
   private:

@@ -2,7 +2,7 @@
 // Created by benek on 10/14/24.
 //
 
-#include "player.h"
+#include "g_player.h"
 
 #include "../input.h"
 #include "g_player_states.h"
@@ -26,4 +26,6 @@ Player::Player() : BaseGameEntity(0), m_pStateMachine(nullptr) {
 	m_pStateMachine->SetCurrentState(PlayerIdle::Instance());
 }
 
-bool Player::HandleMessage(const Telegram &telegram) { return m_pStateMachine->HandleMessage(telegram); }
+bool Player::HandleMessage(const Telegram& telegram) {
+	return m_pStateMachine->HandleMessage(telegram);
+}

@@ -151,12 +151,12 @@ add_executable(Game
 		Entity/entity_manager.h
 		Entity/Player/g_player_states.cpp
 		Entity/Player/g_player_states.h
-		Entity/Player/player.cpp
-		Entity/Player/player.h
+		Entity/Player/g_player.cpp
+		Entity/Player/g_player.h
 		Entity/Enemy/g_enemy_states.cpp
 		Entity/Enemy/g_enemy_states.h
-		Entity/Enemy/enemy.cpp
-		Entity/Enemy/enemy.h
+		Entity/Enemy/g_enemy.cpp
+		Entity/Enemy/g_enemy.h
 )
 
 target_include_directories(Game

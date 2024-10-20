@@ -2,9 +2,9 @@
 // Created by benek on 10/14/24.
 //
 
-#include "enemy.h"
-#include <stdio.h>
+#include "g_enemy.h"
 #include "g_enemy_states.h"
+#include <stdio.h>
 
 void Enemy::Update() {
 	m_pStateMachine->Update();

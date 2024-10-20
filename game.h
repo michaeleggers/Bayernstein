@@ -4,8 +4,8 @@
 #include <string>
 
 #include "CWorld.h"
-#include "Entity/Enemy/enemy.h"
-#include "Entity/Player/player.h"
+#include "Entity/Enemy/g_enemy.h"
+#include "Entity/Player/g_player.h"
 #include "Entity/entity_manager.h"
 #include "camera.h"
 #include "hkd_interface.h"

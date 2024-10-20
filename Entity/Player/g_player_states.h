@@ -6,7 +6,7 @@
 #define PLAYERSTATES_H
 
 #include "../../FSM/istate.h"
-#include "player.h"
+#include "g_player.h"
 
 class PlayerIdle : public State<Player> {
   private:
