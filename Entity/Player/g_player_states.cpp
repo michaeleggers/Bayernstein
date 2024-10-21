@@ -14,22 +14,43 @@ PlayerIdle *PlayerIdle::Instance() {
 	return &instance;
 }
 
-void PlayerIdle::Enter(Player *pPlayer) {printf("Player entered Idle State\n"); }
+void PlayerIdle::Enter(Player *pPlayer) {
+	//printf("Player entered Idle State\n");
+}
 
-void PlayerIdle::Execute(Player *pPlayer) {printf("Player is executing Idle State\n"); }
-void PlayerIdle::Exit(Player *pPlayer) {printf("Player is exiting Idle State\n"); }
-bool PlayerIdle::OnMessage(Player *agent, const Telegram &telegram) { return false; }
+void PlayerIdle::Execute(Player *pPlayer) {
+	//printf("Player is executing Idle State\n"); 
+}
+
+void PlayerIdle::Exit(Player *pPlayer) {
+	//printf("Player is exiting Idle State\n"); 
+}
+
+bool PlayerIdle::OnMessage(Player *agent, const Telegram &telegram) { 
+	return false; 
+}
+
 PlayerRunning *PlayerRunning::Instance() {
 	static PlayerRunning instance;
 
 	return &instance;
 }
 
-void PlayerRunning::Enter(Player *pPlayer) {printf("Player entered Running State\n"); }
+void PlayerRunning::Enter(Player *pPlayer) {
+	//printf("Player entered Running State\n"); 
+}
 
-void PlayerRunning::Execute(Player *pPlayer) {printf("Player is executing Running State\n"); }
-void PlayerRunning::Exit(Player *pPlayer) {printf("Player is exiting Running State\n"); }
-bool PlayerRunning::OnMessage(Player *agent, const Telegram &telegram) { return false; }
+void PlayerRunning::Execute(Player *pPlayer) {
+	//printf("Player is executing Running State\n"); 
+}
+
+void PlayerRunning::Exit(Player *pPlayer) {
+	//printf("Player is exiting Running State\n"); 
+}
+
+bool PlayerRunning::OnMessage(Player *agent, const Telegram &telegram) {
+	return false; 
+}
 
 PlayerAttacking *PlayerAttacking::Instance() {
 	static PlayerAttacking instance;
@@ -37,7 +58,9 @@ PlayerAttacking *PlayerAttacking::Instance() {
 	return &instance;
 }
 
-void PlayerAttacking::Enter(Player *pPlayer) {printf("Player entered Running State\n"); }
+void PlayerAttacking::Enter(Player *pPlayer) {
+	//printf("Player entered Running State\n"); 
+}
 
 void PlayerAttacking::Execute(Player *pPlayer) {
 	if (pPlayer->CanAttack()) {
@@ -53,7 +76,14 @@ void PlayerAttacking::Execute(Player *pPlayer) {
 			Dispatcher->DispatchMessage(50.0, pPlayer->ID(), enemy->ID(), message_type::Attack, value);
 		}
 	}
-	printf("Player is executing AttackingState\n");
+	//printf("Player is executing AttackingState\n");
 }
-void PlayerAttacking::Exit(Player *pPlayer) {printf("Player is exiting Running State\n"); }
-bool PlayerAttacking::OnMessage(Player *agent, const Telegram &telegram) { return false; }
+
+void PlayerAttacking::Exit(Player *pPlayer) {
+	//printf("Player is exiting Running State\n"); 
+}
+
+bool PlayerAttacking::OnMessage(Player *agent, const Telegram &telegram) { 
+	return false; 
+}
+

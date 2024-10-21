@@ -191,10 +191,29 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush)
     return polys;
 }
 
-std::vector<MapPolygon> createPolysoup(Map map)
+static bool hasClassname(const Entity& e, std::string classname) {
+    for (int i = 0; i < e.properties.size(); i++) {
+        const Property& p = e.properties[ i ];
+        if ( p.value == classname ) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+std::vector<MapPolygon> createPolysoup(Map map, SoupFlags soupFlags)
 {
     std::vector<MapPolygon> polys;
     for (auto e = map.entities.begin(); e != map.entities.end(); e++) {
+       
+        // Check if we wannt also want the brush entities included or not (default = not).
+        if ( !hasClassname(*e, "worldspawn") 
+            && (!hasClassname(*e, "func_group"))
+            && (soupFlags == SOUP_GET_WORLDSPAWN_ONLY) ) {
+            continue;
+        }
+
         for (auto b = e->brushes.begin(); b != e->brushes.end(); b++) {
             int faceCount = b->faces.size();
             for (int i = 0; i <  faceCount; i++) {
@@ -206,7 +225,7 @@ std::vector<MapPolygon> createPolysoup(Map map)
                     for (int k = 0; k < faceCount; k++) {
                         glm::f64vec3 intersectionPoint;
                         MapPlane p2 = convertFaceToPlane(b->faces[k]);
-                        if (i != j != k) {
+                        if ( (i != j) && (j != k) && (i != k) ) { 
                             if (intersectThreePlanes(p0, p1, p2, &intersectionPoint)) {
                                 if (isPointInsideBrush(*b, intersectionPoint)) {
                                     // TODO: Calculate texture coordinates

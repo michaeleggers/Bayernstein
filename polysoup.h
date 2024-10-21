@@ -8,6 +8,11 @@
 
 #include "map_parser.h"
 
+enum SoupFlags {
+    SOUP_GET_ALL,
+    SOUP_GET_WORLDSPAWN_ONLY
+};
+
 struct MapPolygon
 {
     std::vector<glm::f64vec3>  vertices;
@@ -31,7 +36,7 @@ bool                    intersectThreePlanes(MapPlane p0, MapPlane p1, MapPlane 
 bool                    vec3IsEqual(const glm::f64vec3& lhs, const glm::f64vec3& rhs);
 void                    insertVertexToPolygon(glm::f64vec3 v, MapPolygon* p);
 bool                    isPointInsideBrush(Brush brush, glm::f64vec3 intersectionPoint);
-std::vector<MapPolygon> createPolysoup(Map map); // TODO: Option to exclude brush entities and trigger geometry.
+std::vector<MapPolygon> createPolysoup(Map map, SoupFlags soupFlags = SOUP_GET_WORLDSPAWN_ONLY); // TODO: Option to exclude brush entities and trigger geometry.
 std::vector<MapPolygon> createPolysoup(const Brush& brush);
 bool                    isAngleLegal(glm::f64vec3 center, glm::f64vec3 v0, glm::f64vec3 v1);
 double                  getAngle(glm::f64vec3 center, glm::f64vec3 v0, glm::f64vec3 v1);

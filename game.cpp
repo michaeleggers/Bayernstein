@@ -74,7 +74,7 @@ void Game::Init() {
         worldTris.push_back(triPlane);
     }
    
-    int idCounter = 0;
+    int idCounter = 0; //FIX: Responsibility of entity manager
     // Load and create all the entities
     for (int i = 0; i < map.entities.size(); i++) {
         Entity& e = map.entities[ i ];
@@ -85,6 +85,7 @@ void Game::Init() {
             if (prop.key == "classname") {
                 if (prop.value == "func_door") {
                     baseEntity = new Door( idCounter++, e.properties, e.brushes );    
+                    m_World.m_BrushEntities.push_back( baseEntity->ID() );
                 }
                 else {
                     printf("Unknown entity type: %s\n", prop.value.c_str());
@@ -293,6 +294,8 @@ bool Game::RunFrame(double dt) {
 
     // Render World geometry
     m_Renderer->ImDrawTriPlanes(m_World.m_TriPlanes.data(), m_World.m_TriPlanes.size(), true, DRAW_MODE_SOLID);
+
+
 
     DrawCoordinateSystem(m_Renderer);
 

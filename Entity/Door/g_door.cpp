@@ -7,6 +7,7 @@
 #include "g_door_states.h"
 #include "../../map_parser.h"
 #include "../../polysoup.h"
+#include "../../r_common.h"
 
 #include <SDL.h>
 
@@ -39,6 +40,29 @@ Door::Door(const int id,
     // Assume just one brush for now... // TODO: Could be more brushes!
     std::vector<MapPolygon> mapPolys = createPolysoup( brushes[ 0 ] );
     std::vector<MapPolygon> mapTris = triangulate(mapPolys);
+   
+    // NOTE: Just make doors red for now. Obviously we texture them later.
+    glm::vec4 triColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); 
+    for (int i = 0; i < mapTris.size(); i++) {
+        MapPolygon mapPoly = mapTris[ i ];
+        
+        Vertex A = { glm::vec3(mapPoly.vertices[0].x, mapPoly.vertices[0].y, mapPoly.vertices[0].z) };
+        Vertex B = { glm::vec3(mapPoly.vertices[1].x, mapPoly.vertices[1].y, mapPoly.vertices[1].z) };
+        Vertex C = { glm::vec3(mapPoly.vertices[2].x, mapPoly.vertices[2].y, mapPoly.vertices[2].z) };
+        A.color = triColor;
+        B.color = triColor;
+        C.color = triColor;
+        Tri tri = { A, B, C };
+
+        TriPlane triPlane{};
+        triPlane.tri = tri;
+        triPlane.plane = CreatePlaneFromTri(triPlane.tri);
+        triPlane.tri.a.normal = triPlane.plane.normal;
+        triPlane.tri.b.normal = triPlane.plane.normal;
+        triPlane.tri.c.normal = triPlane.plane.normal;
+        
+        m_TriPlanes.push_back(triPlane);
+    }
 }
 
 bool Door::HandleMessage(const Telegram& telegram) {

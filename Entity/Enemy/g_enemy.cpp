@@ -8,7 +8,7 @@
 
 void Enemy::Update() {
 	m_pStateMachine->Update();
-	printf("Enemy Health: %f\n", m_Health);
+	//printf("Enemy Health: %f\n", m_Health);
 }
 
 Enemy::Enemy(const int id) : BaseGameEntity(id), m_pStateMachine(nullptr) {
