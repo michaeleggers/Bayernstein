@@ -10,9 +10,9 @@
 //   this class is a singleton
 //-----------------------------------------------------------------------------
 EntityManager *EntityManager::Instance() {
-	static EntityManager instance;
+    static EntityManager instance;
 
-	return &instance;
+    return &instance;
 }
 
 EntityManager::~EntityManager() {
@@ -20,28 +20,28 @@ EntityManager::~EntityManager() {
 }
 
 void EntityManager::RegisterEntity(BaseGameEntity *NewEntity) {
-	m_EntityMap.insert(std::make_pair(NewEntity->ID(), NewEntity));
+    m_EntityMap.insert(std::make_pair(NewEntity->ID(), NewEntity));
 }
 
 void EntityManager::KillEntities() {
-	for (auto [id, entity] : m_EntityMap) {
-		delete entity;
-	}
+    for (auto [id, entity] : m_EntityMap) {
+        delete entity;
+    }
 }
 
 BaseGameEntity *EntityManager::GetEntityFromID(int id) const {
-	EntityMap::const_iterator entity = m_EntityMap.find(id);
+    EntityMap::const_iterator entity = m_EntityMap.find(id);
 
-	// assert that the entity is a member of the map
-	assert((entity != m_EntityMap.end()) && "<EntityManager::GetEntityFromID>: invalid ID");
+    // assert that the entity is a member of the map
+    assert((entity != m_EntityMap.end()) && "<EntityManager::GetEntityFromID>: invalid ID");
 
-	return entity->second;
+    return entity->second;
 }
 
 void EntityManager::RemoveEntity(const BaseGameEntity *pEntity) { m_EntityMap.erase(m_EntityMap.find(pEntity->ID())); }
 
 void EntityManager::UpdateEntities() {
-	for (auto [id, entity] : m_EntityMap) {
-		entity->Update();
-	}
+    for (auto [id, entity] : m_EntityMap) {
+        entity->Update();
+    }
 }
