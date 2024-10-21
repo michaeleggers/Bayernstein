@@ -5,10 +5,13 @@
 #ifndef _DOOR_H_
 #define _DOOR_H_
 
+#include <vector>
+
 #include "../../Clock/clock.h"
 #include "../../FSM/state_machine.h"
 #include "../../Message/message_dispatcher.h"
 #include "../base_game_entity.h"
+#include "../../map_parser.h"
 
 class Door : public BaseGameEntity {
 
@@ -29,7 +32,7 @@ class Door : public BaseGameEntity {
 
 
     public:
-	explicit Door(const int id);
+	explicit Door(const int id, std::vector<Property>& properties, std::vector<Brush>& brushes);
         
         void Update() override;
 

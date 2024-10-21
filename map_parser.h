@@ -103,7 +103,7 @@ Map getMap(char* mapData, size_t mapDataLength, MapVersion mapVersion = QUAKE);
 
 
 
-#if defined(MAP_PARSER_IMPLEMENTATION)
+#ifdef MAP_PARSER_IMPLEMENTATION
 
 static int          g_InputLength;
 static int          g_LineNo;

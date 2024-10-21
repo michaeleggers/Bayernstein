@@ -1,3 +1,7 @@
+// NOTE: Header only libs *have* to be defined on top before everything else.
+#define MAP_PARSER_IMPLEMENTATION
+#include "map_parser.h"
+
 #include "game.h"
 
 #include <SDL.h>
@@ -14,8 +18,7 @@
 
 #include "imgui.h"
 
-#define MAP_PARSER_IMPLEMENTATION
-#include "map_parser.h"
+
 
 #include "polysoup.h"
 
@@ -81,7 +84,7 @@ void Game::Init() {
             Property& prop = e.properties[ j ];
             if (prop.key == "classname") {
                 if (prop.value == "func_door") {
-                    baseEntity = new Door( idCounter++ );    
+                    baseEntity = new Door( idCounter++, e.properties, e.brushes );    
                 }
                 else {
                     printf("Unknown entity type: %s\n", prop.value.c_str());
