@@ -173,7 +173,7 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush)
             for (int k = 0; k < faceCount; k++) {
                 glm::f64vec3 intersectionPoint;
                 MapPlane p2 = convertFaceToPlane(brush.faces[k]);
-                if (i != j != k) {
+                if ( (i != j) && (j != k) && (i != k) ) { 
                     if (intersectThreePlanes(p0, p1, p2, &intersectionPoint)) {
                         if (isPointInsideBrush(brush, intersectionPoint)) {
                             // TODO: Calculate texture coordinates

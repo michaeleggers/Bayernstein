@@ -21,7 +21,7 @@ void DoorClosed::Enter(Door *pDoor) {
 }
 
 void DoorClosed::Execute(Door *pDoor) {
-    printf("Door is executing Closed State\n");
+    //printf("Door is executing Closed State\n");
 }
 
 void DoorClosed::Exit(Door *pDoor) {

@@ -43,9 +43,11 @@ Door::Door(const int id,
     std::vector<MapPolygon> mapPolys = createPolysoup( brushes[ 0 ] );
     std::vector<MapPolygon> mapTris = triangulate(mapPolys);
    
-    // NOTE: Just make doors red for now. Obviously we texture them later.
-    glm::vec4 triColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); 
+    // NOTE: Just make doors golden for now. Obviously we texture them later.
+    // TODO: This stuff happens quite common. Also: Maybe tris are sufficient?
+    glm::vec4 triColor = glm::vec4(1.0f, 0.9f, 0.0f, 1.0f); 
     for (int i = 0; i < mapTris.size(); i++) {
+
         MapPolygon mapPoly = mapTris[ i ];
         
         Vertex A = { glm::vec3(mapPoly.vertices[0].x, mapPoly.vertices[0].y, mapPoly.vertices[0].z) };

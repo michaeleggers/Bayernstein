@@ -15,6 +15,7 @@
 #include "physics.h"
 #include "r_itexture.h"
 #include "utils.h"
+#include "./Message/message_type.h"
 
 #include "imgui.h"
 
@@ -139,7 +140,9 @@ void Game::Init() {
     m_FollowCamera.RotateAroundSide(-20.0f);
     m_FollowCamera.RotateAroundUp(180.0f);
 
-    m_pEntityManager->RegisterEntity(new Player( idCounter++ ));
+
+    m_pPlayerEntity = new Player( idCounter++ );
+    m_pEntityManager->RegisterEntity(m_pPlayerEntity);
     m_pEntityManager->RegisterEntity(new Enemy( idCounter++ ));
 }
 
@@ -240,6 +243,31 @@ bool Game::RunFrame(double dt) {
     m_Player.position.y = collisionInfo.basePos.y;
     m_Player.position.z = collisionInfo.basePos.z - ec.radiusB;
 
+    // Check if player runs against door
+    for (int i = 0; i < m_World.m_BrushEntities.size(); i++) {
+        int be = m_World.m_BrushEntities[ i ];
+        BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID( be );
+        if ( pEntity->Type() == ET_DOOR ) {
+            Door* pDoor = (Door*)pEntity;
+            CollisionInfo ci = CollideEllipsoidWithTriPlane(ec,
+                                                       m_Player.velocity,
+                                                       static_cast<float>(dt) * m_World.m_Gravity,
+                                                       pDoor->TriPlanes().data(),
+                                                       pDoor->TriPlanes().size());
+            if ( ci.didCollide ) {
+                printf("COLLIDED!\n");
+                Dispatcher->DispatchMessage(SEND_MSG_IMMEDIATELY, 
+                                            m_pPlayerEntity->ID(), pDoor->ID(), 
+                                            message_type::Collision, 
+                                            0); 
+            }
+        }
+    }
+
+    // Run the message system
+    m_pEntityManager->UpdateEntities();
+    Dispatcher->DispatchDelayedMessages();
+    
     UpdateModel(&m_Player, (float)dt);
 
     // Fix camera position
@@ -296,7 +324,10 @@ bool Game::RunFrame(double dt) {
     m_Renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
 
     // Render World geometry
-    m_Renderer->ImDrawTriPlanes(m_World.m_TriPlanes.data(), m_World.m_TriPlanes.size(), true, DRAW_MODE_SOLID);
+    m_Renderer->ImDrawTriPlanes(m_World.m_TriPlanes.data(), 
+                                m_World.m_TriPlanes.size(), 
+                                true,
+                                DRAW_MODE_SOLID);
 
     // Render Brush Entities
     for (int i = 0; i < m_World.m_BrushEntities.size(); i++) {
@@ -336,8 +367,6 @@ bool Game::RunFrame(double dt) {
 
     m_Renderer->RenderEnd();
 
-    m_pEntityManager->UpdateEntities();
-    Dispatcher->DispatchDelayedMessages();
 
     return true;
 }

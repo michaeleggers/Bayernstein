@@ -26,6 +26,7 @@ class Game {
 	std::string m_ExePath;
 
 	HKD_Model m_Player;
+	Player* m_pPlayerEntity;
 	EntityManager *m_pEntityManager;
 
 	Camera m_Camera;
