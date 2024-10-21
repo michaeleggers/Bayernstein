@@ -23,7 +23,7 @@ class EntityManager {
 
 	static EntityManager* Instance();
 
-	void RegisterEntity(BaseGameEntity* NewEntity);
+	void RegisterEntity(BaseGameEntity* pNewEntity);
 	void KillEntities();
 
 	// returns a pointer to the entity with the ID given as a parameter
@@ -36,3 +36,4 @@ class EntityManager {
 };
 
 #endif // ENTITYMANAGER_H
+

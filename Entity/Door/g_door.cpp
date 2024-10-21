@@ -18,7 +18,9 @@ void Door::Update() {
 
 Door::Door(const int id, 
            std::vector<Property>& properties, 
-           std::vector<Brush>& brushes) : BaseGameEntity(id), m_pStateMachine(nullptr) {
+           std::vector<Brush>& brushes) : 
+    BaseGameEntity(id, ET_DOOR),
+    m_pStateMachine(nullptr) {
 
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(DoorClosed::Instance());

@@ -19,8 +19,8 @@ EntityManager::~EntityManager() {
     // TODO: Could be deleted? (We might have use for this later, though).
 }
 
-void EntityManager::RegisterEntity(BaseGameEntity *NewEntity) {
-    m_EntityMap.insert(std::make_pair(NewEntity->ID(), NewEntity));
+void EntityManager::RegisterEntity(BaseGameEntity *pNewEntity) {
+    m_EntityMap.insert(std::make_pair(pNewEntity->ID(), pNewEntity));
 }
 
 void EntityManager::KillEntities() {

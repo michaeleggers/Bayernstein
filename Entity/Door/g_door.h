@@ -51,6 +51,10 @@ public:
 
     bool HandleMessage(const Telegram& telegram) override;
 
+    std::vector<TriPlane>& TriPlanes() {
+        return m_TriPlanes;
+    }
+
 };
 
 #endif // _DOOR_H_

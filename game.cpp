@@ -74,6 +74,11 @@ void Game::Init() {
         worldTris.push_back(triPlane);
     }
    
+
+    m_World.InitWorld(
+        worldTris.data(), worldTris.size(), 
+        glm::vec3(0.0f, 0.0f, -0.5f)); // gravity
+
     int idCounter = 0; //FIX: Responsibility of entity manager
     // Load and create all the entities
     for (int i = 0; i < map.entities.size(); i++) {
@@ -86,6 +91,7 @@ void Game::Init() {
                 if (prop.value == "func_door") {
                     baseEntity = new Door( idCounter++, e.properties, e.brushes );    
                     m_World.m_BrushEntities.push_back( baseEntity->ID() );
+                    m_pEntityManager->RegisterEntity(baseEntity);
                 }
                 else {
                     printf("Unknown entity type: %s\n", prop.value.c_str());
@@ -93,10 +99,7 @@ void Game::Init() {
             }
         }
     }
-
-    m_World.InitWorld(
-        worldTris.data(), worldTris.size(), 
-        glm::vec3(0.0f, 0.0f, -0.5f)); // gravity
+    
 
     // Load IQM Model
 
@@ -295,6 +298,18 @@ bool Game::RunFrame(double dt) {
     // Render World geometry
     m_Renderer->ImDrawTriPlanes(m_World.m_TriPlanes.data(), m_World.m_TriPlanes.size(), true, DRAW_MODE_SOLID);
 
+    // Render Brush Entities
+    for (int i = 0; i < m_World.m_BrushEntities.size(); i++) {
+        int be = m_World.m_BrushEntities[ i ];
+        BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID( be );
+        if ( pEntity->Type() == ET_DOOR ) {
+            Door* pDoor = (Door*)pEntity;
+            m_Renderer->ImDrawTriPlanes(pDoor->TriPlanes().data(),
+                                        pDoor->TriPlanes().size(),
+                                        true,
+                                        DRAW_MODE_SOLID);
+        }
+    }
 
 
     DrawCoordinateSystem(m_Renderer);
