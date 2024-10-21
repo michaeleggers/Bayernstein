@@ -19,10 +19,12 @@ class CWorld {
 public:
     void InitWorld(TriPlane* triPlanes, uint32_t triPlaneCount, glm::vec3 gravity);
 
-    std::vector<TriPlane> m_TriPlanes;
-	glm::vec3			  m_Gravity;
+    std::vector<TriPlane>   m_TriPlanes;
+    glm::vec3               m_Gravity;
+
 };
 
 
 
 #endif //CWORLD_H
+

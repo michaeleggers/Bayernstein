@@ -17,12 +17,14 @@ class Player : public BaseGameEntity {
 	double m_LastAttack = 0;
 
   public:
-	void Update() override;
 	explicit Player();
 
 	~Player() override {
 		delete m_pStateMachine;
 	}
+	
+	void Update() override;
+
 	[[nodiscard]] StateMachine<Player>* GetFSM() const {
 		return m_pStateMachine;
 	}

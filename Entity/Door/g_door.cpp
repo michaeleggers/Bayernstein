@@ -16,7 +16,7 @@ void Door::Update() {
 
 Door::Door() : BaseGameEntity(0), m_pStateMachine(nullptr) {
 	m_pStateMachine = new StateMachine(this);
-	m_pStateMachine->SetCurrentState(DoorIdle::Instance());
+	m_pStateMachine->SetCurrentState(DoorClosed::Instance());
 }
 
 bool Door::HandleMessage(const Telegram& telegram) {

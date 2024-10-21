@@ -8,16 +8,33 @@
 #include "../../FSM/istate.h"
 #include "g_door.h"
 
-class DoorIdle : public State<Door> {
+class DoorClosed : public State<Door> {
   private:
-    DoorIdle() = default;
+    DoorClosed() = default;
     // copy ctor and assignment should be private
-    DoorIdle(const DoorIdle&);
-    DoorIdle& operator=(const DoorIdle&);
+    DoorClosed(const DoorClosed&);
+    DoorClosed& operator=(const DoorClosed&);
 
   public:
     // this is a singleton
-    static DoorIdle* Instance();
+    static DoorClosed* Instance();
+
+    void Enter(Door* pDoor) override;
+    void Execute(Door* pDoor) override;
+    void Exit(Door* pDoor) override;
+    bool OnMessage(Door* agent, const Telegram& telegram) override;
+};
+
+class DoorOpening : public State<Door> {
+  private:
+    DoorOpening() = default;
+    // copy ctor and assignment should be private
+    DoorOpening(const DoorOpening&);
+    DoorOpening& operator=(const DoorOpening&);
+
+  public:
+    // this is a singleton
+    static DoorOpening* Instance();
 
     void Enter(Door* pDoor) override;
     void Execute(Door* pDoor) override;
@@ -26,4 +43,5 @@ class DoorIdle : public State<Door> {
 };
 
 #endif // _DOOR_STATES_H_
+
 

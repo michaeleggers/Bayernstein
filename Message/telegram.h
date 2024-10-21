@@ -4,6 +4,7 @@
 
 #ifndef TELEGRAM_H
 #define TELEGRAM_H
+
 #include <math.h>
 #include <stdio.h>
 
@@ -51,8 +52,9 @@ struct Telegram {
 const double SmallestDelayInSeconds = 0.25;
 
 inline bool operator==(const Telegram& t1, const Telegram& t2) {
-    return (fabs(t1.DispatchTime - t2.DispatchTime) < SmallestDelayInSeconds) && (t1.Sender == t2.Sender)
-           && (t1.Receiver == t2.Receiver) && (t1.Message == t2.Message);
+    return (fabs(t1.DispatchTime - t2.DispatchTime) < SmallestDelayInSeconds) 
+            && (t1.Sender == t2.Sender)
+            && (t1.Receiver == t2.Receiver) && (t1.Message == t2.Message);
 }
 
 inline bool operator<(const Telegram& t1, const Telegram& t2) {
