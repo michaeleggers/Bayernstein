@@ -21,7 +21,7 @@ void Player::Update() {
 	m_pStateMachine->Update();
 }
 
-Player::Player() : BaseGameEntity(0), m_pStateMachine(nullptr) {
+Player::Player(const int id) : BaseGameEntity(id), m_pStateMachine(nullptr) {
 	m_pStateMachine = new StateMachine(this);
 	m_pStateMachine->SetCurrentState(PlayerIdle::Instance());
 }

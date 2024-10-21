@@ -29,8 +29,9 @@ class Door : public BaseGameEntity {
 
 
     public:
+	explicit Door(const int id);
+        
         void Update() override;
-        explicit Door();
 
         ~Door() override {
             delete m_pStateMachine;

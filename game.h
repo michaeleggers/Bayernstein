@@ -6,6 +6,7 @@
 #include "CWorld.h"
 #include "Entity/Enemy/g_enemy.h"
 #include "Entity/Player/g_player.h"
+#include "Entity/Door/g_door.h"
 #include "Entity/entity_manager.h"
 #include "camera.h"
 #include "hkd_interface.h"

@@ -17,7 +17,7 @@ class Player : public BaseGameEntity {
 	double m_LastAttack = 0;
 
   public:
-	explicit Player();
+	explicit Player(const int id);
 
 	~Player() override {
 		delete m_pStateMachine;
