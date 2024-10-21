@@ -16,13 +16,17 @@ EntityManager *EntityManager::Instance() {
 }
 
 EntityManager::~EntityManager() {
-	for (auto [id, entity] : m_EntityMap) {
-		delete entity;
-	}
+    // TODO: Could be deleted? (We might have use for this later, though).
 }
 
 void EntityManager::RegisterEntity(BaseGameEntity *NewEntity) {
 	m_EntityMap.insert(std::make_pair(NewEntity->ID(), NewEntity));
+}
+
+void EntityManager::KillEntities() {
+	for (auto [id, entity] : m_EntityMap) {
+		delete entity;
+	}
 }
 
 BaseGameEntity *EntityManager::GetEntityFromID(int id) const {

@@ -24,6 +24,7 @@ class EntityManager {
 	static EntityManager* Instance();
 
 	void RegisterEntity(BaseGameEntity* NewEntity);
+	void KillEntities();
 
 	// returns a pointer to the entity with the ID given as a parameter
 	[[nodiscard]] BaseGameEntity* GetEntityFromID(int id) const;

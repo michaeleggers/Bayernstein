@@ -302,5 +302,11 @@ bool Game::RunFrame(double dt) {
 void Game::Shutdown() {
 	m_Renderer->Shutdown();
 	delete m_Renderer;
-	delete m_pEntityManager;
+
+	// NOTE: m_pEntityManager is static memory and cannot deleted with delete
+	// (it never was heap allocated with 'new'). The entities have to
+	// be released manually.
+	// delete m_pEntityManager;
+	m_pEntityManager->KillEntities();
 }
+
