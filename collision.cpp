@@ -384,7 +384,7 @@ glm::vec3 CollideEllipsoidWithTriPlaneRec(CollisionInfo* ci, glm::vec3 esBasePos
 	}
 
 	if ( !ci->didCollide ) {
-		return esBasePos + velocity;
+ 		return esBasePos + velocity;
 	}
 
 	glm::vec3 destinationPos = esBasePos + velocity;

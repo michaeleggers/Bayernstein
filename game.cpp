@@ -111,7 +111,7 @@ void Game::Init() {
     // m_Model2 = CreateModelFromIQM(&iqmModel2, nullptr);
     m_Player = CreateModelFromIQM(&iqmModel);
     m_Player.isRigidBody = false;
-    m_Player.position = glm::vec3(-48.0f, 352.0f, 48.0f);
+    m_Player.position = glm::vec3(-48.0f, 352.0f, 15.0f);
     m_Player.scale = glm::vec3(22.0f);
     for (int i = 0; i < m_Player.animations.size(); i++) {
         EllipsoidCollider* ec = &m_Player.ellipsoidColliders[i];
@@ -227,7 +227,9 @@ bool Game::RunFrame(double dt) {
 
     SetAnimState(&m_Player, playerAnimState);
 
+
     // Test collision between player and world geometry
+#if 1
     EllipsoidCollider ec = m_Player.ellipsoidColliders[m_Player.currentAnimIdx];
     CollisionInfo collisionInfo = CollideEllipsoidWithTriPlane(ec,
                                                                m_Player.velocity,
@@ -242,19 +244,29 @@ bool Game::RunFrame(double dt) {
     m_Player.position.x = collisionInfo.basePos.x;
     m_Player.position.y = collisionInfo.basePos.y;
     m_Player.position.z = collisionInfo.basePos.z - ec.radiusB;
+#endif
 
     // Check if player runs against door
-    for (int i = 0; i < m_World.m_BrushEntities.size(); i++) {
+#if 0
+    for (int i = 0; i < 1; i++) { 
         int be = m_World.m_BrushEntities[ i ];
         BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID( be );
         if ( pEntity->Type() == ET_DOOR ) {
             Door* pDoor = (Door*)pEntity;
             CollisionInfo ci = CollideEllipsoidWithTriPlane(ec,
                                                        m_Player.velocity,
-                                                       static_cast<float>(dt) * m_World.m_Gravity,
+                                                       glm::vec3(0.0f), //static_cast<float>(dt) * m_World.m_Gravity,
                                                        pDoor->TriPlanes().data(),
                                                        pDoor->TriPlanes().size());
-            if ( ci.didCollide ) {
+    
+            for (int i = 0; i < m_Player.animations.size(); i++) {
+                m_Player.ellipsoidColliders[i].center = ci.basePos;
+            }
+            m_Player.position.x = ci.basePos.x;
+            m_Player.position.y = ci.basePos.y;
+            m_Player.position.z = ci.basePos.z - ec.radiusB;
+    
+            if ( ci.didCollide ) { // FIX: didCollide is only set for gravity as it comes last in CollideEllipsoidWithTriPlane
                 printf("COLLIDED!\n");
                 Dispatcher->DispatchMessage(SEND_MSG_IMMEDIATELY, 
                                             m_pPlayerEntity->ID(), pDoor->ID(), 
@@ -263,6 +275,7 @@ bool Game::RunFrame(double dt) {
             }
         }
     }
+#endif
 
     // Run the message system
     m_pEntityManager->UpdateEntities();
