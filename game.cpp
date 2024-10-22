@@ -228,9 +228,10 @@ bool Game::RunFrame(double dt) {
     SetAnimState(&m_Player, playerAnimState);
 
 
+    EllipsoidCollider ec = m_Player.ellipsoidColliders[m_Player.currentAnimIdx];
+   
     // Test collision between player and world geometry
 #if 1
-    EllipsoidCollider ec = m_Player.ellipsoidColliders[m_Player.currentAnimIdx];
     CollisionInfo collisionInfo = CollideEllipsoidWithTriPlane(ec,
                                                                m_Player.velocity,
                                                                static_cast<float>(dt) * m_World.m_Gravity,
@@ -247,26 +248,13 @@ bool Game::RunFrame(double dt) {
 #endif
 
     // Check if player runs against door
-#if 0
+#if 1 
     for (int i = 0; i < 1; i++) { 
         int be = m_World.m_BrushEntities[ i ];
         BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID( be );
         if ( pEntity->Type() == ET_DOOR ) {
             Door* pDoor = (Door*)pEntity;
-            CollisionInfo ci = CollideEllipsoidWithTriPlane(ec,
-                                                       m_Player.velocity,
-                                                       glm::vec3(0.0f), //static_cast<float>(dt) * m_World.m_Gravity,
-                                                       pDoor->TriPlanes().data(),
-                                                       pDoor->TriPlanes().size());
-    
-            for (int i = 0; i < m_Player.animations.size(); i++) {
-                m_Player.ellipsoidColliders[i].center = ci.basePos;
-            }
-            m_Player.position.x = ci.basePos.x;
-            m_Player.position.y = ci.basePos.y;
-            m_Player.position.z = ci.basePos.z - ec.radiusB;
-    
-            if ( ci.didCollide ) { // FIX: didCollide is only set for gravity as it comes last in CollideEllipsoidWithTriPlane
+            if ( touch( pDoor, m_pPlayerEntity ) { // TODO: Implement 
                 printf("COLLIDED!\n");
                 Dispatcher->DispatchMessage(SEND_MSG_IMMEDIATELY, 
                                             m_pPlayerEntity->ID(), pDoor->ID(), 
@@ -363,6 +351,7 @@ bool Game::RunFrame(double dt) {
 
     m_Renderer->Render(&m_FollowCamera, renderModels, 1);
 
+#if 0
     if (collisionInfo.didCollide) {
         m_Player.debugColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); // red
         m_Renderer->SetActiveCamera(&m_FollowCamera);
@@ -372,6 +361,7 @@ bool Game::RunFrame(double dt) {
     } else {
         m_Player.debugColor = glm::vec4(1.0f); // white
     }
+#endif
 
     // Render Player's ellipsoid collider
     m_Renderer->SetActiveCamera(&m_FollowCamera);

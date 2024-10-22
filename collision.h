@@ -12,18 +12,18 @@
 #include "r_common.h"
 
 struct EllipsoidCollider {
-    glm::vec3	center;  // Pos in worldspace
-    float		radiusA; // horizontal radius
-    float		radiusB; // vertical radius
+    glm::vec3   center;  // Pos in worldspace
+    float       radiusA; // horizontal radius
+    float       radiusB; // vertical radius
     glm::mat3   toESpace; // Maps from World to ellipsoid (unit-sphere) space
 };
 
 struct CollisionInfo {
     bool      didCollide;
     glm::vec3 hitPoint;
-	float     nearestDistance;
-	glm::vec3 velocity;
-	glm::vec3 basePos;
+    float     nearestDistance;
+    glm::vec3 velocity;
+    glm::vec3 basePos;
 };
 
 EllipsoidCollider CreateEllipsoidColliderFromAABB(glm::vec3 mins, glm::vec3 maxs);
