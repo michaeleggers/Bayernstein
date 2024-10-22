@@ -2,8 +2,8 @@
 // Created by me on 9/2/24.
 //
 
-#ifndef COLLISION_H
-#define COLLISION_H
+#ifndef _COLLISION_H_
+#define _COLLISION_H_
 
 #define GLM_FORCE_RADIANS
 #include "dependencies/glm/glm.hpp"
@@ -33,5 +33,8 @@ CollisionInfo CollideEllipsoidWithTriPlane(EllipsoidCollider ec, glm::vec3 veloc
 Tri  TriToEllipsoidSpace(Tri tri, glm::mat3 toESPace);
 Plane CreatePlaneFromTri(Tri tri);
 bool IsPointInTriangle(glm::vec3 point, Tri tri, glm::vec3 triNormal);
+// PushTouch will *only* trigger a collision if the ellipsoid is moving by a non-zero velocity vector.
+CollisionInfo PushTouch(EllipsoidCollider ec, glm::vec3 velocity, TriPlane* triPlanes, int triPlaneCount);
 
-#endif //COLLISION_H
+#endif // _COLLISION_H_
+

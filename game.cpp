@@ -254,9 +254,13 @@ bool Game::RunFrame(double dt) {
         BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID( be );
         if ( pEntity->Type() == ET_DOOR ) {
             Door* pDoor = (Door*)pEntity;
-            if ( touch( pDoor, m_pPlayerEntity ) { // TODO: Implement 
+            CollisionInfo ciDoor = PushTouch(ec,
+                                             m_Player.velocity, 
+                                             pDoor->TriPlanes().data(), 
+                                             pDoor->TriPlanes().size() );
+            if (ciDoor.didCollide) { 
                 printf("COLLIDED!\n");
-                Dispatcher->DispatchMessage(SEND_MSG_IMMEDIATELY, 
+                Dispatcher->DispatchMessage(SEND_MSG_IMMEDIATELY,
                                             m_pPlayerEntity->ID(), pDoor->ID(), 
                                             message_type::Collision, 
                                             0); 
