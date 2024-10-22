@@ -90,7 +90,7 @@ void Game::Init() {
             Property& prop = e.properties[ j ];
             if (prop.key == "classname") {
                 if (prop.value == "func_door") {
-                    baseEntity = new Door( idCounter++, e.properties, e.brushes );    
+                    baseEntity = new Door( idCounter++, e.properties, e.brushes ); // later: Entity manager allocates entities!
                     m_World.m_BrushEntities.push_back( baseEntity->ID() );
                     m_pEntityManager->RegisterEntity(baseEntity);
                 }
@@ -175,7 +175,7 @@ bool Game::RunFrame(double dt) {
     float followCamSpeed = 0.5f;
     float followTurnSpeed = 0.2f;
     if (KeyPressed(SDLK_LSHIFT)) {
-        followCamSpeed *= 0.3f;
+        followCamSpeed *= 0.01f;
         followTurnSpeed *= 0.3f;
     }
 
@@ -232,11 +232,16 @@ bool Game::RunFrame(double dt) {
    
     // Test collision between player and world geometry
 #if 1
+    std::vector<TriPlane> allTris = m_World.m_TriPlanes;
+    int be = m_World.m_BrushEntities[ 0 ];
+    Door* pEntity = (Door*)m_pEntityManager->GetEntityFromID( be );
+    std::copy( pEntity->TriPlanes().begin(), pEntity->TriPlanes().end(), std::back_inserter(allTris) ); 
+    
     CollisionInfo collisionInfo = CollideEllipsoidWithTriPlane(ec,
                                                                m_Player.velocity,
                                                                static_cast<float>(dt) * m_World.m_Gravity,
-                                                               m_World.m_TriPlanes.data(),
-                                                               m_World.m_TriPlanes.size());
+                                                               allTris.data(),
+                                                               allTris.size());
 
     // Update the ellipsoid colliders for all animation states based on the new collision position
     for (int i = 0; i < m_Player.animations.size(); i++) {
@@ -249,7 +254,7 @@ bool Game::RunFrame(double dt) {
 
     // Check if player runs against door
 #if 1 
-    for (int i = 0; i < 1; i++) { 
+    for (int i = 0; i < m_World.m_BrushEntities.size(); i++) { 
         int be = m_World.m_BrushEntities[ i ];
         BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID( be );
         if ( pEntity->Type() == ET_DOOR ) {

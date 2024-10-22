@@ -42,6 +42,22 @@ class DoorOpening : public State<Door> {
     bool OnMessage(Door* agent, const Telegram& telegram) override;
 };
 
+class DoorOpened: public State<Door> {
+  private:
+    DoorOpened() = default;
+    // copy ctor and assignment should be private
+    DoorOpened(const DoorOpened&);
+    DoorOpened& operator=(const DoorOpened&);
+
+  public:
+    // this is a singleton
+    static DoorOpened* Instance();
+
+    void Enter(Door* pDoor) override;
+    void Execute(Door* pDoor) override;
+    void Exit(Door* pDoor) override;
+    bool OnMessage(Door* agent, const Telegram& telegram) override;
+};
 #endif // _DOOR_STATES_H_
 
 

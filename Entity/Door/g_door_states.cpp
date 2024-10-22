@@ -59,12 +59,26 @@ void DoorOpening::Enter(Door *pDoor) {
 }
 
 void DoorOpening::Execute(Door *pDoor) {
-    printf("Door is executing Opening State\n");
+    //printf("Door is executing Opening State\n");
 
     // TODO: Check if door has reached its opened state.
     // If so switch to the opened state.
+    pDoor->m_CurrentDistance += pDoor->m_Speed;
+    if ( pDoor->m_CurrentDistance >= pDoor->m_Distance ) {
+        pDoor->GetFSM()->ChangeState(DoorOpened::Instance());
         
+        return;
+    }
 
+    // TODO: Open the door
+    std::vector<TriPlane>& triPlanes = pDoor->TriPlanes();
+    for (int i = 0; i < triPlanes.size(); i++) {
+        Tri& tri = triPlanes[ i ].tri;
+        for (int j = 0; j < 3; j++) {
+            Vertex& v = tri.vertices[ j ];
+            v.pos.z += pDoor->m_Speed;
+        }
+    }
 }
 
 void DoorOpening::Exit(Door *pDoor) {
@@ -72,6 +86,34 @@ void DoorOpening::Exit(Door *pDoor) {
 }
 
 bool DoorOpening::OnMessage(Door *agent, const Telegram &telegram) { 
+
+    return false; 
+}
+
+
+// Door is open 
+
+
+DoorOpened *DoorOpened::Instance() {
+    static DoorOpened instance;
+
+    return &instance;
+}
+
+void DoorOpened::Enter(Door *pDoor) {
+    printf("Door entered Opened State\n");
+}
+
+void DoorOpened::Execute(Door *pDoor) {
+    //printf("Door is executing Opened State\n");
+
+}
+
+void DoorOpened::Exit(Door *pDoor) {
+    //printf("Door is exiting Opened State\n");
+}
+
+bool DoorOpened::OnMessage(Door *agent, const Telegram &telegram) { 
 
     return false; 
 }
