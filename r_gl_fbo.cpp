@@ -44,8 +44,6 @@ CglFBO::CglFBO(int width, int height) {
     }
    
     Unbind();
-
-    Bind(); // TODO: (Michael): Debugging Test. Delete!
 }
 
 CglFBO::~CglFBO() {
