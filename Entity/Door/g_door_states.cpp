@@ -61,22 +61,32 @@ void DoorOpening::Enter(Door *pDoor) {
 void DoorOpening::Execute(Door *pDoor) {
     //printf("Door is executing Opening State\n");
 
-    // TODO: Check if door has reached its opened state.
+    // TODO: Maybe it is a good idea to update
+    // this at a fixed interval since eg. moving
+    // two doors with the same properties will
+    // end up at slightly different positions due
+    // to variations of the deltaTime and floating
+    // point rounding errors.
+    
+
+    // Check if door has reached its opened state.
     // If so switch to the opened state.
-    pDoor->m_CurrentDistance += pDoor->m_Speed;
+    //printf("dt: %f\n", GetDeltaTime());
+    pDoor->m_CurrentDistance += pDoor->m_Speed * GetDeltaTime()/1000.0;
+    /*printf("current distance: %f\n", pDoor->m_CurrentDistance);*/
     if ( pDoor->m_CurrentDistance >= pDoor->m_Distance ) {
         pDoor->GetFSM()->ChangeState(DoorOpened::Instance());
         
         return;
     }
 
-    // TODO: Open the door
+    // Open the door.
     std::vector<TriPlane>& triPlanes = pDoor->TriPlanes();
     for (int i = 0; i < triPlanes.size(); i++) {
         Tri& tri = triPlanes[ i ].tri;
         for (int j = 0; j < 3; j++) {
             Vertex& v = tri.vertices[ j ];
-            v.pos.z += pDoor->m_Speed;
+            v.pos.z += pDoor->m_Speed * GetDeltaTime()/1000.0;
         }
     }
 }
