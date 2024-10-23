@@ -1023,6 +1023,7 @@ void GLRender::RenderEnd(void)
     m_ImPrimitiveBatch->Reset();
     m_ImPrimitiveBatchIndexed->Reset();
     m_FontBatch->Reset();
+    m_ShapesBatch->Reset();
     m_PrimitiveDrawCmds.clear();
     m_PrimitiveIndexdDrawCmds.clear();
 }
