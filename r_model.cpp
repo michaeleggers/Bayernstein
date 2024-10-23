@@ -48,6 +48,7 @@ HKD_Model CreateModelFromIQM(IQMModel* model)
         else {
             mesh.isTextured = true;
         }
+        
         mesh.textureFileName = iqmMesh->material;
         mesh.firstTri = iqmMesh->firstTri;
         mesh.numTris = iqmMesh->numTris;

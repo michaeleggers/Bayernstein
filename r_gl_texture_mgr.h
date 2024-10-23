@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "r_font.h"
 #include "r_itexture.h"
 
 class GLTextureManager {
@@ -11,6 +12,8 @@ public:
 	static GLTextureManager* Instance();
 	
 	ITexture* CreateTexture(std::string filename);
+	ITexture* CreateTexture(CFont* font);
+	ITexture* GetTexture(std::string filename);
 
 	// TODO: Shutdown methods
 

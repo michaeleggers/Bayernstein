@@ -23,11 +23,18 @@ public:
 	int				Add(Vertex* verts, uint32_t numVerts, bool cullFace = true, DrawMode drawMode = DRAW_MODE_LINES);
 	bool			Add(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, int* out_offset, int* out_idxOffset, bool cullFace = true, DrawMode drawMode = DRAW_MODE_SOLID);
 	void			Bind();
+	void			Unbind();
 	void			Reset();
 	void			Kill();
 
 	uint32_t		VertCount();
-	
+	uint32_t        IndexCount();
+
+	// FIX: This helps to remember the last index into the vertex buffer. Useful for multiple calls to Add().
+	//		But maybe there is a better way to do this since all calls to Add have to set this value, which
+	//		is easy to forget. It might be an option to track all eg. indexed 2d rendering state
+	//		in the render backend. For now, this is ok.
+	uint16_t    m_LastIndex; 
 private:
 	GeometryType m_GeometryType;
 

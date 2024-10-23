@@ -60,6 +60,9 @@ add_executable(Game
 	r_model.cpp
 	r_common.h
 	r_common.cpp
+	r_font.h
+	r_font.cpp
+
 	r_gl_batch.h
 	r_gl_batch.cpp
 	r_gl_shader.h
@@ -68,6 +71,12 @@ add_executable(Game
 	r_gl_texture.cpp
 	r_gl_texture_mgr.h
 	r_gl_texture_mgr.cpp
+
+	r_gl_fbo.h
+	r_gl_fbo.cpp
+	r_gl_rendertexture.h
+	r_gl_rendertexture.cpp
+	
 	camera.h
 	camera.cpp
 	physics.h
@@ -82,6 +91,7 @@ add_executable(Game
 
     dependencies/stb_image.h
 	dependencies/stb_image_write.h
+	dependencies/stb_truetype.h
 
 	dependencies/imgui/imgui.h
 	dependencies/imgui/imconfig.h

@@ -1,8 +1,12 @@
 #include "r_gl.h"
 
+#include <stdint.h>
+
 #include <SDL.h>
 #include <SDL_egl.h>
 #include <glad/glad.h>
+
+#include "stb_truetype.h"
 
 #include "imgui.h"
 #include <imgui/backends/imgui_impl_sdl2.h>
@@ -19,13 +23,67 @@
 #include "r_gl_batch.h"
 #include "r_gl_texture.h"
 #include "r_gl_texture_mgr.h"
+#include "r_gl_fbo.h"
 #include "input.h" 
 
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
 
-void GLRender::Shutdown(void)
-{
+void GLAPIENTRY OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
+                                    GLsizei length, const GLchar* message, const void* userParam) {
+    // Ignore non-significant error/warning codes (e.g., vendor-specific warnings)
+    if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+        return; 
+
+    printf("--------------------- OpenGL Debug Output ---------------------\n");
+    printf("Message: %s\n", message);
+
+    printf("Source: ");
+    switch (source) {
+        case GL_DEBUG_SOURCE_API:             printf("API\n"); break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   printf("Window System\n"); break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: printf("Shader Compiler\n"); break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     printf("Third Party\n"); break;
+        case GL_DEBUG_SOURCE_APPLICATION:     printf("Application\n"); break;
+        case GL_DEBUG_SOURCE_OTHER:           printf("Other\n"); break;
+    }
+
+    printf("Type: ");
+    switch (type) {
+        case GL_DEBUG_TYPE_ERROR:               printf("Error\n"); break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: printf("Deprecated Behaviour\n"); break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  printf("Undefined Behaviour\n"); break; 
+        case GL_DEBUG_TYPE_PORTABILITY:         printf("Portability\n"); break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         printf("Performance\n"); break;
+        case GL_DEBUG_TYPE_MARKER:              printf("Marker\n"); break;
+        case GL_DEBUG_TYPE_PUSH_GROUP:          printf("Push Group\n"); break;
+        case GL_DEBUG_TYPE_POP_GROUP:           printf("Pop Group\n"); break;
+        case GL_DEBUG_TYPE_OTHER:               printf("Other\n"); break;
+    }
+
+    printf("Severity: ");
+    switch (severity) {
+        case GL_DEBUG_SEVERITY_HIGH:         printf("High\n"); break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       printf("Medium\n"); break;
+        case GL_DEBUG_SEVERITY_LOW:          printf("Low\n"); break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION: printf("Notification\n"); break;
+    }
+    printf("---------------------------------------------------------------\n");
+}
+
+static void EnableOpenGLDebugCallback() {
+    // Enable debug output (OpenGL 4.3 or higher is required)
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // Make sure OpenGL calls this callback in the same thread
+
+    // Register the debug callback function
+    glDebugMessageCallback(OpenGLDebugCallback, NULL);
+
+    // You can optionally control which types of messages are logged
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+}
+
+void GLRender::Shutdown(void) {
     // Deinit ImGui
 
     ImGui_ImplOpenGL3_Shutdown();
@@ -42,16 +100,26 @@ void GLRender::Shutdown(void)
 
     m_ImPrimitiveBatch->Kill();
     delete m_ImPrimitiveBatch;
+
+    m_FontBatch->Kill();
+    delete m_FontBatch;
+
+    m_ShapesBatch->Kill();
+    delete m_ShapesBatch;
+
+    m_FontShader->Unload();
     
     m_ModelShader->Unload();
     delete m_ModelShader;
 
     m_ImPrimitivesShader->Unload();
     delete m_ImPrimitivesShader;
+
+    // Destroy FBOs
+    delete m_2dFBO;
 }
 
-bool GLRender::Init(void)
-{
+bool GLRender::Init(void) {
     SDL_Init(SDL_INIT_EVERYTHING);
 
     // From 2.0.18: Enable native IME.
@@ -68,7 +136,7 @@ bool GLRender::Init(void)
         SDL_WINDOWPOS_UNDEFINED,
         WINDOW_WIDTH,
         WINDOW_HEIGHT,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI
+        SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
     );
 
     // BEWARE! These flags must be set AFTER SDL_CreateWindow. Otherwise SDL
@@ -107,6 +175,10 @@ bool GLRender::Init(void)
     }
 
     printf("OpenGL Version active (via glGetString): %s\n", glGetString(GL_VERSION));
+
+    // Allow OpenGL to send us debug information.
+    EnableOpenGLDebugCallback();
+
 
     // Check that the window was successfully created
 
@@ -168,6 +240,8 @@ bool GLRender::Init(void)
     m_ImPrimitiveBatch = new GLBatch(1000 * 1000);
     m_ImPrimitiveBatchIndexed = new GLBatch(1000 * 1000, 1000 * 1000);
     m_ColliderBatch = new GLBatch(1000000);
+    m_FontBatch = new GLBatch(1000, 1000);
+    m_ShapesBatch = new GLBatch(1000, 1000);
 
     // Initialize shaders
 
@@ -176,6 +250,14 @@ bool GLRender::Init(void)
     // Create and upload Collider Models to GPU
 
     RegisterColliderModels();
+
+    // Create FBOs for 3D/2D Rendering
+
+    // FBO for rendering the 3d scene.
+    m_3dFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
+    // FBO for rendering text and other 2d elements (shapes, sprites, ...)
+    // on top of the 3d scene.
+    m_2dFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     return true;
 }
@@ -204,6 +286,11 @@ int GLRender::RegisterModel(HKD_Model* model)
     model->gpuModelHandle = gpuModelHandle;
 
     return gpuModelHandle;
+}
+
+void GLRender::RegisterFont(CFont* font) 
+{
+    GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(font);
 }
 
 void GLRender::SetActiveCamera(Camera* camera)
@@ -413,7 +500,27 @@ GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t 
 }
 
 void GLRender::RenderBegin(void)
-{    
+{  
+    // Make sure the screenspace 2d FBO is being cleared.
+    m_2dFBO->Bind();
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    
+    // NOTE: Important to have alpha = 0.0f, otherwise we will end up with 
+    // a base framebuffer that is fully opaque. But only the glyphs must 
+    // be opaque after the fragment shader has run!
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f); 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    //glDisable(GL_CULL_FACE);
+
+    glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
+   
+    m_2dFBO->Unbind(); // Switch back to GL default framebuffer.
+    
+
+    // Render into the GL default FBO.
+
     // SDL_GetWindowSize(m_Window, &m_WindowWidth, &m_WindowHeight);
     
     // See: https://wiki.libsdl.org/SDL2/SDL_GL_GetDrawableSize
@@ -421,13 +528,30 @@ void GLRender::RenderBegin(void)
     float windowAspect = (float)m_WindowWidth / (float)m_WindowHeight;
     glViewport(0, 0, m_WindowWidth, m_WindowHeight);
 
-    glClearColor(0.1f, 0.1f, 0.2f, 1.0f); 
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
 
     ImGui::NewFrame();
+}
+
+void GLRender::Begin3D(void) {
+    // Render into the 3D scene FBO
+    m_3dFBO->Bind();
+    
+    SDL_GL_GetDrawableSize(m_Window, &m_WindowWidth, &m_WindowHeight);
+    float windowAspect = (float)m_WindowWidth / (float)m_WindowHeight;
+    glViewport(0, 0, m_WindowWidth, m_WindowHeight);
+
+    glClearColor(0.f, 0.f, 1.0f, 1.0f); 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+}
+
+void GLRender::End3D(void) {
+    m_3dFBO->Unbind(); // Set state back to GL default FBO.
 }
 
 void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType) 
@@ -527,10 +651,10 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     glEnable(GL_CULL_FACE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glLineWidth(1.0f);
-
+    glEnable(GL_DEPTH_TEST);
 
     // Draw Models
-
+    
     m_ModelBatch->Bind();
     m_ModelShader->Activate();
     m_ModelShader->SetViewProjMatrices(view, proj);
@@ -577,6 +701,230 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     //glDrawArrays(GL_TRIANGLES, 0, 3*m_ModelBatch->TriCount());
 }
 
+// Draw 2d screenspace elements
+void GLRender::Begin2D() {
+    
+    m_2dFBO->Bind();
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    
+    glDisable(GL_DEPTH_TEST);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glDisable(GL_CULL_FACE);
+
+    glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
+
+
+    glm::mat4 ortho = glm::ortho(0.0f, (float)m_2dFBO->m_Width, 
+                                 (float)m_2dFBO->m_Height, 0.0f,
+                                 -1.0f, 1.0f);
+    m_FontShader->Activate();   
+    m_FontShader->SetViewProjMatrices( glm::mat4(1.0f), ortho );
+    m_ShapesShader->Activate();
+    m_ShapesShader->SetViewProjMatrices( glm::mat4(1.0f), ortho );
+}
+
+void GLRender::End2D() {
+
+
+    m_2dFBO->Unbind();
+    //m_FontBatch->Unbind();
+
+    glEnable(GL_DEPTH_TEST);
+
+    // TODO: (Michael): Unbind bound (font-)textures?
+}
+
+void GLRender::SetFont(CFont* font, glm::vec4 color) {
+   
+    m_FontShader->Activate();
+
+    ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
+    glBindTexture(GL_TEXTURE_2D, (GLuint)fontTexture->m_hGPU);
+   
+    FontUB fontShaderData = {
+        color,
+        glm::vec4(0.0f) // NOTE: unused at the moment. 
+    };
+
+    glBindBuffer( GL_UNIFORM_BUFFER, m_FontShader->m_FontUBO );
+    glBufferSubData( GL_UNIFORM_BUFFER, 0, sizeof(FontUB), (void*)&fontShaderData );
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    m_CurrentFont = font;
+}
+
+void GLRender::SetShapeColor(glm::vec4 color) {
+    m_ShapesShader->Activate();
+
+    ShapesUB shapesShaderData = {
+        color,
+        glm::vec4(0.0f) // NOTE: unused at the moment.
+    };
+    
+    glBindBuffer( GL_UNIFORM_BUFFER, m_ShapesShader->m_ShapesUBO );
+    glBufferSubData( GL_UNIFORM_BUFFER, 0, sizeof(ShapesUB), (void*)&shapesShaderData );
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+void GLRender::FlushFonts() {
+    m_FontBatch->Bind();
+    m_FontShader->Activate();
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDrawElementsBaseVertex(GL_TRIANGLES, 
+                             m_FontBatch->IndexCount(), 
+                             GL_UNSIGNED_SHORT, 
+                             (GLvoid*)0, 0);
+    
+    m_FontBatch->Reset();
+}
+
+void GLRender::FlushShapes() {
+    m_ShapesBatch->Bind();
+    m_ShapesShader->Activate();
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    glDrawElementsBaseVertex(GL_TRIANGLES, 
+                             m_ShapesBatch->IndexCount(), 
+                             GL_UNSIGNED_SHORT, 
+                             (GLvoid*)0, 0);
+
+    m_ShapesBatch->Reset();
+}
+
+void GLRender::DrawText(const std::string& text, 
+                        float x, float y, 
+                        ScreenSpaceCoordMode coordMode) {
+   
+    // TODO: (Michael): Make sure that the correct shader is active.
+    
+    
+    float xOffset = WINDOW_WIDTH * x;
+    float yOffset = WINDOW_HEIGHT* y;
+
+    if ( coordMode == COORD_MODE_ABS ) {
+        xOffset = x;
+        yOffset = y;
+    }
+    
+    FaceQuad fq{}; // = CreateFaceQuadFromVerts(vertices);
+
+    // go through each character in text and lookup the correct UV.
+    int out_OffsetIndices = 0; // TODO: Not needed here!
+    int out_OffsetVertices = 0; // TODO: Not needed here!
+   
+    // TODO: (Michael): Make indices uint32_t.
+    uint16_t iOffset = (uint16_t)m_FontBatch->m_LastIndex; 
+    uint16_t lastIndex = iOffset;
+    
+    const char* c = text.c_str();
+    int i = 0;
+    float ascender = (float)m_CurrentFont->m_Ascender;
+    float tallestGlyph = ascender;
+    while ( *c != '\0' ) {
+        if ( *c >= FIRST_CODE_POINT && *c < LAST_CODE_POINT ) {
+            
+            uint16_t indices[6] = {
+                iOffset + 0 + i*4, iOffset + 1 + i*4, iOffset + 2 + i*4,
+                iOffset + 2 + i*4, iOffset + 3 + i*4, iOffset + 0 + i*4
+            };
+            stbtt_aligned_quad q;
+            
+            // Newbe API
+            //stbtt_GetBakedQuad(m_CurrentFont->m_Cdata, 512, 512, *c-32, &currentX, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
+
+            // More advanced API
+            stbtt_GetPackedQuad(m_CurrentFont->m_PackedCharData, 
+                                FONT_TEX_SIZE, FONT_TEX_SIZE,     
+                                *c - FIRST_CODE_POINT,             // character to display
+                                &xOffset, &yOffset,
+                                // pointers to current position in screen pixel space
+                                &q,      // output: quad to draw
+                                1);
+
+            float x0 = q.x0;
+            float y0 = q.y0;
+            float x1 = q.x1;
+            float y1 = q.y1;
+
+            // NOTE: For some reason the positional 
+            // coordinates in aligned_quad are flipped vertically. Not sure why.
+            fq.c.pos = { x0, y0 + tallestGlyph, 0.0f };
+            fq.d.pos = { x1, y0 + tallestGlyph, 0.0f };
+            fq.a.pos = { x1, y1 + tallestGlyph, 0.0f };
+            fq.b.pos = { x0, y1 + tallestGlyph, 0.0f };
+            fq.a.uv = { q.s1, q.t1 };
+            fq.b.uv = { q.s0, q.t1 };
+            fq.c.uv = { q.s0, q.t0 };
+            fq.d.uv = { q.s1, q.t0 };
+            m_FontBatch->Add(fq.vertices, 4, 
+                                      indices, 6, 
+                                      &out_OffsetVertices, &out_OffsetIndices, 
+                                      false, DRAW_MODE_SOLID);
+
+            lastIndex = iOffset + 3 + i*4;
+           
+            i++;
+        }
+        c++;
+    }
+   
+    // We need one *after* this batche's data for the next batch.
+    m_FontBatch->m_LastIndex = lastIndex + 1; 
+
+    // TODO: See DrawBox() function!
+    FlushFonts();
+}
+
+void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode) {
+
+    float x0 = WINDOW_WIDTH * x;
+    float y0 = WINDOW_HEIGHT* y;
+    float x1 = WINDOW_WIDTH * (x + width);
+    float y1 = WINDOW_HEIGHT * (y + height);
+
+    if ( coordMode == COORD_MODE_ABS ) {
+        x0 = x;
+        y0 = y;
+        x1 = x + width;
+        y1 = y + height;
+    }
+
+    Vertex verts[4] = {
+        { glm::vec3(x0, y0, 0.0f) },
+        { glm::vec3(x0, y1, 0.0f) },
+        { glm::vec3(x1, y1, 0.0f) },
+        { glm::vec3(x1, y0, 0.0f) }
+    };
+    FaceQuad fq = CreateFaceQuadFromVerts( verts );
+    
+    uint16_t iOffset = (uint16_t)m_ShapesBatch->m_LastIndex; 
+    uint16_t indices[6] = {
+        iOffset + 0, iOffset + 1, iOffset + 2,
+        iOffset + 2, iOffset + 3, iOffset + 0
+    };
+
+    // NOTE: (Michael): The batch interface is going to change once we have
+    // the first prototype going. So no need to fix those inconvenciences
+    // of unused (and unwanted) out_* variables for now!
+    int out_OffsetIndices = 0; // TODO: Not needed here!
+    int out_OffsetVertices = 0; // TODO: Not needed here!
+    m_ShapesBatch->Add(fq.vertices, 4,
+                              indices, 6,
+                              &out_OffsetVertices, &out_OffsetIndices,
+                              false, DRAW_MODE_SOLID);
+    
+    m_ShapesBatch->m_LastIndex += 4;
+    
+    // TODO: We can batch multiple calls to DrawBox together but this
+    // also makes the renderer more complicated! We *really* need to
+    // keep things simple so we don't fall over our own abstractions.
+    // Especially because so many variables are unknown to us at this point!
+    // We will see what we can optimize when we actually have gameplay
+    // code and a running game! One could argue that the batching system
+    // in place is already too high-level!
+    FlushShapes(); 
+}
+
 void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels)
 {
     glm::mat4 view = camera->ViewMatrix();
@@ -614,6 +962,59 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
 
 void GLRender::RenderEnd(void)
 {
+
+    // At this point the GL default FBO must be active!
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    
+    // FIX: Some buffer *HAS* to be bound apparently before a draw call 
+    // so OpenGL doesn't freak out... So this buffer is not even used 
+    // duing drawing because the compositing step is completely GPU driven.
+    m_FontBatch->Bind();
+
+    // Composite all the FBOs together
+    m_CompositeShader->Activate();
+
+    GLuint texLoc3d = glGetUniformLocation(m_CompositeShader->Program(),
+                                           "main3dSceneTexture");
+
+    GLuint texLoc2d = glGetUniformLocation(m_CompositeShader->Program(),
+                                           "screenspace2dTexture");
+    
+    glUniform1i(texLoc3d, 0);
+    // Bind the 3d scene FBO and draw it.
+    CglRenderTexture main3dSceneTexture = m_3dFBO->m_ColorTexture;
+    glActiveTexture( GL_TEXTURE0 );
+    glBindTexture( GL_TEXTURE_2D, main3dSceneTexture.m_gl_Handle );
+     
+    glUniform1i(texLoc2d, 1);
+    // Bind the 2d screenspace FBO texture and draw on top.
+    CglRenderTexture screenSpace2dTexture = m_2dFBO->m_ColorTexture;
+    glActiveTexture( GL_TEXTURE1 );
+    glBindTexture( GL_TEXTURE_2D, screenSpace2dTexture.m_gl_Handle ); 
+
+    glDrawArrays( GL_TRIANGLES, 0, 6 );
+
+    // FIX: This is the reason why textures in OpenGL suck!!! If we are
+    // not careful, and *don't* set the state back, then the following
+    // rendercommands for the next frame are all messed up due to the wrong
+    // texture unit being set from the previous call 
+    // ( glActiveTexture( GL_TEXTURE1 ); It is very easy to forget
+    // (I just did!). Luckily, we can use bindless
+    // textures in OpenGL which we *definitely* want to use in a
+    // facelift of the renderer.
+    glBindTexture( GL_TEXTURE_2D, 0 );
+    glActiveTexture( GL_TEXTURE0 );
+
+    // Render ImGui Elements ontop of everything.
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -621,6 +1022,8 @@ void GLRender::RenderEnd(void)
 
     m_ImPrimitiveBatch->Reset();
     m_ImPrimitiveBatchIndexed->Reset();
+    m_FontBatch->Reset();
+    m_ShapesBatch->Reset();
     m_PrimitiveDrawCmds.clear();
     m_PrimitiveIndexdDrawCmds.clear();
 }
@@ -632,7 +1035,7 @@ void GLRender::InitShaders()
     // Models
 
     m_ModelShader = new Shader();
-    if (!m_ModelShader->Load(
+    if ( !m_ModelShader->Load(
         "shaders/entities.vert",
         "shaders/entities.frag",
         SHADER_FEATURE_MODEL_ANIMATION_BIT
@@ -643,7 +1046,7 @@ void GLRender::InitShaders()
     // Immediate mode Primitives: Lines, Tris, ...
 
     m_ImPrimitivesShader = new Shader();
-    if (!m_ImPrimitivesShader->Load(
+    if ( !m_ImPrimitivesShader->Load(
         "shaders/primitives.vert",
         "shaders/primitives.frag"
     )) {
@@ -653,7 +1056,7 @@ void GLRender::InitShaders()
     // Colliders (for now: Ellipsoids, but can also be AABBs, etc.)
 
     m_ColliderShader = new Shader();
-    if (!m_ColliderShader->Load(
+    if ( !m_ColliderShader->Load(
         "shaders/colliders.vert",
         "shaders/colliders.frag"
         )) {
@@ -662,12 +1065,46 @@ void GLRender::InitShaders()
 
     // TODO: Just to test if shaders overwrite data from each other. Delete later!
     Shader* foo = new Shader(); 
-    if (!foo->Load(
+    if ( !foo->Load(
         "shaders/entities.vert",
         "shaders/entities.frag",
         SHADER_FEATURE_MODEL_ANIMATION_BIT
     )) {
         printf("Problems initializing model shaders!\n");
+    }
+
+    // 2D Screenspace: UI, Console, etc.
+
+    m_FontShader = new Shader();
+    if ( !m_FontShader->Load(
+        "shaders/font.vert",
+        "shaders/font.frag"
+        )) {
+        printf("Problems initializing font shader!\n");
+    }
+    // TODO: We could think about actually creating a subclass
+    //       for a dedicated screenspace shader so we don't have
+    //       to do this weird call. It is easy to forget and
+    //       also the main shader class has all these things related
+    //       to 2d screenspace rendering which it doesn't need.
+    //       But more things are to come so don't over-abstract things for now!
+    m_FontShader->InitializeFontUniforms();
+
+    m_ShapesShader = new Shader();
+    if ( !m_ShapesShader->Load(
+        "shaders/shapes2d.vert",
+        "shaders/shapes2d.frag"
+    )) {
+        printf("Problems initializing shapes2d shader!\n");
+    }
+    m_ShapesShader->InitializeShapesUniforms();
+    
+    m_CompositeShader = new Shader();
+    if ( !m_CompositeShader->Load(
+        "shaders/composite.vert",
+        "shaders/composite.frag"
+    )) {
+        printf("Problems initializing composite shader!\n");
     }
 }
 
