@@ -26,7 +26,7 @@
 #define PS_FLOAT_EPSILON	(0.0001)
 
 
-static std::string loadTextFile(std::string file)
+std::string loadTextFile(std::string file)
 {
 	std::ifstream iFileStream;
 	std::stringstream ss;
@@ -42,7 +42,7 @@ static std::string loadTextFile(std::string file)
 	return data;
 }
 
-static void writePolys(std::string fileName, std::vector<MapPolygon> polys)
+void writePolys(std::string fileName, std::vector<MapPolygon> polys)
 {
 	std::ofstream oFileStream;
 	oFileStream.open(fileName, std::ios::binary | std::ios::out);
@@ -59,7 +59,7 @@ static void writePolys(std::string fileName, std::vector<MapPolygon> polys)
 	oFileStream.close();
 }
 
-static void writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys)
+void writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys)
 {
 	std::stringstream faces;
 	std::ofstream oFileStream;
