@@ -28,6 +28,23 @@ struct Vertex {
     glm::vec4 blendweights;
 };
 
+struct StaticVertex {
+    glm::vec3 pos;
+    glm::vec2 uv;
+    glm::vec2 uvLightmap;
+    glm::vec3 bc;
+    glm::vec3 normal; // = glm::vec3(0.0f, -1.0f, 0.0f); // points *against* the forward direction (because camera is facing to forward by default)
+};
+
+struct MapTri {
+    union {
+        struct { Vertex a; Vertex b; Vertex c; };
+        StaticVertex vertices[3];
+    };
+    std::string textureName;
+    std::string lightmap;
+};
+
 // Vertex Attribute Layout
 
 #define VERT_POS_OFFSET          0

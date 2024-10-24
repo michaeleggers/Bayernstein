@@ -13,10 +13,21 @@ enum SoupFlags {
     SOUP_GET_WORLDSPAWN_ONLY
 };
 
+struct QuakeMapVertex {
+    glm::f64vec3  pos;
+    glm::vec2     uv;
+};
+
 struct MapPolygon
 {
-    std::vector<glm::f64vec3>  vertices;
-    glm::f64vec3               normal;
+    std::vector<QuakeMapVertex> vertices;
+    glm::f64vec3                normal;
+    // NOTE: (Michael): A single, solid color would be good for testing
+    // the lightmapper. Thus, define a few solid color textures 
+    // to use in TrenchBroom.
+    std::string                 textureName;  // located in /game/textures/<*.png>
+    uint64_t                    surfaceFlags; // eg. transparency, emissiveness, ...
+    uint64_t                    contentFlags; // eg. water, slime, lava, ...
 };
 
 struct MapPlane
