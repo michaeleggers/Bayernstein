@@ -1,23 +1,24 @@
+// NOTE: Header only libs *have* to be defined on top before everything else.
+#define MAP_PARSER_IMPLEMENTATION
+#include "map_parser.h"
+
 #include "game.h"
 
 #include <SDL.h>
 #include <string>
 
-#include "r_itexture.h"
-#include "camera.h"
-#include "input.h" 
-#include "physics.h"
-#include "utils.h"
-#include "Shape.h"
-#include "ShapeSphere.h"
-#include "CWorld.h"
-#include "r_font.h"
 #include "imgui.h"
 
-
-#define MAP_PARSER_IMPLEMENTATION
-#include "map_parser.h"
-
+#include "CWorld.h"
+#include "Shape.h"
+#include "ShapeSphere.h"
+#include "camera.h"
+#include "input.h"
+#include "physics.h"
+#include "r_itexture.h"
+#include "utils.h"
+#include "./Message/message_type.h"
+#include "r_font.h"
 #include "polysoup.h"
 
 static int hkd_Clamp(int val, int clamp) {
@@ -25,15 +26,14 @@ static int hkd_Clamp(int val, int clamp) {
     return val;
 }
 
-Game::Game(std::string exePath, hkdInterface* interface, IRender* renderer)
-{
+Game::Game(std::string exePath, hkdInterface* interface, IRender* renderer) {
     m_Renderer = renderer;
     m_Interface = interface;
     m_ExePath = exePath;
+    m_pEntityManager = EntityManager::Instance();
 }
 
-void Game::Init()
-{
+void Game::Init() {
     m_AccumTime = 0.0f;
 
     // Load a font file from disk
@@ -49,9 +49,9 @@ void Game::Init()
     
     // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
 #ifdef _WIN32
-    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/room.map"); 
+    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/room.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/room.map"); 
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/room.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -62,6 +62,7 @@ void Game::Init()
     glm::vec4 triColor = glm::vec4( 0.1f, 0.8f, 1.0f, 1.0f );
     for (int i = 0; i < tris.size(); i++) {
         MapPolygon mapPoly = tris[ i ];
+      
         Vertex A = { glm::vec3(mapPoly.vertices[0].x, mapPoly.vertices[0].y, mapPoly.vertices[0].z) };
         Vertex B = { glm::vec3(mapPoly.vertices[1].x, mapPoly.vertices[1].y, mapPoly.vertices[1].z) };
         Vertex C = { glm::vec3(mapPoly.vertices[2].x, mapPoly.vertices[2].y, mapPoly.vertices[2].z) };
@@ -76,36 +77,61 @@ void Game::Init()
         triPlane.tri.a.normal = triPlane.plane.normal;
         triPlane.tri.b.normal = triPlane.plane.normal;
         triPlane.tri.c.normal = triPlane.plane.normal;
-        worldTris.push_back( triPlane );    
+        
+        worldTris.push_back(triPlane);
     }
-    m_World.InitWorld( worldTris.data(), worldTris.size(), glm::vec3(0.0f, 0.0f, -0.5f) );
+   
+
+    m_World.InitWorld(
+        worldTris.data(), worldTris.size(), 
+        glm::vec3(0.0f, 0.0f, -0.5f)); // gravity
+
+    int idCounter = 0; //FIX: Responsibility of entity manager
+    // Load and create all the entities
+    for (int i = 0; i < map.entities.size(); i++) {
+        Entity& e = map.entities[ i ];
+        BaseGameEntity* baseEntity = NULL;
+        // Check the classname
+        for (int j = 0; j < e.properties.size(); j++) {
+            Property& prop = e.properties[ j ];
+            if (prop.key == "classname") {
+                if (prop.value == "func_door") {
+                    baseEntity = new Door( idCounter++, e.properties, e.brushes ); // later: Entity manager allocates entities!
+                    m_World.m_BrushEntities.push_back( baseEntity->ID() );
+                    m_pEntityManager->RegisterEntity(baseEntity);
+                }
+                else {
+                    printf("Unknown entity type: %s\n", prop.value.c_str());
+                }
+            }
+        }
+    }
+    
 
     // Load IQM Model
 
-    IQMModel iqmModel  = LoadIQM("models/multiple_anims/multiple_anims.iqm");
+    IQMModel iqmModel = LoadIQM("models/multiple_anims/multiple_anims.iqm");
 
     // Convert the model to our internal format
 
-    //m_Model2 = CreateModelFromIQM(&iqmModel2, nullptr);
+    // m_Model2 = CreateModelFromIQM(&iqmModel2, nullptr);
     m_Player = CreateModelFromIQM(&iqmModel);
     m_Player.isRigidBody = false;
-    m_Player.position = glm::vec3(-48.0f, 352.0f, 48.0f);
+    m_Player.position = glm::vec3(-48.0f, 352.0f, 15.0f);
     m_Player.scale = glm::vec3(22.0f);
     for (int i = 0; i < m_Player.animations.size(); i++) {
         EllipsoidCollider* ec = &m_Player.ellipsoidColliders[i];
         ec->radiusA *= m_Player.scale.x;
         ec->radiusB *= m_Player.scale.z;
-        ec->center = m_Player.position + glm::vec3(
-            0.0f,
-            0.0f,
-            ec->radiusB);
+        ec->center = m_Player.position + glm::vec3(0.0f, 0.0f, ec->radiusB);
         glm::vec3 scale = glm::vec3(1.0f / ec->radiusA, 1.0f / ec->radiusA, 1.0f / ec->radiusB);
         ec->toESpace = glm::scale(glm::mat4(1.0f), scale);
     }
 
     SetAnimState(&m_Player, ANIM_STATE_WALK);
 
-    // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data in the batch?
+    // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
+    // in the batch?
 
     int hPlayerModel = m_Renderer->RegisterModel(&m_Player);
 
@@ -117,31 +143,34 @@ void Game::Init()
     m_FollowCamera = Camera(m_Player.position);
     m_FollowCamera.m_Pos.y -= 200.0f;
     m_FollowCamera.m_Pos.z += 100.0f;
-    m_FollowCamera.RotateAroundSide(-20.0f);    
+    m_FollowCamera.RotateAroundSide(-20.0f);
     m_FollowCamera.RotateAroundUp(180.0f);
+
+
+    m_pPlayerEntity = new Player( idCounter++ );
+    m_pEntityManager->RegisterEntity(m_pPlayerEntity);
+    m_pEntityManager->RegisterEntity(new Enemy( idCounter++ ));
 }
 
-static void DrawCoordinateSystem(IRender * renderer) {
-    Vertex origin = {glm::vec3(0.0f)};
+static void DrawCoordinateSystem(IRender* renderer) {
+    Vertex origin = { glm::vec3(0.0f) };
     origin.color = glm::vec4(1.0f);
-    Vertex X = {glm::vec3(100.0f, 0.0f, 0.0f)};
+    Vertex X = { glm::vec3(100.0f, 0.0f, 0.0f) };
     X.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-    Vertex Y = {glm::vec3(0.0f, 100.0f, 0.0f)};
+    Vertex Y = { glm::vec3(0.0f, 100.0f, 0.0f) };
     Y.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-    Vertex Z = {glm::vec3(0.0f, 0.0f, 100.0f)};
+    Vertex Z = { glm::vec3(0.0f, 0.0f, 100.0f) };
     Z.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-    Vertex OX[] = {origin, X};
-    Vertex OY[] = {origin, Y};
-    Vertex OZ[] = {origin, Z};
+    Vertex OX[] = { origin, X };
+    Vertex OY[] = { origin, Y };
+    Vertex OZ[] = { origin, Z };
     renderer->ImDrawLines(OX, 2);
     renderer->ImDrawLines(OY, 2);
     renderer->ImDrawLines(OZ, 2);
 }
 
-bool Game::RunFrame(double dt)
-{    
+bool Game::RunFrame(double dt) {
     m_AccumTime += dt;
-
 
     // Want to quit on ESCAPE
 
@@ -149,11 +178,10 @@ bool Game::RunFrame(double dt)
         m_Interface->QuitGame();
     }
 
-
     float followCamSpeed = 0.5f;
     float followTurnSpeed = 0.2f;
     if (KeyPressed(SDLK_LSHIFT)) {
-        followCamSpeed *= 0.3f;
+        followCamSpeed *= 0.1f;
         followTurnSpeed *= 0.3f;
     }
 
@@ -171,7 +199,8 @@ bool Game::RunFrame(double dt)
         m_FollowCamera.RotateAroundUp(r);
     }
     glm::quat orientation = m_Player.orientation;
-    glm::vec3 forward = glm::rotate(orientation, glm::vec3(0.0f, -1.0f, 0.0f)); // -1 because the model is facing -1 (Outside the screen)
+    glm::vec3 forward = glm::rotate(
+        orientation, glm::vec3(0.0f, -1.0f, 0.0f)); // -1 because the model is facing -1 (Outside the screen)
     glm::vec3 side = glm::cross(forward, glm::vec3(0.0f, 0.0f, 1.0f));
 
     // Change player's velocity and animation state based on input
@@ -179,17 +208,17 @@ bool Game::RunFrame(double dt)
     m_Player.velocity = glm::vec3(0.0f);
     float t = followCamSpeed;
     AnimState playerAnimState = ANIM_STATE_IDLE;
-    if (KeyPressed(SDLK_w)) {          
+    if (KeyPressed(SDLK_w)) {
         m_Player.velocity += t * forward;
         playerAnimState = ANIM_STATE_RUN;
     }
-    if (KeyPressed(SDLK_s)) {        
+    if (KeyPressed(SDLK_s)) {
         m_Player.velocity -= t * forward;
         playerAnimState = ANIM_STATE_RUN;
     }
     if (KeyPressed(SDLK_d)) {
         m_Player.velocity += t * side;
-        playerAnimState = ANIM_STATE_RUN;        
+        playerAnimState = ANIM_STATE_RUN;
     }
     if (KeyPressed(SDLK_a)) {
         m_Player.velocity -= t * side;
@@ -205,23 +234,71 @@ bool Game::RunFrame(double dt)
     SetAnimState(&m_Player, playerAnimState);
 
 
-    // Test collision between player and world geometry
     EllipsoidCollider ec = m_Player.ellipsoidColliders[m_Player.currentAnimIdx];
+   
+    // Test collision between player and world geometry
+#if 1
+    // FIX: Just for the record. This is super dumb and not performant at all!
+    // I (Michael) just did this to test the messaging system with doors.
+    // We should have a list of brush entity geometry that is attached
+    // to the list of static world geometry. The renderer allocates two
+    // buffers: One GPU only buffer for static geometry.
+    // One GPU/CPU buffer for brush entities that we have to update.
+    // But on CPU side all of the tries should reside in ONE buffer as
+    // this guarantees cache locality and a *MUCH* easier time for the
+    // collision system!!! Arrays just always win... what can I say?
+    // The brush entities should have pointers (indices) into the
+    // CPU-side triangle array to know what geometry belongs to them.
+    std::vector<TriPlane> allTris = m_World.m_TriPlanes;
+    int be = m_World.m_BrushEntities[ 0 ];
+    Door* pEntity = (Door*)m_pEntityManager->GetEntityFromID( be );
+    std::copy( pEntity->TriPlanes().begin(), pEntity->TriPlanes().end(), std::back_inserter(allTris) ); 
+    
     CollisionInfo collisionInfo = CollideEllipsoidWithTriPlane(ec,
-                                                               static_cast<float>(dt)*m_Player.velocity, 
-                                                               static_cast<float>(dt)*m_World.m_Gravity, 
-                                                               m_World.m_TriPlanes.data(), m_World.m_TriPlanes.size());
+                                                               static_cast<float>(dt) * m_Player.velocity,
+                                                               static_cast<float>(dt) * m_World.m_Gravity,
+                                                               allTris.data(),
+                                                               allTris.size());
 
     // Update the ellipsoid colliders for all animation states based on the new collision position
     for (int i = 0; i < m_Player.animations.size(); i++) {
-        m_Player.ellipsoidColliders[ i ].center = collisionInfo.basePos;
+        m_Player.ellipsoidColliders[i].center = collisionInfo.basePos;
     }
     m_Player.position.x = collisionInfo.basePos.x;
     m_Player.position.y = collisionInfo.basePos.y;
     m_Player.position.z = collisionInfo.basePos.z - ec.radiusB;
+#endif
+
+    
+    // Check if player runs against door
+#if 1 
+    for (int i = 0; i < m_World.m_BrushEntities.size(); i++) { 
+        int be = m_World.m_BrushEntities[ i ];
+        BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID( be );
+        if ( pEntity->Type() == ET_DOOR ) {
+            Door* pDoor = (Door*)pEntity;
+            CollisionInfo ciDoor = PushTouch(ec,
+                                             static_cast<float>(dt) * m_Player.velocity, 
+                                             pDoor->TriPlanes().data(), 
+                                             pDoor->TriPlanes().size() );
+            if (ciDoor.didCollide) { 
+                printf("COLLIDED!\n");
+                Dispatcher->DispatchMessage(SEND_MSG_IMMEDIATELY,
+                                            m_pPlayerEntity->ID(), pDoor->ID(), 
+                                            message_type::Collision, 
+                                            0); 
+            }
+        }
+    }
+#endif
 
     UpdateModel(&m_Player, (float)dt);
+
+    // Run the message system
+    m_pEntityManager->UpdateEntities();
+    Dispatcher->DispatchDelayedMessages();
     
+
     // Fix camera position
 
     m_FollowCamera.m_Pos.x = m_Player.position.x;
@@ -282,11 +359,24 @@ bool Game::RunFrame(double dt)
         velocityDebugLine.b.color = velocityDebugLine.a.color;
         m_Renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
 
-
         // Render World geometry
-        m_Renderer->ImDrawTriPlanes(m_World.m_TriPlanes.data(), m_World.m_TriPlanes.size(),
-            true, DRAW_MODE_SOLID);
+        m_Renderer->ImDrawTriPlanes(m_World.m_TriPlanes.data(), 
+                                    m_World.m_TriPlanes.size(), 
+                                    true,
+                                    DRAW_MODE_SOLID);
 
+        // Render Brush Entities
+        for (int i = 0; i < m_World.m_BrushEntities.size(); i++) {
+            int be = m_World.m_BrushEntities[ i ];
+            BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID( be );
+            if ( pEntity->Type() == ET_DOOR ) {
+                Door* pDoor = (Door*)pEntity;
+                m_Renderer->ImDrawTriPlanes(pDoor->TriPlanes().data(),
+                                            pDoor->TriPlanes().size(),
+                                            true,
+                                            DRAW_MODE_SOLID);
+            }
+        }
 
         DrawCoordinateSystem(m_Renderer);
 
@@ -297,24 +387,29 @@ bool Game::RunFrame(double dt)
             &m_FollowCamera,
             renderModels, 1);
 
+
         if (collisionInfo.didCollide) {
             m_Player.debugColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); // red
-            m_Renderer->SetActiveCamera(&m_FollowCamera);
-            m_Renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
-                    //printf("hitpoint: %f, %f, %f\n", collisionInfo.hitPoint.x, collisionInfo.hitPoint.y, collisionInfo.hitPoint.z);
         } else {
             m_Player.debugColor = glm::vec4(1.0f); // white
         }
 
-            // Render Player's ellipsoid collider
+#if 0 // Toggle draw hitpoint
         m_Renderer->SetActiveCamera(&m_FollowCamera);
-        HKD_Model* playerColliderModel[] = {&m_Player};
+        m_Renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
+#endif
+
+        // Render Player's ellipsoid collider
+        m_Renderer->SetActiveCamera(&m_FollowCamera);
+        HKD_Model* playerColliderModel[] = { &m_Player };
         m_Renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
-
+        
         m_Renderer->End3D();
-    }
 
-    #if 1 // Toggle 2D Font/Box renderingtest
+    } // End3D scope
+   
+
+#if 1 // Toggle 2D Font/Box renderingtest
     
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     // 2D stuff also has its own, dedicated FBO!
@@ -353,19 +448,24 @@ bool Game::RunFrame(double dt)
                              605.0f, 605.0f, COORD_MODE_ABS);
 
         m_Renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
-    } 
+    } // End2D Scope
     #endif
 
     // This call composits 2D and 3D together into the default FBO
     // (along with ImGUI).
     m_Renderer->RenderEnd(); 
 
-
     return true;
 }
 
-void Game::Shutdown()
-{
+void Game::Shutdown() {
     m_Renderer->Shutdown();
     delete m_Renderer;
+
+    // NOTE: m_pEntityManager is static memory and cannot deleted with delete
+    // (it never was heap allocated with 'new'). The entities have to
+    // be released manually.
+    // delete m_pEntityManager;
+    m_pEntityManager->KillEntities();
 }
+
