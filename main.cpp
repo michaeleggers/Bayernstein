@@ -39,6 +39,7 @@
 #include "physics.h"
 #include "game.h"
 #include "TestClass.h"
+#include "utils.h"
 
 static bool         g_GameWantsToQuit;
 std::string         g_GameDir;
@@ -47,6 +48,11 @@ std::string         g_GameDir;
 static bool QuitGameFunc(void) {
     g_GameWantsToQuit = true;
     return true;
+}
+
+static double msPerFrame;
+double GetDeltaTime() {
+    return msPerFrame;
 }
 
 int main(int argc, char** argv)
@@ -94,7 +100,7 @@ int main(int argc, char** argv)
     float updateIntervalMs = 0.0f;
     while (!ShouldClose() && !g_GameWantsToQuit) {
         double ticksPerFrame = (double)endCounter - (double)startCounter;
-        double msPerFrame = (ticksPerFrame / (double)ticksPerSecond) * 1000.0;
+        msPerFrame = (ticksPerFrame / (double)ticksPerSecond) * 1000.0;
 
         startCounter = SDL_GetPerformanceCounter();
 
