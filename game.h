@@ -14,31 +14,32 @@
 
 class Game {
   public:
-	Game(std::string exePath, hkdInterface *interface, IRender *renderer);
+    Game(std::string exePath, hkdInterface *interface, IRender *renderer);
 
-	void Init();
-	bool RunFrame(double dt);
-	void Shutdown();
+    void Init();
+    bool RunFrame(double dt);
+    void Shutdown();
 
   private:
-	IRender *m_Renderer;
-	hkdInterface *m_Interface;
-	std::string m_ExePath;
+    IRender                     *m_Renderer;
+    hkdInterface                *m_Interface;
+    std::string                 m_ExePath;
 
-	HKD_Model m_Player;
-	Player* m_pPlayerEntity;
-	EntityManager *m_pEntityManager;
+    HKD_Model                   m_Player;
+    Player*                     m_pPlayerEntity;
+    EntityManager               *m_pEntityManager;
 
-	Camera m_Camera;
-	Camera m_FollowCamera;
+    Camera                      m_Camera;
+    Camera                      m_FollowCamera;
 
-	std::vector<HKD_Model *> m_Models;
+    std::vector<HKD_Model*>     m_Models;
+    CFont*                      m_ConsoleFont;
+    CFont*                      m_ConsoleFont30;
+    Box                         m_SkyBox{};
+    
+    double                      m_AccumTime;
 
-	Box m_SkyBox{};
-
-	double m_AccumTime;
-
-	CWorld m_World;
+    CWorld                      m_World;
 };
 
 #endif

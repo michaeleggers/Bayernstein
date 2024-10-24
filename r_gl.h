@@ -14,6 +14,7 @@
 #include "r_gl_shader.h"
 #include "r_gl_texture_mgr.h"
 #include "r_gl_texture.h"
+#include "r_gl_fbo.h"
 #include "camera.h"
 
 struct GLMesh {
@@ -31,6 +32,7 @@ public:
 	virtual bool Init(void)								override;
 	virtual void Shutdown(void)							override;
 	virtual int  RegisterModel(HKD_Model* model)		override;
+	virtual void RegisterFont(CFont* font) override;
 	virtual void SetActiveCamera(Camera* camera) override;
 	virtual std::vector<ITexture*> ModelTextures(int gpuModelHandle)	override;
 	virtual std::vector<ITexture*> Textures(void)       override;
@@ -43,6 +45,19 @@ public:
 	virtual void RenderBegin(void)						override;
 	virtual void Render(Camera* camera, HKD_Model** models, uint32_t numModels) override;
 	virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) override;
+	virtual void Begin3D() override;
+	virtual void End3D()   override;
+	virtual void Begin2D() override;
+	virtual void End2D() override;
+	virtual void SetFont(CFont* font, glm::vec4 color = glm::vec4(1.0f)) override;
+	virtual void SetShapeColor(glm::vec4 color = glm::vec4(1.0f)) override;
+	virtual void DrawText(const std::string& text,
+				float x, float y, 
+				ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
+	virtual void FlushFonts() override;
+	virtual void FlushShapes() override;
+	virtual void DrawBox(float x, float y, float width, float height,
+					  ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
 	virtual void RenderEnd(void)						override;
 	virtual void SetWindowTitle(char* windowTitle) override;
 
@@ -68,6 +83,9 @@ private:
 
 	GLBatch*					m_ImPrimitiveBatchIndexed;
 	std::vector<GLBatchDrawCmd>	m_PrimitiveIndexdDrawCmds;
+
+	GLBatch*					m_FontBatch;
+	GLBatch*					m_ShapesBatch;
 	
 	Shader*						m_ModelShader;
 	std::vector<GLModel>		m_Models;
@@ -76,11 +94,22 @@ private:
 
 	Shader*						m_ColliderShader;
 	GLBatch*					m_ColliderBatch;
+
+	Shader*						m_CompositeShader;
+	Shader*		                m_FontShader;
+	Shader*						m_ShapesShader;
 	// Offsets into collider batch
 	GLBatchDrawCmd				m_EllipsoidColliderDrawCmd;
 
+	CglFBO*		                m_2dFBO;
+	CglFBO*						m_3dFBO;
 	int							m_WindowWidth;
 	int							m_WindowHeight;
+
+	// 2D Rendering state
+	CFont*						m_CurrentFont;
+
+
 };
 
 #endif

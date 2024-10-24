@@ -39,7 +39,7 @@ GLBatch::GLBatch(uint32_t maxVerts)
 
     glGenBuffers(1, &m_VBO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, m_MaxVerts * sizeof(Vertex), nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, m_MaxVerts * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 
     // Input assembly for vertex shader
 
@@ -81,13 +81,14 @@ GLBatch::GLBatch(uint32_t maxVerts, uint32_t maxIndices)
 
     m_NumIndices = 0;
     m_IndexOffsetIndex = 0;
+    m_LastIndex = 0;
 
     glGenVertexArrays(1, &m_VAO);
     glBindVertexArray(m_VAO);
 
     glGenBuffers(1, &m_VBO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, m_MaxVerts * sizeof(Vertex), nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, m_MaxVerts * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 
     // Input assembly for vertex shader
 
@@ -118,7 +119,7 @@ GLBatch::GLBatch(uint32_t maxVerts, uint32_t maxIndices)
 
     glGenBuffers(1, &m_iVBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iVBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_MaxIndices * sizeof(uint16_t), nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_MaxIndices * sizeof(uint16_t), nullptr, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     glBindVertexArray(0);
@@ -205,16 +206,19 @@ void GLBatch::Bind()
     }
 }
 
-void GLBatch::Reset()
-{
+void GLBatch::Unbind() {
+    glBindVertexArray( 0 );
+}
+
+void GLBatch::Reset() {
     m_NumVerts = 0;
     m_VertOffsetIndex = 0;    
     m_NumIndices = 0;
     m_IndexOffsetIndex = 0;
+    m_LastIndex = 0;
 }
 
-void GLBatch::Kill()
-{
+void GLBatch::Kill() {
     glDeleteBuffers(1, &m_VBO);
     glDeleteVertexArrays(1, &m_VAO);
 }
@@ -222,6 +226,10 @@ void GLBatch::Kill()
 uint32_t GLBatch::VertCount()
 {
     return m_VertOffsetIndex;
+}
+
+uint32_t GLBatch::IndexCount() {
+    return m_IndexOffsetIndex;
 }
 
 

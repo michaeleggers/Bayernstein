@@ -7,6 +7,8 @@
 #include <SDL.h>
 #include <string>
 
+#include "imgui.h"
+
 #include "CWorld.h"
 #include "Shape.h"
 #include "ShapeSphere.h"
@@ -16,11 +18,7 @@
 #include "r_itexture.h"
 #include "utils.h"
 #include "./Message/message_type.h"
-
-#include "imgui.h"
-
-
-
+#include "r_font.h"
 #include "polysoup.h"
 
 static int hkd_Clamp(int val, int clamp) {
@@ -38,6 +36,12 @@ Game::Game(std::string exePath, hkdInterface* interface, IRender* renderer) {
 void Game::Init() {
     m_AccumTime = 0.0f;
 
+    // Load a font file from disk
+    m_ConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 72);
+    m_ConsoleFont30 = new CFont("fonts/HackNerdFont-Bold.ttf", 150); // Same font at different size
+    m_Renderer->RegisterFont(m_ConsoleFont);
+    m_Renderer->RegisterFont(m_ConsoleFont30);
+    
     // Load world triangles from Quake .MAP file
 
     std::vector<TriPlane> worldTris{};
@@ -51,13 +55,14 @@ void Game::Init() {
 #endif
 
     size_t inputLength = mapData.length();
-    Map map = getMap(&mapData[0], inputLength, mapVersion);
+    Map map = getMap(&mapData[0], inputLength, mapVersion); 
     std::vector<MapPolygon> polysoup = createPolysoup(map);
     std::vector<MapPolygon> tris = triangulate(polysoup);
     
     glm::vec4 triColor = glm::vec4( 0.1f, 0.8f, 1.0f, 1.0f );
     for (int i = 0; i < tris.size(); i++) {
-        MapPolygon mapPoly = tris[i];
+        MapPolygon mapPoly = tris[ i ];
+      
         Vertex A = { glm::vec3(mapPoly.vertices[0].x, mapPoly.vertices[0].y, mapPoly.vertices[0].z) };
         Vertex B = { glm::vec3(mapPoly.vertices[1].x, mapPoly.vertices[1].y, mapPoly.vertices[1].z) };
         Vertex C = { glm::vec3(mapPoly.vertices[2].x, mapPoly.vertices[2].y, mapPoly.vertices[2].z) };
@@ -72,6 +77,7 @@ void Game::Init() {
         triPlane.tri.a.normal = triPlane.plane.normal;
         triPlane.tri.b.normal = triPlane.plane.normal;
         triPlane.tri.c.normal = triPlane.plane.normal;
+        
         worldTris.push_back(triPlane);
     }
    
@@ -175,7 +181,7 @@ bool Game::RunFrame(double dt) {
     float followCamSpeed = 0.5f;
     float followTurnSpeed = 0.2f;
     if (KeyPressed(SDLK_LSHIFT)) {
-        followCamSpeed *= 0.01f;
+        followCamSpeed *= 0.1f;
         followTurnSpeed *= 0.3f;
     }
 
@@ -200,7 +206,7 @@ bool Game::RunFrame(double dt) {
     // Change player's velocity and animation state based on input
 
     m_Player.velocity = glm::vec3(0.0f);
-    float t = (float)dt * followCamSpeed;
+    float t = followCamSpeed;
     AnimState playerAnimState = ANIM_STATE_IDLE;
     if (KeyPressed(SDLK_w)) {
         m_Player.velocity += t * forward;
@@ -232,13 +238,24 @@ bool Game::RunFrame(double dt) {
    
     // Test collision between player and world geometry
 #if 1
+    // FIX: Just for the record. This is super dumb and not performant at all!
+    // I (Michael) just did this to test the messaging system with doors.
+    // We should have a list of brush entity geometry that is attached
+    // to the list of static world geometry. The renderer allocates two
+    // buffers: One GPU only buffer for static geometry.
+    // One GPU/CPU buffer for brush entities that we have to update.
+    // But on CPU side all of the tries should reside in ONE buffer as
+    // this guarantees cache locality and a *MUCH* easier time for the
+    // collision system!!! Arrays just always win... what can I say?
+    // The brush entities should have pointers (indices) into the
+    // CPU-side triangle array to know what geometry belongs to them.
     std::vector<TriPlane> allTris = m_World.m_TriPlanes;
     int be = m_World.m_BrushEntities[ 0 ];
     Door* pEntity = (Door*)m_pEntityManager->GetEntityFromID( be );
     std::copy( pEntity->TriPlanes().begin(), pEntity->TriPlanes().end(), std::back_inserter(allTris) ); 
     
     CollisionInfo collisionInfo = CollideEllipsoidWithTriPlane(ec,
-                                                               m_Player.velocity,
+                                                               static_cast<float>(dt) * m_Player.velocity,
                                                                static_cast<float>(dt) * m_World.m_Gravity,
                                                                allTris.data(),
                                                                allTris.size());
@@ -252,6 +269,7 @@ bool Game::RunFrame(double dt) {
     m_Player.position.z = collisionInfo.basePos.z - ec.radiusB;
 #endif
 
+    
     // Check if player runs against door
 #if 1 
     for (int i = 0; i < m_World.m_BrushEntities.size(); i++) { 
@@ -260,7 +278,7 @@ bool Game::RunFrame(double dt) {
         if ( pEntity->Type() == ET_DOOR ) {
             Door* pDoor = (Door*)pEntity;
             CollisionInfo ciDoor = PushTouch(ec,
-                                             m_Player.velocity, 
+                                             static_cast<float>(dt) * m_Player.velocity, 
                                              pDoor->TriPlanes().data(), 
                                              pDoor->TriPlanes().size() );
             if (ciDoor.didCollide) { 
@@ -274,11 +292,12 @@ bool Game::RunFrame(double dt) {
     }
 #endif
 
+    UpdateModel(&m_Player, (float)dt);
+
     // Run the message system
     m_pEntityManager->UpdateEntities();
     Dispatcher->DispatchDelayedMessages();
     
-    UpdateModel(&m_Player, (float)dt);
 
     // Fix camera position
 
@@ -322,63 +341,119 @@ bool Game::RunFrame(double dt) {
     }
 
     // Render stuff
-
+    
+    // ImGUI stuff goes into GL default FBO
     m_Renderer->RenderBegin();
 
     ImGui::ShowDemoWindow();
 
-    // Draw Debug Line for player veloctiy vector
-    Line velocityDebugLine = { Vertex(ec.center), Vertex(ec.center + 200.0f * m_Player.velocity) };
-    velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-    velocityDebugLine.b.color = velocityDebugLine.a.color;
-    m_Renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
+    // Main 3D: This is where all the 3D rendering happens (in its own FBO)
+    {
+        m_Renderer->Begin3D();
+        
+        // Draw Debug Line for player veloctiy vector
+        Line velocityDebugLine = {
+            Vertex(ec.center), Vertex(ec.center + 200.0f * m_Player.velocity)
+        };
+        velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+        velocityDebugLine.b.color = velocityDebugLine.a.color;
+        m_Renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
 
-    // Render World geometry
-    m_Renderer->ImDrawTriPlanes(m_World.m_TriPlanes.data(), 
-                                m_World.m_TriPlanes.size(), 
-                                true,
-                                DRAW_MODE_SOLID);
+        // Render World geometry
+        m_Renderer->ImDrawTriPlanes(m_World.m_TriPlanes.data(), 
+                                    m_World.m_TriPlanes.size(), 
+                                    true,
+                                    DRAW_MODE_SOLID);
 
-    // Render Brush Entities
-    for (int i = 0; i < m_World.m_BrushEntities.size(); i++) {
-        int be = m_World.m_BrushEntities[ i ];
-        BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID( be );
-        if ( pEntity->Type() == ET_DOOR ) {
-            Door* pDoor = (Door*)pEntity;
-            m_Renderer->ImDrawTriPlanes(pDoor->TriPlanes().data(),
-                                        pDoor->TriPlanes().size(),
-                                        true,
-                                        DRAW_MODE_SOLID);
+        // Render Brush Entities
+        for (int i = 0; i < m_World.m_BrushEntities.size(); i++) {
+            int be = m_World.m_BrushEntities[ i ];
+            BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID( be );
+            if ( pEntity->Type() == ET_DOOR ) {
+                Door* pDoor = (Door*)pEntity;
+                m_Renderer->ImDrawTriPlanes(pDoor->TriPlanes().data(),
+                                            pDoor->TriPlanes().size(),
+                                            true,
+                                            DRAW_MODE_SOLID);
+            }
         }
-    }
+
+        DrawCoordinateSystem(m_Renderer);
+
+        HKD_Model* renderModels[1];
+        renderModels[0] = &m_Player;
+
+        m_Renderer->Render(
+            &m_FollowCamera,
+            renderModels, 1);
 
 
-    DrawCoordinateSystem(m_Renderer);
+        if (collisionInfo.didCollide) {
+            m_Player.debugColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); // red
+        } else {
+            m_Player.debugColor = glm::vec4(1.0f); // white
+        }
 
-    HKD_Model* renderModels[1];
-    renderModels[0] = &m_Player;
-
-    m_Renderer->Render(&m_FollowCamera, renderModels, 1);
-
-#if 0
-    if (collisionInfo.didCollide) {
-        m_Player.debugColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); // red
+#if 0 // Toggle draw hitpoint
         m_Renderer->SetActiveCamera(&m_FollowCamera);
         m_Renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
-        // printf("hitpoint: %f, %f, %f\n", collisionInfo.hitPoint.x, collisionInfo.hitPoint.y,
-        // collisionInfo.hitPoint.z);
-    } else {
-        m_Player.debugColor = glm::vec4(1.0f); // white
-    }
 #endif
 
-    // Render Player's ellipsoid collider
-    m_Renderer->SetActiveCamera(&m_FollowCamera);
-    HKD_Model* playerColliderModel[] = { &m_Player };
-    m_Renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
+        // Render Player's ellipsoid collider
+        m_Renderer->SetActiveCamera(&m_FollowCamera);
+        HKD_Model* playerColliderModel[] = { &m_Player };
+        m_Renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
+        
+        m_Renderer->End3D();
 
-    m_Renderer->RenderEnd();
+    } // End3D scope
+   
 
+#if 1 // Toggle 2D Font/Box renderingtest
+    
+    // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
+    // 2D stuff also has its own, dedicated FBO!
+    {
+        m_Renderer->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
+       
+        //m_Renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
+        m_Renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) );
+        m_Renderer->DrawText("ABCDEFGHIJKLMNOajdidjST*~`!/]}]|!#@#=;'\"$%%^&*():L", 0.0f, 0.0f);
+        
+        // If you want to draw in absolute coordinates then you have to specify it.
+        // Depends on the resolution of the render window! 
+        m_Renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) );
+        m_Renderer->DrawText("Some more text in yellow :)", 0.0f, 200.0f, COORD_MODE_ABS); 
+        m_Renderer->DrawText("And blended with box on top", 100.0f, 300.0f, COORD_MODE_ABS);
+
+        m_Renderer->SetShapeColor( glm::vec4(0.7f, 0.3f, 0.7f, 0.7) );
+        m_Renderer->DrawBox( 200.0f, 200.0f, 800.0f, 200.0f, COORD_MODE_ABS );
+
+        m_Renderer->SetShapeColor( glm::vec4(1.0f, 0.0f, 0.0f, 1.0f) );
+        m_Renderer->DrawBox( 0.5f, 0.5f, 0.25f, 0.5f );
+
+        m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
+
+        // Use Relative coords (the default). Independent from screen resolution.
+        // Goes from 0 (top/left) to 1 (bottom/right).
+        m_Renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 0.5f, 0.5f); 
+
+        m_Renderer->SetShapeColor( glm::vec4(0.3f, 0.3f, 0.7f, 1.0) );
+        m_Renderer->DrawBox( 600, 600, 200, 100, COORD_MODE_ABS );
+        m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
+        m_Renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 
+                             600.0f, 600.0f, COORD_MODE_ABS);
+        m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(0.0f, 0.0f, 1.0f, 0.5f) );
+        m_Renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 
+                             605.0f, 605.0f, COORD_MODE_ABS);
+
+        m_Renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
+    } // End2D Scope
+    #endif
+
+    // This call composits 2D and 3D together into the default FBO
+    // (along with ImGUI).
+    m_Renderer->RenderEnd(); 
 
     return true;
 }
