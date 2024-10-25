@@ -20,6 +20,7 @@ class Lightmapper:
 
         self.scene = scene
         self.renderer = renderer
+        self.base_path = Path(__file__).resolve().parent
 
     def generate_lightmap(self,  lightmap_path: Path, iterations=5):
 
@@ -54,10 +55,11 @@ class Lightmapper:
                 
 
             self.scene.light_map = new_lightmap
-            self.scene.generate_light_map(lightmap_path)
-            self.renderer.update_ligth_map(Path(f'{str(lightmap_path)}.hdr'))
+            temporary_lightmap_path = Path(self.base_path / 'temp' / 'lightmap.hdr')
+            self.scene.generate_light_map(temporary_lightmap_path)
+            self.renderer.update_ligth_map(temporary_lightmap_path)
 
-        self.scene.generate_light_map(Path('light_map'))
+        self.scene.generate_light_map(lightmap_path)
         self.print_and_convert_hdr_image("light_map.hdr", "debug_lightmap.png")
 
     def print_and_convert_hdr_image(self, filepath: str, output_png: str, sample_size: int = 5) -> None:

@@ -267,7 +267,7 @@ class Scene:
         light_map_bgr = cv2.cvtColor(light_map_float32, cv2.COLOR_RGB2BGR)
 
         # Save the image in a high-precision format (e.g., OpenEXR or HDR)
-        cv2.imwrite(str(light_map_file_path.with_suffix('.hdr')), light_map_bgr)
+        cv2.imwrite(str(light_map_file_path), light_map_bgr)
 
     def get_model_transform(self) -> np.ndarray:
         """
