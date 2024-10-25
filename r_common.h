@@ -9,32 +9,32 @@
 #include "dependencies/glm/ext.hpp"
 
 enum ScreenSpaceCoordMode {
-	COORD_MODE_ABS,
-	COORD_MODE_REL
+    COORD_MODE_ABS,
+    COORD_MODE_REL
 };
 
 enum GeometryType {
-	GEOM_TYPE_VERTEX_ONLY,
-	GEOM_TYPE_INDEXED
+    GEOM_TYPE_VERTEX_ONLY,
+    GEOM_TYPE_INDEXED
 };
 
 struct Vertex {
-	glm::vec3 pos;
-	glm::vec2 uv;
-	glm::vec3 bc;
-	glm::vec3 normal; // = glm::vec3(0.0f, -1.0f, 0.0f); // points *against* the forward direction (because camera is facing to forward by default)
-	glm::vec4 color;
-	uint32_t  blendindices[4];
-	glm::vec4 blendweights;
+    glm::vec3 pos;
+    glm::vec2 uv;
+    glm::vec3 bc;
+    glm::vec3 normal; // = glm::vec3(0.0f, -1.0f, 0.0f); // points *against* the forward direction (because camera is facing to forward by default)
+    glm::vec4 color;
+    uint32_t  blendindices[4];
+    glm::vec4 blendweights;
 };
 
 // Vertex Attribute Layout
 
-#define VERT_POS_OFFSET			 0
-#define VERT_UV_OFFSET			 (VERT_POS_OFFSET + sizeof(glm::vec3))
-#define VERT_BC_OFFSET			 (VERT_UV_OFFSET + sizeof(glm::vec2))
-#define VERT_NORMAL_OFFSET		 (VERT_BC_OFFSET + sizeof(glm::vec3))
-#define VERT_COLOR_OFFSET		 (VERT_NORMAL_OFFSET + sizeof(glm::vec3))
+#define VERT_POS_OFFSET          0
+#define VERT_UV_OFFSET           (VERT_POS_OFFSET + sizeof(glm::vec3))
+#define VERT_BC_OFFSET           (VERT_UV_OFFSET + sizeof(glm::vec2))
+#define VERT_NORMAL_OFFSET       (VERT_BC_OFFSET + sizeof(glm::vec3))
+#define VERT_COLOR_OFFSET        (VERT_NORMAL_OFFSET + sizeof(glm::vec3))
 #define VERT_BLENDINDICES_OFFSET (VERT_COLOR_OFFSET + sizeof(glm::vec4))
 #define VERT_BLENDWEIGHTS_OFFSET (VERT_BLENDINDICES_OFFSET + 4*sizeof(uint32_t))
 
@@ -42,116 +42,116 @@ struct Vertex {
 
 #define SHADER_WIREFRAME_ON_MESH (0x00000001 << 0)
 #define SHADER_LINEMODE          (0x00000001 << 1)
-#define SHADER_ANIMATED			 (0x00000001 << 2)
-#define SHADER_IS_TEXTURED		 (0x00000001 << 3)
+#define SHADER_ANIMATED          (0x00000001 << 2)
+#define SHADER_IS_TEXTURED       (0x00000001 << 3)
 
-#define GOLDEN_RATIO			 1.618033988749
+#define GOLDEN_RATIO             1.618033988749
 #define HKD_PI                   3.14159265359
 #define HKD_EPSILON              0.000000001f
-#define ELLIPSOID_VERT_COUNT	 32
+#define ELLIPSOID_VERT_COUNT     32
 
 struct ShaderSettings {
-	glm::uvec4 u32bitMasks; // TODO: This is just to make the Shader happy (Wants 16 bytes by default, not only 4).
+    glm::uvec4 u32bitMasks; // TODO: This is just to make the Shader happy (Wants 16 bytes by default, not only 4).
 };
 
 struct FontUB {
-	glm::vec4 color;
-	glm::vec4 size;
+    glm::vec4 color;
+    glm::vec4 size;
 };
 
 struct ShapesUB {
-	glm::vec4 color;
-	glm::vec4 scale;
+    glm::vec4 color;
+    glm::vec4 scale;
 };
 
 struct Tri {
-	union {
-		struct { Vertex a; Vertex b; Vertex c; };
-		Vertex vertices[3];
-	};
+    union {
+        struct { Vertex a; Vertex b; Vertex c; };
+        Vertex vertices[3];
+    };
 };
 
 struct Line {
-	union {
-		struct { Vertex a; Vertex b; };
-		Vertex vertices[2];
-	};
+    union {
+        struct { Vertex a; Vertex b; };
+        Vertex vertices[2];
+    };
 };
 
 struct Plane {
-	glm::vec3 normal;
-	float	  d;
-	glm::vec3 p;
+    glm::vec3 normal;
+    float     d; // distance to origin
+    glm::vec3 p; // point on plane (for convencience)
 };
 
 struct TriPlane {
-	Plane plane;
-	Tri   tri;
+    Plane plane;
+    Tri   tri;
 };
 
 struct Quad {
-	union {
-		struct {
-			Tri a; // top right
-			Tri b; // bottom left
-		};
-		Tri		tris[2];
-		Vertex  vertices[6];
-		struct { // This just makes access to individual vertices easier.
-			Vertex tl;
-			Vertex tr;
-			Vertex br;
-			Vertex br2;
-			Vertex bl;
-			Vertex tl2;
-		};
-	};
+    union {
+        struct {
+            Tri a; // top right
+            Tri b; // bottom left
+        };
+        Tri     tris[2];
+        Vertex  vertices[6];
+        struct { // This just makes access to individual vertices easier.
+            Vertex tl;
+            Vertex tr;
+            Vertex br;
+            Vertex br2;
+            Vertex bl;
+            Vertex tl2;
+        };
+    };
 };
 
 // Representation of a Quad but only stores the four cornerpoints, not whole tris.
 struct FaceQuad {
-	union {
-		struct {
-			Vertex a;
-			Vertex b;
-			Vertex c;
-			Vertex d;
-		};
-		Vertex vertices[4];
-	};
+    union {
+        struct {
+            Vertex a;
+            Vertex b;
+            Vertex c;
+            Vertex d;
+        };
+        Vertex vertices[4];
+    };
 };
 
 struct Box {
-	union {
-		struct {
-			Quad front;
-			Quad right;
-			Quad back;
-			Quad left;
-			Quad top;
-			Quad bottom;
-		};
-		Quad quads[6];
-		Tri  tris[12];
-	};
+    union {
+        struct {
+            Quad front;
+            Quad right;
+            Quad back;
+            Quad left;
+            Quad top;
+            Quad bottom;
+        };
+        Quad quads[6];
+        Tri  tris[12];
+    };
 };
 
 // As Box but with more than 2 tris per side.
 struct NBox {
-	std::vector<Tri> tris;
+    std::vector<Tri> tris;
 };
 
 struct Ellipsoid {
-	glm::vec3	center;
-	float		radiusA; // horizontal radius
-	float		radiusB; // vertical radius
-	Vertex		vertices[ELLIPSOID_VERT_COUNT];
+    glm::vec3   center;
+    float       radiusA; // horizontal radius
+    float       radiusB; // vertical radius
+    Vertex      vertices[ELLIPSOID_VERT_COUNT];
 };
 
 struct MeshEllipsoid {
-	float radiusA;
-	float radiusB;
-	std::vector<Tri> tris;
+    float radiusA;
+    float radiusB;
+    std::vector<Tri> tris;
 };
 
 void RotateTri(Tri* tri, glm::vec3 axis, float angle);
@@ -168,7 +168,7 @@ void TranslateQuad(Quad* quad, glm::vec3 t);
 FaceQuad QuadToFace(Quad* quad);
 FaceQuad CreateFaceQuadFromVerts(Vertex* vertices);
 void SetQuadColor(Quad* quad, glm::vec4 color);
-Box	 CreateBox(glm::vec3 scale = glm::vec3(1.0f), glm::vec4 color = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
+Box  CreateBox(glm::vec3 scale = glm::vec3(1.0f), glm::vec4 color = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
 Box  CreateBoxFromAABB(glm::vec3 mins, glm::vec3 maxs);
 void TranslateBox(Box* box, glm::vec3 t);
 void TransformBox(Box* box, glm::mat4 modelMatrix);
