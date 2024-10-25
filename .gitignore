@@ -13,6 +13,7 @@
 **/cmake-build-relwithdebinfo/**
 
 **/.idea/**
+**/.vscode/
 
 # Some local docs
 **/line_vs_swept_sphere.md
