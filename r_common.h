@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <string>
 
 #define GLM_FORCE_RADIANS
 #include "dependencies/glm/glm.hpp"
