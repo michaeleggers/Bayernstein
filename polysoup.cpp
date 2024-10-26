@@ -1,4 +1,6 @@
 
+//#define MAP_PARSER_IMPLEMENTATION
+#include "map_parser.h"
 
 
 #include <string>
@@ -20,11 +22,11 @@
 
 #include "polysoup.h"
 
-//#define MAP_PARSER_IMPLEMENTATION
-#include "map_parser.h"
+#include "image.h"
 
 #define PS_FLOAT_EPSILON    (0.0001)
 
+extern std::string g_GameDir;
 
 std::string loadTextFile(std::string file)
 {
@@ -174,6 +176,16 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush)
         MapPlane p0 = convertFaceToPlane(face_i);
         MapPolygon poly = {};
         poly.textureName = face_i.textureName;
+        float texWidth = 1.0f;
+        float texHeight = 1.0f;
+        // FIX: (Michael): Before Michael goes an implements a new
+        // feature he has to implement a decent virtual file-system!
+        // This is a boring job but it has to be done!!!
+        CImage texImage( "textures/" + poly.textureName + ".png" );
+        if ( texImage.Valid() ) {
+            texWidth = (float)texImage.Width();
+            texHeight = (float)texImage.Height();
+        }
         poly.normal = p0.n;
         for (int j = 0; j < faceCount; j++) {
             MapPlane p1 = convertFaceToPlane(brush.faces[j]);
@@ -192,8 +204,8 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush)
                             uv.y += face_i.tOffset2;
                             // FIX: We need to load the texture at this point to
                             // know its dimensions (width/height).
-                            uv.x /= 1.0f; // NOTE: should be /= texture.width;
-                            uv.y /= 1.0f; // NOTE: should be /= texture.height;
+                            uv.x /= texWidth;
+                            uv.y /= texHeight;
                             QuakeMapVertex v = { intersectionPoint, uv };
                             insertVertexToPolygon(v, &poly);
                         }
@@ -204,6 +216,11 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush)
         if (poly.vertices.size() > 0) {
             polys.push_back(poly);
         }
+
+        // TODO: We could also not free here but place
+        // all the images into a CPU side pixelbuffer.
+        // We will see. For now ok...
+        texImage.FreePixeldata();
     }
 
     return polys;
