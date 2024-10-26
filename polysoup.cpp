@@ -52,7 +52,7 @@ void writePolys(std::string fileName, std::vector<MapPolygon> polys)
 
     for (auto p = polys.begin(); p != polys.end(); p++) {
         for (auto v = p->vertices.begin(); v != p->vertices.end(); v++) {
-            oFileStream.write((char*) & *v, sizeof(glm::f64vec3));
+            oFileStream.write((char*) & (v->pos), sizeof(glm::f64vec3));
         }
     }
 
@@ -71,7 +71,7 @@ void writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys)
     for (auto p = polys.begin(); p != polys.end(); p++) {
         faces << "f";
         for (auto v = p->vertices.begin(); v != p->vertices.end(); v++) {
-            oFileStream << "v " << std::to_string(v->x) << " " << std::to_string(v->y) << " " << std::to_string(v->z) << std::endl;
+            oFileStream << "v " << std::to_string(v->pos.x) << " " << std::to_string(v->pos.y) << " " << std::to_string(v->pos.z) << std::endl;
             faces << " " << count; count++;
         }
         faces << std::endl;
@@ -132,17 +132,20 @@ void insertVertexToPolygon(glm::f64vec3 v, MapPolygon* p)
 {
     auto v0 = p->vertices.begin();
     if (v0 == p->vertices.end()) {
-        p->vertices.push_back(v);
+        p->vertices.push_back( {v} ); // FIX: UV missing!
         return;
     }
 
     for (; v0 != p->vertices.end(); v0++) {
-        if (vec3IsEqual(v, *v0)) { // TODO: Is this check actually needed??
+        // TODO: Is this check actually needed??
+        // TODO: Also check for UV? (Probably not because
+        //       it is purely geometry related).
+        if (vec3IsEqual(v, v0->pos)) { 
             return;
         }
     }
     
-    p->vertices.push_back(v);
+    p->vertices.push_back( {v} ); // FIX: UV missing!
 }
 
 bool isPointInsideBrush(Brush brush, glm::f64vec3 intersectionPoint)
@@ -276,26 +279,26 @@ MapPolygon sortVerticesCCW(MapPolygon poly)
     // Center of poly
     glm::f64vec3 center(0.0f);
     for (auto v = poly.vertices.begin(); v != poly.vertices.end(); v++) {
-        center += *v;
+        center += v->pos;
     }
     center /= vertCount;
 
     size_t closestVertexID = 0;
     for (size_t i = 0; i < vertCount-1; i++) {
-        glm::f64vec3 v0 = poly.vertices[i]; // Find next vertex to v0 with smallest angle
+        glm::f64vec3 v0pos = poly.vertices[i].pos; // Find next vertex to v0 with smallest angle
 
         // Plane definition:
         // glm::f64vec3 v0 = p2 - p0;
         // glm::f64vec3 v1 = p1 - p0;
         // glm::f64vec3 n = glm::normalize(glm::cross(v0, v1));
-        MapPlane plane = createPlane(center, v0, center + poly.normal);
+        MapPlane plane = createPlane(center, v0pos, center + poly.normal);
 
         int smallesAngleIndex = 0;
         double smallestAngle = -1.0;
         for (size_t j = i+1; j < vertCount; j++) {
-            glm::f64vec3 test = glm::normalize(poly.vertices[j] - center);
+            glm::f64vec3 test = glm::normalize(poly.vertices[j].pos - center);
             if (glm::dot(plane.n, test) < -PS_FLOAT_EPSILON) { // check if point is legal
-                double angle = getAngle(center, v0, poly.vertices[j]);
+                double angle = getAngle(center, v0pos, poly.vertices[j].pos);
                 if (angle > smallestAngle) {
                     smallestAngle = angle;
                     smallesAngleIndex = j;
@@ -306,8 +309,8 @@ MapPolygon sortVerticesCCW(MapPolygon poly)
     }
 
     // Fix winding
-    glm::f64vec3 a = poly.vertices[0] - center;
-    glm::f64vec3 b = poly.vertices[1] - center;
+    glm::f64vec3 a = poly.vertices[0].pos - center;
+    glm::f64vec3 b = poly.vertices[1].pos - center;
     glm::f64vec3 normal = glm::normalize(glm::cross(a, b));
     if (glm::dot(normal, poly.normal) < PS_FLOAT_EPSILON) {
         std::reverse(poly.vertices.begin(), poly.vertices.end());
@@ -342,13 +345,13 @@ std::vector<MapPolygon> triangulate(std::vector<MapPolygon> polys)
     for (auto p = polys.begin(); p != polys.end(); p++) {
         MapPolygon sortedPoly = sortVerticesCCW(*p);
         size_t vertCount = sortedPoly.vertices.size();      
-        glm::f64vec3 provokingVert = sortedPoly.vertices[0];
+        QuakeMapVertex provokingVert = sortedPoly.vertices[0];
         for (size_t i = 2; i < vertCount; i++) {
             MapPolygon poly = { };
             poly.vertices.push_back(provokingVert);
             poly.vertices.push_back(sortedPoly.vertices[i - 1]);
             poly.vertices.push_back(sortedPoly.vertices[i]);
-            tris.push_back(poly);
+            tris.push_back(poly); 
         }       
     }
 
