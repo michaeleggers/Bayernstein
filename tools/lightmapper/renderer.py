@@ -36,7 +36,7 @@ class Renderer:
         self._initialize_camera()
 
     def _initialize_glfw(self, width: int, height: int, lightmap_mode: bool) -> None:
-        self.set_dpi_awareness()  # Set DPI awareness
+        #self.set_dpi_awareness()  # Set DPI awareness
 
         # Initialize GLFW
         if not glfw.init():
@@ -79,10 +79,10 @@ class Renderer:
         glfw.make_context_current(self.window)
 
         # Get and print the framebuffer size
-        framebuffer_size = glfw.get_framebuffer_size(self.window)
+        window_size = glfw.get_window_size(self.window)
 
         # Set the viewport to the framebuffer size
-        glViewport(0, 0, framebuffer_size[0], framebuffer_size[1])
+        glViewport(0, 0, window_size[0], window_size[1])
 
         
         if lightmap_mode == False:
@@ -164,13 +164,6 @@ class Renderer:
         self.yaw = np.degrees(np.arctan2(self.camera_front[2], self.camera_front[0]))
         self.pitch = np.degrees(np.arcsin(self.camera_front[1]))
         self.sensitivity = 1.0
-
-    def set_dpi_awareness(self):
-        try:
-            # Set process DPI awareness to SYSTEM_DPI_AWARE
-            ctypes.windll.shcore.SetProcessDpiAwareness(1)
-        except Exception as e:
-            print(f"Could not set DPI awareness: {e}")
 
     def update_ligth_map(self, light_map_path: Path):
         #glDeleteTextures(1, (self.light_map_material.texture,))
