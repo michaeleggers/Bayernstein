@@ -128,11 +128,11 @@ bool vec3IsEqual(const glm::f64vec3& lhs, const glm::f64vec3& rhs) {
         && glm::abs(lhs.z - rhs.z) < PS_FLOAT_EPSILON );
 }
 
-void insertVertexToPolygon(glm::f64vec3 v, MapPolygon* p)
+void insertVertexToPolygon(QuakeMapVertex v, MapPolygon* p)
 {
     auto v0 = p->vertices.begin();
-    if (v0 == p->vertices.end()) {
-        p->vertices.push_back( {v} ); // FIX: UV missing!
+    if ( v0 == p->vertices.end() ) {
+        p->vertices.push_back( v ); 
         return;
     }
 
@@ -140,12 +140,12 @@ void insertVertexToPolygon(glm::f64vec3 v, MapPolygon* p)
         // TODO: Is this check actually needed??
         // TODO: Also check for UV? (Probably not because
         //       it is purely geometry related).
-        if (vec3IsEqual(v, v0->pos)) { 
+        if ( vec3IsEqual(v.pos, v0->pos) ) { 
             return;
         }
     }
     
-    p->vertices.push_back( {v} ); // FIX: UV missing!
+    p->vertices.push_back( v ); 
 }
 
 bool isPointInsideBrush(Brush brush, glm::f64vec3 intersectionPoint)
@@ -168,8 +168,12 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush)
 
     int faceCount = brush.faces.size();
     for (int i = 0; i <  faceCount; i++) {
-        MapPlane p0 = convertFaceToPlane(brush.faces[i]);
+        Face face_i = brush.faces[i];
+        glm::vec3 axisU = glm::vec3( face_i.tx1, face_i.ty1, face_i.tz1 );
+        glm::vec3 axisV = glm::vec3( face_i.tx2, face_i.ty2, face_i.tz2 );
+        MapPlane p0 = convertFaceToPlane(face_i);
         MapPolygon poly = {};
+        poly.textureName = face_i.textureName;
         poly.normal = p0.n;
         for (int j = 0; j < faceCount; j++) {
             MapPlane p1 = convertFaceToPlane(brush.faces[j]);
@@ -180,7 +184,18 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush)
                     if (intersectThreePlanes(p0, p1, p2, &intersectionPoint)) {
                         if (isPointInsideBrush(brush, intersectionPoint)) {
                             // TODO: Calculate texture coordinates
-                            insertVertexToPolygon(intersectionPoint, &poly);
+                            glm::vec2 uv = {
+                                glm::dot( (glm::vec3)intersectionPoint, axisU ),
+                                glm::dot( (glm::vec3)intersectionPoint, axisV )
+                            };
+                            uv.x += face_i.tOffset1;
+                            uv.y += face_i.tOffset2;
+                            // FIX: We need to load the texture at this point to
+                            // know its dimensions (width/height).
+                            uv.x /= 1.0f; // NOTE: should be /= texture.width;
+                            uv.y /= 1.0f; // NOTE: should be /= texture.height;
+                            QuakeMapVertex v = { intersectionPoint, uv };
+                            insertVertexToPolygon(v, &poly);
                         }
                     }
                 }
@@ -330,6 +345,7 @@ std::vector<MapPolygon> triangulate(std::vector<MapPolygon> polys)
             poly.vertices.push_back(provokingVert);
             poly.vertices.push_back(sortedPoly.vertices[i - 1]);
             poly.vertices.push_back(sortedPoly.vertices[i]);
+            poly.textureName = p->textureName;
             tris.push_back(poly); 
         }       
     }
