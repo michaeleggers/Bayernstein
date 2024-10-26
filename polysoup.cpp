@@ -218,30 +218,9 @@ std::vector<MapPolygon> createPolysoup(Map map, SoupFlags soupFlags)
         }
 
         for (auto b = e->brushes.begin(); b != e->brushes.end(); b++) {
-            int faceCount = b->faces.size();
-            for (int i = 0; i <  faceCount; i++) {
-                MapPlane p0 = convertFaceToPlane(b->faces[i]);
-                MapPolygon poly = {};
-                poly.normal = p0.n;
-                for (int j = 0; j < faceCount; j++) {
-                    MapPlane p1 = convertFaceToPlane(b->faces[j]);
-                    for (int k = 0; k < faceCount; k++) {
-                        glm::f64vec3 intersectionPoint;
-                        MapPlane p2 = convertFaceToPlane(b->faces[k]);
-                        if ( (i != j) && (j != k) && (i != k) ) { 
-                            if (intersectThreePlanes(p0, p1, p2, &intersectionPoint)) {
-                                if (isPointInsideBrush(*b, intersectionPoint)) {
-                                    // TODO: Calculate texture coordinates
-                                    insertVertexToPolygon(intersectionPoint, &poly);
-                                }
-                            }
-                        }
-                    }
-                }
-                if (poly.vertices.size() > 0) {
-                    polys.push_back(poly);
-                }
-            }
+            std::vector<MapPolygon> brushPolys = createPolysoup( *b ); 
+            // NOTE: (Michael): I cannot wait to get rid off this STL nonsense...
+            polys.insert( polys.end(), brushPolys.begin(), brushPolys.end() );
         }
     }
 
