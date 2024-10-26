@@ -187,7 +187,7 @@ class Renderer:
         glFlush()
         glFinish()
 
-        width, height = glfw.get_framebuffer_size(self.window)
+        width, height = glfw.get_window_size(self.window)
         glPixelStorei(GL_PACK_ALIGNMENT, 1)
         image_data = glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT)
         image_array = np.frombuffer(image_data, dtype=np.float32).reshape(height, width, 3)
