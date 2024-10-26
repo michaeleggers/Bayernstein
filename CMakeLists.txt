@@ -128,6 +128,8 @@ add_executable(Game
     Body.h
     Intersections.cpp
     Intersections.h
+    CircularBuffer.cpp
+    CircularBuffer.h
     CWorld.cpp
     CWorld.h
     collision.cpp
