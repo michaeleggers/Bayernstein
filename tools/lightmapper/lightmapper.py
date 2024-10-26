@@ -2,7 +2,6 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
-import pygame as pg
 from tqdm import tqdm
 
 
@@ -52,7 +51,6 @@ class Lightmapper:
                     new_lightmap[patch.x_tex_coord, patch.y_tex_coord, 0] = sum_r
                     new_lightmap[patch.x_tex_coord, patch.y_tex_coord, 1] = sum_g
                     new_lightmap[patch.x_tex_coord, patch.y_tex_coord, 2] = sum_b
-                
 
             self.scene.light_map = new_lightmap
             temporary_lightmap_path = Path(self.base_path / 'temp' / 'lightmap.hdr')
@@ -60,14 +58,14 @@ class Lightmapper:
             self.renderer.update_ligth_map(temporary_lightmap_path)
 
         self.scene.generate_light_map(lightmap_path)
-        self.print_and_convert_hdr_image("light_map.hdr", "debug_lightmap.png")
+        self.print_and_convert_hdr_image(lightmap_path, "debug_lightmap.png")
 
-    def print_and_convert_hdr_image(self, filepath: str, output_png: str, sample_size: int = 5) -> None:
+    def print_and_convert_hdr_image(self, filepath: Path, output_png: str, sample_size: int = 5) -> None:
         # Load the HDR image with floating-point precision
-        hdr_image = cv2.imread(filepath, cv2.IMREAD_UNCHANGED)
+        hdr_image = cv2.imread(str(filepath), cv2.IMREAD_UNCHANGED)
         
         if hdr_image is None:
-            print(f"Failed to load image from {filepath}")
+            print(f"Failed to load image from {str(filepath)}")
             return
 
         # Check if it's loaded in BGR format and convert to RGB

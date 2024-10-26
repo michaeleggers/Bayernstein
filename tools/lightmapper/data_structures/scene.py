@@ -42,7 +42,7 @@ class Scene:
             self.triangle_emissions.extend(emission)
 
         # Step 2: uv map the triangles
-        self.triangle_uvs, uv_map_world_size = uv_mapper.map_triangles(self.triangles, debug=True)
+        self.triangle_uvs, uv_map_world_size = uv_mapper.map_triangles(self.triangles, patches_resolution, debug=True)
         self.light_map_resolution = math.ceil(uv_map_world_size * patches_resolution)
 
         # Step 3: generate patches and lightmap
@@ -165,10 +165,14 @@ class Scene:
                     light_map[x, y] = [triangle_emission.r, triangle_emission.g, triangle_emission.b]
                     is_emissive = triangle_emission.sum() > 0  # Check if any emission exists
 
-                    # Interpolate world space coordinates and normals
-                    world_coords, normal = self.interpolate_uv_to_world(triangle, uvs[i], (u, v))
-                    patches.append(Patch(x, y, vec(world_coords[0], world_coords[1], world_coords[2]), vec(normal[0], normal[1], normal[2]), (u, v), (uv_a, uv_b, uv_c), is_emissive))
-                    break  # Exit the triangle loop once found
+                    if is_emissive:
+                        break
+
+                    else:
+                        # Interpolate world space coordinates and normals
+                        world_coords, normal = self.interpolate_uv_to_world(triangle, uvs[i], (u, v))
+                        patches.append(Patch(x, y, vec(world_coords[0], world_coords[1], world_coords[2]), vec(normal[0], normal[1], normal[2]), (u, v), (uv_a, uv_b, uv_c), is_emissive))
+                        break  # Exit the triangle loop once found
 
         return patches, light_map, uvs
     

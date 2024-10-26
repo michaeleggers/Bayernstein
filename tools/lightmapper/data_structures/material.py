@@ -1,5 +1,4 @@
 from OpenGL.GL import *
-import pygame as pg
 import numpy as np
 from pathlib import Path
 import cv2

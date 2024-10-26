@@ -111,4 +111,54 @@ class Mesh:
         ], dtype=np.uint32)
 
         return self
+    
+    def from_sphere(self, tessellation: int = 16) -> 'Mesh':
+        """
+        Define a sphere mesh with vertices and indices using latitude and longitude tessellation.
+
+        Parameters:
+        -----------
+        tessellation : int
+            Controls the smoothness of the sphere, where higher values mean more vertices.
+
+        Returns:
+        --------
+        Mesh
+            The mesh object representing a sphere.
+        """
+        vertices = []
+        indices = []
+
+        # Define latitude and longitude divisions
+        lat_divisions = tessellation
+        lon_divisions = tessellation * 2
+
+        # Create vertices
+        for i in range(lat_divisions + 1):
+            theta = np.pi * i / lat_divisions
+            sin_theta = np.sin(theta)
+            cos_theta = np.cos(theta)
+
+            for j in range(lon_divisions):
+                phi = 2 * np.pi * j / lon_divisions
+                x = sin_theta * np.cos(phi)
+                y = cos_theta
+                z = sin_theta * np.sin(phi)
+                vertices.append([x, y, z])
+
+        # Create indices for each face (two triangles per quad)
+        for i in range(lat_divisions):
+            for j in range(lon_divisions):
+                p1 = i * lon_divisions + j
+                p2 = p1 + lon_divisions
+
+                # Triangle 1
+                indices.append([p1, (p1 + 1) % lon_divisions + i * lon_divisions, p2])
+                # Triangle 2
+                indices.append([(p1 + 1) % lon_divisions + i * lon_divisions, (p2 + 1) % lon_divisions + i * lon_divisions, p2])
+
+        self.vertices = np.array(vertices, dtype=np.float32)
+        self.indices = np.array(indices, dtype=np.uint32)
+
+        return self
 

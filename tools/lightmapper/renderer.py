@@ -26,16 +26,18 @@ class Renderer:
         fov = 90 # FOV must be 90 for the lightmap generation in order for the hemisphere to be projected correctly onto the hemicubes
 
         # This will be the factor by which the lightmaps energy will be multiplied to achieve the final emissive color
-        self.emission_strength = 1 if lightmap_mode else 500
+        self.emission_strength = 0 if lightmap_mode else 1000
 
         # Initialize GLFW, OpenGL, and assets
-        self._initialize_glfw(width=width, height=height)
+        self._initialize_glfw(width=width, height=height, lightmap_mode=lightmap_mode)
         self._initialize_opengl(clear_color=atmosphere_color)
         self._initialize_assets(scene=scene, light_map_path=light_map_path)
         self._initialize_uniforms(fov)
         self._initialize_camera()
 
-    def _initialize_glfw(self, width: int, height: int) -> None:
+    def _initialize_glfw(self, width: int, height: int, lightmap_mode: bool) -> None:
+        self.set_dpi_awareness()  # Set DPI awareness
+
         # Initialize GLFW
         if not glfw.init():
             raise Exception("GLFW could not be initialized")
@@ -45,6 +47,18 @@ class Renderer:
         glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
         glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
         glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, GL_TRUE)  # For Mac compatibility
+
+        #glfw.window_hint(glfw.DEPTH_BITS, 24)
+        #glEnable(GL_POLYGON_OFFSsET_FILL)
+        #glPolygonOffset(1.0, 1.0)
+        
+
+
+        if lightmap_mode:
+            glfw.window_hint(glfw.RESIZABLE, glfw.FALSE)
+            glfw.window_hint(glfw.SCALE_TO_MONITOR, glfw.FALSE)
+            # very important as otherwise windows changes the framebuffer size
+            glfw.window_hint(glfw.DECORATED, glfw.FALSE)    
 
         
         # Set the window hints to increase color precision
@@ -64,11 +78,18 @@ class Renderer:
         # Set the current context to this window
         glfw.make_context_current(self.window)
 
-        # Set a callback for resizing the window
-        glfw.set_framebuffer_size_callback(self.window, self._framebuffer_size_callback)
+        # Get and print the framebuffer size
+        framebuffer_size = glfw.get_framebuffer_size(self.window)
+
+        # Set the viewport to the framebuffer size
+        glViewport(0, 0, framebuffer_size[0], framebuffer_size[1])
+
         
-        # Enable vertical sync (if desired)
-        glfw.swap_interval(1)
+        if lightmap_mode == False:
+            # Set a callback for resizing the window
+            glfw.set_framebuffer_size_callback(self.window, self._framebuffer_size_callback)
+            # Enable vertical sync (if desired)
+            glfw.swap_interval(1)
         
         # Create a clock similar to pygame's
         self.clock = glfw.get_time
@@ -117,20 +138,20 @@ class Renderer:
         glUseProgram(self.shader)
         glUniform1i(glGetUniformLocation(self.shader, "imageTexture"), 0)
 
-        width, height = glfw.get_framebuffer_size(self.window)
+        width, height = glfw.get_window_size(self.window)
         projection = pyrr.matrix44.create_perspective_projection(
-            fovy=fov, aspect=width / height, near=0.1, far=2000, dtype=np.float32
+            fovy=fov, aspect=width / height, near=0.1, far=4000, dtype=np.float32
         )
         glUniformMatrix4fv(glGetUniformLocation(self.shader, "projection"), 1, GL_FALSE, projection)
         
         self.modelMatrixLocation = glGetUniformLocation(self.shader, "model")
         self.viewMatrixLocation = glGetUniformLocation(self.shader, "view")
-        self.logStrengthLocation = glGetUniformLocation(self.shader, "logStrength")
-        glUniform1f(self.logStrengthLocation, self.emission_strength)
+        self.exposureLocation = glGetUniformLocation(self.shader, "exposure")
+        glUniform1f(self.exposureLocation, self.emission_strength)
 
     def _initialize_camera(self) -> None:
 
-        camera_position = np.array([0 ,0 ,0], dtype=np.float32)
+        camera_position = np.array([0 ,60 ,0], dtype=np.float32)
         camera_direction =  np.array([1, 0, 0], dtype=np.float32)
 
         camera_direction = np.array([1, 0, 0])
@@ -143,6 +164,13 @@ class Renderer:
         self.yaw = np.degrees(np.arctan2(self.camera_front[2], self.camera_front[0]))
         self.pitch = np.degrees(np.arcsin(self.camera_front[1]))
         self.sensitivity = 1.0
+
+    def set_dpi_awareness(self):
+        try:
+            # Set process DPI awareness to SYSTEM_DPI_AWARE
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        except Exception as e:
+            print(f"Could not set DPI awareness: {e}")
 
     def update_ligth_map(self, light_map_path: Path):
         #glDeleteTextures(1, (self.light_map_material.texture,))
@@ -194,7 +222,7 @@ class Renderer:
         glCullFace(GL_BACK)
         glFrontFace(GL_CCW)
 
-        glUniform1f(self.logStrengthLocation, self.emission_strength)
+        glUniform1f(self.exposureLocation, self.emission_strength)
         glUniformMatrix4fv(self.modelMatrixLocation, 1, GL_FALSE, self.scene.get_model_transform())
         self.light_map_material.use()
         self.arm_for_drawing()
@@ -239,10 +267,10 @@ class Renderer:
             self.pitch = max(self.pitch, -89.0)
 
         if glfw.get_key(self.window, glfw.KEY_J) == glfw.PRESS:
-            self.emission_strength -= 10
+            self.emission_strength -= 1
         if glfw.get_key(self.window, glfw.KEY_K) == glfw.PRESS:
-            self.emission_strength += 10
-        self.emission_strength = max(1.0, min(self.emission_strength, 10000))
+            self.emission_strength += 1
+        self.emission_strength = max(1, min(self.emission_strength, 1000))
 
     def _update_camera_vectors(self) -> None:
         # Calculate new front vector based on yaw and pitch

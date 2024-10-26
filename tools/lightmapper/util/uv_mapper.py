@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import random
 from PIL import Image, ImageDraw
 
@@ -33,9 +34,12 @@ def __calculate_bounding_box_2d(projected_triangle, triangle_index):
     width = max_x - min_x if max_x != min_x else 1.0  # Avoid division by zero
     height = max_y - min_y if max_y != min_y else 1.0 # Avoid division by zero
     
+    #width = math.ceil(width / 16) * 16
+    #height = math.ceil(height / 16) * 16
+
     return (0, 0, width, height, triangle_index)
 
-def __pack_bounding_boxes(bboxes, padding=0):
+def __pack_bounding_boxes(bboxes, padding=64):
     #TODO: padding, doesn not currently work with values other than 0
     # Sort bounding boxes by height (tallest first)
     bboxes = sorted(bboxes, key=lambda b: b[3], reverse=True)
@@ -75,7 +79,7 @@ def __pack_bounding_boxes(bboxes, padding=0):
     max_width = 0
     current_y = 0
     for i, shelf in enumerate(shelves):
-        current_x = 0
+        current_x = padding
         for bbox in shelf:
             width, height, index = bbox[2], bbox[3], bbox[4]
             packed_positions.append((current_x, current_y, width, height, index))
@@ -142,7 +146,7 @@ def __debug_uv_mapping(triangles, uvs, image_size=148):
     # Save the image
     image.save("debug_uv_maps.png")
 
-def map_triangles(triangles, debug=False):
+def map_triangles(triangles, patch_resolution: float, debug=False):
 
     bounding_boxes = []
     projected_triangles = []
@@ -155,7 +159,7 @@ def map_triangles(triangles, debug=False):
         projected_triangles.append(projected)
 
     # Pack bounding boxes and get final packing positions
-    packed_boxes, total_width, total_height = __pack_bounding_boxes(bounding_boxes)
+    packed_boxes, total_width, total_height = __pack_bounding_boxes(bounding_boxes, padding=1/patch_resolution)
 
     map_world_size = max(total_width, total_height)
 

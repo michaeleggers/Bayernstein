@@ -6,26 +6,25 @@ in vec2 fragmentTexCoord;
 out vec4 color;
 
 uniform sampler2D imageTexture;
-uniform float logStrength; // Range from 0.0 (linear) to 1.0 (full log)
+uniform float exposure; // Set to 1.0 for 1:1 mapping or adjust for brighter/darker results
 
 void main()
 {
-    // Sample the texture
+    // Sample the texture (energy map)
     vec4 texColor = texture(imageTexture, fragmentTexCoord);
 
-    // Prevent log(0) by adding a small value (epsilon)
-    float epsilon = 1e-6; // Adjust this value if needed
-    vec3 logTexColor = log(texColor.rgb + epsilon);
+    // Apply exposure-based tone mapping with a soft clamp for low values
+    vec3 mappedColor;
+    if (exposure > 0.0) {
+        mappedColor = vec3(1.0) - exp(-texColor.rgb * exposure);
+        // Apply gamma correction to mapped color
+        mappedColor = pow(mappedColor, vec3(1.0 / 2.2));
+    } else {
+        mappedColor = texColor.rgb; // Direct mapping if exposure is 0 or negative
+    }
 
-    // Normalize the logarithmic values to a suitable range
-    logTexColor = (logTexColor - log(epsilon)) / (log(1.0 + epsilon) - log(epsilon)); // Adjust range
 
-    vec3 scaledTexColor = texColor.rgb * logStrength;
 
-    // Interpolate between linear and logarithmic color based on logStrength
-    //vec3 finalColor = mix(texColor.rgb, logTexColor, logStrength);
-    vec3 finalColor = scaledTexColor;
-
-    // Calculate final color by multiplying with fragmentColor
-    color = vec4(fragmentColor, 1.0) * vec4(finalColor, 1.0);
+    // Combine with fragment color and output
+    color = vec4(fragmentColor * mappedColor, 1.0);
 }
