@@ -124,7 +124,7 @@ MapPlane createPlane(glm::f64vec3 p0, glm::f64vec3 p1, glm::f64vec3 p2)
     return { n, p0, d };
 }
 
-static inline glm::f64vec3 convertVertexToVec3(MapVertex v)
+glm::f64vec3 convertVertexToVec3(MapVertex v)
 {
     return glm::f64vec3(v.x, v.y, v.z);
 }

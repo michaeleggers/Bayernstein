@@ -59,13 +59,13 @@ void                    writePolys(std::string fileName, std::vector<MapPolygon>
 void                    writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys);
 void                    writePolySoupBinary(std::string fileName, const std::vector<MapPolygon>& polys);
 MapPlane                createPlane(glm::f64vec3 p0, glm::f64vec3 p1, glm::f64vec3 p2);
-inline glm::f64vec3     convertVertexToVec3(MapVertex v);
+glm::f64vec3            convertVertexToVec3(MapVertex v);
 MapPlane                convertFaceToPlane(Face face);
 bool                    intersectThreePlanes(MapPlane p0, MapPlane p1, MapPlane p2, glm::f64vec3* intersectionPoint);
 bool                    vec3IsEqual(const glm::f64vec3& lhs, const glm::f64vec3& rhs);
 void                    insertVertexToPolygon(glm::f64vec3 v, MapPolygon* p);
 bool                    isPointInsideBrush(Brush brush, glm::f64vec3 intersectionPoint);
-std::vector<MapPolygon> createPolysoup(Map map, SoupFlags soupFlags = SOUP_GET_WORLDSPAWN_ONLY); // TODO: Option to exclude brush entities and trigger geometry.
+std::vector<MapPolygon> createPolysoup(Map map, SoupFlags soupFlags = SOUP_GET_WORLDSPAWN_ONLY); 
 std::vector<MapPolygon> createPolysoup(const Brush& brush);
 bool                    isAngleLegal(glm::f64vec3 center, glm::f64vec3 v0, glm::f64vec3 v1);
 double                  getAngle(glm::f64vec3 center, glm::f64vec3 v0, glm::f64vec3 v1);
