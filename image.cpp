@@ -6,6 +6,7 @@
 
 #include "stb_image.h"
 
+// TODO: Virtual File system
 extern std::string g_GameDir;
 
 // NOTE: ATM user must check if the image is valid!

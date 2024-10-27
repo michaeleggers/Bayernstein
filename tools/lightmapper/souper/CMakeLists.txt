@@ -33,18 +33,29 @@ endif ()
 
 add_executable(souper
     main.cpp
-    ../../map_parser.h
-    ../../polysoup.h
-    ../../polysoup.cpp
-    ../../platform.h
-    ../../platform.cpp
-    ../../image.h
-    ../../image.cpp
+    ../../../map_parser.h
+    ../../../polysoup.h
+    ../../../polysoup.cpp
+    ../../../platform.h
+    ../../../platform.cpp
+    ../../../image.h
+    ../../../image.cpp
 )
 
 target_include_directories(souper
-    PUBLIC ../../
-    PUBLIC ../../dependencies/
+    PUBLIC ../../../
+    PUBLIC ../../../dependencies/
+    PUBLIC ../../../dependencies/SDL2.28.4/include/
+)
+message( "${CMAKE_CURRENT_SRC_DIR}/${SDL_LIBRARIES_DIR}" )
+
+target_link_directories(souper PRIVATE
+    ${CMAKE_CURRENT_SRC_DIR}/${SDL_LIBRARIES_DIR}
+)
+
+target_link_libraries(souper PUBLIC
+    SDL2
+    SDL2main
 )
 
 
