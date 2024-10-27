@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
@@ -23,6 +24,7 @@
 #include "polysoup.h"
 
 #include "image.h"
+#include "platform.h"
 
 #define PS_FLOAT_EPSILON    (0.0001)
 
@@ -44,6 +46,8 @@ std::string loadTextFile(std::string file)
     return data;
 }
 
+// @DEPRECATED: Writes only the polys out to disk without a
+// header. Use writePolySoupBinary (see below) instead!
 void writePolys(std::string fileName, std::vector<MapPolygon> polys)
 {
     std::ofstream oFileStream;
@@ -59,6 +63,32 @@ void writePolys(std::string fileName, std::vector<MapPolygon> polys)
     }
 
     oFileStream.close();
+}
+
+void writePolySoupBinary(std::string fileName, const std::vector<MapPolygon>& polys) {
+    uint64_t numPolys = polys.size();
+    uint64_t polySize = sizeof(MapPolygon);
+
+    PolySoupDataHeader header{};
+    memcpy(header.magic, POLY_SOUP_MAGIC, 4 * sizeof(uint8_t));
+    memcpy(header.version, POLY_SOUP_VERSION, 4 * sizeof(uint8_t));
+    header.numPolys = numPolys;
+    header.polySize = polySize;
+
+    uint64_t totalPolySize = numPolys * polySize;
+
+    size_t totalFileSize = sizeof(PolySoupDataHeader) + (size_t)totalPolySize;
+    uint8_t* data = (uint8_t*)malloc(totalFileSize);
+    memcpy( data, &header, sizeof(PolySoupDataHeader) );
+    memcpy( data + sizeof(PolySoupDataHeader), polys.data(), (size_t)totalPolySize );
+
+    if ( hkd_write_file(fileName.c_str(), data, totalFileSize, 1)
+         != HKD_FILE_SUCCESS ) {
+
+        printf("Failed to write Polysoup binary data to file!\n");
+    }
+
+    free(data);
 }
 
 void writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys)

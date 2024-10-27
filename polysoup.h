@@ -8,6 +8,9 @@
 
 #include "map_parser.h"
 
+static const uint8_t POLY_SOUP_MAGIC[4]   = { 'P', 'L', 'Y', '\0' };
+static const uint8_t POLY_SOUP_VERSION[4] = { '0', '0', '1', '\0' };
+
 enum SoupFlags {
     SOUP_GET_ALL,
     SOUP_GET_WORLDSPAWN_ONLY
@@ -37,9 +40,24 @@ struct MapPlane
     double d;       // = n dot p0. Just for convenience.
 };
 
+struct PolySoupDataHeader {
+    uint8_t     magic[4];   // must be PLYS
+    uint8_t     version[4];
+    uint64_t    numPolys;   // num of MapPolygons
+    uint64_t    polySize; // sizeof(MapPolygon)
+};
+
+#pragma pack(push,1)
+struct PolySoupData {
+    PolySoupDataHeader  header;
+    MapPolygon*         polys;
+};
+#pragma pack(pop)
+
 std::string             loadTextFile(std::string file);
 void                    writePolys(std::string fileName, std::vector<MapPolygon> polys);
 void                    writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys);
+void                    writePolySoupBinary(std::string fileName, const std::vector<MapPolygon>& polys);
 MapPlane                createPlane(glm::f64vec3 p0, glm::f64vec3 p1, glm::f64vec3 p2);
 inline glm::f64vec3     convertVertexToVec3(MapVertex v);
 MapPlane                convertFaceToPlane(Face face);
