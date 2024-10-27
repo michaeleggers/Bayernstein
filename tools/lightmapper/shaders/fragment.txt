@@ -1,0 +1,30 @@
+#version 330 core
+
+in vec3 fragmentColor;
+in vec2 fragmentTexCoord;
+
+out vec4 color;
+
+uniform sampler2D imageTexture;
+uniform float exposure; // Set to 1.0 for 1:1 mapping or adjust for brighter/darker results
+
+void main()
+{
+    // Sample the texture (energy map)
+    vec4 texColor = texture(imageTexture, fragmentTexCoord);
+
+    // Apply exposure-based tone mapping with a soft clamp for low values
+    vec3 mappedColor;
+    if (exposure > 0.0) {
+        mappedColor = vec3(1.0) - exp(-texColor.rgb * exposure);
+        // Apply gamma correction to mapped color
+        mappedColor = pow(mappedColor, vec3(1.0 / 2.2));
+    } else {
+        mappedColor = texColor.rgb; // Direct mapping if exposure is 0 or negative
+    }
+
+
+
+    // Combine with fragment color and output
+    color = vec4(fragmentColor * mappedColor, 1.0);
+}

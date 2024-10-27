@@ -1,0 +1,10 @@
+ipykernel
+numpy
+PyOpenGL
+glfw
+matplotlib
+pathlib
+pillow
+tqdm
+opencv-python
+pyrr
