@@ -73,7 +73,7 @@ void writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys)
     for (auto p = polys.begin(); p != polys.end(); p++) {
         faces << "f";
         for (auto v = p->vertices.begin(); v != p->vertices.end(); v++) {
-            oFileStream << "v " << std::to_string(v->pos.x) << " " << std::to_string(v->pos.y) << " " << std::to_string(v->pos.z) << std::endl;
+            oFileStream << "v " << std::to_string(v->pos.x) << " " << std::to_string(v->pos.z) << " " << std::to_string(-v->pos.y) << std::endl;
             faces << " " << count; count++;
         }
         faces << std::endl;
