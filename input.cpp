@@ -14,6 +14,8 @@ static bool   g_PrevScancodes[SDL_NUM_SCANCODES];
 static Uint8  g_MouseButtons;
 static Uint8  g_PrevMouseButtons;
 
+static std::string g_EventText;
+
 void HandleInput(void)
 {
     memcpy(g_PrevScancodes, g_Scancodes, SDL_NUM_SCANCODES * sizeof(bool));
@@ -21,6 +23,7 @@ void HandleInput(void)
     //memset(g_Scancodes, 0, SDL_NUM_SCANCODES * sizeof(bool));
 
     g_Events = 0;
+    g_EventText = "";
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -46,6 +49,10 @@ void HandleInput(void)
         }
         if (event.type == SDL_MOUSEBUTTONUP) {
             g_MouseButtons ^= SDL_BUTTON(event.button.button);
+        }
+        if (event.type == SDL_TEXTINPUT) {
+            auto str = std::string(event.text.text);
+            if (str.length() == 1) g_EventText = str; // ignore unicode characters (length > 1)
         }
     }
 }
@@ -91,4 +98,9 @@ bool RightMouseWentDown(void)
 bool ShouldClose(void)
 {    
     return g_Events & SDL_QUIT;
+}
+
+std::string TextInput()
+{
+    return g_EventText;
 }

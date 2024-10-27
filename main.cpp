@@ -86,6 +86,10 @@ int main(int argc, char** argv)
         return -1;
     }    
 
+    Console* console = new Console(100, 32);
+    CFont* consoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 26);
+    renderer->RegisterFont(consoleFont);
+
     // Init the game
 
     Game game(exePath, &interface, renderer);
@@ -106,7 +110,34 @@ int main(int argc, char** argv)
 
         HandleInput();
 
-        game.RunFrame(msPerFrame);
+        if (TextInput() == "^") { // caret is not a standalone key in german keyboard layout (`KeyWentDown(SDLK_CARET)` doesn't work)
+            console->m_isActive = !console->m_isActive;
+            console->m_blinkTimer = 0;
+        } else if (console->m_isActive) {
+            console->m_blinkTimer += msPerFrame;
+            if (TextInput().length()) {
+                console->UpdateInput(TextInput());
+            } else if (KeyWentDown(SDLK_UP)) { // TODO: add support for 'repeat' mode
+                console->SetInputFromHistory(1);
+            } else if (KeyWentDown(SDLK_DOWN)) {
+                console->SetInputFromHistory(-1);
+            } else if (KeyWentDown(SDLK_LEFT)) {
+                console->MoveCursor(-1);
+            } else if (KeyWentDown(SDLK_RIGHT)) {
+                console->MoveCursor(1);
+            } else if (KeyWentDown(SDLK_BACKSPACE)) {
+                console->DeleteInput(-1);
+            } else if (KeyWentDown(SDLK_DELETE)) {
+                console->DeleteInput(1);
+            } else if (KeyWentDown(SDLK_RETURN)) {
+                console->SubmitInput();
+            }
+            renderer->RenderBegin();
+            renderer->RenderConsole(console, consoleFont);
+            renderer->RenderEnd();
+        } else { // FIXME: the game's 2d content disappears while console is open
+            game.RunFrame(msPerFrame);
+        }
 
         //printf("msPerFrame: %f\n", msPerFrame);
         //printf("FPS: %f\n", 1000.0f/msPerFrame);

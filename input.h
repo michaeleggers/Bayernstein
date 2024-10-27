@@ -2,6 +2,7 @@
 #define _INPUT_H_
 
 #include <SDL.h>
+#include <string>
 
 void HandleInput(void);
 bool KeyWentDown(SDL_Keycode keyCode);
@@ -12,5 +13,7 @@ bool MouseWentUp(Uint8 button);
 bool MousePressed(Uint8 button);
 bool RightMouseWentDown(void);
 bool ShouldClose(void);
+
+std::string TextInput();
 
 #endif

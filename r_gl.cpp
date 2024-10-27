@@ -25,6 +25,7 @@
 #include "r_gl_texture_mgr.h"
 #include "r_gl_fbo.h"
 #include "input.h" 
+#include "Console.h"
 
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
@@ -710,7 +711,7 @@ void GLRender::Begin2D() {
     
     glDisable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glDisable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE); // necessary: text is drawn backwards and allows drawing shapes with negative width/height
 
     glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
 
@@ -731,6 +732,7 @@ void GLRender::End2D() {
     //m_FontBatch->Unbind();
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 
     // TODO: (Michael): Unbind bound (font-)textures?
 }
@@ -958,6 +960,57 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
         //     m_EllipsoidColliderDrawCmd.offset,
         //     m_EllipsoidColliderDrawCmd.numVerts);
     }
+}
+
+void GLRender::RenderConsole(Console* console, CFont* font) {
+    if (!console->m_isActive) return;
+
+    const float relHeight = 0.45f;
+    const float height = m_WindowHeight * relHeight;
+    const float borderWidth = 2.0f;
+    const float textMargin = 10.0f;
+    const float lineHeight = font->m_Size + textMargin; // TODO: possibly derive from font *line gap* metric in the future?
+    const float charWidth = font->m_Size * 0.602f; // assumes mono-space font  // FIXME: this is just an estimation, should be derived from the font!
+    
+    const float inputY = height - font->m_Size - textMargin;
+    float logY = inputY - textMargin * 2 - font->m_Size;
+    const int maxLines = floor(logY / lineHeight) + 1;
+
+    Begin2D();
+    // draw background/frame
+    SetShapeColor(glm::vec4(0.05f, 0.05f, 0.05f, 0.95f));
+    DrawBox(0.0f, 0.0f, 1.0f, relHeight);
+    SetShapeColor(glm::vec4(1.0f));
+    DrawBox(0.0f, 0.0f, borderWidth, height, COORD_MODE_ABS);
+    DrawBox(m_WindowWidth, 0.0f, -borderWidth, height, COORD_MODE_ABS);
+    DrawBox(0.0f, 0.0f, m_WindowWidth, borderWidth, COORD_MODE_ABS);
+    DrawBox(0.0f, inputY - textMargin, m_WindowWidth, -borderWidth, COORD_MODE_ABS);
+    DrawBox(0.0f, height, m_WindowWidth, -borderWidth, COORD_MODE_ABS);
+
+    // draw input
+    SetFont(font, glm::vec4(1.0f));
+    std::string inputText = std::string("> ") + console->CurrentInput(); // TODO: handle screen overflow (e.g. clip beginning of string)?
+    DrawText(inputText, textMargin, inputY, COORD_MODE_ABS);
+
+    // draw cursor
+    if (console->m_blinkTimer < 500.0) {
+        float cursorX = textMargin + (console->CursorPos() + 2) * charWidth;
+        SetShapeColor(glm::vec4(0.8f, 0.8f, 0.8f, 1.0f));
+        DrawBox(cursorX - 2.5f, inputY - 3.0f, 5.0f, font->m_Size + 4.0f, COORD_MODE_ABS);
+    } else if (console->m_blinkTimer > 1000.0) {
+        console->m_blinkTimer = 0;
+    }
+
+    // draw log lines
+    for (int i = 0; i < maxLines; i++) {
+        // TODO: text overflow is clipped, maybe break into multiple lines?
+        std::string line;
+        if (!console->m_lineBuffer.Get(i, &line)) break;
+        DrawText(line, textMargin, logY, COORD_MODE_ABS);
+        logY -= lineHeight; 
+    }
+
+    End2D();
 }
 
 void GLRender::RenderEnd(void)
