@@ -22,5 +22,12 @@ cmake -DSDL_LIBRARIES_DIR="sdl/lib/x64" ..
 ```
 
 4.) A `bin` directory is being built with the
-`soup` exe inside it.
+`souper` exe inside it.
+
+5.) Run the program:
+```bash
+souper <path to the assets dir> maps/<.MAP-file> <output.plys-file>
+```
+
+
 
