@@ -13,7 +13,12 @@ and the sourcefiles and `cd` into it.
 
 3.) Generate with CMake:
 ```bash
-cmake -DSDL_LIBRARIES_DIR="<path to the sdl2 libs>" ..
+cmake -DSDL_LIBRARIES_DIR="<relative path to the sdl2 libs>" ..
+```
+For example, if you downloaded the SDL2 libs next to the `CMakeLists` file and extracted
+its contents to `sdl`, then, on Windows you would do:
+```bash
+cmake -DSDL_LIBRARIES_DIR="sdl/lib/x64" ..
 ```
 
 4.) A `bin` directory is being built with the

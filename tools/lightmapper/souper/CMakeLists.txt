@@ -47,10 +47,10 @@ target_include_directories(souper
     PUBLIC ../../../dependencies/
     PUBLIC ../../../dependencies/SDL2.28.4/include/
 )
-message( "${CMAKE_CURRENT_SRC_DIR}/${SDL_LIBRARIES_DIR}" )
+message("SDL2 libs dir is set to: ${CMAKE_SOURCE_DIR}/${SDL_LIBRARIES_DIR}" )
 
-target_link_directories(souper PRIVATE
-    ${CMAKE_CURRENT_SRC_DIR}/${SDL_LIBRARIES_DIR}
+target_link_directories(souper PUBLIC
+    ${CMAKE_SOURCE_DIR}/${SDL_LIBRARIES_DIR}
 )
 
 target_link_libraries(souper PUBLIC
