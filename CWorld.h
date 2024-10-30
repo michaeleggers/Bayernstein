@@ -19,9 +19,9 @@
 
 class CWorld {
 public:
-    void InitWorld(TriPlane* triPlanes, uint32_t triPlaneCount, glm::vec3 gravity);
+    void InitWorld(std::vector<MapTri> tris, glm::vec3 gravity);
 
-    std::vector<TriPlane>        m_TriPlanes;
+    std::vector<MapTri>          m_MapTris;
     std::vector<int>             m_BrushEntities;
     glm::vec3                    m_Gravity;
 

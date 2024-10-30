@@ -44,7 +44,7 @@ void Game::Init() {
     
     // Load world triangles from Quake .MAP file
 
-    std::vector<TriPlane> worldTris{};
+    std::vector<MapTri> worldTris{};
     MapVersion mapVersion = VALVE_220; // TODO: Change to MAP_TYPE_QUAKE
     
     // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
@@ -66,37 +66,35 @@ void Game::Init() {
         Vertex A = { 
             glm::vec3(mapPoly.vertices[0].pos.x,
                       mapPoly.vertices[0].pos.y,
-                      mapPoly.vertices[0].pos.z) };
+                      mapPoly.vertices[0].pos.z),
+                      mapPoly.vertices[0].uv };
         Vertex B = { 
             glm::vec3(mapPoly.vertices[1].pos.x,
                       mapPoly.vertices[1].pos.y,
-                      mapPoly.vertices[1].pos.z) };
+                      mapPoly.vertices[1].pos.z),
+                      mapPoly.vertices[1].uv };
         Vertex C = { 
             glm::vec3(mapPoly.vertices[2].pos.x,
                       mapPoly.vertices[2].pos.y,
-                      mapPoly.vertices[2].pos.z) };
+                      mapPoly.vertices[2].pos.z),
+                      mapPoly.vertices[2].uv };
 
         A.color = triColor;
         B.color = triColor;
         C.color = triColor;
-        Tri tri = { A, B, C };
-
-        TriPlane triPlane{};
-        triPlane.tri = tri;
-        triPlane.plane = CreatePlaneFromTri(triPlane.tri);
-        triPlane.tri.a.normal = triPlane.plane.normal;
-        triPlane.tri.b.normal = triPlane.plane.normal;
-        triPlane.tri.c.normal = triPlane.plane.normal;
-        
-        worldTris.push_back(triPlane);
+        MapTri tri = { .tri = {A, B, C} };
+        tri.textureName = mapPoly.textureName;
+        //FIX: Search through all supported image formats not just PNG.
+        tri.hTexture = m_Renderer->RegisterTextureGetHandle(tri.textureName + ".png");
+        worldTris.push_back(tri);
     }
    
 
     m_World.InitWorld(
-        worldTris.data(), worldTris.size(), 
+        worldTris,
         glm::vec3(0.0f, 0.0f, -0.5f)); // gravity
 
-    int idCounter = 0; //FIX: Responsibility of entity manager
+    int idCounter = 0; //FIX: Responsibility of entity manager. Move to InitWorld.
     // Load and create all the entities
     for (int i = 0; i < map.entities.size(); i++) {
         Entity& e = map.entities[ i ];
@@ -116,6 +114,11 @@ void Game::Init() {
             }
         }
     }
+    // Register World Triangles at GPU.
+    // Creates batches for each texture-name. That way we can
+    // reduce draw-calls and texture-binds when rendering world geometry.
+
+    m_Renderer->RegisterWorldTris( m_World.m_MapTris );
     
 
     // Load IQM Model
@@ -259,12 +262,12 @@ bool Game::RunFrame(double dt) {
     // collision system!!! Arrays just always win... what can I say?
     // The brush entities should have pointers (indices) into the
     // CPU-side triangle array to know what geometry belongs to them.
-    std::vector<TriPlane> allTris = m_World.m_TriPlanes;
+    std::vector<MapTri> allTris = m_World.m_MapTris;
     int be = m_World.m_BrushEntities[ 0 ];
     Door* pEntity = (Door*)m_pEntityManager->GetEntityFromID( be );
-    std::copy( pEntity->TriPlanes().begin(), pEntity->TriPlanes().end(), std::back_inserter(allTris) ); 
+    std::copy( pEntity->MapTris().begin(), pEntity->MapTris().end(), std::back_inserter(allTris) ); 
     
-    CollisionInfo collisionInfo = CollideEllipsoidWithTriPlane(ec,
+    CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
                                                                static_cast<float>(dt) * m_Player.velocity,
                                                                static_cast<float>(dt) * m_World.m_Gravity,
                                                                allTris.data(),
@@ -289,8 +292,8 @@ bool Game::RunFrame(double dt) {
             Door* pDoor = (Door*)pEntity;
             CollisionInfo ciDoor = PushTouch(ec,
                                              static_cast<float>(dt) * m_Player.velocity, 
-                                             pDoor->TriPlanes().data(), 
-                                             pDoor->TriPlanes().size() );
+                                             pDoor->MapTris().data(), 
+                                             pDoor->MapTris().size() );
             if (ciDoor.didCollide) { 
                 printf("COLLIDED!\n");
                 Dispatcher->DispatchMessage(SEND_MSG_IMMEDIATELY,
@@ -369,11 +372,16 @@ bool Game::RunFrame(double dt) {
         velocityDebugLine.b.color = velocityDebugLine.a.color;
         m_Renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
 
+        // Render World Geometry (Batched triangles)
+        //m_Renderer->SetActiveCamera(&m_FollowCamera);
+        //m_Renderer->DrawWorldTris();
+
+#if 0
         // Render World geometry
-        m_Renderer->ImDrawTriPlanes(m_World.m_TriPlanes.data(), 
-                                    m_World.m_TriPlanes.size(), 
-                                    true,
-                                    DRAW_MODE_SOLID);
+        m_Renderer->ImDrawMapTris(m_World.m_Tris.data(), 
+                                  m_World.m_Tris.size(), 
+                                  true,
+                                  DRAW_MODE_SOLID);
 
         // Render Brush Entities
         for (int i = 0; i < m_World.m_BrushEntities.size(); i++) {
@@ -381,12 +389,13 @@ bool Game::RunFrame(double dt) {
             BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID( be );
             if ( pEntity->Type() == ET_DOOR ) {
                 Door* pDoor = (Door*)pEntity;
-                m_Renderer->ImDrawTriPlanes(pDoor->TriPlanes().data(),
-                                            pDoor->TriPlanes().size(),
-                                            true,
-                                            DRAW_MODE_SOLID);
+                m_Renderer->ImDrawMapTris(pDoor->Tris().data(),
+                                          pDoor->Tris().size(),
+                                          true,
+                                          DRAW_MODE_SOLID);
             }
         }
+#endif
 
         DrawCoordinateSystem(m_Renderer);
 
@@ -419,7 +428,7 @@ bool Game::RunFrame(double dt) {
     } // End3D scope
    
 
-#if 1 // Toggle 2D Font/Box renderingtest
+#if 0 // Toggle 2D Font/Box renderingtest
     
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     // 2D stuff also has its own, dedicated FBO!

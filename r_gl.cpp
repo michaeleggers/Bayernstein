@@ -288,9 +288,32 @@ int GLRender::RegisterModel(HKD_Model* model)
     return gpuModelHandle;
 }
 
-void GLRender::RegisterFont(CFont* font) 
-{
+void GLRender::RegisterFont(CFont* font) {
     GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(font);
+}
+
+void GLRender::RegisterWorldTris(std::vector<MapTri>& tris) {
+    for (int i = 0; i < tris.size(); i++) {
+        MapTri& tri = tris[ i ];
+        GLBatch* batch = NULL;
+        if (m_TexHandleToWorldBatch.contains(tri.hTexture)) {
+            batch = m_TexHandleToWorldBatch.at(tri.hTexture);
+        }
+        else {
+            // TODO: Think about triangle budget for the world!
+            // Maybe make a resizable batch?
+            // Or even better: ONE batch and draw-call list
+            // that contain indices into the buffer!
+            batch = new GLBatch(10 * 1024 * 1024); // FIX: This is very bad. 1MB per texture type...
+            m_TexHandleToWorldBatch.insert({ tri.hTexture, batch });
+        }
+        batch->Add( &tri, 1, true, DRAW_MODE_SOLID );
+    }
+}
+
+// Returns the CPU handle
+uint64_t GLRender::RegisterTextureGetHandle(std::string name) {
+    return m_TextureManager->CreateTextureGetHandle(name);
 }
 
 void GLRender::SetActiveCamera(Camera* camera)
@@ -653,6 +676,15 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     glLineWidth(1.0f);
     glEnable(GL_DEPTH_TEST);
 
+    // Draw World Tris
+    m_WorldShader->Activate();
+    m_WorldShader->SetViewProjMatrices(view, proj);
+    for (auto const& [ texHandle, batch ] : m_TexHandleToWorldBatch) {
+        batch->Bind();
+        glBindTexture( GL_TEXTURE_2D, texHandle );
+        glDrawArrays( GL_TRIANGLES, 0, batch->VertCount() );
+    }
+
     // Draw Models
     
     m_ModelBatch->Bind();
@@ -699,6 +731,24 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     //    glDrawArrays(GL_TRIANGLES, 3*modelDrawCmds[i].offset, 3 * modelDrawCmds[i].numTris);
     //}
     //glDrawArrays(GL_TRIANGLES, 0, 3*m_ModelBatch->TriCount());
+}
+
+void GLRender::DrawWorldTris() {
+    m_ImPrimitivesShader->Activate();
+    glm::mat4 view = m_ActiveCamera->ViewMatrix();
+    // TODO: Global Setting for perspective values
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)m_WindowWidth / (float)m_WindowHeight, 0.1f, 10000.0f);
+    
+    m_ImPrimitivesShader->DrawWireframe((uint32_t)0);
+    m_ImPrimitivesShader->SetViewProjMatrices(view, proj);
+    m_ImPrimitivesShader->SetMat4("model", glm::mat4(1));
+    m_ImPrimitivesShader->SetVec3("viewPos", m_ActiveCamera->m_Pos);
+
+    for (auto const& [ texHandle, batch ] : m_TexHandleToWorldBatch) {
+        batch->Bind();
+        glBindTexture( GL_TEXTURE_2D, texHandle );
+        glDrawArrays( GL_TRIANGLES, 0, batch->VertCount() );
+    }
 }
 
 // Draw 2d screenspace elements
@@ -1103,6 +1153,14 @@ void GLRender::InitShaders()
     if ( !m_CompositeShader->Load(
         "shaders/composite.vert",
         "shaders/composite.frag"
+    )) {
+        printf("Problems initializing composite shader!\n");
+    }
+    
+    m_WorldShader = new Shader();
+    if ( !m_WorldShader->Load(
+        "shaders/world.vert",
+        "shaders/world.frag"
     )) {
         printf("Problems initializing composite shader!\n");
     }

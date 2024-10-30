@@ -62,16 +62,9 @@ Door::Door(const int id,
         A.color = triColor;
         B.color = triColor;
         C.color = triColor;
-        Tri tri = { A, B, C };
+        MapTri tri = { A, B, C };
 
-        TriPlane triPlane{};
-        triPlane.tri = tri;
-        triPlane.plane = CreatePlaneFromTri(triPlane.tri);
-        triPlane.tri.a.normal = triPlane.plane.normal;
-        triPlane.tri.b.normal = triPlane.plane.normal;
-        triPlane.tri.c.normal = triPlane.plane.normal;
-        
-        m_TriPlanes.push_back(triPlane);
+        m_MapTris.push_back(tri);
     }
 }
 

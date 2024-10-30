@@ -1,3 +1,4 @@
+
 #version 460 core
 
 in vec2 TexCoord;
@@ -7,8 +8,11 @@ in vec4 Color;
 in vec4 ViewPosWorldSpace;
 in vec4 Pos;
 in mat4 ViewMat;
+in vec2 uv;
 
 out vec4 out_Color;
+
+uniform sampler2D diffuseTexture;
 
 layout (std140) uniform Settings {
     uint drawWireframe;
@@ -48,9 +52,9 @@ void main() {
         vec3 ambient = 0.3*Color.rgb;
         finalColor = clamp(ambient + Color.rgb*lightColor.rgb*lightContribution, 0.0f, 1.0f);
     }
+
+    vec4 diffuseColor = texture( diffuseTexture, uv );
     
-    out_Color = vec4(Color.rgb + wireframe.rgb, 1.0);  
-    out_Color = vec4(finalColor, 1.0);  
-    //out_Color = vec4(0.5*Normal.xyz + 0.5f, 1.0f);
+    out_Color = vec4( diffuseColor.rgb, 1.0f );
 
 }

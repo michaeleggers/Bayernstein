@@ -20,7 +20,7 @@ CImage::CImage(std::string filename) {
     // very obvous color (pink?) so we see it also in the game
     // when an image could not be loaded.
     if ( !m_Pixeldata ) {
-        printf("WARNING: Failed to load image: %s\n", filename.c_str());
+        printf("WARNING (CImage): Failed to load image: %s\n", filename.c_str());
 
 	return;
     }

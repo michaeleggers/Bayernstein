@@ -35,6 +35,8 @@ public:
 	virtual void Shutdown(void)		= 0;
 	virtual int  RegisterModel(HKD_Model* model)	= 0;
 	virtual void RegisterFont(CFont* font) = 0;
+	virtual void RegisterWorldTris(std::vector<MapTri>& tris) = 0;
+	virtual uint64_t RegisterTextureGetHandle(std::string name) = 0;
 	virtual void SetActiveCamera(Camera* camera) = 0;
 	virtual std::vector<ITexture*> ModelTextures(int gpuModelHandle) = 0;
 	virtual std::vector<ITexture*> Textures() = 0;
@@ -47,6 +49,7 @@ public:
 	virtual void RenderBegin(void) = 0;
 	virtual void Begin3D() = 0;
 	virtual void End3D() = 0;
+	virtual void DrawWorldTris() = 0;
 	virtual void Begin2D() = 0;
 	virtual void End2D() = 0;
 	virtual void SetFont(CFont* font, glm::vec4 color = glm::vec4(1.0f)) = 0; 
