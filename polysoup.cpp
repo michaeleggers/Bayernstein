@@ -234,8 +234,8 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush)
                             uv.y += face_i.tOffset2;
                             // FIX: We need to load the texture at this point to
                             // know its dimensions (width/height).
-                            uv.x /= texWidth;
-                            uv.y /= texHeight;
+                            uv.x /= texWidth * (float)face_i.xScale; 
+                            uv.y /= texHeight * (float)face_i.yScale;
                             QuakeMapVertex v = { intersectionPoint, uv };
                             insertVertexToPolygon(v, &poly);
                         }
