@@ -1,4 +1,4 @@
-//
+//ene
 // Created by benek on 10/14/24.
 //
 
@@ -40,11 +40,15 @@ void Enemy::Update() {
     m_Velocity += acceleration * (float)GetDeltaTime() / 1000.0f;
     m_Velocity = Truncate(m_Velocity, m_MaxSpeed);
 
+    printf("Velocity: %f, %f, %f\n", m_Velocity.x, m_Velocity.y, m_Velocity.z);
     if ( Speed() > 0.00000001 ) {
 
         // glm::
-        glm::quat rot = glm::angleAxis(glm::radians(glm::angle(m_Forward, m_Velocity)), m_Up);
-        m_Model.orientation *= rot;
+        // Set absolute orientation form the new velocity vector.
+        // TODO: We have to make the reference vector program constant (like QUAKE_FORWARD_REF_VEC).
+        glm::quat newOrientation = glm::rotation(glm::vec3(0.0f, -1.0f, 0.0f), 
+                                                 glm::normalize(m_Velocity));
+        m_Model.orientation = newOrientation;
         m_Forward = glm::normalize(m_Velocity);
         m_Side = glm::cross(m_Forward, m_Up);
     }
