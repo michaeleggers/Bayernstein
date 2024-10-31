@@ -293,6 +293,20 @@ void GLRender::RegisterFont(CFont* font) {
 }
 
 void GLRender::RegisterWorldTris(std::vector<MapTri>& tris) {
+
+    // Sort Tris by texture
+    std::unordered_map<uint64_t, std::vector<MapTri*> > texHandle2Tris{};
+    for (int i = 0; i < tris.size(); i++) {
+        MapTri* tri = &tris[ i ];
+        if ( texHandle2Tris.contains(tri->hTexture) ) {
+            std::vector<MapTri*>* triList = &texHandle2Tris.at(tri->hTexture);
+            triList->push_back(tri);
+        } else {
+            std::vector<MapTri*> newTriList{ tri };
+            texHandle2Tris.insert({ tri->hTexture, newTriList });
+        }
+    }
+
     for (int i = 0; i < tris.size(); i++) {
         MapTri& tri = tris[ i ];
         GLBatch* batch = NULL;
