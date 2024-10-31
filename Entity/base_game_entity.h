@@ -5,7 +5,9 @@
 #ifndef BASEGAMEENTITY_H
 #define BASEGAMEENTITY_H
 #include "../Message/telegram.h"
-
+#define GLM_FORCE_RADIANS
+#include "../../dependencies/glm/ext.hpp"
+#include "../../dependencies/glm/glm.hpp"
 // NOTE: (Michael): This is essentially what a discriminated union would give us in C.
 // TODO: (Michael): Game devs must be able to define their own ET_*. That would not go here
 // into this file! Think about this! (Look at Quake again!).
@@ -15,9 +17,8 @@ enum EntityType {
     ET_DOOR
 };
 
-  
 class BaseGameEntity {
-private:
+  private:
     int m_ID{};
 
     // this must be called within the constructor to make sure the ID is set
@@ -25,10 +26,13 @@ private:
     // or equal to the next valid ID, before setting the ID and incrementing
     // the next valid ID
     void SetID(int value);
-    
+
     EntityType m_Type;
 
-public:
+  protected:
+    glm::vec3 m_Position;
+
+  public:
     // this is the next valid ID. Each time a BaseGameEntity is instantiated
     // this value is updated
     static int m_iNextValidID;
@@ -54,7 +58,10 @@ public:
     [[nodiscard]] int ID() const {
         return m_ID;
     }
+
+    glm::vec3 GetPosition() const {
+        return m_Position;
+    }
 };
 
 #endif // BASEGAMEENTITY_H
-

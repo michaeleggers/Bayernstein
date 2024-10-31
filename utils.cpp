@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include <glm/glm.hpp>
 #include <stdlib.h>
 
 float RandBetween(float min, float max) {
@@ -16,14 +17,14 @@ std::vector<float> ParseFloatValues(const std::string& input) {
     float value = 0.0;
     bool parsingNumber = false;
 
-    while (*str != '\0') {
-        if (std::isdigit(*str) || *str == '-' || *str == '.') {
+    while ( *str != '\0' ) {
+        if ( std::isdigit(*str) || *str == '-' || *str == '.' ) {
             parsingNumber = true;
             char* end;
             value = std::strtof(str, &end);
             values.push_back(value);
             str = end;
-        } else if (parsingNumber && *str == ' ') {
+        } else if ( parsingNumber && *str == ' ' ) {
             parsingNumber = false;
             str++;
         } else {
@@ -32,4 +33,11 @@ std::vector<float> ParseFloatValues(const std::string& input) {
     }
 
     return values;
+}
+
+glm::vec3 Truncate(const glm::vec3& vector, float max) {
+    if ( glm::length(vector) > max ) {
+        return glm::normalize(vector) * max;
+    }
+    return vector;
 }

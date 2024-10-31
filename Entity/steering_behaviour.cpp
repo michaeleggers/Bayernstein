@@ -1,0 +1,171 @@
+#include "steering_behaviour.h"
+#include "../utils.h"
+
+//------------------------- ctor -----------------------------------------
+//
+//------------------------------------------------------------------------
+SteeringBehaviour::SteeringBehaviour(MovingEntity* pEntity)
+    : m_pEntity(pEntity),
+      m_Flags(0),
+      m_WeightWander(1.0f),
+      m_WeightSeek(0.0f),
+      m_WeightFlee(0.0f),
+      m_WeightArrive(0.0f),
+      m_WanderDistance(6.0f),
+      m_WanderJitter(1.0f),
+      m_WanderRadius(30.0f),
+      m_SteeringForce(0.0f),
+      m_Target(0.0f),
+      m_SummingMethod(weighted_average)
+
+{
+    //stuff for the wander behavior
+    float theta = RandBetween(-1, 1) * glm::two_pi<float>();
+
+    //create a vector to a target position on the wander circle
+    m_WanderTarget = glm::vec3(m_WanderRadius * glm::cos(theta), m_WanderRadius * glm::sin(theta), 0.0f);
+}
+
+// bool SteeringBehaviour::AccumulateForce(glm::vec3& sf, glm::vec3 forceToAdd) {}
+
+glm::vec3 SteeringBehaviour::CalculateWeightedSum() {
+    // needs a target, is usefull for following a path
+    // if ( On(seek) ) {
+    //     m_SteeringForce += Seek() * m_WeightSeek;
+    // }
+    if ( On(wander) ) {
+        m_SteeringForce += Wander() * (float)m_WeightWander;
+    }
+    return Truncate(m_SteeringForce, m_pEntity->GetMaxForce());
+}
+
+// Function to map the target to world space
+glm::vec3 PointToWorldSpace(const glm::vec3& target,
+                            const glm::vec3& forward,
+                            const glm::vec3& side,
+                            const glm::vec3& position,
+                            const glm::vec3& up) {
+
+    glm::mat4 rotation = glm::mat4(
+        glm::vec4(side, 0.0f), glm::vec4(up, 0.0f), glm::vec4(-forward, 0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+    glm::mat4 transform = rotation * glm::translate(glm::mat4(1.0f), position);
+    // Transform the target point to world space
+    glm::vec4 worldTarget = transform * glm::vec4(target, 1.0f);
+
+    return glm::vec3(worldTarget);
+}
+
+glm::vec3 SteeringBehaviour::Wander() {
+    //this behavior is dependent on the update rate, so this line must
+    //be included when using time independent framerate.
+    float jitterThisTimeSlice = m_WanderJitter * GetDeltaTime();
+
+    //first, add a small random vector to the target's position
+    m_WanderTarget += glm::vec3(
+        RandBetween(-1.0f, 1.0f) * jitterThisTimeSlice, RandBetween(-1.0f, 1.0f) * jitterThisTimeSlice, 0.0f);
+
+    //reproject this new vector back on to a unit circle
+    m_WanderTarget = glm::normalize(m_WanderTarget);
+
+    //increase the length of the vector to the same as the radius
+    //of the wander circle
+    m_WanderTarget *= m_WanderRadius;
+
+    //move the target into a position WanderDist in front of the agent
+    glm::vec3 target = m_WanderTarget + m_pEntity->GetForward() * (float)m_WanderDistance;
+
+    //project the target into world space
+    // target = PointToWorldSpace(
+    //     target, m_pEntity->GetForward(), m_pEntity->GetSide(), m_pEntity->GetPosition(), m_pEntity->GetUp());
+    glm::vec3 position = m_pEntity->GetPosition();
+    position.z = 0.0f;
+
+    //and steer towards it
+    return target - position;
+}
+
+//------------------------------- Seek -----------------------------------
+//
+//  Given a target, this behavior returns a steering force which will
+//  direct the agent towards the target
+//------------------------------------------------------------------------
+// glm::vec3 SteeringBehaviour::Seek(glm::vec3 targetPosition) {
+//     glm::vec3 desiredVelocity = glm::normalize(targetPosition - m_pEntity->GetPosition()) * m_pEntity->GetMaxSpeed();
+
+//     return (desiredVelocity - m_pEntity->GetVelocity());
+// }
+
+//----------------------------- Flee -------------------------------------
+//
+//  Does the opposite of Seek
+//------------------------------------------------------------------------
+// glm::vec3 SteeringBehaviour::Flee(glm::vec3 targetPosition) {
+//     //only flee if the target is within 'panic distance'. Work in distance
+//     //squared space.
+//     /* const double PanicDistanceSq = 100.0f * 100.0;
+//   if (Vec2DDistanceSq(m_pEntity->GetPosition(), target) > PanicDistanceSq)
+//   {
+//     return glm::vec3(0,0);
+//   }
+//   */
+
+//     glm::vec3 desiredVelocity = glm::normalize(m_pEntity->GetPosition() - targetPosition) * m_pEntity->GetMaxSpeed();
+
+//     return (desiredVelocity - m_pEntity->GetVelocity());
+// }
+
+//--------------------------- Arrive -------------------------------------
+//
+//  This behavior is similar to seek but it attempts to arrive at the
+//  target with a zero velocity
+//------------------------------------------------------------------------
+// glm::vec3 SteeringBehaviour::Arrive(glm::vec3 targetPosition, Deceleration deceleration) {
+//     glm::vec3 toTarget = targetPosition - m_pEntity->GetPosition();
+
+//     //calculate the distance to the target
+//     double dist = glm::length(toTarget);
+
+//     if ( dist > 0 ) {
+//         //because Deceleration is enumerated as an int, this value is required
+//         //to provide fine tweaking of the deceleration..
+//         const double decelerationTweaker = 0.3;
+
+//         //calculate the speed required to reach the target given the desired
+//         //deceleration
+//         double speed = dist / ((double)deceleration * decelerationTweaker);
+
+//         //make sure the velocity does not exceed the max
+//         speed = glm::min(speed, m_pEntity->GetMaxSpeed());
+
+//         //from here proceed just like Seek except we don't need to normalize
+//         //the toTarget vector because we have already gone to the trouble
+//         //of calculating its length: dist.
+//         glm::vec3 desiredVelocity = toTarget * speed / dist;
+
+//         return (desiredVelocity - m_pEntity->GetVelocity());
+//     }
+
+//     return glm::vec3(0.0f, 0.0f, 0.0f);
+// }
+
+glm::vec3 SteeringBehaviour::Calculate() {
+    m_SteeringForce = glm::vec3(0.0f);
+    switch ( m_SummingMethod ) {
+    case weighted_average:
+
+        m_SteeringForce = CalculateWeightedSum();
+        return m_SteeringForce;
+
+        //   case prioritized:
+
+        //     m_SteeringForce = CalculatePrioritized(); break;
+
+        //   case dithered:
+
+        //     m_SteeringForce = CalculateDithered();break;
+
+    default:
+        return m_SteeringForce;
+    }
+}

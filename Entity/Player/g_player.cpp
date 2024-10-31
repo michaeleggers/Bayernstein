@@ -10,7 +10,8 @@
 #include <SDL.h>
 
 Player::Player(const int id, glm::vec3 initialPosition)
-    : BaseGameEntity(id, ET_PLAYER), m_pStateMachine(nullptr), m_Velocity(0), m_Forward(0), m_Side(0),
+    : MovingEntity(id, ET_PLAYER),
+      m_pStateMachine(nullptr),
       m_AnimationState(ANIM_STATE_IDLE) {
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(PlayerIdle::Instance());
@@ -19,9 +20,9 @@ Player::Player(const int id, glm::vec3 initialPosition)
 
 void Player::Update() {
 
-    if (KeyPressed(SDLK_w)) {
+    if ( KeyPressed(SDLK_w) ) {
         m_pStateMachine->ChangeState(PlayerRunning::Instance());
-    } else if (KeyPressed(SDLK_SPACE)) {
+    } else if ( KeyPressed(SDLK_SPACE) ) {
         m_pStateMachine->ChangeState(PlayerAttacking::Instance());
     } else {
         m_pStateMachine->ChangeState(PlayerIdle::Instance());
@@ -41,8 +42,8 @@ void Player::LoadModel(const char* path, glm::vec3 initialPosition) {
     m_Model.position = initialPosition;
     m_Model.scale = glm::vec3(22.0f);
 
-    for (int i = 0; i < m_Model.animations.size(); i++) {
-        EllipsoidCollider* ec = &m_Model.ellipsoidColliders[i];
+    for ( int i = 0; i < m_Model.animations.size(); i++ ) {
+        EllipsoidCollider* ec = &m_Model.ellipsoidColliders[ i ];
         ec->radiusA *= m_Model.scale.x;
         ec->radiusB *= m_Model.scale.z;
         ec->center = m_Model.position + glm::vec3(0.0f, 0.0f, ec->radiusB);
@@ -61,7 +62,7 @@ void Player::UpdateCamera(Camera* camera) {
     camera->m_Pos.z = m_Model.position.z + 70.0f;
     camera->m_Pos += (-m_Forward * 80.0f);
     // m_RotationAngle should already have the information about if we want to move left or right
-    if (KeyPressed(SDLK_RIGHT) || KeyPressed(SDLK_LEFT)) {
+    if ( KeyPressed(SDLK_RIGHT) || KeyPressed(SDLK_LEFT) ) {
         camera->RotateAroundUp(m_RotationAngle);
     }
 }
@@ -70,19 +71,19 @@ void Player::UpdatePlayerModel() {
     double dt = GetDeltaTime();
     float followCamSpeed = 0.03f;
     float followTurnSpeed = 0.1f;
-    if (KeyPressed(SDLK_LSHIFT)) {
+    if ( KeyPressed(SDLK_LSHIFT) ) {
         followCamSpeed *= 0.3f;
         followTurnSpeed *= 0.3f;
     }
 
     // Model rotation
     m_RotationAngle = followTurnSpeed * (float)dt;
-    if (KeyPressed(SDLK_RIGHT)) {
+    if ( KeyPressed(SDLK_RIGHT) ) {
         m_RotationAngle = -m_RotationAngle;
         glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
         m_Model.orientation *= rot;
     }
-    if (KeyPressed(SDLK_LEFT)) {
+    if ( KeyPressed(SDLK_LEFT) ) {
         glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
         m_Model.orientation *= rot;
     }
@@ -95,25 +96,25 @@ void Player::UpdatePlayerModel() {
     m_Velocity = glm::vec3(0.0f);
     float t = (float)dt * followCamSpeed;
     AnimState playerAnimState = ANIM_STATE_IDLE;
-    if (KeyPressed(SDLK_w)) {
+    if ( KeyPressed(SDLK_w) ) {
         m_Velocity += t * m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
-    if (KeyPressed(SDLK_s)) {
+    if ( KeyPressed(SDLK_s) ) {
         m_Velocity -= t * m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
-    if (KeyPressed(SDLK_d)) {
+    if ( KeyPressed(SDLK_d) ) {
         m_Velocity += t * m_Side;
         playerAnimState = ANIM_STATE_RUN;
     }
-    if (KeyPressed(SDLK_a)) {
+    if ( KeyPressed(SDLK_a) ) {
         m_Velocity -= t * m_Side;
         playerAnimState = ANIM_STATE_RUN;
     }
 
-    if (playerAnimState == ANIM_STATE_RUN) {
-        if (KeyPressed(SDLK_LSHIFT)) {
+    if ( playerAnimState == ANIM_STATE_RUN ) {
+        if ( KeyPressed(SDLK_LSHIFT) ) {
             playerAnimState = ANIM_STATE_WALK;
         }
     }
@@ -126,8 +127,8 @@ void Player::UpdatePlayerModel() {
 void Player::UpdatePosition(glm::vec3 newPosition) {
 
     // Update the ellipsoid colliders for all animation states based on the new collision position
-    for (int i = 0; i < m_Model.animations.size(); i++) {
-        m_Model.ellipsoidColliders[i].center = newPosition;
+    for ( int i = 0; i < m_Model.animations.size(); i++ ) {
+        m_Model.ellipsoidColliders[ i ].center = newPosition;
     }
     m_Model.position.x = newPosition.x;
     m_Model.position.y = newPosition.y;
@@ -135,7 +136,7 @@ void Player::UpdatePosition(glm::vec3 newPosition) {
 }
 
 EllipsoidCollider Player::GetEllipsoidCollider() const {
-    return m_Model.ellipsoidColliders[m_Model.currentAnimIdx];
+    return m_Model.ellipsoidColliders[ m_Model.currentAnimIdx ];
 }
 
 HKD_Model* Player::GetModel() {

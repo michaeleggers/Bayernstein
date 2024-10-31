@@ -106,6 +106,7 @@ void Game::Init() {
                         }
                     }
 
+                } else if ( prop.value == "" ) {
                 } else {
                     printf("Unknown entity type: %s\n", prop.value.c_str());
                 }
@@ -122,12 +123,15 @@ void Game::Init() {
 
     m_pPlayerEntity = new Player(idCounter++, playerStartPosition);
     m_pEntityManager->RegisterEntity(m_pPlayerEntity);
-    m_pEntityManager->RegisterEntity(new Enemy(idCounter++));
+
+    Enemy* enemy = new Enemy(idCounter++);
+    m_pEntityManager->RegisterEntity(enemy);
 
     // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
     // in the batch?
 
     int hPlayerModel = m_Renderer->RegisterModel(m_pPlayerEntity->GetModel());
+    int hEnemyModel = m_Renderer->RegisterModel(enemy->GetModel());
 }
 
 static void DrawCoordinateSystem(IRender* renderer) {
@@ -158,6 +162,8 @@ bool Game::RunFrame(double dt) {
 
     EllipsoidCollider ec = m_pPlayerEntity->GetEllipsoidCollider();
 
+    Enemy* enemy = (Enemy*)m_pEntityManager->GetEntityFromID(3);
+
     // Test collision between player and world geometry
 #if 1
     // FIX: Just for the record. This is super dumb and not performant at all!
@@ -184,10 +190,19 @@ bool Game::RunFrame(double dt) {
 
     m_pPlayerEntity->UpdatePosition(collisionInfo.basePos);
 
+    EllipsoidCollider ecEnemy = enemy->GetEllipsoidCollider();
+    CollisionInfo enemyCollisionInfo = CollideEllipsoidWithTriPlane(ecEnemy,
+                                                                    static_cast<float>(dt) * enemy->GetVelocity(),
+                                                                    static_cast<float>(dt) * m_World.m_Gravity,
+                                                                    allTris.data(),
+                                                                    allTris.size());
+
+    enemy->UpdatePosition(enemyCollisionInfo.basePos);
+
 #endif
 
     // Check if player runs against door
-#if 1
+#if 0
     for ( int i = 0; i < m_World.m_BrushEntities.size(); i++ ) {
         int be = m_World.m_BrushEntities[ i ];
         BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID(be);
@@ -226,7 +241,7 @@ bool Game::RunFrame(double dt) {
         m_Renderer->Begin3D();
 
         // Draw Debug Line for player veloctiy vector
-        Line velocityDebugLine = { Vertex(ec.center), Vertex(ec.center + 200.0f * m_pPlayerEntity->GetVelocity()) };
+        Line velocityDebugLine = { Vertex(ecEnemy.center), Vertex(ecEnemy.center + 50.0f * enemy->GetVelocity()) };
         velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
         velocityDebugLine.b.color = velocityDebugLine.a.color;
         m_Renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
@@ -247,14 +262,18 @@ bool Game::RunFrame(double dt) {
 
         DrawCoordinateSystem(m_Renderer);
 
-        HKD_Model* models[ 1 ] = { m_pPlayerEntity->GetModel() };
-        m_Renderer->Render(&m_FollowCamera, models, 1);
+        // auto type = enemy->m_Type;
 
+        HKD_Model* models[ 2 ] = { m_pPlayerEntity->GetModel(), enemy->GetModel() };
+        m_Renderer->Render(&m_FollowCamera, models, 2);
+
+#if 0
         if ( collisionInfo.didCollide ) {
             m_pPlayerEntity->GetModel()->debugColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); // red
         } else {
             m_pPlayerEntity->GetModel()->debugColor = glm::vec4(1.0f); // white
         }
+#endif
 
 #if 0 // Toggle draw hitpoint
         m_Renderer->SetActiveCamera(&m_FollowCamera);
@@ -263,7 +282,7 @@ bool Game::RunFrame(double dt) {
 
         // Render Player's ellipsoid collider
         m_Renderer->SetActiveCamera(&m_FollowCamera);
-        HKD_Model* playerColliderModel[] = { m_pPlayerEntity->GetModel() };
+        HKD_Model* playerColliderModel[ 1 ] = { m_pPlayerEntity->GetModel() };
         m_Renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
 
         m_Renderer->End3D();

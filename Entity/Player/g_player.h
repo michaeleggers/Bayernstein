@@ -11,13 +11,13 @@
 #include "../../camera.h"
 #include "../../collision.h"
 #include "../../r_model.h"
-#include "../base_game_entity.h"
+#include "../moving_entity.h"
 
 #define GLM_FORCE_RADIANS
 #include "../../dependencies/glm/ext.hpp"
 #include "../../dependencies/glm/glm.hpp"
 
-class Player : public BaseGameEntity {
+class Player : public MovingEntity {
   private:
     StateMachine<Player>* m_pStateMachine;
     double m_AttackDelay = 100;
@@ -26,8 +26,6 @@ class Player : public BaseGameEntity {
     HKD_Model m_Model;
     // moving members
   private:
-    glm::vec3 m_Velocity;
-    glm::vec3 m_Forward, m_Side;
     float m_RotationAngle;
     AnimState m_AnimationState;
     EllipsoidCollider m_EllipsoidCollider;
@@ -59,7 +57,7 @@ class Player : public BaseGameEntity {
   public:
     bool CanAttack() {
         double currentTime = Clock->GetTime();
-        if (currentTime >= m_LastAttack + m_AttackDelay) {
+        if ( currentTime >= m_LastAttack + m_AttackDelay ) {
             m_LastAttack = currentTime;
             return true;
         }

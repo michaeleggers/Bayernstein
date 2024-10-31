@@ -49,10 +49,10 @@ struct Telegram {
 // by time priority. Note how the times must be smaller than
 // SmallestDelay apart before two Telegrams are considered to be the same.
 // This is to prevent flooding an agent with identical messages.
-const double SmallestDelayInSeconds = 0.25;
+const double SmallestDelayInMS = 250;
 
 inline bool operator==(const Telegram& t1, const Telegram& t2) {
-    return (fabs(t1.DispatchTime - t2.DispatchTime) < SmallestDelayInSeconds) 
+    return (fabs(t1.DispatchTime - t2.DispatchTime) < SmallestDelayInMS) 
             && (t1.Sender == t2.Sender)
             && (t1.Receiver == t2.Receiver) && (t1.Message == t2.Message);
 }

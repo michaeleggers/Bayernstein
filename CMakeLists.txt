@@ -139,6 +139,10 @@ add_executable(Game
     Message/telegram.h
     Entity/base_game_entity.cpp
     Entity/base_game_entity.h
+    Entity/moving_entity.cpp
+    Entity/moving_entity.h
+    Entity/steering_behaviour.cpp
+    Entity/steering_behaviour.h
     FSM/state_machine.h
     FSM/istate.h
     Entity/entity_manager.cpp
