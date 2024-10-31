@@ -20,14 +20,14 @@
 #include "./Message/message_type.h"
 #include "r_font.h"
 #include "polysoup.h"
+#include "hkd_interface.h"
 
 static int hkd_Clamp(int val, int clamp) {
     if (val > clamp || val < clamp) return clamp;
     return val;
 }
 
-Game::Game(std::string exePath, hkdInterface* interface, IRender* renderer) {
-    m_Renderer = renderer;
+Game::Game(std::string exePath, hkdInterface* interface) {
     m_Interface = interface;
     m_ExePath = exePath;
     m_pEntityManager = EntityManager::Instance();
@@ -39,8 +39,9 @@ void Game::Init() {
     // Load a font file from disk
     m_ConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 72);
     m_ConsoleFont30 = new CFont("fonts/HackNerdFont-Bold.ttf", 150); // Same font at different size
-    m_Renderer->RegisterFont(m_ConsoleFont);
-    m_Renderer->RegisterFont(m_ConsoleFont30);
+    IRender* renderer = GetRenderer();
+    renderer->RegisterFont(m_ConsoleFont);
+    renderer->RegisterFont(m_ConsoleFont30);
     
     // Load world triangles from Quake .MAP file
 
@@ -85,7 +86,7 @@ void Game::Init() {
         MapTri tri = { .tri = {A, B, C} };
         tri.textureName = mapPoly.textureName;
         //FIX: Search through all supported image formats not just PNG.
-        tri.hTexture = m_Renderer->RegisterTextureGetHandle(tri.textureName + ".png");
+        tri.hTexture = renderer->RegisterTextureGetHandle(tri.textureName + ".png");
         worldTris.push_back(tri);
     }
    
@@ -118,7 +119,7 @@ void Game::Init() {
     // Creates batches for each texture-name. That way we can
     // reduce draw-calls and texture-binds when rendering world geometry.
 
-    m_Renderer->RegisterWorldTris( m_World.m_MapTris );
+    renderer->RegisterWorldTris( m_World.m_MapTris );
     
 
     // Load IQM Model
@@ -146,7 +147,7 @@ void Game::Init() {
     // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
     // in the batch?
 
-    int hPlayerModel = m_Renderer->RegisterModel(&m_Player);
+    int hPlayerModel = renderer->RegisterModel(&m_Player);
 
     // Cameras
 
@@ -354,15 +355,15 @@ bool Game::RunFrame(double dt) {
     }
 
     // Render stuff
-    
+    IRender* renderer = GetRenderer();
     // ImGUI stuff goes into GL default FBO
-    m_Renderer->RenderBegin();
+    renderer->RenderBegin();
 
     ImGui::ShowDemoWindow();
 
     // Main 3D: This is where all the 3D rendering happens (in its own FBO)
     {
-        m_Renderer->Begin3D();
+        renderer->Begin3D();
         
         // Draw Debug Line for player veloctiy vector
         Line velocityDebugLine = {
@@ -370,15 +371,15 @@ bool Game::RunFrame(double dt) {
         };
         velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
         velocityDebugLine.b.color = velocityDebugLine.a.color;
-        m_Renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
+        renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
 
         // Render World Geometry (Batched triangles)
-        //m_Renderer->SetActiveCamera(&m_FollowCamera);
-        //m_Renderer->DrawWorldTris();
+        //renderer->SetActiveCamera(&m_FollowCamera);
+        //renderer->DrawWorldTris();
 
 #if 0
         // Render World geometry
-        m_Renderer->ImDrawMapTris(m_World.m_Tris.data(), 
+        renderer->ImDrawMapTris(m_World.m_Tris.data(), 
                                   m_World.m_Tris.size(), 
                                   true,
                                   DRAW_MODE_SOLID);
@@ -389,7 +390,7 @@ bool Game::RunFrame(double dt) {
             BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID( be );
             if ( pEntity->Type() == ET_DOOR ) {
                 Door* pDoor = (Door*)pEntity;
-                m_Renderer->ImDrawMapTris(pDoor->Tris().data(),
+                renderer->ImDrawMapTris(pDoor->Tris().data(),
                                           pDoor->Tris().size(),
                                           true,
                                           DRAW_MODE_SOLID);
@@ -397,12 +398,12 @@ bool Game::RunFrame(double dt) {
         }
 #endif
 
-        DrawCoordinateSystem(m_Renderer);
+        DrawCoordinateSystem(renderer);
 
         HKD_Model* renderModels[1];
         renderModels[0] = &m_Player;
 
-        m_Renderer->Render(
+        renderer->Render(
             &m_FollowCamera,
             renderModels, 1);
 
@@ -414,16 +415,16 @@ bool Game::RunFrame(double dt) {
         }
 
 #if 0 // Toggle draw hitpoint
-        m_Renderer->SetActiveCamera(&m_FollowCamera);
-        m_Renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
+        renderer->SetActiveCamera(&m_FollowCamera);
+        renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
 #endif
 
         // Render Player's ellipsoid collider
-        m_Renderer->SetActiveCamera(&m_FollowCamera);
+        renderer->SetActiveCamera(&m_FollowCamera);
         HKD_Model* playerColliderModel[] = { &m_Player };
-        m_Renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
+        renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
         
-        m_Renderer->End3D();
+        renderer->End3D();
 
     } // End3D scope
    
@@ -433,53 +434,51 @@ bool Game::RunFrame(double dt) {
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     // 2D stuff also has its own, dedicated FBO!
     {
-        m_Renderer->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
+        renderer->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
        
-        //m_Renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
-        m_Renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) );
-        m_Renderer->DrawText("ABCDEFGHIJKLMNOajdidjST*~`!/]}]|!#@#=;'\"$%%^&*():L", 0.0f, 0.0f);
+        //renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
+        renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) );
+        renderer->DrawText("ABCDEFGHIJKLMNOajdidjST*~`!/]}]|!#@#=;'\"$%%^&*():L", 0.0f, 0.0f);
         
         // If you want to draw in absolute coordinates then you have to specify it.
         // Depends on the resolution of the render window! 
-        m_Renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) );
-        m_Renderer->DrawText("Some more text in yellow :)", 0.0f, 200.0f, COORD_MODE_ABS); 
-        m_Renderer->DrawText("And blended with box on top", 100.0f, 300.0f, COORD_MODE_ABS);
+        renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) );
+        renderer->DrawText("Some more text in yellow :)", 0.0f, 200.0f, COORD_MODE_ABS); 
+        renderer->DrawText("And blended with box on top", 100.0f, 300.0f, COORD_MODE_ABS);
 
-        m_Renderer->SetShapeColor( glm::vec4(0.7f, 0.3f, 0.7f, 0.7) );
-        m_Renderer->DrawBox( 200.0f, 200.0f, 800.0f, 200.0f, COORD_MODE_ABS );
+        renderer->SetShapeColor( glm::vec4(0.7f, 0.3f, 0.7f, 0.7) );
+        renderer->DrawBox( 200.0f, 200.0f, 800.0f, 200.0f, COORD_MODE_ABS );
 
-        m_Renderer->SetShapeColor( glm::vec4(1.0f, 0.0f, 0.0f, 1.0f) );
-        m_Renderer->DrawBox( 0.5f, 0.5f, 0.25f, 0.5f );
+        renderer->SetShapeColor( glm::vec4(1.0f, 0.0f, 0.0f, 1.0f) );
+        renderer->DrawBox( 0.5f, 0.5f, 0.25f, 0.5f );
 
-        m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
+        renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
 
         // Use Relative coords (the default). Independent from screen resolution.
         // Goes from 0 (top/left) to 1 (bottom/right).
-        m_Renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 0.5f, 0.5f); 
+        renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 0.5f, 0.5f); 
 
-        m_Renderer->SetShapeColor( glm::vec4(0.3f, 0.3f, 0.7f, 1.0) );
-        m_Renderer->DrawBox( 600, 600, 200, 100, COORD_MODE_ABS );
-        m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
-        m_Renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 
+        renderer->SetShapeColor( glm::vec4(0.3f, 0.3f, 0.7f, 1.0) );
+        renderer->DrawBox( 600, 600, 200, 100, COORD_MODE_ABS );
+        renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
+        renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 
                              600.0f, 600.0f, COORD_MODE_ABS);
-        m_Renderer->SetFont( m_ConsoleFont30, glm::vec4(0.0f, 0.0f, 1.0f, 0.5f) );
-        m_Renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 
+        renderer->SetFont( m_ConsoleFont30, glm::vec4(0.0f, 0.0f, 1.0f, 0.5f) );
+        renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 
                              605.0f, 605.0f, COORD_MODE_ABS);
 
-        m_Renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
+        renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
     } // End2D Scope
     #endif
 
     // This call composits 2D and 3D together into the default FBO
     // (along with ImGUI).
-    m_Renderer->RenderEnd(); 
+    renderer->RenderEnd(); 
 
     return true;
 }
 
 void Game::Shutdown() {
-    m_Renderer->Shutdown();
-    delete m_Renderer;
 
     // NOTE: m_pEntityManager is static memory and cannot deleted with delete
     // (it never was heap allocated with 'new'). The entities have to
