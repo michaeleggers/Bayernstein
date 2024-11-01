@@ -80,6 +80,8 @@ private:
 
 	// Store world polygons based on their texture handle.
 	std::unordered_map<uint64_t, GLBatch*> m_TexHandleToWorldBatch;
+	std::unordered_map<uint64_t, GLBatchDrawCmd> m_TexHandleToWorldDrawCmd;
+	GLBatch*					m_WorldBatch;
 
 	GLBatch*					m_ModelBatch;
 	std::vector<GLBatchDrawCmd> m_ModelDrawCmds;
