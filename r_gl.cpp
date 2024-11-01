@@ -237,11 +237,12 @@ bool GLRender::Init(void) {
     m_ModelBatch = new GLBatch(1000 * 1000);
 
     // Batches but for different purposes
-    m_ImPrimitiveBatch = new GLBatch(1000 * 1000);
-    m_ImPrimitiveBatchIndexed = new GLBatch(1000 * 1000, 1000 * 1000);
+    m_ImPrimitiveBatch = new GLBatch(1000);
+    m_ImPrimitiveBatchIndexed = new GLBatch(1000, 1000);
     m_ColliderBatch = new GLBatch(1000000);
     m_FontBatch = new GLBatch(1000, 1000);
     m_ShapesBatch = new GLBatch(1000, 1000);
+    m_WorldBatch = new GLBatch(512);
 
     // Initialize shaders
 
@@ -307,6 +308,20 @@ void GLRender::RegisterWorldTris(std::vector<MapTri>& tris) {
         }
     }
 
+    // Upload tris to GPU and generate draw cmds.
+    for (auto const& [ texHandle, triList ] : texHandle2Tris) {
+        m_WorldBatch->Add( (MapTri*)(triList.data()), triList.size(), true, DRAW_MODE_SOLID );
+        GLBatchDrawCmd drawCmd = {
+            m_WorldBatch->VertCount(), // Vertex Buffer offset is the current vert count of the batch
+            0, // Index buffer offset.  Ignored: World is drawn without indices
+            triList.size() * 3, // Num vertices (3 per tri)
+            0, // Num indices: irgnored
+            true, // Cull back faces
+            DRAW_MODE_SOLID
+        };
+        m_TexHandleToWorldDrawCmd.insert({ texHandle, drawCmd });
+    }
+    
     for (int i = 0; i < tris.size(); i++) {
         MapTri& tri = tris[ i ];
         GLBatch* batch = NULL;
@@ -318,7 +333,7 @@ void GLRender::RegisterWorldTris(std::vector<MapTri>& tris) {
             // Maybe make a resizable batch?
             // Or even better: ONE batch and draw-call list
             // that contain indices into the buffer!
-            batch = new GLBatch(10 * 1024 * 1024); // FIX: This is very bad. 1MB per texture type...
+            batch = new GLBatch(1 * 1024); // FIX: This is very bad. 
             m_TexHandleToWorldBatch.insert({ tri.hTexture, batch });
         }
         batch->Add( &tri, 1, true, DRAW_MODE_SOLID );
