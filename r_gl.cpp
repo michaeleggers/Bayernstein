@@ -242,7 +242,7 @@ bool GLRender::Init(void) {
     m_ColliderBatch = new GLBatch(1000000);
     m_FontBatch = new GLBatch(1000, 1000);
     m_ShapesBatch = new GLBatch(1000, 1000);
-    m_WorldBatch = new GLBatch(512);
+    m_WorldBatch = new GLBatch(5000);
 
     // Initialize shaders
 
@@ -294,25 +294,26 @@ void GLRender::RegisterFont(CFont* font) {
 }
 
 void GLRender::RegisterWorldTris(std::vector<MapTri>& tris) {
-
     // Sort Tris by texture
     std::unordered_map<uint64_t, std::vector<MapTri*> > texHandle2Tris{};
     for (int i = 0; i < tris.size(); i++) {
-        MapTri* tri = &tris[ i ];
-        if ( texHandle2Tris.contains(tri->hTexture) ) {
-            std::vector<MapTri*>* triList = &texHandle2Tris.at(tri->hTexture);
-            triList->push_back(tri);
+        MapTri* pTri = &tris[ i ];
+        if ( texHandle2Tris.contains(pTri->hTexture) ) {
+            std::vector<MapTri*>* triList = &texHandle2Tris.at(pTri->hTexture);
+            triList->push_back(pTri);
         } else {
-            std::vector<MapTri*> newTriList{ tri };
-            texHandle2Tris.insert({ tri->hTexture, newTriList });
+            std::vector<MapTri*> newTriList{ pTri };
+            texHandle2Tris.insert({ pTri->hTexture, newTriList });
         }
     }
 
     // Upload tris to GPU and generate draw cmds.
-    for (auto const& [ texHandle, triList ] : texHandle2Tris) {
-        m_WorldBatch->Add( (MapTri*)(triList.data()), triList.size(), true, DRAW_MODE_SOLID );
+    for (auto& [ texHandle, triList ] : texHandle2Tris) {
+        MapTri** pTris = triList.data();
+        int vertexOffset = m_WorldBatch->Add( (MapTri*)*pTris, triList.size(), true, DRAW_MODE_SOLID );
+        assert( vertexOffset >= 0 && "Tried to add Tris to World Batch but it returned a negative offset!" );
         GLBatchDrawCmd drawCmd = {
-            m_WorldBatch->VertCount(), // Vertex Buffer offset is the current vert count of the batch
+            vertexOffset, // Vertex Buffer offset is the current vert count of the batch
             0, // Index buffer offset.  Ignored: World is drawn without indices
             triList.size() * 3, // Num vertices (3 per tri)
             0, // Num indices: irgnored
@@ -320,23 +321,6 @@ void GLRender::RegisterWorldTris(std::vector<MapTri>& tris) {
             DRAW_MODE_SOLID
         };
         m_TexHandleToWorldDrawCmd.insert({ texHandle, drawCmd });
-    }
-    
-    for (int i = 0; i < tris.size(); i++) {
-        MapTri& tri = tris[ i ];
-        GLBatch* batch = NULL;
-        if (m_TexHandleToWorldBatch.contains(tri.hTexture)) {
-            batch = m_TexHandleToWorldBatch.at(tri.hTexture);
-        }
-        else {
-            // TODO: Think about triangle budget for the world!
-            // Maybe make a resizable batch?
-            // Or even better: ONE batch and draw-call list
-            // that contain indices into the buffer!
-            batch = new GLBatch(1 * 1024); // FIX: This is very bad. 
-            m_TexHandleToWorldBatch.insert({ tri.hTexture, batch });
-        }
-        batch->Add( &tri, 1, true, DRAW_MODE_SOLID );
     }
 }
 
@@ -706,13 +690,21 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     glEnable(GL_DEPTH_TEST);
 
     // Draw World Tris
+    m_WorldBatch->Bind();
     m_WorldShader->Activate();
     m_WorldShader->SetViewProjMatrices(view, proj);
-    for (auto const& [ texHandle, batch ] : m_TexHandleToWorldBatch) {
-        batch->Bind();
+    
+    for (auto const& [ texHandle, drawCmd ] : m_TexHandleToWorldDrawCmd) {
+        std::vector<GLBatchDrawCmd> drawCmds{ drawCmd };
         glBindTexture( GL_TEXTURE_2D, texHandle );
-        glDrawArrays( GL_TRIANGLES, 0, batch->VertCount() );
+        ExecuteDrawCmds( drawCmds, GEOM_TYPE_VERTEX_ONLY );
     }
+
+    /*for (auto const& [ texHandle, batch ] : m_TexHandleToWorldBatch) {*/
+    /*    batch->Bind();*/
+    /*    glBindTexture( GL_TEXTURE_2D, texHandle );*/
+    /*    glDrawArrays( GL_TRIANGLES, 0, batch->VertCount() );*/
+    /*}*/
 
     // Draw Models
     
@@ -763,21 +755,9 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
 }
 
 void GLRender::DrawWorldTris() {
-    m_ImPrimitivesShader->Activate();
-    glm::mat4 view = m_ActiveCamera->ViewMatrix();
-    // TODO: Global Setting for perspective values
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)m_WindowWidth / (float)m_WindowHeight, 0.1f, 10000.0f);
-    
-    m_ImPrimitivesShader->DrawWireframe((uint32_t)0);
-    m_ImPrimitivesShader->SetViewProjMatrices(view, proj);
-    m_ImPrimitivesShader->SetMat4("model", glm::mat4(1));
-    m_ImPrimitivesShader->SetVec3("viewPos", m_ActiveCamera->m_Pos);
-
-    for (auto const& [ texHandle, batch ] : m_TexHandleToWorldBatch) {
-        batch->Bind();
-        glBindTexture( GL_TEXTURE_2D, texHandle );
-        glDrawArrays( GL_TRIANGLES, 0, batch->VertCount() );
-    }
+    // TODO: This is actually done in the main render 3D function.
+    // Things are in flux so maybe this function will be removed
+    // or renamed or...
 }
 
 // Draw 2d screenspace elements

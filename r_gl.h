@@ -78,8 +78,7 @@ private:
 
 	Camera*						m_ActiveCamera;
 
-	// Store world polygons based on their texture handle.
-	std::unordered_map<uint64_t, GLBatch*> m_TexHandleToWorldBatch;
+	// Draw world polygons based on their texture handle.
 	std::unordered_map<uint64_t, GLBatchDrawCmd> m_TexHandleToWorldDrawCmd;
 	GLBatch*					m_WorldBatch;
 
