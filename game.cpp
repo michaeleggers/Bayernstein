@@ -52,7 +52,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/room.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/room.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple2.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -86,7 +86,7 @@ void Game::Init() {
         MapTri tri = { .tri = {A, B, C} };
         tri.textureName = mapPoly.textureName;
         //FIX: Search through all supported image formats not just PNG.
-        tri.hTexture = renderer->RegisterTextureGetHandle(tri.textureName + ".png");
+        tri.hTexture = renderer->RegisterTextureGetHandle(tri.textureName + ".tga");
         worldTris.push_back(tri);
     }
    
@@ -131,7 +131,7 @@ void Game::Init() {
     // m_Model2 = CreateModelFromIQM(&iqmModel2, nullptr);
     m_Player = CreateModelFromIQM(&iqmModel);
     m_Player.isRigidBody = false;
-    m_Player.position = glm::vec3(-48.0f, 352.0f, 15.0f);
+    m_Player.position = glm::vec3(-96, -192, 88);
     m_Player.scale = glm::vec3(22.0f);
     for (int i = 0; i < m_Player.animations.size(); i++) {
         EllipsoidCollider* ec = &m_Player.ellipsoidColliders[i];
