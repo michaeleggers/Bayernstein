@@ -211,7 +211,7 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush)
         // FIX: (Michael): Before Michael goes an implements a new
         // feature he has to implement a decent virtual file-system!
         // This is a boring job but it has to be done!!!
-        CImage texImage( "textures/" + poly.textureName + ".png" );
+        CImage texImage( "textures/" + poly.textureName + ".tga" );
         if ( texImage.Valid() ) {
             texWidth = (float)texImage.Width();
             texHeight = (float)texImage.Height();
