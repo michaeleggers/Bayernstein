@@ -21,5 +21,7 @@ tools/lightmapper/debug_lightmap.png
 tools/lightmapper/debug_uv_maps.png
 tools/lightmapper/temp/lightmap.hdr
 
-**/assets/**
+**/assets/models/**
+**/assets/maps/**
+**/assets/textures/**
 **/logs/**

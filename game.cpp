@@ -429,7 +429,7 @@ bool Game::RunFrame(double dt) {
     } // End3D scope
    
 
-#if 0 // Toggle 2D Font/Box renderingtest
+#if 1 // Toggle 2D Font/Box renderingtest
     
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     // 2D stuff also has its own, dedicated FBO!
@@ -437,8 +437,11 @@ bool Game::RunFrame(double dt) {
         renderer->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
        
         //renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
+        renderer->SetFont( m_ConsoleFont, glm::vec4(0.0f, 0.0f, 0.0f, 0.75f) );
+        renderer->DrawText("Welcome to the texture test.", 0.0f, 0.0f, COORD_MODE_ABS);
+        
         renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) );
-        renderer->DrawText("ABCDEFGHIJKLMNOajdidjST*~`!/]}]|!#@#=;'\"$%%^&*():L", 0.0f, 0.0f);
+        renderer->DrawText("Welcome to the texture test.", 10.0f, 10.0f, COORD_MODE_ABS);
         
         // If you want to draw in absolute coordinates then you have to specify it.
         // Depends on the resolution of the render window! 
