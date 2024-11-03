@@ -157,7 +157,7 @@ void Game::Init() {
     m_FollowCamera = Camera(m_Player.position);
     m_FollowCamera.m_Pos.y -= 200.0f;
     m_FollowCamera.m_Pos.z += 100.0f;
-    m_FollowCamera.RotateAroundSide(-20.0f);
+    m_FollowCamera.RotateAroundSide(0.0f);
     m_FollowCamera.RotateAroundUp(180.0f);
 
 
@@ -429,7 +429,7 @@ bool Game::RunFrame(double dt) {
     } // End3D scope
    
 
-#if 1 // Toggle 2D Font/Box renderingtest
+#if 0 // Toggle 2D Font/Box renderingtest
     
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     // 2D stuff also has its own, dedicated FBO!
