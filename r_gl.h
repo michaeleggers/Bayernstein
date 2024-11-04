@@ -54,7 +54,7 @@ public:
 	virtual void End2D() override;
 	virtual void SetFont(CFont* font, glm::vec4 color = glm::vec4(1.0f)) override;
 	virtual void SetShapeColor(glm::vec4 color = glm::vec4(1.0f)) override;
-	virtual void DrawText(const std::string& text,
+	virtual void R_DrawText(const std::string& text,
 				float x, float y, 
 				ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
 	virtual void FlushFonts() override;

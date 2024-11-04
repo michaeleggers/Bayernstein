@@ -850,7 +850,7 @@ void GLRender::FlushShapes() {
     m_ShapesBatch->Reset();
 }
 
-void GLRender::DrawText(const std::string& text, 
+void GLRender::R_DrawText(const std::string& text, 
                         float x, float y, 
                         ScreenSpaceCoordMode coordMode) {
    

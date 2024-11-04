@@ -50,7 +50,7 @@ void Game::Init() {
     
     // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
 #ifdef _WIN32
-    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/room.map");
+    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/temple2.map");
 #elif __LINUX__
     std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple2.map");
 #endif
@@ -429,7 +429,7 @@ bool Game::RunFrame(double dt) {
     } // End3D scope
    
 
-#if 0 // Toggle 2D Font/Box renderingtest
+#if 1 // Toggle 2D Font/Box renderingtest
     
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     // 2D stuff also has its own, dedicated FBO!
@@ -438,16 +438,16 @@ bool Game::RunFrame(double dt) {
        
         //renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
         renderer->SetFont( m_ConsoleFont, glm::vec4(0.0f, 0.0f, 0.0f, 0.75f) );
-        renderer->DrawText("Welcome to the texture test.", 0.0f, 0.0f, COORD_MODE_ABS);
+        renderer->R_DrawText("Welcome to the texture test.", 0.0f, 0.0f, COORD_MODE_ABS);
         
         renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) );
-        renderer->DrawText("Welcome to the texture test.", 10.0f, 10.0f, COORD_MODE_ABS);
+        renderer->R_DrawText("Welcome to the texture test.", 10.0f, 10.0f, COORD_MODE_ABS);
         
         // If you want to draw in absolute coordinates then you have to specify it.
         // Depends on the resolution of the render window! 
         renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) );
-        renderer->DrawText("Some more text in yellow :)", 0.0f, 200.0f, COORD_MODE_ABS); 
-        renderer->DrawText("And blended with box on top", 100.0f, 300.0f, COORD_MODE_ABS);
+        renderer->R_DrawText("Some more text in yellow :)", 0.0f, 200.0f, COORD_MODE_ABS); 
+        renderer->R_DrawText("And blended with box on top", 100.0f, 300.0f, COORD_MODE_ABS);
 
         renderer->SetShapeColor( glm::vec4(0.7f, 0.3f, 0.7f, 0.7) );
         renderer->DrawBox( 200.0f, 200.0f, 800.0f, 200.0f, COORD_MODE_ABS );
@@ -459,15 +459,15 @@ bool Game::RunFrame(double dt) {
 
         // Use Relative coords (the default). Independent from screen resolution.
         // Goes from 0 (top/left) to 1 (bottom/right).
-        renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 0.5f, 0.5f); 
+        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)", 0.5f, 0.5f); 
 
         renderer->SetShapeColor( glm::vec4(0.3f, 0.3f, 0.7f, 1.0) );
         renderer->DrawBox( 600, 600, 200, 100, COORD_MODE_ABS );
         renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
-        renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 
+        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)", 
                              600.0f, 600.0f, COORD_MODE_ABS);
         renderer->SetFont( m_ConsoleFont30, glm::vec4(0.0f, 0.0f, 1.0f, 0.5f) );
-        renderer->DrawText("Waaay smaller text here!!!! (font size 30)", 
+        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)", 
                              605.0f, 605.0f, COORD_MODE_ABS);
 
         renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
