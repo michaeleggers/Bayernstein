@@ -378,11 +378,6 @@ bool Game::RunFrame(double dt) {
         //renderer->DrawWorldTris();
 
 #if 0
-        // Render World geometry
-        renderer->ImDrawMapTris(m_World.m_Tris.data(), 
-                                  m_World.m_Tris.size(), 
-                                  true,
-                                  DRAW_MODE_SOLID);
 
         // Render Brush Entities
         for (int i = 0; i < m_World.m_BrushEntities.size(); i++) {
