@@ -38,11 +38,11 @@ class MovingEntity : public BaseGameEntity {
         : BaseGameEntity(id, type),
           m_Velocity(0.0f),
           m_Forward(1.0f, 0.0f, 0.0f),
-          m_Side(0.0f, 1.0f, 0.0f),
-          m_Up(0.0f, 0.0f, -1.0f),
-          m_Mass(1.0f),
+          m_Side(0.0f, 0.0f, 1.0f),
+          m_Up(0.0f, -1.0f, 0.0f),
+          m_Mass(5.0f),
           m_MaxSpeed(0.5f),
-          m_MaxForce(1.0f),
+          m_MaxForce(0.9f),
           m_MaxTurnRate(1.0f) {};
     virtual ~MovingEntity() = default;
     bool IsSpeedMaxedOut() const {

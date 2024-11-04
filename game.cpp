@@ -19,7 +19,7 @@
 #include "polysoup.h"
 #include "r_font.h"
 #include "r_itexture.h"
-#include "utils.h"
+#include "utils/utils.h"
 
 static int hkd_Clamp(int val, int clamp) {
     if ( val > clamp || val < clamp ) return clamp;
@@ -51,7 +51,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/room.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/room.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/enemy_test.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -162,7 +162,7 @@ bool Game::RunFrame(double dt) {
 
     EllipsoidCollider ec = m_pPlayerEntity->GetEllipsoidCollider();
 
-    Enemy* enemy = (Enemy*)m_pEntityManager->GetEntityFromID(3);
+    Enemy* enemy = m_pEntityManager->GetFirstEnemy();
 
     // Test collision between player and world geometry
 #if 1
@@ -178,9 +178,11 @@ bool Game::RunFrame(double dt) {
     // The brush entities should have pointers (indices) into the
     // CPU-side triangle array to know what geometry belongs to them.
     std::vector<TriPlane> allTris = m_World.m_TriPlanes;
+#if 0 // if there are no doors in the world, this is not needed
     int be = m_World.m_BrushEntities[ 0 ];
     Door* pEntity = (Door*)m_pEntityManager->GetEntityFromID(be);
     std::copy(pEntity->TriPlanes().begin(), pEntity->TriPlanes().end(), std::back_inserter(allTris));
+#endif
 
     CollisionInfo collisionInfo = CollideEllipsoidWithTriPlane(ec,
                                                                static_cast<float>(dt) * m_pPlayerEntity->GetVelocity(),

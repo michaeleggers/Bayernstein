@@ -39,7 +39,7 @@
 #include "physics.h"
 #include "game.h"
 #include "TestClass.h"
-#include "utils.h"
+#include "utils/utils.h"
 
 static bool         g_GameWantsToQuit;
 std::string         g_GameDir;

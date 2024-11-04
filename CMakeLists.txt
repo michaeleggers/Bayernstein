@@ -83,8 +83,10 @@ add_executable(Game
     camera.cpp
     physics.h
     physics.cpp
-    utils.h
-    utils.cpp
+    utils/utils.h
+    utils/utils.cpp
+    utils/math.h
+    utils/math.cpp
     polysoup.h
     polysoup.cpp
         # map_parser.h

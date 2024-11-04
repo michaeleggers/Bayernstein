@@ -4,7 +4,8 @@
 
 #include "g_enemy.h"
 #include "../../input.h"
-#include "../../utils.h"
+#include "../../utils/math.h"
+#include "../../utils/utils.h"
 #include "g_enemy_states.h"
 #include <SDL.h>
 #include <stdio.h>
@@ -32,35 +33,22 @@ Enemy::Enemy(const int id)
 void Enemy::Update() {
     double dt = GetDeltaTime();
     m_pStateMachine->Update();
-    //printf("Enemy Health: %f\n", m_Health);
 
     glm::vec3 force = m_pSteeringBehaviour->Calculate();
     glm::vec3 acceleration = force / (float)m_Mass;
     //update velocity
     m_Velocity += acceleration * (float)GetDeltaTime() / 1000.0f;
-    m_Velocity = Truncate(m_Velocity, m_MaxSpeed);
+    m_Velocity = math::Truncate(m_Velocity, m_MaxSpeed);
 
-    printf("Velocity: %f, %f, %f\n", m_Velocity.x, m_Velocity.y, m_Velocity.z);
     if ( Speed() > 0.00000001 ) {
 
-        // glm::
         // Set absolute orientation form the new velocity vector.
         // TODO: We have to make the reference vector program constant (like QUAKE_FORWARD_REF_VEC).
-        glm::quat newOrientation = glm::rotation(glm::vec3(0.0f, -1.0f, 0.0f), 
-                                                 glm::normalize(m_Velocity));
+        glm::quat newOrientation = glm::rotation(m_Up, glm::normalize(m_Velocity));
         m_Model.orientation = newOrientation;
         m_Forward = glm::normalize(m_Velocity);
         m_Side = glm::cross(m_Forward, m_Up);
     }
-
-    // if ( KeyPressed(SDLK_o) ) {
-    //     m_Velocity.x += 0.01;
-    //     m_AnimationState = ANIM_STATE_WALK;
-    // } else if ( KeyPressed(SDLK_l) ) {
-    //     m_Velocity.x -= 0.01;
-    // } else {
-    //     m_Velocity.x = 0.0f;
-    // }
 
     if ( Speed() >= 0.00001f ) {
         m_AnimationState = ANIM_STATE_WALK;

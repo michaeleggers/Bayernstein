@@ -5,7 +5,7 @@
 #include "g_player.h"
 
 #include "../../input.h"
-#include "../../utils.h"
+#include "../../utils/utils.h"
 #include "g_player_states.h"
 #include <SDL.h>
 

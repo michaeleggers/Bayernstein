@@ -1,5 +1,6 @@
 #include "steering_behaviour.h"
-#include "../utils.h"
+#include "../utils/math.h"
+#include "../utils/utils.h"
 
 //------------------------- ctor -----------------------------------------
 //
@@ -11,9 +12,9 @@ SteeringBehaviour::SteeringBehaviour(MovingEntity* pEntity)
       m_WeightSeek(0.0f),
       m_WeightFlee(0.0f),
       m_WeightArrive(0.0f),
-      m_WanderDistance(6.0f),
+      m_WanderDistance(7.0f),
       m_WanderJitter(1.0f),
-      m_WanderRadius(30.0f),
+      m_WanderRadius(5.0f),
       m_SteeringForce(0.0f),
       m_Target(0.0f),
       m_SummingMethod(weighted_average)
@@ -30,30 +31,13 @@ SteeringBehaviour::SteeringBehaviour(MovingEntity* pEntity)
 
 glm::vec3 SteeringBehaviour::CalculateWeightedSum() {
     // needs a target, is usefull for following a path
-    // if ( On(seek) ) {
-    //     m_SteeringForce += Seek() * m_WeightSeek;
-    // }
-    if ( On(wander) ) {
-        m_SteeringForce += Wander() * (float)m_WeightWander;
+    if ( On(seek) && m_pTargetAgent ) {
+        m_SteeringForce += Seek(m_pTargetAgent->GetPosition()) * m_WeightSeek;
     }
-    return Truncate(m_SteeringForce, m_pEntity->GetMaxForce());
-}
-
-// Function to map the target to world space
-glm::vec3 PointToWorldSpace(const glm::vec3& target,
-                            const glm::vec3& forward,
-                            const glm::vec3& side,
-                            const glm::vec3& position,
-                            const glm::vec3& up) {
-
-    glm::mat4 rotation = glm::mat4(
-        glm::vec4(side, 0.0f), glm::vec4(up, 0.0f), glm::vec4(-forward, 0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-
-    glm::mat4 transform = rotation * glm::translate(glm::mat4(1.0f), position);
-    // Transform the target point to world space
-    glm::vec4 worldTarget = transform * glm::vec4(target, 1.0f);
-
-    return glm::vec3(worldTarget);
+    if ( On(wander) ) {
+        m_SteeringForce += Wander() * m_WeightWander;
+    }
+    return math::Truncate(m_SteeringForce, m_pEntity->GetMaxForce());
 }
 
 glm::vec3 SteeringBehaviour::Wander() {
@@ -73,13 +57,12 @@ glm::vec3 SteeringBehaviour::Wander() {
     m_WanderTarget *= m_WanderRadius;
 
     //move the target into a position WanderDist in front of the agent
-    glm::vec3 target = m_WanderTarget + m_pEntity->GetForward() * (float)m_WanderDistance;
-
+    glm::vec3 target = m_WanderTarget + m_pEntity->GetForward() * m_WanderDistance;
     //project the target into world space
-    // target = PointToWorldSpace(
-    //     target, m_pEntity->GetForward(), m_pEntity->GetSide(), m_pEntity->GetPosition(), m_pEntity->GetUp());
+    target = math::ChangeOfBasis(target, m_pEntity->GetForward(), m_pEntity->GetSide(), m_pEntity->GetUp());
+
     glm::vec3 position = m_pEntity->GetPosition();
-    position.z = 0.0f;
+    position.z = 0.0f; // for the random walk we don't want to change the z position
 
     //and steer towards it
     return target - position;
@@ -90,11 +73,11 @@ glm::vec3 SteeringBehaviour::Wander() {
 //  Given a target, this behavior returns a steering force which will
 //  direct the agent towards the target
 //------------------------------------------------------------------------
-// glm::vec3 SteeringBehaviour::Seek(glm::vec3 targetPosition) {
-//     glm::vec3 desiredVelocity = glm::normalize(targetPosition - m_pEntity->GetPosition()) * m_pEntity->GetMaxSpeed();
+glm::vec3 SteeringBehaviour::Seek(glm::vec3 targetPosition) {
+    glm::vec3 desiredVelocity = glm::normalize(targetPosition - m_pEntity->GetPosition()) * m_pEntity->GetMaxSpeed();
 
-//     return (desiredVelocity - m_pEntity->GetVelocity());
-// }
+    return (desiredVelocity - m_pEntity->GetVelocity());
+}
 
 //----------------------------- Flee -------------------------------------
 //

@@ -4,61 +4,59 @@
 
 #include "g_door_states.h"
 
-#include <stdio.h>
-#include "../../utils.h"
+#include "../../utils/utils.h"
 #include "../Message/message_type.h"
+#include <stdio.h>
 
 // Door is closed
 
-DoorClosed *DoorClosed::Instance() {
+DoorClosed* DoorClosed::Instance() {
     static DoorClosed instance;
 
     return &instance;
 }
 
-void DoorClosed::Enter(Door *pDoor) {
+void DoorClosed::Enter(Door* pDoor) {
     printf("Door entered Closed State\n");
 }
 
-void DoorClosed::Execute(Door *pDoor) {
+void DoorClosed::Execute(Door* pDoor) {
     //printf("Door is executing Closed State\n");
 }
 
-void DoorClosed::Exit(Door *pDoor) {
+void DoorClosed::Exit(Door* pDoor) {
     printf("Door is exiting Closed State\n");
 }
 
-bool DoorClosed::OnMessage(Door *agent, const Telegram &telegram) { 
+bool DoorClosed::OnMessage(Door* agent, const Telegram& telegram) {
     printf("Door received telegram: %s\n", MessageToString(telegram.Message).c_str());
 
-    switch (telegram.Message) {
-        case message_type::Collision: {
-            agent->GetFSM()->ChangeState(DoorOpening::Instance());
-            return true;
-        } break;
-        default: {
-            printf("Door is not interested in this message.\n");
-        }
+    switch ( telegram.Message ) {
+    case message_type::Collision: {
+        agent->GetFSM()->ChangeState(DoorOpening::Instance());
+        return true;
+    } break;
+    default: {
+        printf("Door is not interested in this message.\n");
+    }
     }
 
-    return false; 
+    return false;
 }
-
 
 // Door is opening
 
-
-DoorOpening *DoorOpening::Instance() {
+DoorOpening* DoorOpening::Instance() {
     static DoorOpening instance;
 
     return &instance;
 }
 
-void DoorOpening::Enter(Door *pDoor) {
+void DoorOpening::Enter(Door* pDoor) {
     printf("Door entered Opening State\n");
 }
 
-void DoorOpening::Execute(Door *pDoor) {
+void DoorOpening::Execute(Door* pDoor) {
     //printf("Door is executing Opening State\n");
 
     // TODO: Maybe it is a good idea to update
@@ -67,64 +65,59 @@ void DoorOpening::Execute(Door *pDoor) {
     // end up at slightly different positions due
     // to variations of the deltaTime and floating
     // point rounding errors.
-    
 
     // Check if door has reached its opened state.
     // If so switch to the opened state.
     //printf("dt: %f\n", GetDeltaTime());
-    pDoor->m_CurrentDistance += pDoor->m_Speed * GetDeltaTime()/1000.0;
+    pDoor->m_CurrentDistance += pDoor->m_Speed * GetDeltaTime() / 1000.0;
     /*printf("current distance: %f\n", pDoor->m_CurrentDistance);*/
     if ( pDoor->m_CurrentDistance >= pDoor->m_Distance ) {
         pDoor->GetFSM()->ChangeState(DoorOpened::Instance());
-        
+
         return;
     }
 
     // Open the door.
     std::vector<TriPlane>& triPlanes = pDoor->TriPlanes();
-    for (int i = 0; i < triPlanes.size(); i++) {
+    for ( int i = 0; i < triPlanes.size(); i++ ) {
         Tri& tri = triPlanes[ i ].tri;
-        for (int j = 0; j < 3; j++) {
+        for ( int j = 0; j < 3; j++ ) {
             Vertex& v = tri.vertices[ j ];
-            v.pos.z += pDoor->m_Speed * GetDeltaTime()/1000.0;
+            v.pos.z += pDoor->m_Speed * GetDeltaTime() / 1000.0;
         }
     }
 }
 
-void DoorOpening::Exit(Door *pDoor) {
+void DoorOpening::Exit(Door* pDoor) {
     printf("Door is exiting Opening State\n");
 }
 
-bool DoorOpening::OnMessage(Door *agent, const Telegram &telegram) { 
+bool DoorOpening::OnMessage(Door* agent, const Telegram& telegram) {
 
-    return false; 
+    return false;
 }
 
+// Door is open
 
-// Door is open 
-
-
-DoorOpened *DoorOpened::Instance() {
+DoorOpened* DoorOpened::Instance() {
     static DoorOpened instance;
 
     return &instance;
 }
 
-void DoorOpened::Enter(Door *pDoor) {
+void DoorOpened::Enter(Door* pDoor) {
     printf("Door entered Opened State\n");
 }
 
-void DoorOpened::Execute(Door *pDoor) {
+void DoorOpened::Execute(Door* pDoor) {
     //printf("Door is executing Opened State\n");
-
 }
 
-void DoorOpened::Exit(Door *pDoor) {
+void DoorOpened::Exit(Door* pDoor) {
     //printf("Door is exiting Opened State\n");
 }
 
-bool DoorOpened::OnMessage(Door *agent, const Telegram &telegram) { 
+bool DoorOpened::OnMessage(Door* agent, const Telegram& telegram) {
 
-    return false; 
+    return false;
 }
-

@@ -10,5 +10,4 @@ double GetDeltaTime();
 
 std::vector<float> ParseFloatValues(const std::string& input);
 
-glm::vec3 Truncate(const glm::vec3& v, float max);
 #endif

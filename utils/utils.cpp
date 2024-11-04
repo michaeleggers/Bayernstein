@@ -34,10 +34,3 @@ std::vector<float> ParseFloatValues(const std::string& input) {
 
     return values;
 }
-
-glm::vec3 Truncate(const glm::vec3& vector, float max) {
-    if ( glm::length(vector) > max ) {
-        return glm::normalize(vector) * max;
-    }
-    return vector;
-}
