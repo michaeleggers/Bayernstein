@@ -234,14 +234,15 @@ bool GLRender::Init(void) {
     // With sizeof(Vertex) = 92bytes => sizeof(Tri) = 276bytes we need ~ 263MB for Models.
     // A lot for a game in the 2000s! Our models have a tri count of maybe 3000 Tris (without weapon), which
     // is not even close to 1Mio tris.
-    m_ModelBatch = new GLBatch(1000 * 1000);
+    m_ModelBatch = new GLBatch(100 * 1000);
 
     // Batches but for different purposes
-    m_ImPrimitiveBatch = new GLBatch(1000 * 1000);
-    m_ImPrimitiveBatchIndexed = new GLBatch(1000 * 1000, 1000 * 1000);
-    m_ColliderBatch = new GLBatch(1000000);
+    m_ImPrimitiveBatch = new GLBatch(1000);
+    m_ImPrimitiveBatchIndexed = new GLBatch(1000, 1000);
+    m_ColliderBatch = new GLBatch(1000);
     m_FontBatch = new GLBatch(1000, 1000);
     m_ShapesBatch = new GLBatch(1000, 1000);
+    m_WorldBatch = new GLBatch(5000);
 
     // Initialize shaders
 
@@ -288,9 +289,44 @@ int GLRender::RegisterModel(HKD_Model* model)
     return gpuModelHandle;
 }
 
-void GLRender::RegisterFont(CFont* font) 
-{
+void GLRender::RegisterFont(CFont* font) {
     GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(font);
+}
+
+void GLRender::RegisterWorldTris(std::vector<MapTri>& tris) {
+    // Sort Tris by texture
+    std::unordered_map<uint64_t, std::vector<MapTri*> > texHandle2Tris{};
+    for (int i = 0; i < tris.size(); i++) {
+        MapTri* pTri = &tris[ i ];
+        if ( texHandle2Tris.contains(pTri->hTexture) ) {
+            std::vector<MapTri*>* triList = &texHandle2Tris.at(pTri->hTexture);
+            triList->push_back(pTri);
+        } else {
+            std::vector<MapTri*> newTriList{ pTri };
+            texHandle2Tris.insert({ pTri->hTexture, newTriList });
+        }
+    }
+
+    // Upload tris to GPU and generate draw cmds.
+    for (auto& [ texHandle, triList ] : texHandle2Tris) {
+        MapTri** pTris = triList.data();
+        int vertexOffset = m_WorldBatch->Add( (MapTri*)*pTris, triList.size(), true, DRAW_MODE_SOLID );
+        assert( vertexOffset >= 0 && "Tried to add Tris to World Batch but it returned a negative offset!" );
+        GLBatchDrawCmd drawCmd = {
+            vertexOffset, // Vertex Buffer offset is the current vert count of the batch
+            0, // Index buffer offset.  Ignored: World is drawn without indices
+            triList.size() * 3, // Num vertices (3 per tri)
+            0, // Num indices: irgnored
+            true, // Cull back faces
+            DRAW_MODE_SOLID
+        };
+        m_TexHandleToWorldDrawCmd.insert({ texHandle, drawCmd });
+    }
+}
+
+// Returns the CPU handle
+uint64_t GLRender::RegisterTextureGetHandle(std::string name) {
+    return m_TextureManager->CreateTextureGetHandle(name);
 }
 
 void GLRender::SetActiveCamera(Camera* camera)
@@ -653,6 +689,23 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     glLineWidth(1.0f);
     glEnable(GL_DEPTH_TEST);
 
+    // Draw World Tris
+    m_WorldBatch->Bind();
+    m_WorldShader->Activate();
+    m_WorldShader->SetViewProjMatrices(view, proj);
+    
+    for (auto const& [ texHandle, drawCmd ] : m_TexHandleToWorldDrawCmd) {
+        std::vector<GLBatchDrawCmd> drawCmds{ drawCmd };
+        glBindTexture( GL_TEXTURE_2D, texHandle );
+        ExecuteDrawCmds( drawCmds, GEOM_TYPE_VERTEX_ONLY );
+    }
+
+    /*for (auto const& [ texHandle, batch ] : m_TexHandleToWorldBatch) {*/
+    /*    batch->Bind();*/
+    /*    glBindTexture( GL_TEXTURE_2D, texHandle );*/
+    /*    glDrawArrays( GL_TRIANGLES, 0, batch->VertCount() );*/
+    /*}*/
+
     // Draw Models
     
     m_ModelBatch->Bind();
@@ -699,6 +752,12 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     //    glDrawArrays(GL_TRIANGLES, 3*modelDrawCmds[i].offset, 3 * modelDrawCmds[i].numTris);
     //}
     //glDrawArrays(GL_TRIANGLES, 0, 3*m_ModelBatch->TriCount());
+}
+
+void GLRender::DrawWorldTris() {
+    // TODO: This is actually done in the main render 3D function.
+    // Things are in flux so maybe this function will be removed
+    // or renamed or...
 }
 
 // Draw 2d screenspace elements
@@ -791,7 +850,7 @@ void GLRender::FlushShapes() {
     m_ShapesBatch->Reset();
 }
 
-void GLRender::DrawText(const std::string& text, 
+void GLRender::R_DrawText(const std::string& text, 
                         float x, float y, 
                         ScreenSpaceCoordMode coordMode) {
    
@@ -1103,6 +1162,14 @@ void GLRender::InitShaders()
     if ( !m_CompositeShader->Load(
         "shaders/composite.vert",
         "shaders/composite.frag"
+    )) {
+        printf("Problems initializing composite shader!\n");
+    }
+    
+    m_WorldShader = new Shader();
+    if ( !m_WorldShader->Load(
+        "shaders/world.vert",
+        "shaders/world.frag"
     )) {
         printf("Problems initializing composite shader!\n");
     }

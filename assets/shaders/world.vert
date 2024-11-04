@@ -1,3 +1,4 @@
+
 #version 460 core
 
 layout (location = 0) in vec3  in_pos;
@@ -29,6 +30,7 @@ out vec4 Color;
 out vec4 ViewPosWorldSpace;
 out vec4 Pos;
 out mat4 ViewMat;
+out vec2 uv;
 
 void main() {
     vec4 v = vec4(in_pos, 1.0);    
@@ -42,5 +44,6 @@ void main() {
     ViewPosWorldSpace = vec4(viewPos, 1.0f);
     Pos = view * vec4(in_pos, 1.0);
     ViewMat = view;
+    uv = in_uv;
 }
 

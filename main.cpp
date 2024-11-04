@@ -43,7 +43,7 @@
 
 static bool         g_GameWantsToQuit;
 std::string         g_GameDir;
-
+static IRender*     g_Renderer;
 
 static bool QuitGameFunc(void) {
     g_GameWantsToQuit = true;
@@ -53,6 +53,10 @@ static bool QuitGameFunc(void) {
 static double msPerFrame;
 double GetDeltaTime() {
     return msPerFrame;
+}
+
+IRender* GetRenderer() {
+    return g_Renderer;
 }
 
 int main(int argc, char** argv)
@@ -80,15 +84,15 @@ int main(int argc, char** argv)
     }
 
 
-    IRender* renderer = new GLRender();
-    if (!renderer->Init()) {
+    g_Renderer = new GLRender();
+    if (!g_Renderer->Init()) {
         SDL_Log("Could not initialize renderer.\n");
         return -1;
     }    
 
     // Init the game
 
-    Game game(exePath, &interface, renderer);
+    Game game(exePath, &interface);
     game.Init();    
     
     // Main loop
@@ -118,7 +122,7 @@ int main(int argc, char** argv)
             sprintf(windowTitle,
                     "Device: %s, frametime (ms): %f, FPS: %f",
                     glGetString(GL_RENDERER), msPerFrame, 1000.0f / msPerFrame);
-            renderer->SetWindowTitle(windowTitle);
+            g_Renderer->SetWindowTitle(windowTitle);
             updateIntervalMs = 0.0f;
         }
 
@@ -126,6 +130,8 @@ int main(int argc, char** argv)
     }
 
     game.Shutdown();
+
+    g_Renderer->Shutdown();
 
     // Clean up
     SDL_Quit();

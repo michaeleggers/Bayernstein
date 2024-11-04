@@ -211,7 +211,7 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush)
         // FIX: (Michael): Before Michael goes an implements a new
         // feature he has to implement a decent virtual file-system!
         // This is a boring job but it has to be done!!!
-        CImage texImage( "textures/" + poly.textureName + ".png" );
+        CImage texImage( "textures/" + poly.textureName + ".tga" );
         if ( texImage.Valid() ) {
             texWidth = (float)texImage.Width();
             texHeight = (float)texImage.Height();
@@ -230,12 +230,13 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush)
                                 glm::dot( (glm::vec3)intersectionPoint, axisU ),
                                 glm::dot( (glm::vec3)intersectionPoint, axisV )
                             };
+                            uv.x /= face_i.xScale;
+                            uv.y /= face_i.yScale;
                             uv.x += face_i.tOffset1;
                             uv.y += face_i.tOffset2;
-                            // FIX: We need to load the texture at this point to
-                            // know its dimensions (width/height).
-                            uv.x /= texWidth;
+                            uv.x /= texWidth; 
                             uv.y /= texHeight;
+                            //uv.y = 1.0f - uv.y;
                             QuakeMapVertex v = { intersectionPoint, uv };
                             insertVertexToPolygon(v, &poly);
                         }
