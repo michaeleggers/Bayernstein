@@ -59,7 +59,7 @@ class BaseGameEntity {
         return m_ID;
     }
 
-    glm::vec3 GetPosition() const {
+    [[nodiscard]] glm::vec3 GetPosition() const {
         return m_Position;
     }
 };

@@ -16,6 +16,7 @@ Player::Player(const int id, glm::vec3 initialPosition)
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(PlayerIdle::Instance());
     LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
+    m_Position = initialPosition;
 }
 
 void Player::Update() {
@@ -80,17 +81,17 @@ void Player::UpdatePlayerModel() {
     m_RotationAngle = followTurnSpeed * (float)dt;
     if ( KeyPressed(SDLK_RIGHT) ) {
         m_RotationAngle = -m_RotationAngle;
-        glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), m_Up);
         m_Model.orientation *= rot;
     }
     if ( KeyPressed(SDLK_LEFT) ) {
-        glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), m_Up);
         m_Model.orientation *= rot;
     }
 
     m_Forward = glm::rotate(m_Model.orientation,
                             glm::vec3(0.0f, -1.0f, 0.0f)); // -1 because the model is facing -1 (Outside the screen)
-    m_Side = glm::cross(m_Forward, glm::vec3(0.0f, 0.0f, 1.0f));
+    m_Side = glm::cross(m_Forward, m_Up);
 
     // Change player's velocity and animation state based on input
     m_Velocity = glm::vec3(0.0f);
@@ -133,6 +134,7 @@ void Player::UpdatePosition(glm::vec3 newPosition) {
     m_Model.position.x = newPosition.x;
     m_Model.position.y = newPosition.y;
     m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
+    m_Position = newPosition;
 }
 
 EllipsoidCollider Player::GetEllipsoidCollider() const {

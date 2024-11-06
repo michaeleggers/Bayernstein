@@ -16,7 +16,7 @@
 #include "../../dependencies/glm/gtx/quaternion.hpp"
 #include "../../dependencies/glm/gtx/vector_angle.hpp"
 
-Enemy::Enemy(const int id)
+Enemy::Enemy(const int id, glm::vec3 initialPosition)
     : MovingEntity(id, ET_ENEMY),
       m_pStateMachine(nullptr),
       m_AnimationState(ANIM_STATE_IDLE),
@@ -24,10 +24,11 @@ Enemy::Enemy(const int id)
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(EnemyIdle::Instance());
 
-    LoadModel("models/multiple_anims/multiple_anims.iqm", glm::vec3(0.0f, 0.0f, 50.0f));
+    LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
+    m_Position = initialPosition;
     m_Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
     m_pSteeringBehaviour = new SteeringBehaviour(this);
-    m_pSteeringBehaviour->WanderOn();
+    // m_pSteeringBehaviour->WanderOn();
 }
 
 void Enemy::Update() {
@@ -35,24 +36,31 @@ void Enemy::Update() {
     m_pStateMachine->Update();
 
     glm::vec3 force = m_pSteeringBehaviour->Calculate();
-    glm::vec3 acceleration = force / (float)m_Mass;
+    glm::vec3 acceleration = force / m_Mass;
     //update velocity
-    m_Velocity += acceleration * (float)GetDeltaTime() / 1000.0f;
+    m_Velocity += acceleration * (float)dt / 1000.0f;
     m_Velocity = math::Truncate(m_Velocity, m_MaxSpeed);
 
     if ( Speed() > 0.00000001 ) {
 
-        // Set absolute orientation form the new velocity vector.
-        // TODO: We have to make the reference vector program constant (like QUAKE_FORWARD_REF_VEC).
-        glm::quat newOrientation = glm::rotation(m_Up, glm::normalize(m_Velocity));
-        m_Model.orientation = newOrientation;
-        m_Forward = glm::normalize(m_Velocity);
+        // Calculate the new forward direction
+        glm::vec3 newForward = glm::normalize(m_Velocity);
+
+        // Calculate the rotation needed to align the current forward direction with the new forward direction
+        float rotationAngle = glm::orientedAngle(m_Forward, newForward, m_Up);
+        glm::quat rotation = glm::angleAxis(rotationAngle, m_Up);
+
+        // Apply the rotation to the current orientation
+        m_Model.orientation = m_Model.orientation * rotation;
+
+        // Update the forward and side vectors
+        m_Forward = newForward;
         m_Side = glm::cross(m_Forward, m_Up);
     }
 
     if ( Speed() >= 0.00001f ) {
         m_AnimationState = ANIM_STATE_WALK;
-    } else if ( Speed() > 0.02f ) {
+    } else if ( Speed() > m_MaxSpeed * 0.5f ) {
         m_AnimationState = ANIM_STATE_RUN;
     } else {
         m_AnimationState = ANIM_STATE_IDLE;

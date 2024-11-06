@@ -27,7 +27,7 @@ class Enemy : public MovingEntity {
 
   public:
     void Update() override;
-    explicit Enemy(int id);
+    explicit Enemy(int id, glm::vec3 initialPosition);
 
     ~Enemy() override {
         delete m_pStateMachine;
@@ -41,6 +41,16 @@ class Enemy : public MovingEntity {
     EllipsoidCollider GetEllipsoidCollider() const;
     HKD_Model* GetModel();
     void UpdatePosition(glm::vec3 newPosition);
+
+    void SetSeekTarget(BaseGameEntity* target) {
+        m_pSteeringBehaviour->SetTargetAgent(target);
+        m_pSteeringBehaviour->SeekOn();
+    }
+
+    void SetFleeTarget(BaseGameEntity* target) {
+        m_pSteeringBehaviour->SetTargetAgent(target);
+        m_pSteeringBehaviour->FleeOn();
+    }
 
   public:
     bool DecreaseHealth(double amount) {

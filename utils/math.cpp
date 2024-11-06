@@ -18,8 +18,8 @@ ChangeOfBasis(const glm::vec3& point, const glm::vec3& xAxis, const glm::vec3& y
     glm::vec3 normZAxis = glm::normalize(zAxis);
 
     glm::mat4 rotation = glm::mat4(glm::vec4(normXAxis, 0.0f),
-                                   glm::vec4(normZAxis, 0.0f), // NOTE: ZAxis is the new YAxis
-                                   glm::vec4(normYAxis, 0.0f),
+                                   glm::vec4(normYAxis, 0.0f), // NOTE: ZAxis is the new YAxis
+                                   glm::vec4(normZAxis, 0.0f),
                                    glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
     glm::mat4 transform = glm::inverse(rotation);
 

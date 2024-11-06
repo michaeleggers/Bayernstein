@@ -85,6 +85,7 @@ void Game::Init() {
 
     int idCounter = 0; //FIX: Responsibility of entity manager
     glm::vec3 playerStartPosition = glm::vec3(0.0f);
+    glm::vec3 enemyStartPosition = glm::vec3(0.0f);
     // Load and create all the entities
     for ( int i = 0; i < map.entities.size(); i++ ) {
         Entity& e = map.entities[ i ];
@@ -106,7 +107,15 @@ void Game::Init() {
                         }
                     }
 
-                } else if ( prop.value == "" ) {
+                } else if ( prop.value == "monster_demon1" ) {
+                    // just a placeholder entity from trenchbroom/quake
+                    for ( Property& property : e.properties ) {
+                        if ( property.key == "origin" ) {
+                            std::vector<float> values = ParseFloatValues(property.value);
+                            enemyStartPosition = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
+                        }
+                    }
+
                 } else {
                     printf("Unknown entity type: %s\n", prop.value.c_str());
                 }
@@ -124,7 +133,7 @@ void Game::Init() {
     m_pPlayerEntity = new Player(idCounter++, playerStartPosition);
     m_pEntityManager->RegisterEntity(m_pPlayerEntity);
 
-    Enemy* enemy = new Enemy(idCounter++);
+    Enemy* enemy = new Enemy(idCounter++, enemyStartPosition);
     m_pEntityManager->RegisterEntity(enemy);
 
     // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
@@ -155,7 +164,6 @@ bool Game::RunFrame(double dt) {
     m_AccumTime += dt;
 
     // Want to quit on ESCAPE
-
     if ( KeyPressed(SDLK_ESCAPE) ) {
         m_Interface->QuitGame();
     }
@@ -163,6 +171,7 @@ bool Game::RunFrame(double dt) {
     EllipsoidCollider ec = m_pPlayerEntity->GetEllipsoidCollider();
 
     Enemy* enemy = m_pEntityManager->GetFirstEnemy();
+    enemy->SetFleeTarget(m_pPlayerEntity);
 
     // Test collision between player and world geometry
 #if 1
@@ -243,7 +252,7 @@ bool Game::RunFrame(double dt) {
         m_Renderer->Begin3D();
 
         // Draw Debug Line for player veloctiy vector
-        Line velocityDebugLine = { Vertex(ecEnemy.center), Vertex(ecEnemy.center + 50.0f * enemy->GetVelocity()) };
+        Line velocityDebugLine = { Vertex(ecEnemy.center), Vertex(ecEnemy.center + 150.0f * enemy->GetVelocity()) };
         velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
         velocityDebugLine.b.color = velocityDebugLine.a.color;
         m_Renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);

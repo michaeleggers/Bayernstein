@@ -37,9 +37,9 @@ class MovingEntity : public BaseGameEntity {
     MovingEntity(const int id, EntityType type)
         : BaseGameEntity(id, type),
           m_Velocity(0.0f),
-          m_Forward(1.0f, 0.0f, 0.0f),
-          m_Side(0.0f, 0.0f, 1.0f),
-          m_Up(0.0f, -1.0f, 0.0f),
+          m_Forward(0.0f, -1.0f, 0.0f),
+          m_Side(1.0f, 0.0f, 0.0f),
+          m_Up(0.0f, 0.0f, 1.0f),
           m_Mass(5.0f),
           m_MaxSpeed(0.5f),
           m_MaxForce(0.9f),
@@ -54,8 +54,6 @@ class MovingEntity : public BaseGameEntity {
     float SpeedSq() const {
         return glm::pow(glm::length(m_Velocity), 2);
     }
-
-    void SetHeading(glm::vec3 new_heading);
 
     float GetMaxForce() const;
     float GetMaxSpeed() const;

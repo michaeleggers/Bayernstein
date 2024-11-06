@@ -81,6 +81,7 @@ class SteeringBehaviour {
 
     //this behavior moves the agent towards a target position
     glm::vec3 Seek(glm::vec3 targetPos);
+    glm::vec3 Flee(glm::vec3 targetPos);
 
     glm::vec3 Wander();
 
@@ -90,6 +91,9 @@ class SteeringBehaviour {
   public:
     SteeringBehaviour(MovingEntity* pEntity);
     glm::vec3 Calculate();
+    void SetTargetAgent(BaseGameEntity* pAgent) {
+        m_pTargetAgent = pAgent;
+    }
 
   public:
     void FleeOn() {

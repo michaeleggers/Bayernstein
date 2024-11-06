@@ -9,8 +9,8 @@ SteeringBehaviour::SteeringBehaviour(MovingEntity* pEntity)
     : m_pEntity(pEntity),
       m_Flags(0),
       m_WeightWander(1.0f),
-      m_WeightSeek(0.0f),
-      m_WeightFlee(0.0f),
+      m_WeightSeek(1.0f),
+      m_WeightFlee(1.0f),
       m_WeightArrive(0.0f),
       m_WanderDistance(7.0f),
       m_WanderJitter(1.0f),
@@ -27,12 +27,12 @@ SteeringBehaviour::SteeringBehaviour(MovingEntity* pEntity)
     m_WanderTarget = glm::vec3(m_WanderRadius * glm::cos(theta), m_WanderRadius * glm::sin(theta), 0.0f);
 }
 
-// bool SteeringBehaviour::AccumulateForce(glm::vec3& sf, glm::vec3 forceToAdd) {}
-
 glm::vec3 SteeringBehaviour::CalculateWeightedSum() {
-    // needs a target, is usefull for following a path
     if ( On(seek) && m_pTargetAgent ) {
         m_SteeringForce += Seek(m_pTargetAgent->GetPosition()) * m_WeightSeek;
+    }
+    if ( On(flee) && m_pTargetAgent ) {
+        m_SteeringForce += Flee(m_pTargetAgent->GetPosition()) * m_WeightFlee;
     }
     if ( On(wander) ) {
         m_SteeringForce += Wander() * m_WeightWander;
@@ -83,20 +83,20 @@ glm::vec3 SteeringBehaviour::Seek(glm::vec3 targetPosition) {
 //
 //  Does the opposite of Seek
 //------------------------------------------------------------------------
-// glm::vec3 SteeringBehaviour::Flee(glm::vec3 targetPosition) {
-//     //only flee if the target is within 'panic distance'. Work in distance
-//     //squared space.
-//     /* const double PanicDistanceSq = 100.0f * 100.0;
-//   if (Vec2DDistanceSq(m_pEntity->GetPosition(), target) > PanicDistanceSq)
-//   {
-//     return glm::vec3(0,0);
-//   }
-//   */
+glm::vec3 SteeringBehaviour::Flee(glm::vec3 targetPosition) {
+    //only flee if the target is within 'panic distance'. Work in distance
+    //squared space.
+    /* const double PanicDistanceSq = 100.0f * 100.0;
+  if (Vec2DDistanceSq(m_pEntity->GetPosition(), target) > PanicDistanceSq)
+  {
+    return glm::vec3(0,0);
+  }
+  */
 
-//     glm::vec3 desiredVelocity = glm::normalize(m_pEntity->GetPosition() - targetPosition) * m_pEntity->GetMaxSpeed();
+    glm::vec3 desiredVelocity = glm::normalize(m_pEntity->GetPosition() - targetPosition) * m_pEntity->GetMaxSpeed();
 
-//     return (desiredVelocity - m_pEntity->GetVelocity());
-// }
+    return (desiredVelocity - m_pEntity->GetVelocity());
+}
 
 //--------------------------- Arrive -------------------------------------
 //
