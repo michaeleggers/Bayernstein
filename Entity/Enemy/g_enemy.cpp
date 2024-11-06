@@ -41,7 +41,7 @@ void Enemy::Update() {
     m_Velocity += acceleration * (float)dt / 1000.0f;
     m_Velocity = math::Truncate(m_Velocity, m_MaxSpeed);
 
-    if ( Speed() > 0.00000001 ) {
+    if ( Speed() > 0.001 ) {
 
         // Calculate the new forward direction
         glm::vec3 newForward = glm::normalize(m_Velocity);

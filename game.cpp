@@ -171,7 +171,7 @@ bool Game::RunFrame(double dt) {
     EllipsoidCollider ec = m_pPlayerEntity->GetEllipsoidCollider();
 
     Enemy* enemy = m_pEntityManager->GetFirstEnemy();
-    enemy->SetFleeTarget(m_pPlayerEntity);
+    enemy->SetArriveTarget(m_pPlayerEntity);
 
     // Test collision between player and world geometry
 #if 1

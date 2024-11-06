@@ -11,7 +11,8 @@ SteeringBehaviour::SteeringBehaviour(MovingEntity* pEntity)
       m_WeightWander(1.0f),
       m_WeightSeek(1.0f),
       m_WeightFlee(1.0f),
-      m_WeightArrive(0.0f),
+      m_WeightArrive(1.0f),
+      m_Deceleration(normal),
       m_WanderDistance(7.0f),
       m_WanderJitter(1.0f),
       m_WanderRadius(5.0f),
@@ -33,6 +34,9 @@ glm::vec3 SteeringBehaviour::CalculateWeightedSum() {
     }
     if ( On(flee) && m_pTargetAgent ) {
         m_SteeringForce += Flee(m_pTargetAgent->GetPosition()) * m_WeightFlee;
+    }
+    if ( On(arrive) && m_pTargetAgent ) {
+        m_SteeringForce += Arrive(m_pTargetAgent->GetPosition(), m_Deceleration) * m_WeightArrive;
     }
     if ( On(wander) ) {
         m_SteeringForce += Wander() * m_WeightWander;
@@ -103,34 +107,34 @@ glm::vec3 SteeringBehaviour::Flee(glm::vec3 targetPosition) {
 //  This behavior is similar to seek but it attempts to arrive at the
 //  target with a zero velocity
 //------------------------------------------------------------------------
-// glm::vec3 SteeringBehaviour::Arrive(glm::vec3 targetPosition, Deceleration deceleration) {
-//     glm::vec3 toTarget = targetPosition - m_pEntity->GetPosition();
+glm::vec3 SteeringBehaviour::Arrive(glm::vec3 targetPosition, Deceleration deceleration) {
+    glm::vec3 toTarget = targetPosition - m_pEntity->GetPosition();
 
-//     //calculate the distance to the target
-//     double dist = glm::length(toTarget);
+    //calculate the distance to the target
+    double dist = glm::length(toTarget);
 
-//     if ( dist > 0 ) {
-//         //because Deceleration is enumerated as an int, this value is required
-//         //to provide fine tweaking of the deceleration..
-//         const double decelerationTweaker = 0.3;
+    if ( dist > 0 ) {
+        //because Deceleration is enumerated as an int, this value is required
+        //to provide fine tweaking of the deceleration..
+        const double decelerationTweaker = 1000.0f;
 
-//         //calculate the speed required to reach the target given the desired
-//         //deceleration
-//         double speed = dist / ((double)deceleration * decelerationTweaker);
+        //calculate the speed required to reach the target given the desired
+        //deceleration
+        double speed = dist / ((double)deceleration * decelerationTweaker);
 
-//         //make sure the velocity does not exceed the max
-//         speed = glm::min(speed, m_pEntity->GetMaxSpeed());
+        //make sure the velocity does not exceed the max
+        speed = glm::min(speed, (double)m_pEntity->GetMaxSpeed());
 
-//         //from here proceed just like Seek except we don't need to normalize
-//         //the toTarget vector because we have already gone to the trouble
-//         //of calculating its length: dist.
-//         glm::vec3 desiredVelocity = toTarget * speed / dist;
+        //from here proceed just like Seek except we don't need to normalize
+        //the toTarget vector because we have already gone to the trouble
+        //of calculating its length: dist.
+        glm::vec3 desiredVelocity = toTarget * (float)speed / (float)dist;
 
-//         return (desiredVelocity - m_pEntity->GetVelocity());
-//     }
+        return (desiredVelocity - m_pEntity->GetVelocity());
+    }
 
-//     return glm::vec3(0.0f, 0.0f, 0.0f);
-// }
+    return glm::vec3(0.0f, 0.0f, 0.0f);
+}
 
 glm::vec3 SteeringBehaviour::Calculate() {
     m_SteeringForce = glm::vec3(0.0f);

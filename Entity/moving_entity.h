@@ -40,9 +40,9 @@ class MovingEntity : public BaseGameEntity {
           m_Forward(0.0f, -1.0f, 0.0f),
           m_Side(1.0f, 0.0f, 0.0f),
           m_Up(0.0f, 0.0f, 1.0f),
-          m_Mass(5.0f),
+          m_Mass(1.0f),
           m_MaxSpeed(0.5f),
-          m_MaxForce(0.9f),
+          m_MaxForce(100.0f),
           m_MaxTurnRate(1.0f) {};
     virtual ~MovingEntity() = default;
     bool IsSpeedMaxedOut() const {

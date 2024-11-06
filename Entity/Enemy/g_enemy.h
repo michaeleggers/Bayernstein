@@ -52,6 +52,11 @@ class Enemy : public MovingEntity {
         m_pSteeringBehaviour->FleeOn();
     }
 
+    void SetArriveTarget(BaseGameEntity* target) {
+        m_pSteeringBehaviour->SetTargetAgent(target);
+        m_pSteeringBehaviour->ArriveOn();
+    }
+
   public:
     bool DecreaseHealth(double amount) {
         m_Health = m_Health - amount;

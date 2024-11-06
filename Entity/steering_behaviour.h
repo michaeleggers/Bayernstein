@@ -65,6 +65,17 @@ class SteeringBehaviour {
     //binary flags to indicate whether or not a behavior should be active
     int m_Flags;
 
+    //Arrive makes use of these to determine how quickly a vehicle
+    //should decelerate to its target
+    enum Deceleration {
+        slow = 1,
+        normal = 2,
+        fast = 3
+    };
+
+    //default
+    Deceleration m_Deceleration;
+
     //what type of method is used to sum any active behavior
     summing_method m_SummingMethod;
 
@@ -82,6 +93,7 @@ class SteeringBehaviour {
     //this behavior moves the agent towards a target position
     glm::vec3 Seek(glm::vec3 targetPos);
     glm::vec3 Flee(glm::vec3 targetPos);
+    glm::vec3 Arrive(glm::vec3 targetPos, Deceleration deceleration);
 
     glm::vec3 Wander();
 
