@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
+from pathlib import Path
 
 from data_structures.vector3f import Vector3f
 
@@ -292,6 +293,13 @@ def cut_image_with_frustum(image, frustum):
     return cut_image
 
 def save_correction_map_as_png(hemicube, name):
+
+    # Define the path for the debug folder relative to the current script's location
+    debug_path = Path(__file__).resolve().parent / "debug" 
+
+    # Ensure the debug directory exists
+    debug_path.mkdir(parents=True, exist_ok=True)
+
     # Create a new figure
     plt.figure()
 
@@ -301,7 +309,7 @@ def save_correction_map_as_png(hemicube, name):
     plt.axis('off')
 
     # Save the figure
-    plt.savefig(f'{name}.png', bbox_inches='tight', pad_inches=0.1)
+    plt.savefig(str(debug_path / f'{name}.png'), bbox_inches='tight', pad_inches=0.1)
 
     # Close the figure to prevent merging plots on subsequent calls
     plt.close()

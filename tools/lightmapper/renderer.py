@@ -3,16 +3,16 @@ from OpenGL.GL.shaders import compileProgram, compileShader
 from pathlib import Path
 import pyrr
 import numpy as np
-import cv2
 import glfw
 
 from data_structures.scene import Scene
 from data_structures.color import Color
-from data_structures.material import Material
 from data_structures.vector3f import Vector3f
 
 import util.shader as shader
 import util.geometry as geometry
+
+from PIL import Image
 
 
 class Renderer:
@@ -36,7 +36,6 @@ class Renderer:
         self._initialize_camera()
 
     def _initialize_glfw(self, width: int, height: int, lightmap_mode: bool) -> None:
-        #self.set_dpi_awareness()  # Set DPI awareness
 
         # Initialize GLFW
         if not glfw.init():
@@ -47,12 +46,6 @@ class Renderer:
         glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
         glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
         glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, GL_TRUE)  # For Mac compatibility
-
-        #glfw.window_hint(glfw.DEPTH_BITS, 24)
-        #glEnable(GL_POLYGON_OFFSsET_FILL)
-        #glPolygonOffset(1.0, 1.0)
-        
-
 
         if lightmap_mode:
             glfw.window_hint(glfw.RESIZABLE, glfw.FALSE)
@@ -102,30 +95,52 @@ class Renderer:
         glClearColor(clear_color.r, clear_color.g, clear_color.b, 1)
         glEnable(GL_DEPTH_TEST)
 
-    def _initialize_assets(self, scene, light_map_path: Path) -> None:
+    def _initialize_assets(self, scene: Scene, light_map_path: Path) -> None:
+        
+        # VertexBufferObject
         self.vao = glGenVertexArrays(1)
         glBindVertexArray(self.vao)
         self.vbo = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
         glBufferData(GL_ARRAY_BUFFER, scene.vertex_array.nbytes, scene.vertex_array, GL_STATIC_DRAW)
 
-        # Set vertex attributes
-        glEnableVertexAttribArray(0)    # vertices (x, y, z)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(0))
-        glEnableVertexAttribArray(1)    # color (r, g, b)
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(12))
-        glEnableVertexAttribArray(2)    # uv (u, v)
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(24))
+        # Texture Array
+        texture_array = self.scene.texture_array
+        num_layers, max_height, max_width, _ = texture_array.shape
 
-        if light_map_path:
-            light_map = cv2.imread(str(light_map_path), cv2.IMREAD_UNCHANGED)
-            light_map = cv2.cvtColor(light_map, cv2.COLOR_BGR2RGB)
-            self.scene.light_map = light_map
-            self.light_map_material = Material(filepath=light_map_path)
-        else:
-            light_map_path = Path(self.base_path / 'temp' / 'lightmap.hdr')
-            scene.generate_light_map(light_map_path)
-            self.light_map_material = Material(filepath=light_map_path)
+        self.texture_array_id = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_array_id)
+        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, max_width, max_height, num_layers, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_array)
+
+        # Set texture parameters
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glGenerateMipmap(GL_TEXTURE_2D_ARRAY)
+
+        # Lightmap
+        lightmap = self.scene.light_map
+        lightmap_width, lightmap_height = lightmap.shape[:2]
+        self.lightmap_texture_id = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, self.lightmap_texture_id)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, lightmap_width, lightmap_height, 0, GL_RGB, GL_FLOAT, lightmap)
+
+        # Texture parameters for lightmap
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+
+        # Set vertex attributes
+        glEnableVertexAttribArray(0)    # Position (x, y, z)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(0))
+        glEnableVertexAttribArray(1)    # Diffuse texture UV (u_t, v_t)
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(12))
+        glEnableVertexAttribArray(2)    # Lightmap texture UV (u_l, v_l)
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(20))
+        glEnableVertexAttribArray(3)    # Texture index
+        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(28))
 
         # Compile and link shaders
         self.shader = shader.create_shader(
@@ -165,20 +180,21 @@ class Renderer:
         self.pitch = np.degrees(np.arcsin(self.camera_front[1]))
         self.sensitivity = 1.0
 
-    def update_ligth_map(self, light_map_path: Path):
-        #glDeleteTextures(1, (self.light_map_material.texture,))
+    def update_ligth_map(self):
+        
+        #glDeleteTextures(1, (self.lightmap_texture_id))
 
-        # Load the HDR texture into a NumPy array with floating-point precision
-        light_map = cv2.imread(str(light_map_path), cv2.IMREAD_UNCHANGED)
+        lightmap = self.scene.light_map
+        lightmap_width, lightmap_height = lightmap.shape[:2]
+        self.lightmap_texture_id = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, self.lightmap_texture_id)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, lightmap_width, lightmap_height, 0, GL_RGB, GL_FLOAT, lightmap)
 
-        # Convert from BGR to RGB if needed
-        light_map = cv2.cvtColor(light_map, cv2.COLOR_BGR2RGB)
-
-        # Assign the light map to the scene
-        self.scene.light_map = light_map
-
-        # Assign the material
-        self.light_map_material = Material(filepath=light_map_path)
+        # Initialize the texture
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
     def render_single_image(self, position: Vector3f, direction: np.ndarray, camera_up: np.ndarray) -> None:
         self.update_view_matrix(position.to_array(), direction, camera_up)
@@ -215,9 +231,20 @@ class Renderer:
         glCullFace(GL_BACK)
         glFrontFace(GL_CCW)
 
+        # Set shader uniforms
         glUniform1f(self.exposureLocation, self.emission_strength)
         glUniformMatrix4fv(self.modelMatrixLocation, 1, GL_FALSE, self.scene.get_model_transform())
-        self.light_map_material.use()
+
+        # Bind textures once for the atlas and lightmap
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_array_id)
+        glUniform1i(glGetUniformLocation(self.shader, "diffuseTexture"), 0)  # Texture atlas bound to unit 0
+
+        glActiveTexture(GL_TEXTURE1)
+        glBindTexture(GL_TEXTURE_2D, self.lightmap_texture_id)
+        glUniform1i(glGetUniformLocation(self.shader, "lightmapTexture"), 1)  # Lightmap bound to unit 1
+
+        # Prepare to draw
         self.arm_for_drawing()
         self.draw()
 
@@ -225,7 +252,7 @@ class Renderer:
         glBindVertexArray(self.vao)
 
     def draw(self):
-        glDrawArrays(GL_TRIANGLES, 0, self.scene.vertex_count)
+        glDrawArrays(GL_TRIANGLES, 0, len(self.scene.vertex_array) // 3)
 
     def run(self) -> None:
         while not glfw.window_should_close(self.window):
@@ -249,9 +276,9 @@ class Renderer:
         
         # Handle rotation (Arrow keys)
         if glfw.get_key(self.window, glfw.KEY_LEFT) == glfw.PRESS:
-            self.yaw -= self.sensitivity
-        if glfw.get_key(self.window, glfw.KEY_RIGHT) == glfw.PRESS:
             self.yaw += self.sensitivity
+        if glfw.get_key(self.window, glfw.KEY_RIGHT) == glfw.PRESS:
+            self.yaw -= self.sensitivity
         if glfw.get_key(self.window, glfw.KEY_UP) == glfw.PRESS:
             self.pitch += self.sensitivity
             self.pitch = min(self.pitch, 89.0)  # Limit pitch to avoid gimbal lock
@@ -269,15 +296,23 @@ class Renderer:
         # Calculate new front vector based on yaw and pitch
         front = np.array([
             np.cos(np.radians(self.yaw)) * np.cos(np.radians(self.pitch)),
-            np.sin(np.radians(self.pitch)),
-            np.sin(np.radians(self.yaw)) * np.cos(np.radians(self.pitch))
+            np.sin(np.radians(self.yaw)) * np.cos(np.radians(self.pitch)),
+            np.sin(np.radians(self.pitch))
         ], dtype=np.float32)
         self.camera_front = front / np.linalg.norm(front)
 
     def destroy(self) -> None:
+        # Delete Vertex Array Object and Vertex Buffer Object
         glDeleteVertexArrays(1, (self.vao,))
         glDeleteBuffers(1, (self.vbo,))
-        glDeleteTextures(1, (self.light_map_material.texture,))
+
+        # Delete textures for the texture atlas and lightmap
+        glDeleteTextures(1, (self.texture_array_id,))
+        glDeleteTextures(1, (self.lightmap_texture_id,))
+
+        # Delete shader program
         glDeleteProgram(self.shader)
+
+        # Destroy GLFW window and terminate GLFW
         glfw.destroy_window(self.window)
         glfw.terminate()

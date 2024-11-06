@@ -2,6 +2,7 @@ import numpy as np
 import math
 import random
 from PIL import Image, ImageDraw
+from pathlib import Path
 
 def __project_to_2d(triangle):
     """ Projects the 3D triangle onto a 2D plane based on its normal """
@@ -143,8 +144,14 @@ def __debug_uv_mapping(triangles, uvs, image_size=148):
         # Fill the triangle in the image
         _, count = fill_triangle(image, scaled_uvs, color)
 
+    # Define the path for the debug folder relative to the current script's location
+    debug_path = Path(__file__).resolve().parent / "debug" 
+
+    # Ensure the debug directory exists
+    debug_path.mkdir(parents=True, exist_ok=True)
+
     # Save the image
-    image.save("debug_uv_maps.png")
+    image.save(debug_path / "debug_uv_maps.png")
 
 def map_triangles(triangles, patch_resolution: float, debug=False):
 
@@ -159,7 +166,7 @@ def map_triangles(triangles, patch_resolution: float, debug=False):
         projected_triangles.append(projected)
 
     # Pack bounding boxes and get final packing positions
-    packed_boxes, total_width, total_height = __pack_bounding_boxes(bounding_boxes, padding=1/patch_resolution)
+    packed_boxes, total_width, total_height = __pack_bounding_boxes(bounding_boxes, padding=2*(1/patch_resolution))
 
     map_world_size = max(total_width, total_height)
 

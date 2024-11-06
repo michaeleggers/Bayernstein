@@ -39,17 +39,29 @@ def is_point_in_bounding_box(A, B, C, D, P):
 def sign(p1, p2, p3):
     return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
 
-def is_point_in_triangle(A, B, C, P):
-    # Calculate the signs for the three sub-triangles
-    d1 = sign(P, A, B)
-    d2 = sign(P, B, C)
-    d3 = sign(P, C, A)
+def is_point_in_triangle(pt: np.ndarray, v1: np.ndarray, v2: np.ndarray, v3: np.ndarray) -> bool:
+    # Barycentric coordinate method
+    v0 = v2 - v1
+    v1_to_v3 = v3 - v1
+    v1_to_pt = pt - v1
+    
+    # Compute dot products
+    dot00 = np.dot(v0, v0)
+    dot01 = np.dot(v0, v1_to_v3)
+    dot02 = np.dot(v0, v1_to_pt)
+    dot11 = np.dot(v1_to_v3, v1_to_v3)
+    dot12 = np.dot(v1_to_v3, v1_to_pt)
 
-    # Check if the signs are consistent (all positive or all negative)
-    has_neg = (d1 < 0) or (d2 < 0) or (d3 < 0)
-    has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
+    # Compute barycentric coordinates
+    denom = dot00 * dot11 - dot01 * dot01
+    if denom == 0:
+        return False  # Degenerate triangle
+    inv_denom = 1 / denom
+    u = (dot11 * dot02 - dot01 * dot12) * inv_denom
+    v = (dot00 * dot12 - dot01 * dot02) * inv_denom
 
-    return not (has_neg and has_pos)
+    # Check if point is in triangle
+    return (u >= 0) and (v >= 0) and (u + v <= 1)
 
 def edges_intersect(p1, p2, q1, q2):
     # Helper function to check if two line segments intersect
@@ -120,7 +132,7 @@ def calculate_normal(v0, v1, v2):
     return normal
 
 def calculate_camera_up(direction):
-    global_up = np.array([0, 1, 0])
+    global_up = np.array([0, 0, 1])
     # Check if the direction is close to global up or down
     if np.abs(np.dot(direction, global_up)) > 0.9999:  # Almost parallel
         # Use x-axis as the up vector if direction is nearly vertical

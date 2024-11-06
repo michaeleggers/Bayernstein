@@ -1,14 +1,18 @@
 import numpy as np
 from tqdm import tqdm
+from PIL import Image
 import cv2
 from pathlib import Path
 import pyrr
 import math
 import json
+import os
+import random
+from PIL import Image
+from scipy.spatial import KDTree
 
 import util.uv_mapper as uv_mapper
 import util.geometry as geometry
-from data_structures.entity import Entity
 from data_structures.color import Color
 from data_structures.patch import Patch
 from data_structures.vector3f import Vector3f as vec
@@ -20,40 +24,202 @@ from typing import List
 class Scene:
     """Represents a 3D scene consisting of entities, triangles, and lightmaps."""
 
-    def __init__(self) -> None:
-        self.patches: List[Patch] = [] # Type hinting for patches attribute
+    def __init__(self, map_path, assets_path, lightmap_path = None) -> None:
 
-    def create(self, entities: list, patches_resolution: float = 0.0625) -> 'Scene':
+        textures_directory = Path(str(assets_path) +  '\\textures')
+        self.triangles, self.texture_uvs, self.lightmap_uvs, self.textures, self.emissions = self.load_from_json(map_path, assets_path)
+        self.texture_array, self.texture_array_uvs, self.texture_index_mapping = self.create_texture_array(self.textures, self.texture_uvs, textures_directory)
+        if lightmap_path:
+            self.load_lightmap(lightmap_path)
+        
+        self.patches: List[Patch] = []
+
+    def load_from_json(self, json_path: Path, assets_path: Path):
+        triangles = []
+        texture_uvs = []
+        lightmap_uvs = []
+        textures = {}
+        emission = []
+
+        # Cache to store texture dimensions (width, height) for each unique texture
+        texture_dimensions_cache = {}
+
+        # Load JSON data
+        with open(json_path, 'r') as file:
+            data = json.load(file)
+
+        # Loop over polygons in JSON data
+        for triangle_index, triangle in enumerate(data):
+            # Each polygon has a set of vertices and a texture
+            triangle_vertices = []
+            triangle_texture_uvs = []
+            triangle_lightmap_uvs = []
+            for vertex_data in triangle['vertices']:
+                triangle_vertices.append((vertex_data['pos'][0], vertex_data['pos'][1], vertex_data['pos'][2]))
+                triangle_texture_uvs.append(tuple(vertex_data['uv']))
+                triangle_lightmap_uvs.append(tuple(vertex_data.get('uv_lightmap', (0, 0))))
+
+            triangles.append(triangle_vertices)
+            texture_uvs.append(triangle_texture_uvs)
+            lightmap_uvs.append(triangle_lightmap_uvs)
+
+            # Check if texture exists, otherwise set to "default.png"
+            texture_name = triangle['textureName']
+            texture_path = f"{assets_path}/textures/{texture_name}.png"
+            if not Path(texture_path).exists():
+                texture_name = "default"
+                texture_path = f"{assets_path}/textures/{texture_name}.png"
+
+            # Cache texture size if not already cached
+            if texture_name not in texture_dimensions_cache:
+                with Image.open(texture_path) as img:
+                    texture_dimensions_cache[texture_name] = img.size  # (width, height)
+
+            # Record which triangles use this texture
+            if texture_name not in textures:
+                textures[texture_name] = []
+            textures[texture_name].append(triangle_index)
+
+            emission.append(triangle.get('emission', 0.0))
+
+        # Normalize UVs after loading all texture names and gathering data
+        normalized_texture_uvs = []
+        for texture_name, triangle_indices in textures.items():
+            texture_width, texture_height = texture_dimensions_cache[texture_name]
+
+            # Normalize UVs for each triangle that uses this texture
+            for triangle_index in triangle_indices:
+                normalized_triangle_uvs = []
+                for u, v in texture_uvs[triangle_index]:
+                    # Repeat and normalize UVs
+                    u_normalized = u / texture_width # (u % texture_width) / texture_width
+                    v_normalized = v / texture_width # (v % texture_height) / texture_height
+                    normalized_triangle_uvs.append((u_normalized, v_normalized))
+                normalized_texture_uvs.append(normalized_triangle_uvs)
+
+        # Convert lists to numpy arrays
+        triangles = np.array(triangles, dtype=np.float64)
+        texture_uvs = np.array(normalized_texture_uvs, dtype=np.float32)
+        lightmap_uvs = np.array(lightmap_uvs, dtype=np.float32)
+        emission = np.array(emission, dtype=np.float32)
+
+        return triangles, texture_uvs, lightmap_uvs, textures, emission
+    
+    def save_to_json(self, json_path: Path, assets_path: Path) -> 'Scene':
         """
-        Create the scene by generating triangles, UV mapping, and creating patches.
+        Save the triangle data to a JSON file.
 
-        Args:
-            entities (list): List of entities to include in the scene.
-            patches_resolution (float): Resolution of the patches for the lightmap.
+        Parameters:
+        -----------
+        triangles : np.ndarray
+            Array of triangle vertex positions with shape (N, 3, 3).
+        texture_uvs : np.ndarray
+            Array of texture UV coordinates for each vertex with shape (N, 3, 2).
+        lightmap_uvs : np.ndarray
+            Array of lightmap UV coordinates for each vertex with shape (N, 3, 2).
+        textures : dict
+            Dictionary mapping texture names to lists of triangle indices.
+        emission : np.ndarray
+            Array of emission values for each triangle with shape (N,).
+        json_path : Path
+            The path to save the JSON file to.
         """
-        # Step 1: convert vertices and indices into triangles
-        self.triangles = []
-        self.triangle_colors = []
-        self.triangle_emissions = []
-        for entity in entities:
-            triangles, colors, emission = self.generate_triangles(entity)
-            self.triangles.extend(triangles)
-            self.triangle_colors.extend(colors)
-            self.triangle_emissions.extend(emission)
+        data = []
 
-        # Step 2: uv map the triangles
-        self.triangle_uvs, uv_map_world_size = uv_mapper.map_triangles(self.triangles, patches_resolution, debug=True)
-        self.light_map_resolution = math.ceil(uv_map_world_size * patches_resolution)
+        # Cache texture dimensions to avoid opening the same texture multiple times
+        texture_dimensions = {}
 
-        # Step 3: generate patches and lightmap
-        self.patches, self.light_map, uvs = self.generate_patches(self.triangles, self.triangle_uvs, self.light_map_resolution, self.triangle_emissions)
+        # Loop over each triangle and reconstruct the JSON format
+        for i, (triangle, tex_uv, lm_uv, emit) in enumerate(zip(self.triangles, self.texture_uvs, self.lightmap_uvs, self.emissions)):
+            # Ensure numpy elements are converted to native Python types
+            triangle = [[vertex[0], vertex[1], vertex[2]] for vertex in triangle]
+            tex_uv = [[float(u), float(v)] for u, v in tex_uv]
+            lm_uv = [[float(u), float(v)] for u, v in lm_uv]
+            emit = float(emit)  # Ensure emission is a Python float
 
-        # Step 4: generate vertex array for the GPU
-        self.vertex_array = self.generate_vertex_array(self.triangles, self.triangle_colors, uvs)
-        self.vertex_count = len(self.vertex_array) // 8  # Each vertex is made out of x, y, z, u, v
+            # Find the texture name associated with this triangle
+            texture_name = None
+            for tex_name, tri_indices in self.textures.items():
+                if i in tri_indices:
+                    texture_name = tex_name
+                    break
+
+            # Get texture dimensions (width, height), open the texture only if necessary
+            if texture_name not in texture_dimensions:
+                texture_path = f"{assets_path}/textures/{texture_name}.png"
+                with Image.open(texture_path) as img:
+                    texture_dimensions[texture_name] = img.size  # (width, height)
+
+            tex_width, tex_height = texture_dimensions[texture_name]
+
+            # Convert UVs back to pixel space
+            pixel_tex_uv = [[u * tex_width, v * tex_height] for u, v in tex_uv]
+
+            # Create vertex dictionary with positions, texture UVs, and lightmap UVs
+            vertices = [
+                {"pos": triangle[j], "uv": pixel_tex_uv[j], "uv_lightmap": lm_uv[j]}
+                for j in range(len(triangle))
+            ]
+            
+            # Construct the triangle entry
+            triangle_data = {
+                "vertices": vertices,
+                "textureName": texture_name,
+                "emission": emit
+            }
+
+            data.append(triangle_data)
+
+        # Ensure the directory exists
+        json_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Write JSON data to file
+        with open(json_path, 'w') as file:
+            json.dump(data, file, indent=4)
 
         return self
 
+
+    def create_patches(self, patches_resolution: float = 0.0625) -> 'Scene':
+
+
+        self.lightmap_uvs, uv_map_world_size = uv_mapper.map_triangles(self.triangles, patches_resolution, debug=True)
+        self.light_map_resolution = math.ceil(uv_map_world_size * patches_resolution)
+
+        self.patches, self.light_map, self.illegal_pixels = self.generate_patches(self.triangles, self.lightmap_uvs, self.light_map_resolution, self.emissions)
+
+        return self
+    
+    def create_texture_array(self, textures, uvs, textures_directory):
+        # 1. Load all textures and find the largest resolution
+        images = {}
+        max_width, max_height = 0, 0
+        texture_index_mapping = {}  # Dictionary to map texture names to indices
+
+        for index, texture_name in enumerate(textures):
+            path = os.path.join(textures_directory, texture_name + ".png")
+            image = Image.open(path).convert("RGBA")
+            images[texture_name] = image
+            max_width = max(max_width, image.width)
+            max_height = max(max_height, image.height)
+            texture_index_mapping[texture_name] = index  # Map texture name to its index
+
+        # 2. Resize all images to the largest resolution
+        for texture_name, image in images.items():
+            if image.size != (max_width, max_height):
+                images[texture_name] = image.resize((max_width, max_height), Image.LANCZOS)
+
+        # 3. Create a texture array with appropriate dimensions
+        num_textures = len(images)
+        texture_array = np.zeros((num_textures, max_height, max_width, 4), dtype=np.uint8)
+
+        for index, (texture_name, image) in enumerate(images.items()):
+            texture_array[index] = np.array(image)
+
+        # 4. Adjust UVs (these remain unchanged)
+        adjusted_uvs = [None] * len(uvs)  # Initialize a list to hold adjusted UVs for each triangle
+
+        return texture_array, adjusted_uvs, texture_index_mapping
 
     def load(self, scene_path: Path) -> 'Scene':
         """
@@ -69,9 +235,19 @@ class Scene:
         self.light_map = np.array(data['light_map'], dtype=np.float32)
         self.vertex_array = np.array(data['vertex_array'], dtype=np.float32)
         self.vertex_count = len(self.vertex_array) // 8  # Update vertex count based on loaded data
+        self.illegal_pixels = np.array(data['illegal_pixels'])
 
         return self
+    
+    def load_lightmap(self, lightmap_path):
 
+        lightmap_image = cv2.imread(str(lightmap_path), cv2.IMREAD_UNCHANGED)
+        # Convert from BGR to RGB if needed
+        light_map = cv2.cvtColor(lightmap_image, cv2.COLOR_BGR2RGB)
+
+        # Assign the light map to the scene
+        self.light_map = light_map
+    
     def save(self, scene_path: Path) -> 'Scene':
         """
         Save the scene to a file.
@@ -81,12 +257,13 @@ class Scene:
         """
         # Serialize patches using the serialize method of the Patch class
         serialized_patches = [patch.serialize() for patch in self.patches]
-        
+
         # Prepare data for saving
         data = {
             'patches': serialized_patches,
             'light_map': self.light_map.tolist(),  # Convert to list for JSON serialization
             'vertex_array': self.vertex_array.tolist(),  # Convert to list for JSON serialization
+            'illegal_pixels': self.illegal_pixels.tolist(),
         }
         
         # Write data to the specified file
@@ -95,30 +272,35 @@ class Scene:
 
         return self
 
-
-    def generate_vertex_array(self, triangles: list[list[float]], triangle_colors, uvs: list[list[tuple[float, float]]]) -> np.ndarray:
+    def generate_vertex_array(self) -> 'Scene':
         """
         Create a vertex array from triangles and UV coordinates.
-
-        Args:
-            triangles (list[list[float]]): List of triangles in world coordinates.
-            uvs (list[list[tuple[float, float]]]): Corresponding UV coordinates for each triangle.
-
-        Returns:
-            np.ndarray: A flat array of vertex data for the GPU.
         """
         vertex_list = []
-        for i, triangle in enumerate(triangles):
-            triangle_color = triangle_colors[i]
+        
+        for i, triangle in enumerate(self.triangles):
+            # Find the texture name associated with this triangle
+            texture_name = None
+            for key, value in self.textures.items():
+                if i in value:  # If the current triangle index is in the list for this texture
+                    texture_name = key
+                    break
+            
+            texture_index = self.texture_index_mapping.get(texture_name, -1)  # Default to -1 if not found
+
             for j, vertex in enumerate(triangle):
                 x, y, z = vertex
-                r, g, b = triangle_color.r, triangle_color.g, triangle_color.b
-                u, v = uvs[i][j]
-                vertex_list.extend([x, y, z, r, g, b, u, v])
+                u_t, v_t = self.texture_uvs[i][j]
+                u_l, v_l = self.lightmap_uvs[i][j]
 
-        return np.array(vertex_list, dtype=np.float32)
+                vertex_list.extend([x, y, z, u_t, v_t, u_l, v_l, texture_index])
 
-    def generate_patches(self, triangles: list[list[float]], uvs: list[list[tuple[float, float]]], texture_map_resolution: int, triangle_emissions: list[Color]) -> tuple[list, np.ndarray, list]:
+        self.vertex_array = np.array(vertex_list, dtype=np.float32)
+        self.vertex_count = len(self.vertex_array) // 8  # Each vertex now includes the texture index
+
+        return self
+    
+    def generate_patches(self, triangles: list[list[float]], uvs: list[list[tuple[float, float]]], texture_map_resolution: int, triangle_emissions: list[Color]):
         """
         Generate patches and a lightmap for the scene.
 
@@ -139,6 +321,7 @@ class Scene:
         half_pixel_size_uv = pixel_size_uv / 2
 
         light_map = np.zeros((texture_map_resolution, texture_map_resolution, 3), dtype=np.float32)
+        illegal_pixels_list = []
 
         for idx in tqdm(range(texture_map_resolution**2), desc="Generating patches"):
             y = idx // texture_map_resolution
@@ -149,6 +332,7 @@ class Scene:
             v = x * pixel_size_uv + half_pixel_size_uv
 
             # Check which triangle the pixel is inside
+            pixel_is_within_triangle = False
             for i, triangle in enumerate(triangles):
                 uv_a, uv_b, uv_c = uvs[i]
 
@@ -160,48 +344,77 @@ class Scene:
                 ]
 
                 if geometry.square_triangle_overlap(pixel_corner_uvs, (uv_a, uv_b, uv_c)):
+                #if geometry.is_point_in_triangle(np.array((u, v)), np.array(uv_a), np.array(uv_b), np.array(uv_c)):
                     # Apply emission to lightmap
                     triangle_emission = triangle_emissions[i]
-                    light_map[x, y] = [triangle_emission.r, triangle_emission.g, triangle_emission.b]
+                    light_map[x, y] = [triangle_emission, triangle_emission, triangle_emission]
                     is_emissive = triangle_emission.sum() > 0  # Check if any emission exists
 
-                    if is_emissive:
+                    # Interpolate world space coordinates and normals
+                    world_coords, normal = self.interpolate_uv_to_world(triangle, uvs[i], (u, v))
+                    if self.is_patch_in_front_of_triangle(world_coords, normal, triangles, 0.001):
                         break
+                    
+                    pixel_is_within_triangle = True
+                    new_patch = Patch(x, y, vec(world_coords[0], world_coords[1], world_coords[2]), vec(normal[0], normal[1], normal[2]), (u, v), (uv_a, uv_b, uv_c), is_emissive)
+                    patches.append(new_patch)
+                    break  # Exit the triangle loop once found
+            
+            if pixel_is_within_triangle == False:
+                # this pixel is not within a triangle => illegal pixel
+                illegal_pixels_list.append((x, y))
 
-                    else:
-                        # Interpolate world space coordinates and normals
-                        world_coords, normal = self.interpolate_uv_to_world(triangle, uvs[i], (u, v))
-                        patches.append(Patch(x, y, vec(world_coords[0], world_coords[1], world_coords[2]), vec(normal[0], normal[1], normal[2]), (u, v), (uv_a, uv_b, uv_c), is_emissive))
-                        break  # Exit the triangle loop once found
+        illegal_pixels_map = self.precalculate_illegal_pixels(np.array(illegal_pixels_list), patches)
 
-        return patches, light_map, uvs
+        self.__debug_patch_mapping(patches, texture_map_resolution)
+        return patches, light_map, illegal_pixels_map
     
-    def generate_triangles(self, entity: Entity) -> tuple[list[list[float]], list[Color], list[Color]]:
-        """
-        Generate triangles, colors, and emissions from an entity.
+    def is_patch_in_front_of_triangle(self, patch_point: np.ndarray, patch_normal: np.ndarray, triangles: List[List[tuple[float, float, float]]], epsilon=1e-5) -> bool:
+        
+        for triangle in triangles:
+            # Get triangle vertices
+            p0, p1, p2 = [np.array(vertex) for vertex in triangle]
+            
+            # Calculate the triangle's normal vector
+            triangle_normal = geometry.calculate_normal(p0, p1, p2)
 
-        Args:
-            entity (Entity): The entity to generate triangles from.
+        
+            # Check if the patch lies on the plane of the triangle
+            # Plane equation: (point - p1) • normal = 0
+            distance_to_plane = np.dot(patch_point - p0, triangle_normal)
+            
+            if abs(distance_to_plane) <= epsilon:
+                # Check if the triangle's normal points in the opposite direction to the patch's normal
+                if np.dot(triangle_normal, patch_normal) < 0:
+                    # Check if the patch lies within the triangle using barycentric coordinates
+                    if geometry.is_point_in_triangle(patch_point, p0, p1, p2):
+                        return True  # Patch is within the triangle and in front of it
 
-        Returns:
-            tuple: A tuple containing:
-                - triangles (list[list[float]]): List of generated triangles.
-                - colors (list[tuple[float, float, float]]): Base colors for the triangles.
-                - emission (list[tuple[float, float, float]]): Emission colors for the triangles.
-        """
-        vertices = np.array(entity.vertices)
-        indices = entity.indices
+        return False  # No triangle was found in front of the patch
+    
+    def precalculate_illegal_pixels(self, illegal_pixels: List[tuple[int, int]], patches: List[Patch]) -> np.ndarray:
+        # Create an array of patch coordinates
+        patch_coords = np.array([(patch.x_tex_coord, patch.y_tex_coord) for patch in patches])
+        
+        # Create a KDTree for the patch coordinates for efficient nearest neighbor lookup
+        kdtree = KDTree(patch_coords)
 
-        triangles = []
-        colors = []
-        emissions = []
-        for face in indices:
-            triangle = [vertices[vertex_index][[0, 2, 1]] for vertex_index in face[::-1]]  # Reverse order and reformat
-            triangles.append(triangle)
-            colors.append(entity.base_color)
-            emissions.append(entity.emission)
+        # Prepare result array
+        result = []
 
-        return triangles, colors, emissions
+        # Process each illegal pixel
+        for x1, y1 in tqdm(illegal_pixels, desc="Precalculating illegal pixels", unit="pixel"):
+            # Query the KDTree for the nearest patch
+            distance, closest_idx = kdtree.query((x1, y1))
+            
+            # Get the closest patch coordinates and color
+            x2, y2 = patch_coords[closest_idx]
+
+            # Append the result as (x1, y1, x2, y2, R, G, B)
+            result.append((x1, y1, x2, y2))
+    
+        return np.array(result)
+    
     
     def interpolate_uv_to_world(self, vertices: np.ndarray, uv_coords: np.ndarray, uv_point: tuple[float, float]) -> tuple[np.ndarray, np.ndarray]:
         """
@@ -281,6 +494,30 @@ class Scene:
             np.ndarray: The identity transformation matrix.
         """
         return pyrr.matrix44.create_identity(dtype=np.float32)
+
+    def __debug_patch_mapping(self, patches, image_size=148):
+        """Fills in pixels with patches onto an image with random colors and saves it."""
+
+        def generate_random_color():
+            """Generate a random RGB color."""
+            return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        
+        # Create a blank image
+        image = Image.new("RGB", (image_size, image_size), (255, 255, 255))
+        pixels = image.load()
+        
+        for patch in patches:
+            x, y = patch.x_tex_coord, patch.y_tex_coord
+            random_color = generate_random_color()
+            
+            # Check if the patch coordinates are within the image bounds
+            if 0 <= x < image_size and 0 <= y < image_size:
+                color = random_color
+                pixels[x, y] = color  # Set pixel color
+
+        # Save the image
+        image.save("debug_patches.png")
+
         
     
     
