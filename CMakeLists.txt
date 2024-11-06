@@ -85,8 +85,8 @@ add_executable(Game
     physics.cpp
     utils/utils.h
     utils/utils.cpp
-    utils/math.h
-    utils/math.cpp
+    utils/quick_math.h
+    utils/quick_math.cpp
     polysoup.h
     polysoup.cpp
         # map_parser.h

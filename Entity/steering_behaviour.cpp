@@ -1,5 +1,5 @@
 #include "steering_behaviour.h"
-#include "../utils/math.h"
+#include "../utils/quick_math.h"
 #include "../utils/utils.h"
 
 //------------------------- ctor -----------------------------------------

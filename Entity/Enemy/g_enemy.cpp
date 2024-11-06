@@ -4,7 +4,7 @@
 
 #include "g_enemy.h"
 #include "../../input.h"
-#include "../../utils/math.h"
+#include "../../utils/quick_math.h"
 #include "../../utils/utils.h"
 #include "g_enemy_states.h"
 #include <SDL.h>
