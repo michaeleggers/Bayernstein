@@ -21,6 +21,7 @@
 #include "r_itexture.h"
 #include "utils.h"
 #include "hkd_interface.h"
+#include "input_handler.h"
 
 static int hkd_Clamp(int val, int clamp) {
     if ( val > clamp || val < clamp ) return clamp;
@@ -177,6 +178,13 @@ bool Game::RunFrame(double dt) {
 
     if ( KeyPressed(SDLK_ESCAPE) ) {
         m_Interface->QuitGame();
+    }
+
+    // Check the input system for commands.
+    
+    Command* command = InputHandler::Instance()->HandleInput();
+    if (command != nullptr) {
+        command->execute();
     }
 
     EllipsoidCollider ec = m_pPlayerEntity->GetEllipsoidCollider();
