@@ -25,6 +25,8 @@ private:
     static std::map<std::string, ConsoleVariable*> variables;
 
 public:
+    /** Initialize VariableManager variables / commands. */
+    static void Init();
     /** Registers the given variable to be available in the console. */
     static bool Register(ConsoleVariable* var);
     /** Registers an existing (and registered) variable with the given alias name. */

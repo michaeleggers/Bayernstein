@@ -26,9 +26,14 @@
 #include "r_gl_fbo.h"
 #include "input.h" 
 #include "Console/Console.h"
+#include "Console/VariableManager.h"
 
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
+
+ConsoleVariable scr_consize = {"scr_consize", 0.45f};
+ConsoleVariable scr_conopacity = {"scr_conopacity", 0.95f};
+
 
 void GLAPIENTRY OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
                                     GLsizei length, const GLchar* message, const void* userParam) {
@@ -259,6 +264,9 @@ bool GLRender::Init(void) {
     // FBO for rendering text and other 2d elements (shapes, sprites, ...)
     // on top of the 3d scene.
     m_2dFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    VariableManager::Register(&scr_consize);
+    VariableManager::Register(&scr_conopacity);
 
     return true;
 }
@@ -965,7 +973,7 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
 void GLRender::RenderConsole(Console* console, CFont* font) {
     if (!console->m_isActive) return;
 
-    const float relHeight = 0.45f;
+    const float relHeight = scr_consize.value;
     const float height = m_WindowHeight * relHeight;
     const float borderWidth = 2.0f;
     const float textMargin = 10.0f;
@@ -978,7 +986,7 @@ void GLRender::RenderConsole(Console* console, CFont* font) {
 
     Begin2D();
     // draw background/frame
-    SetShapeColor(glm::vec4(0.05f, 0.05f, 0.05f, 0.95f));
+    SetShapeColor(glm::vec4(0.05f, 0.05f, 0.05f, scr_conopacity.value));
     DrawBox(0.0f, 0.0f, 1.0f, relHeight);
     SetShapeColor(glm::vec4(1.0f));
     DrawBox(0.0f, 0.0f, borderWidth, height, COORD_MODE_ABS);

@@ -4,6 +4,10 @@
 #include <stdarg.h>
 
 #include "CommandManager.h"
+#include "VariableManager.h"
+
+ConsoleVariable con_stdout = {"con_stdout", 1};
+
 
 Console* Console::instance = nullptr;
 
@@ -13,6 +17,7 @@ Console::Console(int lineBufferSize, int inputHistorySize) :
 Console* Console::Create(int lineBufferSize, int inputHistorySize) {
     if (instance == nullptr) {
         instance = new Console(lineBufferSize, inputHistorySize);
+        VariableManager::Register(&con_stdout);
     }
     return instance;
 }
@@ -92,7 +97,7 @@ void Console::DeleteInput(int delta) {
 }
 
 void Console::SubmitInput() {
-    m_lineBuffer.Push(m_currentInput);
+    Print(m_currentInput);
     m_inputHistoryPos = -1;
     m_cursorPos = 0;
     m_scrollPos = 0;
@@ -106,6 +111,9 @@ void Console::SubmitInput() {
 }
 
 void Console::Print(std::string str) {
+    if (con_stdout.value) {
+        std::cout << str << std::endl;
+    }
     instance->m_lineBuffer.Push(str);
 }
 
@@ -117,5 +125,8 @@ void Console::PrintfImpl(const char* fmt, ...) {
     vsnprintf(formatted, length, fmt, args);
     va_end(args);
 
+    if (con_stdout.value) {
+        std::cout << formatted << std::endl;
+    }
     instance->m_lineBuffer.Push(std::string(formatted));
 }

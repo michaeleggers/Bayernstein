@@ -40,6 +40,7 @@
 #include "game.h"
 #include "TestClass.h"
 #include "utils.h"
+#include "Console/VariableManager.h"
 
 static bool         g_GameWantsToQuit;
 std::string         g_GameDir;
@@ -86,6 +87,7 @@ int main(int argc, char** argv)
         return -1;
     }    
 
+    VariableManager::Init();
     Console* console = Console::Create(100, 32);
     CFont* consoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 26);
     renderer->RegisterFont(consoleFont);

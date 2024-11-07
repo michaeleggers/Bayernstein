@@ -4,7 +4,20 @@
 #include "Console.h"
 
 
+void Reset_f(std::vector<std::string> args) {
+    if (args.size() == 2) {
+        VariableManager::Reset(args[1]);
+    } else {
+        Console::Print("Invalid number of arguments to reset variable!");
+    }
+}
+
+
 std::map<std::string, ConsoleVariable*> VariableManager::variables;
+
+void VariableManager::Init() {
+    CommandManager::Add("reset", Reset_f);
+}
 
 bool VariableManager::Register(ConsoleVariable* var) {
     if (CommandManager::Find(var->name)) {
