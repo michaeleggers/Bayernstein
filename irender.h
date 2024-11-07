@@ -13,7 +13,7 @@
 #include "camera.h"
 #include "r_common.h"
 #include "r_font.h"
-#include "Console.h"
+#include "Console/Console.h"
 
 enum DrawMode {
 	DRAW_MODE_SOLID,

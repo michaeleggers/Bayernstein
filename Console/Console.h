@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "CircularBuffer.h"
+#include "../CircularBuffer.h"
 
 /**
  * Backend for the in-game console.

@@ -16,7 +16,7 @@
 #include "r_gl_texture.h"
 #include "r_gl_fbo.h"
 #include "camera.h"
-#include "Console.h"
+#include "Console/Console.h"
 
 struct GLMesh {
 	int			triOffset, triCount; // Offsets into VBO of tris

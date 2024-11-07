@@ -130,8 +130,8 @@ add_executable(Game
     Intersections.h
     CircularBuffer.cpp
     CircularBuffer.h
-    Console.cpp
-    Console.h
+    Console/Console.cpp
+    Console/Console.h
     CWorld.cpp
     CWorld.h
     collision.cpp

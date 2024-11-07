@@ -25,7 +25,7 @@
 #include "r_gl_texture_mgr.h"
 #include "r_gl_fbo.h"
 #include "input.h" 
-#include "Console.h"
+#include "Console/Console.h"
 
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
