@@ -153,10 +153,16 @@ void Game::Init() {
     //
     int hDebugPlayerModel = renderer->RegisterModel(m_pDebugPlayerEntity->GetModel());
    
-    // Test Input Setup
+    // Test Input Binding
+
+    // Keyboard buttons
     InputHandler::Instance()->BindInputToActionName(SDLK_SPACE, "jump");
     InputHandler::Instance()->BindInputToActionName(SDLK_0, "equip_rocketlauncher");
     InputHandler::Instance()->BindInputToActionName(SDLK_w, "forward");
+    // Mouse buttons
+    InputHandler::Instance()->BindInputToActionName(SDL_BUTTON_LEFT, "fire"); 
+    InputHandler::Instance()->BindInputToActionName(SDL_BUTTON_RIGHT, "switch_to_prev_weapon"); 
+    
 }
 
 static void DrawCoordinateSystem(IRender* renderer) {

@@ -38,7 +38,20 @@ ButtonState InputHandler::GetMappedButtonState(const std::string& actionName) {
     }
 
     // OK. Action exists. Check its button state.
+    
     if ( KeyPressed(actionToInput->second) ) {
+        return ButtonState::PRESSED;
+    }
+
+    if ( MouseWentDown(actionToInput->second) ) {
+        return ButtonState::WENT_DOWN;
+    }
+
+    if ( MouseWentUp(actionToInput->second) ) {
+        return ButtonState::WENT_UP;
+    }
+    
+    if ( MousePressed(actionToInput->second) ) {
         return ButtonState::PRESSED;
     }
 

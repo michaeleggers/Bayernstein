@@ -131,7 +131,15 @@ void Player::UpdatePlayerModel() {
     if (jumpState == ButtonState::PRESSED) {
         printf("I am jumping!\n");
     }
-
+    ButtonState fireState = CHECK_ACTION("fire");
+    if (fireState == ButtonState::PRESSED) {
+        printf("FIRE!\n");
+    }
+    ButtonState prevWeapon = CHECK_ACTION("switch_to_prev_weapon");
+    if (prevWeapon == ButtonState::WENT_DOWN) {
+        printf("Switching to previous weapon!\n");
+    }
+    
     SetAnimState(&m_Model, playerAnimState);
 
     UpdateModel(&m_Model, (float)dt);
