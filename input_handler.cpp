@@ -4,6 +4,7 @@
 
 // 'Low level' raw (SDL) input
 #include "input.h"
+#include "commands.h"
 
 InputHandler* InputHandler::Instance() {
     static InputHandler m_InputHandler;
@@ -12,8 +13,11 @@ InputHandler* InputHandler::Instance() {
 }
 
 Command* InputHandler::HandleInput() {
-    if ( KeyPressed(SDLK_t) ) {
-        return Command::Instance();
+    if ( KeyPressed(SDLK_SPACE) ) {
+        return JumpCmd::Instance();
+    }
+    if ( KeyPressed(SDLK_e) ) {
+        return UseCmd::Instance();
     }
     
     return nullptr;

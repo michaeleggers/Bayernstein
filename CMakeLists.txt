@@ -83,6 +83,8 @@ add_executable(Game
     input_handler.cpp
     command.h
     command.cpp
+    commands.h
+    commands.cpp
     camera.h
     camera.cpp
     physics.h

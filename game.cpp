@@ -184,7 +184,7 @@ bool Game::RunFrame(double dt) {
     
     Command* command = InputHandler::Instance()->HandleInput();
     if (command != nullptr) {
-        command->execute();
+        command->Execute();
     }
 
     EllipsoidCollider ec = m_pPlayerEntity->GetEllipsoidCollider();

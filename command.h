@@ -4,16 +4,16 @@
 class Command {
 
 public:
-    static Command* Instance();
 
     Command() = default;
     ~Command() = default;
 
-    void execute();
+    virtual void Execute() = 0;
 
 private:
 
 };
+
 
 #endif
 
