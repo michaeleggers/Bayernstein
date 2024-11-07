@@ -89,6 +89,30 @@ HKD_FileStatus hkd_read_file(char const* filename, HKD_File* out_File) {
 	return HKD_FILE_SUCCESS;
 }
 
+HKD_FileStatus hkd_write_file(char const* filename, void* data, 
+							  size_t sizeElement, size_t numElements) {
+	FILE* pFile = 0;
+	pFile = fopen(filename, "wb");
+	if (pFile == 0) { // early out here.
+		printf("Failed to open file for writing: %s\n", filename);
+		return HKD_ERROR_WRITE_FILE;
+	}
+
+	HKD_FileStatus result;
+	size_t retFwriteOp = fwrite(data, sizeElement, numElements, pFile);
+	if ( retFwriteOp != numElements ) {
+		fprintf( stderr, "fread failed: %zu\n", retFwriteOp );
+		result = HKD_ERROR_WRITE_FILE;
+	}
+	else {
+		result = HKD_FILE_SUCCESS;
+	}
+
+	fclose(pFile);
+
+	return result;
+}
+
 HKD_FileStatus hkd_destroy_file(HKD_File* file) {
 	if (file->data != NULL) {
 		free(file->data);

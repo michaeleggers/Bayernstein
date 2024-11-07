@@ -68,8 +68,8 @@ void Player::UpdateCamera(Camera* camera) {
 
 void Player::UpdatePlayerModel() {
     double dt = GetDeltaTime();
-    float followCamSpeed = 0.03f;
-    float followTurnSpeed = 0.1f;
+    float followCamSpeed = 0.05f;
+    float followTurnSpeed = 0.3f;
     if (KeyPressed(SDLK_LSHIFT)) {
         followCamSpeed *= 0.3f;
         followTurnSpeed *= 0.3f;

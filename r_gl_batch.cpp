@@ -49,20 +49,23 @@ GLBatch::GLBatch(uint32_t maxVerts)
     glEnableVertexAttribArray(1); // uv
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_UV_OFFSET);
 
-    glEnableVertexAttribArray(2); // bc
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BC_OFFSET);
+    glEnableVertexAttribArray(2); // uv lightmap
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_UV_LIGHTMAP_OFFSET);
+    
+    glEnableVertexAttribArray(3); // bc
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BC_OFFSET);
 
-    glEnableVertexAttribArray(3); // normal
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_NORMAL_OFFSET);
+    glEnableVertexAttribArray(4); // normal
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_NORMAL_OFFSET);
 
-    glEnableVertexAttribArray(4); // color
-    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_COLOR_OFFSET);
+    glEnableVertexAttribArray(5); // color
+    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_COLOR_OFFSET);
 
-    glEnableVertexAttribArray(5); // blendindices
-    glVertexAttribIPointer(5, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void*)VERT_BLENDINDICES_OFFSET);
+    glEnableVertexAttribArray(6); // blendindices
+    glVertexAttribIPointer(6, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void*)VERT_BLENDINDICES_OFFSET);
 
-    glEnableVertexAttribArray(6); // blendweights
-    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BLENDWEIGHTS_OFFSET);
+    glEnableVertexAttribArray(7); // blendweights
+    glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BLENDWEIGHTS_OFFSET);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -98,20 +101,23 @@ GLBatch::GLBatch(uint32_t maxVerts, uint32_t maxIndices)
     glEnableVertexAttribArray(1); // uv
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_UV_OFFSET);
 
-    glEnableVertexAttribArray(2); // bc
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BC_OFFSET);
+    glEnableVertexAttribArray(2); // uv lightmap
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_UV_LIGHTMAP_OFFSET);
+    
+    glEnableVertexAttribArray(3); // bc
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BC_OFFSET);
 
-    glEnableVertexAttribArray(3); // normal
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_NORMAL_OFFSET);
+    glEnableVertexAttribArray(4); // normal
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_NORMAL_OFFSET);
 
-    glEnableVertexAttribArray(4); // color
-    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_COLOR_OFFSET);
+    glEnableVertexAttribArray(5); // color
+    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_COLOR_OFFSET);
 
-    glEnableVertexAttribArray(5); // blendindices
-    glVertexAttribIPointer(5, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void*)VERT_BLENDINDICES_OFFSET);
+    glEnableVertexAttribArray(6); // blendindices
+    glVertexAttribIPointer(6, 4, GL_UNSIGNED_INT, sizeof(Vertex), (void*)VERT_BLENDINDICES_OFFSET);
 
-    glEnableVertexAttribArray(6); // blendweights
-    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BLENDWEIGHTS_OFFSET);
+    glEnableVertexAttribArray(7); // blendweights
+    glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BLENDWEIGHTS_OFFSET);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -143,6 +149,16 @@ int GLBatch::Add(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
     m_VertOffsetIndex += 3*numTris;
 
     return offset;
+}
+
+int GLBatch::Add(MapTri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
+    std::vector<Tri> rawTris{};
+    rawTris.resize( numTris );
+    for (int i = 0; i < numTris; i++) {
+        rawTris[ i ] = tris[ i ].tri;
+    }
+    
+    return Add( rawTris.data(), numTris, cullFace, drawMode );
 }
 
 int GLBatch::Add(Vertex* verts, uint32_t numVerts, bool cullFace, DrawMode drawMode)
