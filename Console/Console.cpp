@@ -3,6 +3,8 @@
 #include <iostream>
 #include <stdarg.h>
 
+#include "CommandManager.h"
+
 Console* Console::instance = nullptr;
 
 Console::Console(int lineBufferSize, int inputHistorySize) :
@@ -91,12 +93,16 @@ void Console::DeleteInput(int delta) {
 
 void Console::SubmitInput() {
     m_lineBuffer.Push(m_currentInput);
-    m_inputHistory.Push(m_currentInput);
-    m_currentInput = "";
     m_inputHistoryPos = -1;
     m_cursorPos = 0;
+    m_scrollPos = 0;
     m_blinkTimer = 0;
-    // TODO: parse/dispatch submitted commands
+
+    if (m_currentInput == "") return;
+
+    m_inputHistory.Push(m_currentInput);
+    CommandManager::ExecuteString(m_currentInput);
+    m_currentInput = "";
 }
 
 void Console::Print(std::string str) {
