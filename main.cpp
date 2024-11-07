@@ -86,7 +86,7 @@ int main(int argc, char** argv)
         return -1;
     }    
 
-    Console* console = new Console(100, 32);
+    Console* console = Console::Create(100, 32);
     CFont* consoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 26);
     renderer->RegisterFont(consoleFont);
 

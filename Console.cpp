@@ -1,8 +1,20 @@
-
 #include "Console.h"
+
+#include <iostream>
+#include <stdarg.h>
+
+Console* Console::instance = nullptr;
 
 Console::Console(int lineBufferSize, int inputHistorySize) :
     m_lineBuffer(lineBufferSize), m_inputHistory(inputHistorySize) {}
+
+Console* Console::Create(int lineBufferSize, int inputHistorySize) {
+    if (instance == nullptr) {
+        instance = new Console(lineBufferSize, inputHistorySize);
+    }
+    return instance;
+}
+
 
 int Console::ScrollPos() {
     return m_scrollPos;
@@ -85,4 +97,19 @@ void Console::SubmitInput() {
     m_cursorPos = 0;
     m_blinkTimer = 0;
     // TODO: parse/dispatch submitted commands
+}
+
+void Console::Print(std::string str) {
+    instance->m_lineBuffer.Push(str);
+}
+
+void Console::PrintfImpl(const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    int length = vsnprintf(nullptr, 0, fmt, args) + 1; // +1 for \0 string termination
+    char formatted[length];
+    vsnprintf(formatted, length, fmt, args);
+    va_end(args);
+
+    instance->m_lineBuffer.Push(std::string(formatted));
 }
