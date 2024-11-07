@@ -19,7 +19,30 @@ Command* InputHandler::HandleInput() {
     if ( KeyPressed(SDLK_e) ) {
         return UseCmd::Instance();
     }
+    if ( KeyPressed(SDLK_0) ) {
+
+    }
     
     return nullptr;
+}
+
+void InputHandler::BindInputToActionName(int key, const std::string& actionName) {
+    m_ActionNameToInput.insert({ actionName, key }); 
+}
+
+ButtonState InputHandler::GetMappedButtonState(const std::string& actionName) {
+    // Check if a mapping exists for this action 
+    const auto& actionToInput = m_ActionNameToInput.find(actionName);
+    if ( actionToInput == m_ActionNameToInput.end() ) {
+        return ButtonState::NONE;
+    }
+
+    // OK. Action exists. Check its button state.
+    if ( KeyPressed(actionToInput->second) ) {
+        return ButtonState::PRESSED;
+    }
+
+    // Action exists but no button is active in any way.
+    return ButtonState::NONE;
 }
 

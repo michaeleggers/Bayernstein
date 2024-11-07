@@ -152,6 +152,11 @@ void Game::Init() {
     int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
     //
     int hDebugPlayerModel = renderer->RegisterModel(m_pDebugPlayerEntity->GetModel());
+   
+    // Test Input Setup
+    InputHandler::Instance()->BindInputToActionName(SDLK_SPACE, "jump");
+    InputHandler::Instance()->BindInputToActionName(SDLK_0, "equip_rocketlauncher");
+    InputHandler::Instance()->BindInputToActionName(SDLK_w, "forward");
 }
 
 static void DrawCoordinateSystem(IRender* renderer) {
@@ -182,10 +187,11 @@ bool Game::RunFrame(double dt) {
 
     // Check the input system for commands.
     
-    Command* command = InputHandler::Instance()->HandleInput();
-    if (command != nullptr) {
-        command->Execute();
-    }
+    /*Command* command = InputHandler::Instance()->HandleInput();*/
+    /*if (command != nullptr) {*/
+    /*    command->Execute();*/
+    /*}*/
+    
 
     EllipsoidCollider ec = m_pPlayerEntity->GetEllipsoidCollider();
     EllipsoidCollider ecDebugPlayer = m_pDebugPlayerEntity->GetEllipsoidCollider();

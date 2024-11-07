@@ -6,7 +6,9 @@
 
 #include "../../input.h"
 #include "../../utils.h"
+#include "../../input_handler.h"
 #include "g_player_states.h"
+
 #include <SDL.h>
 
 Player::Player(const int id, glm::vec3 initialPosition)
@@ -95,7 +97,13 @@ void Player::UpdatePlayerModel() {
     m_Velocity = glm::vec3(0.0f);
     float t = (float)dt * followCamSpeed;
     AnimState playerAnimState = ANIM_STATE_IDLE;
-    if (KeyPressed(SDLK_w)) {
+    //if (KeyPressed(SDLK_w)) {
+    //    m_Velocity += t * m_Forward;
+    //    playerAnimState = ANIM_STATE_RUN;
+    //}
+    
+    ButtonState forward = CHECK_ACTION("forward");
+    if ( forward == ButtonState::PRESSED ) {
         m_Velocity += t * m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
@@ -116,6 +124,12 @@ void Player::UpdatePlayerModel() {
         if (KeyPressed(SDLK_LSHIFT)) {
             playerAnimState = ANIM_STATE_WALK;
         }
+    }
+
+    // Test the input handler here.
+    ButtonState jumpState = CHECK_ACTION("jump");
+    if (jumpState == ButtonState::PRESSED) {
+        printf("I am jumping!\n");
     }
 
     SetAnimState(&m_Model, playerAnimState);
