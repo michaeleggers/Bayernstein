@@ -140,11 +140,17 @@ void Game::Init() {
     m_pPlayerEntity = new Player(idCounter++, playerStartPosition);
     m_pEntityManager->RegisterEntity(m_pPlayerEntity);
     m_pEntityManager->RegisterEntity(new Enemy(idCounter++));
-
+  
+    glm::vec3 debugPlayerStartPosition = playerStartPosition + glm::vec3(0.0f, 10.0f, 0.0f);
+    m_pDebugPlayerEntity = new Player(idCounter++, debugPlayerStartPosition);
+    m_pEntityManager->RegisterEntity(m_pDebugPlayerEntity);
+   
     // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
     // in the batch?
 
     int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
+    //
+    int hDebugPlayerModel = renderer->RegisterModel(m_pDebugPlayerEntity->GetModel());
 }
 
 static void DrawCoordinateSystem(IRender* renderer) {
@@ -174,6 +180,7 @@ bool Game::RunFrame(double dt) {
     }
 
     EllipsoidCollider ec = m_pPlayerEntity->GetEllipsoidCollider();
+    EllipsoidCollider ecDebugPlayer = m_pDebugPlayerEntity->GetEllipsoidCollider();
 
     // Test collision between player and world geometry
 #if 1
@@ -199,7 +206,14 @@ bool Game::RunFrame(double dt) {
                                                                allTris.data(),
                                                                allTris.size());
 
+    CollisionInfo collisionInfoDebugPlayer = CollideEllipsoidWithMapTris(ecDebugPlayer,
+                                                               static_cast<float>(dt) * m_pDebugPlayerEntity->GetVelocity(),
+                                                               static_cast<float>(dt) * m_World.m_Gravity,
+                                                               allTris.data(),
+                                                               allTris.size());
+
     m_pPlayerEntity->UpdatePosition(collisionInfo.basePos);
+    m_pDebugPlayerEntity->UpdatePosition(collisionInfoDebugPlayer.basePos);
 
 #endif
 
@@ -271,8 +285,11 @@ bool Game::RunFrame(double dt) {
 
         DrawCoordinateSystem(renderer);
 
-        HKD_Model* models[ 1 ] = { m_pPlayerEntity->GetModel() };
-        renderer->Render(&m_FollowCamera, models, 1);
+        HKD_Model* models[ 2 ] = { 
+            m_pPlayerEntity->GetModel(),
+            m_pDebugPlayerEntity->GetModel()
+        };
+        renderer->Render(&m_FollowCamera, models, 2);
 
         if (collisionInfo.didCollide) {
             m_pPlayerEntity->GetModel()->debugColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); // red

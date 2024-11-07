@@ -25,6 +25,7 @@ class Game {
     std::string                 m_ExePath;
 
     Player* m_pPlayerEntity;
+    Player* m_pDebugPlayerEntity; // Entity we can fly around with
     EntityManager* m_pEntityManager;
 
     Camera m_Camera;
