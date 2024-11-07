@@ -162,14 +162,14 @@ SpaceInEmptyBlock: false
 SpaceInEmptyParentheses: false
 SpacesBeforeTrailingComments: 1
 SpacesInAngles: Never
-SpacesInConditionalStatement: false
+SpacesInConditionalStatement: true 
 SpacesInContainerLiterals: true
 SpacesInCStyleCastParentheses: false
 SpacesInLineCommentPrefix:
   Minimum: 1
   Maximum: -1
 SpacesInParentheses: false
-SpacesInSquareBrackets: false
+SpacesInSquareBrackets: true
 SpaceBeforeSquareBrackets: false
 BitFieldColonSpacing: Both
 Standard: Latest
@@ -180,7 +180,7 @@ StatementMacros:
   - QT_REQUIRE_VERSION
 TabWidth: 4
 UseCRLF: false
-UseTab: Always
+UseTab: false
 WhitespaceSensitiveMacros:
   - STRINGIZE
   - PP_STRINGIZE
