@@ -144,6 +144,13 @@ void Game::Init() {
     m_pEntityManager->RegisterEntity(m_pPlayerEntity);
     m_pEnemyEntity = new Enemy(idCounter++);
     m_pEntityManager->RegisterEntity(m_pEnemyEntity);
+    m_pFollowCameraEntity = new CFollowCamera(idCounter++, m_pPlayerEntity);
+    m_pFollowCameraEntity->m_Camera = Camera(playerStartPosition);
+    m_pFollowCameraEntity->m_Camera.m_Pos.y -= 200.0f;
+    m_pFollowCameraEntity->m_Camera.m_Pos.z += 100.0f;
+    m_pFollowCameraEntity->m_Camera.RotateAroundSide(0.0f);
+    m_pFollowCameraEntity->m_Camera.RotateAroundUp(180.0f);
+    m_pEntityManager->RegisterEntity(m_pFollowCameraEntity);
   
     glm::vec3 debugPlayerStartPosition = playerStartPosition + glm::vec3(0.0f, 10.0f, 0.0f);
     m_pDebugPlayerEntity = new Player(idCounter++, debugPlayerStartPosition);
@@ -174,7 +181,6 @@ void Game::Init() {
 
     // Let the player receive input by default
     CInputDelegate::Instance()->SetReceiver(m_pPlayerEntity);
-    
 }
 
 static void DrawCoordinateSystem(IRender* renderer) {
@@ -203,13 +209,15 @@ bool Game::RunFrame(double dt) {
         m_Interface->QuitGame();
     }
 
-    // Check the input system for commands.
-    static IInputReceiver* receivers[3] = { m_pPlayerEntity, m_pDebugPlayerEntity, m_pEnemyEntity };
+    // Toggle who should be controlled by the input system 
+    static IInputReceiver* receivers[2] = { m_pPlayerEntity, m_pDebugPlayerEntity };
+    static BaseGameEntity* entities[2] = { m_pPlayerEntity, m_pDebugPlayerEntity };
     static int receiverToggle = 0;
     if ( KeyWentDown(SDLK_u) ) {
         printf("Switching to receiver num: %d\n", receiverToggle);
-        receiverToggle = ++receiverToggle % 3;
+        receiverToggle = ++receiverToggle % 2;
         CInputDelegate::Instance()->SetReceiver( receivers[ receiverToggle ] ); 
+        m_pFollowCameraEntity->SetTarget( entities[ receiverToggle ] );
     }
     // Handle the input
     CInputDelegate::Instance()->HandleInput();
@@ -279,7 +287,7 @@ bool Game::RunFrame(double dt) {
 
     // Fix camera position
 
-    m_pPlayerEntity->UpdateCamera(&m_FollowCamera);
+    //m_pPlayerEntity->UpdateCamera(&m_FollowCamera);
 
     // Render stuff
     IRender* renderer = GetRenderer();
@@ -325,7 +333,7 @@ bool Game::RunFrame(double dt) {
             m_pPlayerEntity->GetModel(),
             m_pDebugPlayerEntity->GetModel()
         };
-        renderer->Render(&m_FollowCamera, models, 2);
+        renderer->Render( &(m_pFollowCameraEntity->m_Camera), models, 2 );
 
         if (collisionInfo.didCollide) {
             m_pPlayerEntity->GetModel()->debugColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); // red
@@ -339,9 +347,9 @@ bool Game::RunFrame(double dt) {
 #endif
 
         // Render Player's ellipsoid collider
-        renderer->SetActiveCamera(&m_FollowCamera);
+        renderer->SetActiveCamera(&m_pFollowCameraEntity->m_Camera);
         HKD_Model* playerColliderModel[] = { m_pPlayerEntity->GetModel() };
-        renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
+        renderer->RenderColliders(&m_pFollowCameraEntity->m_Camera, playerColliderModel, 1);
         
         renderer->End3D();
 

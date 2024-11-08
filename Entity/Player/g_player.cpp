@@ -35,6 +35,8 @@ void Player::Update() {
     double dt = GetDeltaTime();
     UpdateModel(&m_Model, (float)dt);
 
+    m_Position = m_Model.position;
+
     m_pStateMachine->Update();
 }
 
@@ -63,14 +65,15 @@ void Player::LoadModel(const char* path, glm::vec3 initialPosition) {
 
 void Player::UpdateCamera(Camera* camera) {
     // Fix camera position
-    camera->m_Pos.x = m_Model.position.x;
-    camera->m_Pos.y = m_Model.position.y;
-    camera->m_Pos.z = m_Model.position.z + 70.0f;
-    camera->m_Pos += (-m_Forward * 80.0f);
-    // m_RotationAngle should already have the information about if we want to move left or right
-    if (KeyPressed(SDLK_RIGHT) || KeyPressed(SDLK_LEFT)) {
-        camera->RotateAroundUp(m_RotationAngle);
-    }
+    
+    //camera->m_Pos.x = m_Model.position.x;
+    //camera->m_Pos.y = m_Model.position.y;
+    //camera->m_Pos.z = m_Model.position.z + 70.0f;
+    //camera->m_Pos += (-m_Forward * 80.0f);
+    //// m_RotationAngle should already have the information about if we want to move left or right
+    //if (KeyPressed(SDLK_RIGHT) || KeyPressed(SDLK_LEFT)) {
+    //    camera->RotateAroundUp(m_RotationAngle);
+    //}
 }
 
 void Player::UpdatePlayerModel() {

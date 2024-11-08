@@ -29,7 +29,6 @@ class Player : public BaseGameEntity, public IInputReceiver {
   private:
     glm::vec3 m_Velocity;
     glm::vec3 m_Forward, m_Side;
-    float m_RotationAngle;
     AnimState m_AnimationState;
     EllipsoidCollider m_EllipsoidCollider;
 
@@ -37,6 +36,7 @@ class Player : public BaseGameEntity, public IInputReceiver {
     void UpdatePlayerModel();
 
   public:
+    float m_RotationAngle;
     explicit Player(const int id, glm::vec3 initialPosition);
     ~Player() override {
         delete m_pStateMachine;

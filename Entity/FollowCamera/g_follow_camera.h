@@ -15,14 +15,18 @@
 class CFollowCamera : public BaseGameEntity {
 
 public:
-    CFollowCamera( const int id, glm::vec3 pos = glm::vec3(0.0f), BaseGameEntity* target = nullptr);
+    CFollowCamera(const int id, 
+                  BaseGameEntity* target = nullptr);
     ~CFollowCamera();
 
     void Update() override;
     bool HandleMessage(const Telegram& telegram) override;
 
-private:
+    void SetTarget(BaseGameEntity* target);
+
     Camera m_Camera;
+
+private:
     BaseGameEntity* m_Target = nullptr;
 };
 

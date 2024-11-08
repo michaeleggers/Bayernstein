@@ -7,6 +7,7 @@
 #include "Entity/Door/g_door.h"
 #include "Entity/Enemy/g_enemy.h"
 #include "Entity/Player/g_player.h"
+#include "Entity/FollowCamera/g_follow_camera.h"
 #include "Entity/entity_manager.h"
 #include "camera.h"
 #include "hkd_interface.h"
@@ -27,6 +28,7 @@ class Game {
     Player* m_pPlayerEntity;
     Player* m_pDebugPlayerEntity; // Entity we can fly around with
     Enemy*  m_pEnemyEntity;
+    CFollowCamera* m_pFollowCameraEntity; 
     EntityManager* m_pEntityManager;
 
     Camera m_Camera;
