@@ -38,12 +38,14 @@ class Player : public BaseGameEntity, public IInputReceiver {
 
   public:
     explicit Player(const int id, glm::vec3 initialPosition);
-
     ~Player() override {
         delete m_pStateMachine;
     }
 
     void Update() override;
+    bool HandleMessage(const Telegram& telegram) override;
+    void HandleInput() override;
+    
     void UpdateCamera(Camera* camera);
     void UpdatePosition(glm::vec3 newPosition);
 
@@ -51,9 +53,6 @@ class Player : public BaseGameEntity, public IInputReceiver {
         return m_pStateMachine;
     }
 
-    bool HandleMessage(const Telegram& telegram) override;
-
-    void HandleInput() override;
 
     EllipsoidCollider GetEllipsoidCollider() const;
     HKD_Model* GetModel();

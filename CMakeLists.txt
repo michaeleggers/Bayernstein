@@ -138,6 +138,8 @@ add_executable(Game
     Entity/Door/g_door.cpp
     Entity/Door/g_door_states.h
     Entity/Door/g_door_states.cpp
+    Entity/FollowCamera/g_follow_camera.h
+    Entity/FollowCamera/g_follow_camera.cpp
     
     dependencies/stb_image.h
     dependencies/stb_image_write.h
