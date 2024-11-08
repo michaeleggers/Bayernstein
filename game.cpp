@@ -22,6 +22,8 @@
 #include "utils.h"
 #include "hkd_interface.h"
 #include "input_handler.h"
+#include "input_delegate.h"
+#include "input_receiver.h"
 
 static int hkd_Clamp(int val, int clamp) {
     if ( val > clamp || val < clamp ) return clamp;
@@ -140,7 +142,8 @@ void Game::Init() {
 
     m_pPlayerEntity = new Player(idCounter++, playerStartPosition);
     m_pEntityManager->RegisterEntity(m_pPlayerEntity);
-    m_pEntityManager->RegisterEntity(new Enemy(idCounter++));
+    m_pEnemyEntity = new Enemy(idCounter++);
+    m_pEntityManager->RegisterEntity(m_pEnemyEntity);
   
     glm::vec3 debugPlayerStartPosition = playerStartPosition + glm::vec3(0.0f, 10.0f, 0.0f);
     m_pDebugPlayerEntity = new Player(idCounter++, debugPlayerStartPosition);
@@ -159,9 +162,13 @@ void Game::Init() {
     InputHandler::Instance()->BindInputToActionName(SDLK_SPACE, "jump");
     InputHandler::Instance()->BindInputToActionName(SDLK_0, "equip_rocketlauncher");
     InputHandler::Instance()->BindInputToActionName(SDLK_w, "forward");
+    InputHandler::Instance()->BindInputToActionName(SDLK_c, "set_captain");
     // Mouse buttons
     InputHandler::Instance()->BindInputToActionName(SDL_BUTTON_LEFT, "fire"); 
     InputHandler::Instance()->BindInputToActionName(SDL_BUTTON_RIGHT, "switch_to_prev_weapon"); 
+
+    // Let the player receive input by default
+    CInputDelegate::Instance()->SetReceiver(m_pPlayerEntity);
     
 }
 
@@ -192,11 +199,15 @@ bool Game::RunFrame(double dt) {
     }
 
     // Check the input system for commands.
-    
-    /*Command* command = InputHandler::Instance()->HandleInput();*/
-    /*if (command != nullptr) {*/
-    /*    command->Execute();*/
-    /*}*/
+    static IInputReceiver* receivers[2] = { m_pPlayerEntity, m_pEnemyEntity };
+    static int receiverToggle = 0;
+    if ( KeyWentDown(SDLK_u) ) {
+        printf("Switching to receiver num: %d\n", receiverToggle);
+        receiverToggle = ++receiverToggle % 2;
+        CInputDelegate::Instance()->SetReceiver( receivers[ receiverToggle ] ); 
+    }
+    // Handle the input
+    CInputDelegate::Instance()->HandleInput();
     
 
     EllipsoidCollider ec = m_pPlayerEntity->GetEllipsoidCollider();

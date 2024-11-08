@@ -6,8 +6,10 @@
 #define ENEMY_H
 #include "../../FSM/state_machine.h"
 #include "../base_game_entity.h"
+#include "../../input_receiver.h"
 
-class Enemy : public BaseGameEntity {
+// TODO: Making the enemy controllable for testing input system.
+class Enemy : public BaseGameEntity, public IInputReceiver {
   private:
 	StateMachine<Enemy>* m_pStateMachine;
 	double m_Health = 100;
@@ -24,6 +26,7 @@ class Enemy : public BaseGameEntity {
 	}
 
 	bool HandleMessage(const Telegram& message) override;
+	void HandleInput() override;
 
   public:
 	bool DecreaseHealth(double amount) {

@@ -7,6 +7,7 @@
 #include "../../input.h"
 #include "../../utils.h"
 #include "../../input_handler.h"
+#include "../../input_receiver.h"
 #include "g_player_states.h"
 
 #include <SDL.h>
@@ -171,3 +172,11 @@ glm::vec3 Player::GetVelocity() const {
 bool Player::HandleMessage(const Telegram& telegram) {
     return m_pStateMachine->HandleMessage(telegram);
 }
+
+void Player::HandleInput() {
+    ButtonState captainState = CHECK_ACTION("set_captain");
+    if ( captainState == ButtonState::WENT_DOWN ) {
+        printf("Player: I am the captain!\n");
+    }
+}
+

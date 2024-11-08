@@ -26,6 +26,7 @@ class Game {
 
     Player* m_pPlayerEntity;
     Player* m_pDebugPlayerEntity; // Entity we can fly around with
+    Enemy*  m_pEnemyEntity;
     EntityManager* m_pEntityManager;
 
     Camera m_Camera;

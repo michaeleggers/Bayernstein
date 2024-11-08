@@ -81,6 +81,9 @@ add_executable(Game
 
     input_handler.h
     input_handler.cpp
+    input_receiver.h
+    input_delegate.h
+    input_delegate.cpp
     command.h
     command.cpp
     commands.h
