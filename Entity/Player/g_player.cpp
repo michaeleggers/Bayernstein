@@ -31,6 +31,10 @@ void Player::Update() {
     }
 
     //UpdatePlayerModel();
+
+    double dt = GetDeltaTime();
+    UpdateModel(&m_Model, (float)dt);
+
     m_pStateMachine->Update();
 }
 
@@ -149,7 +153,7 @@ void Player::UpdatePlayerModel() {
     
     SetAnimState(&m_Model, playerAnimState);
 
-    UpdateModel(&m_Model, (float)dt);
+    //UpdateModel(&m_Model, (float)dt);
 }
 
 void Player::UpdatePosition(glm::vec3 newPosition) {
