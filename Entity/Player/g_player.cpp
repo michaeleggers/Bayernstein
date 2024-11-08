@@ -70,10 +70,17 @@ void Player::UpdateCamera(Camera* camera) {
 }
 
 void Player::UpdatePlayerModel() {
+   
+    ButtonState forward = CHECK_ACTION("forward");
+    ButtonState back = CHECK_ACTION("back");
+    ButtonState left = CHECK_ACTION("left");
+    ButtonState right = CHECK_ACTION("right");
+    ButtonState speed = CHECK_ACTION("speed");
+    
     double dt = GetDeltaTime();
     float followCamSpeed = 0.05f;
     float followTurnSpeed = 0.3f;
-    if (KeyPressed(SDLK_LSHIFT)) {
+    if ( speed == ButtonState::PRESSED ) {
         followCamSpeed *= 0.3f;
         followTurnSpeed *= 0.3f;
     }
@@ -103,26 +110,25 @@ void Player::UpdatePlayerModel() {
     //    playerAnimState = ANIM_STATE_RUN;
     //}
     
-    ButtonState forward = CHECK_ACTION("forward");
     if ( forward == ButtonState::PRESSED ) {
         m_Velocity += t * m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
-    if (KeyPressed(SDLK_s)) {
+    if ( back == ButtonState::PRESSED ) {
         m_Velocity -= t * m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
-    if (KeyPressed(SDLK_d)) {
+    if ( right == ButtonState::PRESSED ) {
         m_Velocity += t * m_Side;
         playerAnimState = ANIM_STATE_RUN;
     }
-    if (KeyPressed(SDLK_a)) {
+    if ( left == ButtonState::PRESSED ) {
         m_Velocity -= t * m_Side;
         playerAnimState = ANIM_STATE_RUN;
     }
 
     if (playerAnimState == ANIM_STATE_RUN) {
-        if (KeyPressed(SDLK_LSHIFT)) {
+        if ( speed == ButtonState::PRESSED ) {
             playerAnimState = ANIM_STATE_WALK;
         }
     }

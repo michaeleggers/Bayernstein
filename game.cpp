@@ -159,13 +159,18 @@ void Game::Init() {
     // Test Input Binding
 
     // Keyboard buttons
-    InputHandler::Instance()->BindInputToActionName(SDLK_SPACE, "jump");
-    InputHandler::Instance()->BindInputToActionName(SDLK_0, "equip_rocketlauncher");
-    InputHandler::Instance()->BindInputToActionName(SDLK_w, "forward");
-    InputHandler::Instance()->BindInputToActionName(SDLK_c, "set_captain");
+    InputHandler* inputHandler = InputHandler::Instance();
+    inputHandler->BindInputToActionName(SDLK_SPACE, "jump");
+    inputHandler->BindInputToActionName(SDLK_0, "equip_rocketlauncher");
+    inputHandler->BindInputToActionName(SDLK_w, "forward");
+    inputHandler->BindInputToActionName(SDLK_s, "back");
+    inputHandler->BindInputToActionName(SDLK_a, "left");
+    inputHandler->BindInputToActionName(SDLK_d, "right");
+    inputHandler->BindInputToActionName(SDLK_LSHIFT, "speed");
+    inputHandler->BindInputToActionName(SDLK_c, "set_captain");
     // Mouse buttons
-    InputHandler::Instance()->BindInputToActionName(SDL_BUTTON_LEFT, "fire"); 
-    InputHandler::Instance()->BindInputToActionName(SDL_BUTTON_RIGHT, "switch_to_prev_weapon"); 
+    inputHandler->BindInputToActionName(SDL_BUTTON_LEFT, "fire"); 
+    inputHandler->BindInputToActionName(SDL_BUTTON_RIGHT, "switch_to_prev_weapon"); 
 
     // Let the player receive input by default
     CInputDelegate::Instance()->SetReceiver(m_pPlayerEntity);

@@ -68,19 +68,34 @@ bool KeyPressed(SDL_Keycode keyCode)
     return (g_PrevScancodes[sc] && g_Scancodes[sc]);
 }
 
-bool MouseWentDown(Uint8 button)
+bool MouseWentDown(int button)
 {
-    return (!(g_PrevMouseButtons & SDL_BUTTON(button)) && (g_MouseButtons & SDL_BUTTON(button)));
+    if (button > SDL_BUTTON_RIGHT || button < SDL_BUTTON_LEFT) {
+        return false;
+    }
+    Uint8 uButton = (Uint8)button;
+
+    return (!(g_PrevMouseButtons & SDL_BUTTON(uButton)) && (g_MouseButtons & SDL_BUTTON(uButton)));
 }
 
-bool MouseWentUp(Uint8 button)
+bool MouseWentUp(int button)
 {
-    return ((g_PrevMouseButtons & SDL_BUTTON(button)) && !(g_MouseButtons & SDL_BUTTON(button)));
+    if (button > SDL_BUTTON_RIGHT || button < SDL_BUTTON_LEFT) {
+        return false;
+    }
+    Uint8 uButton = (Uint8)button;
+    
+    return ((g_PrevMouseButtons & SDL_BUTTON(uButton)) && !(g_MouseButtons & SDL_BUTTON(uButton)));
 }
 
-bool MousePressed(Uint8 button)
+bool MousePressed(int button)
 {
-    return g_MouseButtons & SDL_BUTTON(button);
+    if (button > SDL_BUTTON_RIGHT || button < SDL_BUTTON_LEFT) {
+        return false;
+    }
+    Uint8 uButton = (Uint8)button;
+    
+    return g_MouseButtons & SDL_BUTTON(uButton);
 }
 
 bool RightMouseWentDown(void)
