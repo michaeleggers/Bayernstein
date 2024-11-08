@@ -144,6 +144,17 @@ void Game::Init() {
     m_pEntityManager->RegisterEntity(m_pPlayerEntity);
     m_pEnemyEntity = new Enemy(idCounter++);
     m_pEntityManager->RegisterEntity(m_pEnemyEntity);
+  
+    glm::vec3 debugPlayerStartPosition = playerStartPosition; // + glm::vec3(0.0f, 10.0f, 0.0f);
+    m_pDebugPlayerEntity = new Player(idCounter++, debugPlayerStartPosition);
+    m_pEntityManager->RegisterEntity(m_pDebugPlayerEntity);
+  
+    // FIX: If the follow camera is registered *before* one of the entities
+    // the follow camera will lage behind one frame because it won't
+    // get the most up to date position of its target!
+    // We can choose to have a dedicated array for all of the
+    // camera entity types and let the entity manager take care
+    // of correct update order.
     m_pFollowCameraEntity = new CFollowCamera(idCounter++, m_pPlayerEntity);
     m_pFollowCameraEntity->m_Camera = Camera(playerStartPosition);
     m_pFollowCameraEntity->m_Camera.m_Pos.y -= 200.0f;
@@ -151,10 +162,6 @@ void Game::Init() {
     m_pFollowCameraEntity->m_Camera.RotateAroundSide(0.0f);
     m_pFollowCameraEntity->m_Camera.RotateAroundUp(180.0f);
     m_pEntityManager->RegisterEntity(m_pFollowCameraEntity);
-  
-    glm::vec3 debugPlayerStartPosition = playerStartPosition + glm::vec3(0.0f, 10.0f, 0.0f);
-    m_pDebugPlayerEntity = new Player(idCounter++, debugPlayerStartPosition);
-    m_pEntityManager->RegisterEntity(m_pDebugPlayerEntity);
    
     // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
     // in the batch?

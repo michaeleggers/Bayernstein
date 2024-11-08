@@ -20,6 +20,20 @@ Player::Player(const int id, glm::vec3 initialPosition)
     LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
 }
 
+// FIX: At the moment called by the game itself.
+// Must be called before entity system updates entities.
+// (Calls ::Update() on Entities).
+void Player::UpdatePosition(glm::vec3 newPosition) {
+
+    // Update the ellipsoid colliders for all animation states based on the new collision position
+    for (int i = 0; i < m_Model.animations.size(); i++) {
+        m_Model.ellipsoidColliders[i].center = newPosition;
+    }
+    m_Model.position.x = newPosition.x;
+    m_Model.position.y = newPosition.y;
+    m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
+}
+
 void Player::Update() {
 
     if (KeyPressed(SDLK_w)) {
@@ -88,7 +102,7 @@ void Player::UpdatePlayerModel() {
     float followCamSpeed = 0.05f;
     float followTurnSpeed = 0.3f;
     if ( speed == ButtonState::PRESSED ) {
-        followCamSpeed *= 0.3f;
+        followCamSpeed *= 0.1f;
         followTurnSpeed *= 0.3f;
     }
 
@@ -157,17 +171,6 @@ void Player::UpdatePlayerModel() {
     SetAnimState(&m_Model, playerAnimState);
 
     //UpdateModel(&m_Model, (float)dt);
-}
-
-void Player::UpdatePosition(glm::vec3 newPosition) {
-
-    // Update the ellipsoid colliders for all animation states based on the new collision position
-    for (int i = 0; i < m_Model.animations.size(); i++) {
-        m_Model.ellipsoidColliders[i].center = newPosition;
-    }
-    m_Model.position.x = newPosition.x;
-    m_Model.position.y = newPosition.y;
-    m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
 }
 
 EllipsoidCollider Player::GetEllipsoidCollider() const {
