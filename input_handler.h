@@ -19,7 +19,6 @@ public:
     // Singleton class!
     static InputHandler* Instance();
 
-    Command*    HandleInput();
     void        BindInputToActionName(int key, const std::string& actionName);
     ButtonState GetMappedButtonState(const std::string& actionName); 
 
