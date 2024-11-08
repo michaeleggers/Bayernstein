@@ -33,6 +33,7 @@ const int WINDOW_HEIGHT = 1080;
 
 ConsoleVariable scr_consize = {"scr_consize", 0.45f};
 ConsoleVariable scr_conopacity = {"scr_conopacity", 0.95f};
+ConsoleVariable scr_conwraplines = {"scr_conwraplines", 1};
 
 
 void GLAPIENTRY OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
@@ -267,6 +268,7 @@ bool GLRender::Init(void) {
 
     VariableManager::Register(&scr_consize);
     VariableManager::Register(&scr_conopacity);
+    VariableManager::Register(&scr_conwraplines);
 
     return true;
 }
@@ -983,6 +985,7 @@ void GLRender::RenderConsole(Console* console, CFont* font) {
     const float inputY = height - font->m_Size - textMargin;
     float logY = inputY - textMargin * 2 - font->m_Size;
     const int maxLines = floor(logY / lineHeight) + 1;
+    const int maxChars = floor((m_WindowWidth - 2 * textMargin) / charWidth);
 
     Begin2D();
     // draw background/frame
@@ -997,12 +1000,16 @@ void GLRender::RenderConsole(Console* console, CFont* font) {
 
     // draw input
     SetFont(font, glm::vec4(1.0f));
-    std::string inputText = std::string("> ") + console->CurrentInput(); // TODO: handle screen overflow (e.g. clip beginning of string)?
+    std::string prefix = "> ";
+    int maxInputChars = maxChars - prefix.length();
+    int textOffset = ((console->CursorPos() - 1) / maxInputChars) * maxInputChars; // integer division
+    if (console->CurrentInput().length() > maxInputChars) prefix = "<>"; // indicate line overflow
+    std::string inputText = prefix + console->CurrentInput().substr(textOffset, maxInputChars);
     DrawText(inputText, textMargin, inputY, COORD_MODE_ABS);
 
     // draw cursor
     if (console->m_blinkTimer < 500.0) {
-        float cursorX = textMargin + (console->CursorPos() + 2) * charWidth;
+        float cursorX = textMargin + (console->CursorPos() - textOffset + prefix.length()) * charWidth;
         SetShapeColor(glm::vec4(0.8f, 0.8f, 0.8f, 1.0f));
         DrawBox(cursorX - 2.5f, inputY - 3.0f, 5.0f, font->m_Size + 4.0f, COORD_MODE_ABS);
     } else if (console->m_blinkTimer > 1000.0) {
@@ -1011,11 +1018,22 @@ void GLRender::RenderConsole(Console* console, CFont* font) {
 
     // draw log lines
     for (int i = 0; i < maxLines; i++) {
-        // TODO: text overflow is clipped, maybe break into multiple lines?
         std::string line;
         if (!console->m_lineBuffer.Get(i, &line)) break;
-        DrawText(line, textMargin, logY, COORD_MODE_ABS);
-        logY -= lineHeight; 
+        if (scr_conwraplines.value && line.length() > maxChars) {
+            std::vector<std::string> segments;
+            for (int offset = 0; offset < line.length(); offset += maxChars) {
+                segments.push_back(line.substr(offset, maxChars));
+            }
+            for (int j = segments.size() - 1; j >= 0; j--) {
+                DrawText(segments[j], textMargin, logY, COORD_MODE_ABS);
+                logY -= lineHeight; 
+                if (++i == maxLines) break;
+            }
+        } else {
+            DrawText(line, textMargin, logY, COORD_MODE_ABS);
+            logY -= lineHeight; 
+        }
     }
 
     End2D();

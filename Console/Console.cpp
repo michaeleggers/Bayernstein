@@ -104,8 +104,10 @@ void Console::SubmitInput() {
     m_blinkTimer = 0;
 
     if (m_currentInput == "") return;
-
-    m_inputHistory.Push(m_currentInput);
+    std::string lastInput;
+    if (!m_inputHistory.Get(0, &lastInput) || lastInput != m_currentInput) {
+        m_inputHistory.Push(m_currentInput);
+    }
     CommandManager::ExecuteString(m_currentInput);
     m_currentInput = "";
 }
