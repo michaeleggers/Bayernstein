@@ -30,7 +30,7 @@ void Player::Update() {
         m_pStateMachine->ChangeState(PlayerIdle::Instance());
     }
 
-    UpdatePlayerModel();
+    //UpdatePlayerModel();
     m_pStateMachine->Update();
 }
 
@@ -178,5 +178,6 @@ void Player::HandleInput() {
     if ( captainState == ButtonState::WENT_DOWN ) {
         printf("Player: I am the captain!\n");
     }
+    UpdatePlayerModel();
 }
 

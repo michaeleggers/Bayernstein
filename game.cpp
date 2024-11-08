@@ -199,11 +199,11 @@ bool Game::RunFrame(double dt) {
     }
 
     // Check the input system for commands.
-    static IInputReceiver* receivers[2] = { m_pPlayerEntity, m_pEnemyEntity };
+    static IInputReceiver* receivers[3] = { m_pPlayerEntity, m_pDebugPlayerEntity, m_pEnemyEntity };
     static int receiverToggle = 0;
     if ( KeyWentDown(SDLK_u) ) {
         printf("Switching to receiver num: %d\n", receiverToggle);
-        receiverToggle = ++receiverToggle % 2;
+        receiverToggle = ++receiverToggle % 3;
         CInputDelegate::Instance()->SetReceiver( receivers[ receiverToggle ] ); 
     }
     // Handle the input
