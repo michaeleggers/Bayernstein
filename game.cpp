@@ -175,7 +175,7 @@ void Game::Init() {
     // Test Input Binding
 
     // Keyboard buttons
-    InputHandler* inputHandler = InputHandler::Instance();
+    CInputHandler* inputHandler = CInputHandler::Instance();
     inputHandler->BindInputToActionName(SDLK_SPACE, "jump");
     inputHandler->BindInputToActionName(SDLK_0, "equip_rocketlauncher");
     inputHandler->BindInputToActionName(SDLK_w, "forward");

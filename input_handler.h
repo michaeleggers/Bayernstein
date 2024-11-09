@@ -13,24 +13,24 @@ enum class ButtonState {
     PRESSED
 };
 
-class InputHandler {
+class CInputHandler {
 
 public:
     // Singleton class!
-    static InputHandler* Instance();
+    static CInputHandler* Instance();
 
     void        BindInputToActionName(int key, const std::string& actionName);
     ButtonState GetMappedButtonState(const std::string& actionName); 
 
 private:
-    InputHandler()  = default;
-    ~InputHandler() = default;
+    CInputHandler()  = default;
+    ~CInputHandler() = default;
 
     std::unordered_map<std::string, int>         m_ActionNameToInput;
     
 };
 
-#define CHECK_ACTION(actionName) (InputHandler::Instance()->GetMappedButtonState(actionName))
+#define CHECK_ACTION(actionName) (CInputHandler::Instance()->GetMappedButtonState(actionName))
 
 #endif
 

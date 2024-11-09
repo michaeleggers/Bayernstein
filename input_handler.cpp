@@ -5,17 +5,17 @@
 // 'Low level' raw (SDL) input
 #include "input.h"
 
-InputHandler* InputHandler::Instance() {
-    static InputHandler m_InputHandler;
+CInputHandler* CInputHandler::Instance() {
+    static CInputHandler m_InputHandler;
 
     return &m_InputHandler;
 }
 
-void InputHandler::BindInputToActionName(int key, const std::string& actionName) {
+void CInputHandler::BindInputToActionName(int key, const std::string& actionName) {
     m_ActionNameToInput.insert({ actionName, key }); 
 }
 
-ButtonState InputHandler::GetMappedButtonState(const std::string& actionName) {
+ButtonState CInputHandler::GetMappedButtonState(const std::string& actionName) {
     // Check if a mapping exists for this action 
     const auto& actionToInput = m_ActionNameToInput.find(actionName);
     if ( actionToInput == m_ActionNameToInput.end() ) {
