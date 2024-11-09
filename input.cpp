@@ -8,11 +8,12 @@
 #include <imgui/backends/imgui_impl_sdl2.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 
-static Uint32 g_Events;
-static bool   g_Scancodes[SDL_NUM_SCANCODES];
-static bool   g_PrevScancodes[SDL_NUM_SCANCODES];
-static Uint8  g_MouseButtons;
-static Uint8  g_PrevMouseButtons;
+static Uint32       g_Events;
+static bool         g_Scancodes[SDL_NUM_SCANCODES];
+static bool         g_PrevScancodes[SDL_NUM_SCANCODES];
+static Uint8        g_MouseButtons;
+static Uint8        g_PrevMouseButtons;
+static MouseMotion  g_MouseMotionState;
 
 static std::string g_EventText;
 
@@ -50,6 +51,11 @@ void HandleInput(void)
         if (event.type == SDL_MOUSEBUTTONUP) {
             g_MouseButtons ^= SDL_BUTTON(event.button.button);
         }
+        if (event.type == SDL_MOUSEMOTION) {
+            g_MouseMotionState.prev = g_MouseMotionState.current;
+            g_MouseMotionState.current = event.motion;
+        }
+        
         if (event.type == SDL_TEXTINPUT) {
             auto str = std::string(event.text.text);
             if (str.length() == 1) g_EventText = str; // ignore unicode characters (length > 1)
@@ -75,24 +81,43 @@ bool KeyPressed(SDL_Keycode keyCode)
     return (g_PrevScancodes[sc] && g_Scancodes[sc]);
 }
 
-bool MouseWentDown(Uint8 button)
+bool MouseWentDown(int button)
 {
-    return (!(g_PrevMouseButtons & SDL_BUTTON(button)) && (g_MouseButtons & SDL_BUTTON(button)));
+    if (button > SDL_BUTTON_RIGHT || button < SDL_BUTTON_LEFT) {
+        return false;
+    }
+    Uint8 uButton = (Uint8)button;
+
+    return (!(g_PrevMouseButtons & SDL_BUTTON(uButton)) && (g_MouseButtons & SDL_BUTTON(uButton)));
 }
 
-bool MouseWentUp(Uint8 button)
+bool MouseWentUp(int button)
 {
-    return ((g_PrevMouseButtons & SDL_BUTTON(button)) && !(g_MouseButtons & SDL_BUTTON(button)));
+    if (button > SDL_BUTTON_RIGHT || button < SDL_BUTTON_LEFT) {
+        return false;
+    }
+    Uint8 uButton = (Uint8)button;
+    
+    return ((g_PrevMouseButtons & SDL_BUTTON(uButton)) && !(g_MouseButtons & SDL_BUTTON(uButton)));
 }
 
-bool MousePressed(Uint8 button)
+bool MousePressed(int button)
 {
-    return g_MouseButtons & SDL_BUTTON(button);
+    if (button > SDL_BUTTON_RIGHT || button < SDL_BUTTON_LEFT) {
+        return false;
+    }
+    Uint8 uButton = (Uint8)button;
+    
+    return g_MouseButtons & SDL_BUTTON(uButton);
 }
 
 bool RightMouseWentDown(void)
 {
     return false;
+}
+
+const MouseMotion GetMouseMotion(void) {
+    return g_MouseMotionState;
 }
 
 bool ShouldClose(void)
@@ -104,3 +129,4 @@ std::string TextInput()
 {
     return g_EventText;
 }
+

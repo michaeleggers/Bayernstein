@@ -1,4 +1,4 @@
-#version 410
+#version 460 core
 
 in vec2 TexCoord;
 in vec3 BaryCentricCoords;

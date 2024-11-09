@@ -44,7 +44,7 @@
 
 static bool         g_GameWantsToQuit;
 std::string         g_GameDir;
-
+static IRender*     g_Renderer;
 
 static bool QuitGameFunc(void) {
     g_GameWantsToQuit = true;
@@ -54,6 +54,10 @@ static bool QuitGameFunc(void) {
 static double msPerFrame;
 double GetDeltaTime() {
     return msPerFrame;
+}
+
+IRender* GetRenderer() {
+    return g_Renderer;
 }
 
 int main(int argc, char** argv)
@@ -81,8 +85,8 @@ int main(int argc, char** argv)
     }
 
 
-    IRender* renderer = new GLRender();
-    if (!renderer->Init()) {
+    g_Renderer = new GLRender();
+    if (!g_Renderer->Init()) {
         SDL_Log("Could not initialize renderer.\n");
         return -1;
     }    
@@ -90,11 +94,11 @@ int main(int argc, char** argv)
     VariableManager::Init();
     Console* console = Console::Create(100, 32);
     CFont* consoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 26);
-    renderer->RegisterFont(consoleFont);
+    g_Renderer->RegisterFont(consoleFont);
 
     // Init the game
 
-    Game game(exePath, &interface, renderer);
+    Game game(exePath, &interface);
     game.Init();    
     
     // Main loop
@@ -134,9 +138,9 @@ int main(int argc, char** argv)
             } else if (KeyWentDown(SDLK_RETURN)) {
                 console->SubmitInput();
             }
-            renderer->RenderBegin();
-            renderer->RenderConsole(console, consoleFont);
-            renderer->RenderEnd();
+            g_Renderer->RenderBegin();
+            g_Renderer->RenderConsole(console, consoleFont);
+            g_Renderer->RenderEnd();
         } else { // FIXME: the game's 2d content disappears while console is open
             game.RunFrame(msPerFrame);
         }
@@ -151,7 +155,7 @@ int main(int argc, char** argv)
             sprintf(windowTitle,
                     "Device: %s, frametime (ms): %f, FPS: %f",
                     glGetString(GL_RENDERER), msPerFrame, 1000.0f / msPerFrame);
-            renderer->SetWindowTitle(windowTitle);
+            g_Renderer->SetWindowTitle(windowTitle);
             updateIntervalMs = 0.0f;
         }
 
@@ -159,6 +163,8 @@ int main(int argc, char** argv)
     }
 
     game.Shutdown();
+
+    g_Renderer->Shutdown();
 
     // Clean up
     SDL_Quit();

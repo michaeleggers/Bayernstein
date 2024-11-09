@@ -6,16 +6,22 @@
 #define BASEGAMEENTITY_H
 #include "../Message/telegram.h"
 
+#define GLM_FORCE_RADIANS
+#include "../../dependencies/glm/ext.hpp"
+#include "../../dependencies/glm/glm.hpp"
+
 // NOTE: (Michael): This is essentially what a discriminated union would give us in C.
 // TODO: (Michael): Game devs must be able to define their own ET_*. That would not go here
 // into this file! Think about this! (Look at Quake again!).
+// FIX: Generate entity type GUID inside user defined game entity class.
 enum EntityType {
     ET_PLAYER,
     ET_ENEMY,
-    ET_DOOR
+    ET_DOOR,
+    ET_CAMERA,
+    ET_FLY_CAMERA
 };
 
-  
 class BaseGameEntity {
 private:
     int m_ID{};
@@ -54,6 +60,8 @@ public:
     [[nodiscard]] int ID() const {
         return m_ID;
     }
+    
+    glm::vec3  m_Position = glm::vec3(0.0f);
 };
 
 #endif // BASEGAMEENTITY_H

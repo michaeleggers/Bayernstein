@@ -78,45 +78,28 @@ add_executable(Game
     r_gl_fbo.cpp
     r_gl_rendertexture.h
     r_gl_rendertexture.cpp
-    
+
+    input_handler.h
+    input_handler.cpp
+    input_receiver.h
+    input_delegate.h
+    input_delegate.cpp
+    command.h
+    command.cpp
+    commands.h
+    commands.cpp
     camera.h
     camera.cpp
     physics.h
     physics.cpp
     utils.h
     utils.cpp
+    image.h
+    image.cpp
     polysoup.h
     polysoup.cpp
-        # map_parser.h
     game.h
-    game.cpp    
-
-    dependencies/stb_image.h
-    dependencies/stb_image_write.h
-    dependencies/stb_truetype.h
-
-    dependencies/imgui/imgui.h
-    dependencies/imgui/imconfig.h
-    dependencies/imgui/imgui_internal.h
-    dependencies/imgui/imstb_rectpack.h
-    dependencies/imgui/imstb_textedit.h
-    dependencies/imgui/imstb_truetype.h
-
-    dependencies/imgui/misc/cpp/imgui_stdlib.h
-    dependencies/imgui/misc/cpp/imgui_stdlib.cpp
-
-    dependencies/imgui/imgui.cpp
-    dependencies/imgui/imgui_draw.cpp
-    dependencies/imgui/imgui_tables.cpp
-    dependencies/imgui/imgui_widgets.cpp
-    dependencies/imgui/imgui_demo.cpp
-
-    dependencies/imgui/backends/imgui_impl_opengl3.cpp
-    dependencies/imgui/backends/imgui_impl_opengl3.h
-    dependencies/imgui/backends/imgui_impl_sdl2.cpp
-    dependencies/imgui/backends/imgui_impl_sdl2.h
-
-    dependencies/glad/src/glad.c
+    game.cpp
 
     TestClass.cpp
     TestClass.h
@@ -163,6 +146,37 @@ add_executable(Game
     Entity/Door/g_door.cpp
     Entity/Door/g_door_states.h
     Entity/Door/g_door_states.cpp
+    Entity/FollowCamera/g_follow_camera.h
+    Entity/FollowCamera/g_follow_camera.cpp
+    Entity/FlyCamera/g_fly_camera.h
+    Entity/FlyCamera/g_fly_camera.cpp
+
+    dependencies/stb_image.h
+    dependencies/stb_image_write.h
+    dependencies/stb_truetype.h
+
+    dependencies/imgui/imgui.h
+    dependencies/imgui/imconfig.h
+    dependencies/imgui/imgui_internal.h
+    dependencies/imgui/imstb_rectpack.h
+    dependencies/imgui/imstb_textedit.h
+    dependencies/imgui/imstb_truetype.h
+
+    dependencies/imgui/misc/cpp/imgui_stdlib.h
+    dependencies/imgui/misc/cpp/imgui_stdlib.cpp
+
+    dependencies/imgui/imgui.cpp
+    dependencies/imgui/imgui_draw.cpp
+    dependencies/imgui/imgui_tables.cpp
+    dependencies/imgui/imgui_widgets.cpp
+    dependencies/imgui/imgui_demo.cpp
+
+    dependencies/imgui/backends/imgui_impl_opengl3.cpp
+    dependencies/imgui/backends/imgui_impl_opengl3.h
+    dependencies/imgui/backends/imgui_impl_sdl2.cpp
+    dependencies/imgui/backends/imgui_impl_sdl2.h
+
+    dependencies/glad/src/glad.c
     
     ${RESOURCE_FILES}
 )

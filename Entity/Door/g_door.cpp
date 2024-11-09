@@ -50,22 +50,21 @@ Door::Door(const int id,
 
         MapPolygon mapPoly = mapTris[ i ];
         
-        Vertex A = { glm::vec3(mapPoly.vertices[0].x, mapPoly.vertices[0].y, mapPoly.vertices[0].z) };
-        Vertex B = { glm::vec3(mapPoly.vertices[1].x, mapPoly.vertices[1].y, mapPoly.vertices[1].z) };
-        Vertex C = { glm::vec3(mapPoly.vertices[2].x, mapPoly.vertices[2].y, mapPoly.vertices[2].z) };
+        Vertex A = { glm::vec3(mapPoly.vertices[0].pos.x,
+                               mapPoly.vertices[0].pos.y,
+                               mapPoly.vertices[0].pos.z) };
+        Vertex B = { glm::vec3(mapPoly.vertices[1].pos.x, 
+                               mapPoly.vertices[1].pos.y,
+                               mapPoly.vertices[1].pos.z) };
+        Vertex C = { glm::vec3(mapPoly.vertices[2].pos.x, 
+                               mapPoly.vertices[2].pos.y, 
+                               mapPoly.vertices[2].pos.z) };
         A.color = triColor;
         B.color = triColor;
         C.color = triColor;
-        Tri tri = { A, B, C };
+        MapTri tri = { A, B, C };
 
-        TriPlane triPlane{};
-        triPlane.tri = tri;
-        triPlane.plane = CreatePlaneFromTri(triPlane.tri);
-        triPlane.tri.a.normal = triPlane.plane.normal;
-        triPlane.tri.b.normal = triPlane.plane.normal;
-        triPlane.tri.c.normal = triPlane.plane.normal;
-        
-        m_TriPlanes.push_back(triPlane);
+        m_MapTris.push_back(tri);
     }
 }
 
