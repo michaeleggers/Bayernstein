@@ -25,8 +25,13 @@ public:
     void HandleInput() override;
     
     Camera m_Camera;
+    float m_LookSpeed = 0.01f;
 
 private:
+	int m_MouseX = 0;
+	int m_MouseY = 0;
+	int m_MousePrevX = 0;
+	int m_MousePrevY = 0;
 };
 
 #endif

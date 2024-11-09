@@ -13,6 +13,7 @@
 // NOTE: (Michael): This is essentially what a discriminated union would give us in C.
 // TODO: (Michael): Game devs must be able to define their own ET_*. That would not go here
 // into this file! Think about this! (Look at Quake again!).
+// FIX: Generate entity type GUID inside user defined game entity class.
 enum EntityType {
     ET_PLAYER,
     ET_ENEMY,

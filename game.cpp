@@ -186,7 +186,7 @@ void Game::Init() {
     inputHandler->BindInputToActionName(SDLK_c, "set_captain");
     // Mouse buttons
     inputHandler->BindInputToActionName(SDL_BUTTON_LEFT, "fire"); 
-    inputHandler->BindInputToActionName(SDL_BUTTON_RIGHT, "switch_to_prev_weapon"); 
+    inputHandler->BindInputToActionName(SDL_BUTTON_RIGHT, "look"); 
 
     // Let the player receive input by default
     CInputDelegate::Instance()->SetReceiver(m_pPlayerEntity);
@@ -219,14 +219,22 @@ bool Game::RunFrame(double dt) {
     }
 
     // Toggle who should be controlled by the input system 
-    static IInputReceiver* receivers[2] = { m_pPlayerEntity, m_pDebugPlayerEntity };
-    static BaseGameEntity* entities[2] = { m_pPlayerEntity, m_pDebugPlayerEntity };
+    static IInputReceiver* receivers[3] = { m_pPlayerEntity, m_pDebugPlayerEntity, m_pFlyCameraEntity };
+    static BaseGameEntity* entities[3] = { m_pPlayerEntity, m_pDebugPlayerEntity, m_pFlyCameraEntity };
+    static Camera* renderCam = &m_pFollowCameraEntity->m_Camera;
+
+    // Toggle receivers
     static int receiverToggle = 0;
     if ( KeyWentDown(SDLK_u) ) {
         printf("Switching to receiver num: %d\n", receiverToggle);
-        receiverToggle = ++receiverToggle % 2;
+        receiverToggle = ++receiverToggle % 3;
         CInputDelegate::Instance()->SetReceiver( receivers[ receiverToggle ] ); 
         m_pFollowCameraEntity->SetTarget( entities[ receiverToggle ] );
+        renderCam = &m_pFollowCameraEntity->m_Camera;
+        if ( entities[ receiverToggle ]->Type() == ET_FLY_CAMERA ) {
+            CFlyCamera* flyCamEnt = (CFlyCamera*)entities[ receiverToggle ];
+            renderCam = &flyCamEnt->m_Camera;
+        }
     }
     // Handle the input
     CInputDelegate::Instance()->HandleInput();
@@ -245,8 +253,7 @@ bool Game::RunFrame(double dt) {
     // One GPU/CPU buffer for brush entities that we have to update.
     // But on CPU side all of the tries should reside in ONE buffer as
     // this guarantees cache locality and a *MUCH* easier time for the
-    // collision system!!! Arrays just always win... what can I say?
-    // The brush entities should have pointers (indices) into the
+    // collision system!!! Arrays just always win... what can I say? The brush entities should have pointers (indices) into the
     // CPU-side triangle array to know what geometry belongs to them.
     std::vector<MapTri> allTris = m_World.m_MapTris;
     int be = m_World.m_BrushEntities[ 0 ];
@@ -342,7 +349,7 @@ bool Game::RunFrame(double dt) {
             m_pPlayerEntity->GetModel(),
             m_pDebugPlayerEntity->GetModel()
         };
-        renderer->Render( &(m_pFollowCameraEntity->m_Camera), models, 2 );
+        renderer->Render( renderCam, models, 2 );
 
         if (collisionInfo.didCollide) {
             m_pPlayerEntity->GetModel()->debugColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); // red
@@ -356,15 +363,15 @@ bool Game::RunFrame(double dt) {
 #endif
 
         // Render Player's ellipsoid collider
-        renderer->SetActiveCamera(&m_pFollowCameraEntity->m_Camera);
+        //renderer->SetActiveCamera(&m_pFlyCameraEntity->m_Camera);
         HKD_Model* playerColliderModel[] = { m_pPlayerEntity->GetModel() };
-        renderer->RenderColliders(&m_pFollowCameraEntity->m_Camera, playerColliderModel, 1);
+        renderer->RenderColliders(renderCam, playerColliderModel, 1);
         
         renderer->End3D();
 
     } // End3D scope
 
-#if 0 // Toggle 2D Font/Box renderingtest
+#if 1 // Toggle 2D Font/Box renderingtest
 
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     // 2D stuff also has its own, dedicated FBO!

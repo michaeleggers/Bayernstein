@@ -8,11 +8,12 @@
 #include <imgui/backends/imgui_impl_sdl2.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 
-static Uint32 g_Events;
-static bool   g_Scancodes[SDL_NUM_SCANCODES];
-static bool   g_PrevScancodes[SDL_NUM_SCANCODES];
-static Uint8  g_MouseButtons;
-static Uint8  g_PrevMouseButtons;
+static Uint32       g_Events;
+static bool         g_Scancodes[SDL_NUM_SCANCODES];
+static bool         g_PrevScancodes[SDL_NUM_SCANCODES];
+static Uint8        g_MouseButtons;
+static Uint8        g_PrevMouseButtons;
+static MouseMotion  g_MouseMotionState;
 
 void HandleInput(void)
 {
@@ -46,6 +47,10 @@ void HandleInput(void)
         }
         if (event.type == SDL_MOUSEBUTTONUP) {
             g_MouseButtons ^= SDL_BUTTON(event.button.button);
+        }
+        if (event.type == SDL_MOUSEMOTION) {
+            g_MouseMotionState.prev = g_MouseMotionState.current;
+            g_MouseMotionState.current = event.motion;
         }
     }
 }
@@ -103,7 +108,12 @@ bool RightMouseWentDown(void)
     return false;
 }
 
+const MouseMotion GetMouseMotion(void) {
+    return g_MouseMotionState;
+}
+
 bool ShouldClose(void)
 {    
     return g_Events & SDL_QUIT;
 }
+
