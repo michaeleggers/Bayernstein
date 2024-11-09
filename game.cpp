@@ -30,8 +30,8 @@ static int hkd_Clamp(int val, int clamp) {
     return val;
 }
 
-Game::Game(std::string exePath, hkdInterface* interface) {
-    m_Interface = interface;
+Game::Game(std::string exePath, hkdInterface* pInterface) {
+    m_pInterface = pInterface;
     m_ExePath = exePath;
     m_pEntityManager = EntityManager::Instance();
 }
@@ -148,6 +148,8 @@ void Game::Init() {
     glm::vec3 debugPlayerStartPosition = playerStartPosition; // + glm::vec3(0.0f, 10.0f, 0.0f);
     m_pDebugPlayerEntity = new Player(idCounter++, debugPlayerStartPosition);
     m_pEntityManager->RegisterEntity(m_pDebugPlayerEntity);
+
+    m_pFlyCameraEntity = new CFlyCamera( idCounter++, glm::vec3(0.0f) );
   
     // FIX: If the follow camera is registered *before* one of the entities
     // the follow camera will lage behind one frame because it won't
@@ -213,7 +215,7 @@ bool Game::RunFrame(double dt) {
     // Want to quit on ESCAPE
 
     if ( KeyPressed(SDLK_ESCAPE) ) {
-        m_Interface->QuitGame();
+        m_pInterface->QuitGame();
     }
 
     // Toggle who should be controlled by the input system 

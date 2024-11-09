@@ -31,6 +31,7 @@ void CFollowCamera::Update() {
 }
 
 bool CFollowCamera::HandleMessage(const Telegram& telegram) {
+    return false;
 }
 
 void CFollowCamera::SetTarget(BaseGameEntity* target) {

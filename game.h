@@ -8,6 +8,7 @@
 #include "Entity/Enemy/g_enemy.h"
 #include "Entity/Player/g_player.h"
 #include "Entity/FollowCamera/g_follow_camera.h"
+#include "Entity/FlyCamera/g_fly_camera.h"
 #include "Entity/entity_manager.h"
 #include "camera.h"
 #include "hkd_interface.h"
@@ -15,33 +16,35 @@
 
 class Game {
   public:
-    Game(std::string exePath, hkdInterface *interface);
+    Game(std::string exePath, hkdInterface *pInterface);
 
     void Init();
     bool RunFrame(double dt);
     void Shutdown();
 
   private:
-    hkdInterface                *m_Interface;
+    hkdInterface*               m_pInterface;
     std::string                 m_ExePath;
 
-    Player* m_pPlayerEntity;
-    Player* m_pDebugPlayerEntity; // Entity we can fly around with
-    Enemy*  m_pEnemyEntity;
-    CFollowCamera* m_pFollowCameraEntity; 
-    EntityManager* m_pEntityManager;
+    Player*                     m_pPlayerEntity;
+    Player*                     m_pDebugPlayerEntity; // Entity we can fly around with
+    Enemy*                      m_pEnemyEntity;
+    CFlyCamera*                 m_pFlyCameraEntity;
+    CFollowCamera*              m_pFollowCameraEntity; 
+    EntityManager*              m_pEntityManager;
 
-    Camera m_Camera;
-    Camera m_FollowCamera;
+    Camera                      m_Camera;
+    Camera                      m_FollowCamera;
 
-    std::vector<HKD_Model*> m_Models;
-    CFont* m_ConsoleFont;
-    CFont* m_ConsoleFont30;
-    Box m_SkyBox{};
+    std::vector<HKD_Model*>     m_Models;
+    CFont*                      m_ConsoleFont;
+    CFont*                      m_ConsoleFont30;
+    Box                         m_SkyBox{};
 
-    double m_AccumTime;
+    double                      m_AccumTime;
 
-    CWorld m_World;
+    CWorld                      m_World;
 };
 
 #endif
+

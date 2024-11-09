@@ -17,7 +17,8 @@ enum EntityType {
     ET_PLAYER,
     ET_ENEMY,
     ET_DOOR,
-    ET_CAMERA
+    ET_CAMERA,
+    ET_FLY_CAMERA
 };
 
 class BaseGameEntity {
