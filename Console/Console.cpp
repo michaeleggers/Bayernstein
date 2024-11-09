@@ -121,11 +121,12 @@ void Console::Print(std::string str) {
 void Console::PrintfImpl(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    char buffer[256];
-    // NOTE: vsnprintf does always null-terminate.
-    // No need to add extra null-byte.
-    vsnprintf(buffer, 256, fmt, args); 
+    va_list argsCpy;
+    va_copy(argsCpy, args);
+    char buffer[ vsnprintf(NULL, 0, fmt, args) + 1 ];
     va_end(args);
+    vsnprintf(buffer, sizeof(buffer), fmt, argsCpy); 
+    va_end(argsCpy);
 
     if (con_stdout.value) {
         printf("%s\n", buffer);
