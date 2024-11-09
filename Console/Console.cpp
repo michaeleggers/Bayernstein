@@ -1,6 +1,5 @@
 #include "Console.h"
 
-#include <iostream>
 #include <stdarg.h>
 
 #include "CommandManager.h"
@@ -114,7 +113,7 @@ void Console::SubmitInput() {
 
 void Console::Print(std::string str) {
     if (con_stdout.value) {
-        std::cout << str << std::endl;
+        printf("%s\n", str.c_str());
     }
     instance->m_lineBuffer.Push(str);
 }
@@ -128,7 +127,7 @@ void Console::PrintfImpl(const char* fmt, ...) {
     va_end(args);
 
     if (con_stdout.value) {
-        std::cout << formatted << std::endl;
+        printf("%s\n", formatted);
     }
     instance->m_lineBuffer.Push(std::string(formatted));
 }
