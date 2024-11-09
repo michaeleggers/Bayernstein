@@ -121,13 +121,15 @@ void Console::Print(std::string str) {
 void Console::PrintfImpl(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    int length = vsnprintf(nullptr, 0, fmt, args) + 1; // +1 for \0 string termination
-    char formatted[length];
-    vsnprintf(formatted, length, fmt, args);
+    char buffer[256];
+    // NOTE: vsnprintf does always null-terminate.
+    // No need to add extra null-byte.
+    vsnprintf(buffer, 256, fmt, args); 
     va_end(args);
 
     if (con_stdout.value) {
-        printf("%s\n", formatted);
+        printf("%s\n", buffer);
     }
-    instance->m_lineBuffer.Push(std::string(formatted));
+    instance->m_lineBuffer.Push(std::string(buffer));
 }
+
