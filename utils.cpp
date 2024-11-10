@@ -33,7 +33,7 @@ bool IsStringFloat(const std::string& input) {
     }
     bool dotAppeared = false;
     while ( *c != '\0' ) {
-        if ( *c >= '0' && *c < '9' ) {
+        if ( *c >= '0' && *c <= '9' ) {
             c++;
         }
         else if ( !dotAppeared && *c == '.' ) {
