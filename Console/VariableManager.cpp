@@ -1,7 +1,10 @@
 #include "VariableManager.h"
 
+#include <stdlib.h>
+
 #include "CommandManager.h"
 #include "Console.h"
+#include "../utils.h"
 
 
 void Reset_f(std::vector<std::string> args) {
@@ -108,11 +111,13 @@ bool VariableManager::HandleCommand(std::vector<std::string> args) {
             Console::Printf(fmt + " (default: %.*f)", args[0], decimals, var->value, defaultDecimals, var->defaultValue);
         }
     } else if (args.size() == 2) { // set variable
-        try {
-            float newval = std::stof(args[1]);
-            Set(var, newval);
-        } catch (std::exception e) {
-            Console::Printf("Can't set variable, invalid value '%s'.", args[1]);
+        std::string argString = args[1];
+        if ( !IsStringFloat(argString) ) {
+            Console::Printf("Can't set variable, invalid value '%s'.", argString);
+        }
+        else {
+            float newVal = atof( argString.c_str() );
+            Set(var, newVal);
         }
     } else {
         Console::Printf("Invalind number of arguments to set variable.");

@@ -54,4 +54,4 @@ public:
 };
 
 #endif // VARIABLEMANAGER_H
-//
+
