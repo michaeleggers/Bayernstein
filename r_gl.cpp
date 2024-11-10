@@ -1100,7 +1100,6 @@ void GLRender::RenderConsole(Console* console, CFont* font) {
 
 void GLRender::RenderEnd(void)
 {
-
     // At this point the GL default FBO must be active!
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

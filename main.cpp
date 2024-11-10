@@ -114,6 +114,8 @@ int main(int argc, char** argv)
 
         HandleInput();
        
+        g_Renderer->RenderBegin();
+
         // caret is not a standalone key in german keyboard layout (`KeyWentDown(SDLK_CARET)` doesn't work)
         if (TextInput() == "^") {
             console->m_isActive = !(console->m_isActive);
@@ -128,6 +130,10 @@ int main(int argc, char** argv)
             game.RunFrame(msPerFrame);
         }
 
+        // This call composits 2D and 3D together into the default FBO
+        // (along with ImGUI).
+        g_Renderer->RenderEnd(); 
+    
         //printf("msPerFrame: %f\n", msPerFrame);
         //printf("FPS: %f\n", 1000.0f/msPerFrame);
 

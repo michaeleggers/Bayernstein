@@ -171,8 +171,8 @@ void Console::Run() {
     }
     
     IRender* renderer = GetRenderer();
-    renderer->RenderBegin();
+    //renderer->RenderBegin();
     renderer->RenderConsole(this, m_pConsoleFont);
-    renderer->RenderEnd();
+    //renderer->RenderEnd();
 }
 

@@ -309,7 +309,6 @@ bool Game::RunFrame(double dt) {
     IRender* renderer = GetRenderer();
 
     // ImGUI stuff goes into GL default FBO
-    renderer->RenderBegin();
 
     ImGui::ShowDemoWindow();
 
@@ -416,9 +415,6 @@ bool Game::RunFrame(double dt) {
     } // End2D Scope
 #endif
 
-    // This call composits 2D and 3D together into the default FBO
-    // (along with ImGUI).
-    renderer->RenderEnd(); 
 
     return true;
 }
