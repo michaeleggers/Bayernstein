@@ -13,7 +13,7 @@ void Reset_f(std::vector<std::string> args) {
 }
 
 
-std::map<std::string, ConsoleVariable*> VariableManager::variables;
+std::map<std::string, ConsoleVariable*> VariableManager::m_Variables;
 
 void VariableManager::Init() {
     CommandManager::Add("reset", Reset_f);
@@ -25,7 +25,7 @@ bool VariableManager::Register(ConsoleVariable* var) {
         return false;
     }
 
-    bool inserted = variables.insert({var->name, var}).second;
+    bool inserted = m_Variables.insert({var->name, var}).second;
     if (!inserted) {
         Console::Printf("Can't register variable %s, already defined.", var->name);
         return false;
@@ -41,7 +41,7 @@ bool VariableManager::RegisterAlias(ConsoleVariable* var, std::string alias) {
         Console::Printf("Can't register variable with alias '%s', variable '%s' not registered properly.", alias, var->name);
         return false;
     }
-    bool inserted = variables.insert({alias, var}).second;
+    bool inserted = m_Variables.insert({alias, var}).second;
     if (!inserted) {
         Console::Printf("Can't register variable with alias %s, already defined.", alias);
         return false;
@@ -63,8 +63,8 @@ ConsoleVariable* VariableManager::Create(std::string name, float value) {
 }
 
 ConsoleVariable* VariableManager::Find(std::string name) {
-    auto it = variables.find(name);
-    return it != variables.end() ? it->second : nullptr;
+    auto it = m_Variables.find(name);
+    return it != m_Variables.end() ? it->second : nullptr;
 }
 
 bool VariableManager::Exists(std::string name) {

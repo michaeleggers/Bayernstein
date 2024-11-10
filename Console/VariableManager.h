@@ -22,7 +22,7 @@ struct ConsoleVariable {
 class VariableManager {
 private:
     /** List of registered variables, mapped by their (unique) name. */
-    static std::map<std::string, ConsoleVariable*> variables;
+    static std::map<std::string, ConsoleVariable*> m_Variables;
 
 public:
     /** Initialize VariableManager variables / commands. */
@@ -54,3 +54,4 @@ public:
 };
 
 #endif // VARIABLEMANAGER_H
+//
