@@ -31,6 +31,8 @@ bool RightMouseWentDown(void);
 const MouseMotion GetMouseMotion(void);
 bool ShouldClose(void);
 
-std::string TextInput();
+const std::string&  TextInput();
+void                ClearTextInput();
 
 #endif
+

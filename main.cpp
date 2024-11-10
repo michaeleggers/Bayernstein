@@ -118,6 +118,7 @@ int main(int argc, char** argv)
         if (TextInput() == "^") {
             console->m_isActive = !(console->m_isActive);
             console->m_blinkTimer = 0;
+            ClearTextInput(); // Remove caret from the buffer
         } 
         if (console->m_isActive) {
             // FIXME: the game's 2d content disappears while console is open
@@ -153,3 +154,4 @@ int main(int argc, char** argv)
 
     return 0;
 }
+

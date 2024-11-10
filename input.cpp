@@ -133,8 +133,13 @@ bool ShouldClose(void)
     return g_Events & SDL_QUIT;
 }
 
-std::string TextInput()
+const std::string& TextInput()
 {
     return g_EventText;
 }
+
+void ClearTextInput() {
+    g_EventText = "";
+}
+
 
