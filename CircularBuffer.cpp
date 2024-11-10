@@ -1,6 +1,8 @@
 #include "CircularBuffer.h"
 
-CircularBuffer::CircularBuffer(uint maxSize) {
+#include <stdint.h>
+
+CircularBuffer::CircularBuffer(uint32_t maxSize) {
     m_buffer.resize(maxSize);
     m_maxSize = maxSize;
     m_pos = 0;
@@ -15,7 +17,7 @@ void CircularBuffer::Push(std::string str) {
     }
 }
 
-bool CircularBuffer::Get(uint offset, std::string* str) {
+bool CircularBuffer::Get(uint32_t offset, std::string* str) {
     if (offset >= Size() || Empty()) return false;
     int pos = m_pos - 1 - offset;
     if (pos < 0) pos += m_maxSize;
@@ -34,3 +36,4 @@ int CircularBuffer::Size() {
 int CircularBuffer::MaxSize() {
     return m_maxSize;
 }
+

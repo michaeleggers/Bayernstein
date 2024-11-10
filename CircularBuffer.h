@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include <stdint.h>
+
 
 /** Circular string buffer. */
 class CircularBuffer {
@@ -15,7 +17,7 @@ private:
     bool m_isFull;
 
 public:
-    CircularBuffer(uint maxSize);
+    CircularBuffer(uint32_t maxSize);
 
     /** Add the given string to the buffer. */
     void Push(std::string str);
@@ -23,10 +25,11 @@ public:
      * Get the value at the given offset. The most recent value is at `0`, the oldest is at `size - 1`.
      * @returns `false` if the offset is out of range, `true` otherwise.
      */
-    bool Get(uint offset, std::string* str);
+    bool Get(uint32_t offset, std::string* str);
     bool Empty();
     int Size();
     int MaxSize();
 };
 
 #endif // CIRCULARBUFFER_H
+
