@@ -93,8 +93,6 @@ int main(int argc, char** argv)
 
     VariableManager::Init();
     Console* console = Console::Create(100, 32);
-    CFont* consoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 26);
-    g_Renderer->RegisterFont(consoleFont);
 
     // Init the game
 
@@ -115,33 +113,17 @@ int main(int argc, char** argv)
         startCounter = SDL_GetPerformanceCounter();
 
         HandleInput();
-
-        if (TextInput() == "^") { // caret is not a standalone key in german keyboard layout (`KeyWentDown(SDLK_CARET)` doesn't work)
-            console->m_isActive = !console->m_isActive;
+       
+        // caret is not a standalone key in german keyboard layout (`KeyWentDown(SDLK_CARET)` doesn't work)
+        if (TextInput() == "^") {
+            console->m_isActive = !(console->m_isActive);
             console->m_blinkTimer = 0;
-        } else if (console->m_isActive) {
-            console->m_blinkTimer += msPerFrame;
-            if (TextInput().length()) {
-                console->UpdateInput(TextInput());
-            } else if (KeyWentDown(SDLK_UP)) { // TODO: add support for 'repeat' mode
-                console->SetInputFromHistory(1);
-            } else if (KeyWentDown(SDLK_DOWN)) {
-                console->SetInputFromHistory(-1);
-            } else if (KeyWentDown(SDLK_LEFT)) {
-                console->MoveCursor(-1);
-            } else if (KeyWentDown(SDLK_RIGHT)) {
-                console->MoveCursor(1);
-            } else if (KeyWentDown(SDLK_BACKSPACE)) {
-                console->DeleteInput(-1);
-            } else if (KeyWentDown(SDLK_DELETE)) {
-                console->DeleteInput(1);
-            } else if (KeyWentDown(SDLK_RETURN)) {
-                console->SubmitInput();
-            }
-            g_Renderer->RenderBegin();
-            g_Renderer->RenderConsole(console, consoleFont);
-            g_Renderer->RenderEnd();
-        } else { // FIXME: the game's 2d content disappears while console is open
+        } 
+        if (console->m_isActive) {
+            // FIXME: the game's 2d content disappears while console is open
+            console->Run();
+        }
+        else {
             game.RunFrame(msPerFrame);
         }
 

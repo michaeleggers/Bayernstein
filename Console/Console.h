@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "../CircularBuffer.h"
+#include "../r_font.h"
 
 /**
  * Backend for the in-game console.
@@ -21,6 +22,8 @@ private:
     int m_cursorPos = 0;
     /** Scroll position of the console log (line offset). */
     int m_scrollPos = 0;
+    /** Font to draw characters with. Must be initialized in Create() */
+    CFont* m_pConsoleFont = nullptr;
 
 private:
     /** The singleton instance of the console. */
@@ -64,6 +67,8 @@ public:
     void DeleteInput(int delta);
     /** Confirm and submit the current input (usually on line-feed). */
     void SubmitInput();
+
+    void Run();
 
 public:
     /** Prints the given string to the console as a line. */

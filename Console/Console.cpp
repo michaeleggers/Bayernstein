@@ -2,8 +2,17 @@
 
 #include <stdarg.h>
 
+#include <SDL.h>
+
 #include "CommandManager.h"
 #include "VariableManager.h"
+
+#include "../utils.h"
+#include "../irender.h"
+#include "../r_font.h"
+#include "../hkd_interface.h"
+#include "../input.h"
+
 
 ConsoleVariable con_stdout = {"con_stdout", 1};
 
@@ -11,7 +20,13 @@ ConsoleVariable con_stdout = {"con_stdout", 1};
 Console* Console::instance = nullptr;
 
 Console::Console(int lineBufferSize, int inputHistorySize) :
-    m_lineBuffer(lineBufferSize), m_inputHistory(inputHistorySize) {}
+    m_lineBuffer(lineBufferSize), 
+    m_inputHistory(inputHistorySize) {
+
+        m_pConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 26);
+        IRender *renderer = GetRenderer();
+        renderer->RegisterFont(m_pConsoleFont);
+}
 
 Console* Console::Create(int lineBufferSize, int inputHistorySize) {
     if (instance == nullptr) {
@@ -132,5 +147,32 @@ void Console::PrintfImpl(const char* fmt, ...) {
         printf("%s\n", buffer);
     }
     instance->m_lineBuffer.Push(std::string(buffer));
+}
+
+void Console::Run() {
+    float msPerFrame = (float)GetDeltaTime();
+    m_blinkTimer += msPerFrame;
+    if (TextInput().length()) {
+        UpdateInput(TextInput());
+    } else if (KeyWentDownUnbuffered(SDLK_UP)) { // TODO: add support for 'repeat' mode
+        SetInputFromHistory(1);
+    } else if (KeyWentDownUnbuffered(SDLK_DOWN)) {
+        SetInputFromHistory(-1);
+    } else if (KeyWentDownUnbuffered(SDLK_LEFT)) {
+        MoveCursor(-1);
+    } else if (KeyWentDownUnbuffered(SDLK_RIGHT)) {
+        MoveCursor(1);
+    } else if (KeyWentDownUnbuffered(SDLK_BACKSPACE)) {
+        DeleteInput(-1);
+    } else if (KeyWentDownUnbuffered(SDLK_DELETE)) {
+        DeleteInput(1);
+    } else if (KeyWentDown(SDLK_RETURN)) {
+        SubmitInput();
+    }
+    
+    IRender* renderer = GetRenderer();
+    renderer->RenderBegin();
+    renderer->RenderConsole(this, m_pConsoleFont);
+    renderer->RenderEnd();
 }
 
