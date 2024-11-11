@@ -143,15 +143,18 @@ void Console::PrintfImpl(const char* fmt, ...) {
     va_start(args, fmt);
     va_list argsCpy;
     va_copy(argsCpy, args);
-    char buffer[ vsnprintf(NULL, 0, fmt, args) + 1 ];
+    int argsSize = vsnprintf(NULL, 0, fmt, args) + 1;
+    char* buffer = (char*)malloc( argsSize );
     va_end(args);
-    vsnprintf(buffer, sizeof(buffer), fmt, argsCpy); 
+    vsnprintf(buffer, argsSize, fmt, argsCpy); 
     va_end(argsCpy);
 
     if (con_stdout.value) {
         printf("%s\n", buffer);
     }
     instance->m_lineBuffer.Push(std::string(buffer));
+
+    free(buffer); // TODO: Use scratch-buffer.
 }
 
 void Console::Run() {
