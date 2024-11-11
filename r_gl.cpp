@@ -124,6 +124,8 @@ void GLRender::Shutdown(void) {
 
     // Destroy FBOs
     delete m_2dFBO;
+    delete m_3dFBO;
+    delete m_ConsoleFBO;
 }
 
 bool GLRender::Init(void) {
@@ -266,6 +268,8 @@ bool GLRender::Init(void) {
     // FBO for rendering text and other 2d elements (shapes, sprites, ...)
     // on top of the 3d scene.
     m_2dFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    m_ConsoleFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     VariableManager::Register(&scr_consize);
     VariableManager::Register(&scr_conopacity);
@@ -1047,6 +1051,7 @@ void GLRender::RenderConsole(Console* console, CFont* font) {
     const int maxChars = floor((m_WindowWidth - 2 * textMargin) / charWidth);
 
     Begin2D();
+    m_ConsoleFBO->Bind();
     // draw background/frame
     SetShapeColor(glm::vec4(0.05f, 0.05f, 0.05f, scr_conopacity.value));
     DrawBox(0.0f, 0.0f, 1.0f, relHeight);
@@ -1095,6 +1100,7 @@ void GLRender::RenderConsole(Console* console, CFont* font) {
         }
     }
 
+    m_ConsoleFBO->Unbind();
     End2D();
 }
 
@@ -1125,6 +1131,9 @@ void GLRender::RenderEnd(void)
 
     GLuint texLoc2d = glGetUniformLocation(m_CompositeShader->Program(),
                                            "screenspace2dTexture");
+
+    GLuint texLocConsole = glGetUniformLocation(m_CompositeShader->Program(),
+                                                "consoleTexture");
     
     glUniform1i(texLoc3d, 0);
     // Bind the 3d scene FBO and draw it.
@@ -1138,6 +1147,12 @@ void GLRender::RenderEnd(void)
     glActiveTexture( GL_TEXTURE1 );
     glBindTexture( GL_TEXTURE_2D, screenSpace2dTexture.m_gl_Handle ); 
 
+    glUniform1i(texLocConsole, 2);
+    // Bind the 2d console FBO texture and draw on top.
+    CglRenderTexture consoleTexture = m_ConsoleFBO->m_ColorTexture;
+    glActiveTexture( GL_TEXTURE2 );
+    glBindTexture( GL_TEXTURE_2D, consoleTexture.m_gl_Handle ); 
+    
     glDrawArrays( GL_TRIANGLES, 0, 6 );
 
     // FIX: This is the reason why textures in OpenGL suck!!! If we are

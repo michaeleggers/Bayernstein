@@ -114,6 +114,7 @@ private:
 
 	CglFBO*		                m_2dFBO;
 	CglFBO*						m_3dFBO;
+	CglFBO*						m_ConsoleFBO;
 	int							m_WindowWidth;
 	int							m_WindowHeight;
 
