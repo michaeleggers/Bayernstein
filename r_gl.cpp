@@ -593,14 +593,11 @@ void GLRender::RenderBegin(void)
 void GLRender::Begin3D(void) {
     // Render into the 3D scene FBO
     m_3dFBO->Bind();
-    
     SDL_GL_GetDrawableSize(m_Window, &m_WindowWidth, &m_WindowHeight);
     float windowAspect = (float)m_WindowWidth / (float)m_WindowHeight;
     glViewport(0, 0, m_WindowWidth, m_WindowHeight);
-
     glClearColor(0.f, 0.f, 1.0f, 1.0f); 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 }
 
 void GLRender::End3D(void) {

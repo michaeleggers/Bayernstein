@@ -14,9 +14,10 @@ void main() {
     vec4 screen2dColor = texture( screenspace2dTexture, in_uv );
 	vec4 consoleColor = texture ( consoleTexture, in_uv );
 
-    vec3 blendedColor = screen2dColor.rgb + (1.0f - screen2dColor.a) * main3dColor.rgb;
-    float blendedAlpha = screen2dColor.a  + (1.0f - screen2dColor.a) * main3dColor.a;
+    vec3 blendedColor3d2d = screen2dColor.rgb + (1.0f - screen2dColor.a) * main3dColor.rgb;
+	vec3 blendedColor = consoleColor.rgb + (1.0f - consoleColor.a) * blendedColor3d2d.rgb;
+    float blendedAlpha = screen2dColor.a  + (1.0f - screen2dColor.a) * (1.0f - consoleColor.a) * main3dColor.a;
 
-    out_Color = vec4( blendedColor + consoleColor.rgb, blendedAlpha );
+    out_Color = vec4( blendedColor, blendedAlpha );
 }
 

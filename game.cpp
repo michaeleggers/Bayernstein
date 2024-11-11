@@ -210,6 +210,7 @@ static void DrawCoordinateSystem(IRender* renderer) {
 }
 
 bool Game::RunFrame(double dt) {
+
     m_AccumTime += dt;
 
     // Want to quit on ESCAPE
@@ -300,6 +301,7 @@ bool Game::RunFrame(double dt) {
     // Run the message system
     m_pEntityManager->UpdateEntities();
     Dispatcher->DispatchDelayedMessages();
+
 
     // Fix camera position
 

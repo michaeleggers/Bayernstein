@@ -47,6 +47,8 @@ public:
     /** Create the console (singleton) instance and initialize it and its buffers, etc. */
     static Console* Create(int lineBufferSize, int inputHistorySize);
 
+    static const Console* Instance();
+
     /** Get the current scroll position (line offset) of the console log. */
     int ScrollPos();
     /** Move the scroll position by the given delta (limited by the line buffer size). */
@@ -67,8 +69,9 @@ public:
     void DeleteInput(int delta);
     /** Confirm and submit the current input (usually on line-feed). */
     void SubmitInput();
-
+    /** Activate Console, receive input and render. */
     void Run();
+
 
 public:
     /** Prints the given string to the console as a line. */

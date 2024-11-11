@@ -125,8 +125,7 @@ int main(int argc, char** argv)
         if (console->m_isActive) {
             // FIXME: the game's 2d content disappears while console is open
             console->Run();
-        }
-        else {
+        } else {
             game.RunFrame(msPerFrame);
         }
 

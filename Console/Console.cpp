@@ -36,6 +36,11 @@ Console* Console::Create(int lineBufferSize, int inputHistorySize) {
     return instance;
 }
 
+const Console* Console::Instance() {
+    assert( instance != nullptr );
+    
+    return instance;
+}
 
 int Console::ScrollPos() {
     return m_scrollPos;
