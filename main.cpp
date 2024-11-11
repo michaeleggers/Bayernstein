@@ -124,6 +124,14 @@ int main(int argc, char** argv)
         } 
         if (console->m_isActive) {
             // FIXME: the game's 2d content disappears while console is open
+            // NOTE: (Michael): We let this unfixed for now and defer this
+            // to another time. To implement this cleanly a few things
+            // in the renderer have to be changed, eg. refactoring the
+            // render-internal render-command API. Since this API has
+            // to be changed anyways for regular 3D drawing I want to
+            // see what other requirements this change needs before
+            // investing too much time now and having to change everything
+            // later...
             console->Run();
         } else {
             game.RunFrame(msPerFrame);
