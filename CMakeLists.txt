@@ -87,6 +87,8 @@ add_executable(Game
     utils/utils.cpp
     utils/quick_math.h
     utils/quick_math.cpp
+    image.h
+    image.cpp
     polysoup.h
     polysoup.cpp
         # map_parser.h

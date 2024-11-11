@@ -8,7 +8,7 @@ class ITexture {
 public:
 	std::string    m_Filename;
 	int            m_Width, m_Height, m_Channels;
-	uint64_t       m_hGPU;
+	uint64_t       m_hGPU; // GPU side handle. Assigned by Renderbackend.
 };
 
 #endif

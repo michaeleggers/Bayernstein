@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <string>
 
 #define GLM_FORCE_RADIANS
 #include "dependencies/glm/glm.hpp"
@@ -21,6 +22,7 @@ enum GeometryType {
 struct Vertex {
     glm::vec3 pos;
     glm::vec2 uv;
+    glm::vec2 uvLightmap;
     glm::vec3 bc;
     glm::vec3 normal; // = glm::vec3(0.0f, -1.0f, 0.0f); // points *against* the forward direction (because camera is facing to forward by default)
     glm::vec4 color;
@@ -28,11 +30,24 @@ struct Vertex {
     glm::vec4 blendweights;
 };
 
+// TODO: Make union Vertex that combines Vertex and
+// StativVertex.
+struct StaticVertex {
+    glm::vec3 pos;
+    glm::vec2 uv;
+    glm::vec2 uvLightmap;
+    glm::vec3 bc;
+    glm::vec3 normal; // = glm::vec3(0.0f, -1.0f, 0.0f); // points *against* the forward direction (because camera is facing to forward by default)
+    glm::vec3 color;
+};
+
+
 // Vertex Attribute Layout
 
 #define VERT_POS_OFFSET          0
 #define VERT_UV_OFFSET           (VERT_POS_OFFSET + sizeof(glm::vec3))
-#define VERT_BC_OFFSET           (VERT_UV_OFFSET + sizeof(glm::vec2))
+#define VERT_UV_LIGHTMAP_OFFSET  (VERT_UV_OFFSET + sizeof(glm::vec2))
+#define VERT_BC_OFFSET           (VERT_UV_LIGHTMAP_OFFSET + sizeof(glm::vec2))
 #define VERT_NORMAL_OFFSET       (VERT_BC_OFFSET + sizeof(glm::vec3))
 #define VERT_COLOR_OFFSET        (VERT_NORMAL_OFFSET + sizeof(glm::vec3))
 #define VERT_BLENDINDICES_OFFSET (VERT_COLOR_OFFSET + sizeof(glm::vec4))
@@ -69,6 +84,13 @@ struct Tri {
         struct { Vertex a; Vertex b; Vertex c; };
         Vertex vertices[3];
     };
+};
+
+struct MapTri {
+    Tri         tri; 
+    std::string textureName;
+    std::string lightmap;
+    uint64_t    hTexture; // GPU handle set by renderer.
 };
 
 struct Line {

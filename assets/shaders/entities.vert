@@ -1,12 +1,13 @@
 #version 410
 
-layout (location = 0) in vec3 pos;
-layout (location = 1) in vec2 uv;
-layout (location = 2) in vec3 bc;
-layout (location = 3) in vec3 normal;
-layout (location = 4) in vec4 color;
-layout (location = 5) in uvec4 blendindices;
-layout (location = 6) in vec4 blendweights;
+layout (location = 0) in vec3  in_pos;
+layout (location = 1) in vec2  in_uv;
+layout (location = 2) in vec2  in_uvLightmap;
+layout (location = 3) in vec3  in_bc;
+layout (location = 4) in vec3  in_normal;
+layout (location = 5) in vec4  in_color;
+layout (location = 6) in uvec4 in_blendindices;
+layout (location = 7) in vec4  in_blendweights;
 
 
 // layout (std140, binding = 0) uniform ViewProjMatrices {
@@ -48,13 +49,13 @@ out vec3 BaryCentricCoords;
 out vec3 Normal;
 
 void main() {
-    vec4 v = vec4(pos, 1.0);
+    vec4 v = vec4(in_pos, 1.0);
     
     mat4 skinMat = (
-        palette[blendindices.x]*blendweights.x
-     + palette[blendindices.y]*blendweights.y 
-     + palette[blendindices.z]*blendweights.y 
-     + palette[blendindices.w]*blendweights.w);
+       palette[in_blendindices.x]*in_blendweights.x
+     + palette[in_blendindices.y]*in_blendweights.y 
+     + palette[in_blendindices.z]*in_blendweights.y 
+     + palette[in_blendindices.w]*in_blendweights.w);
 
     uint shaderBits0 = bitFields.x;
     if ( (shaderBits0 & SHADER_ANIMATED) == SHADER_ANIMATED ) {
@@ -64,7 +65,8 @@ void main() {
         gl_Position = proj * view * model * v;
     }
         
-    TexCoord = uv;
-    BaryCentricCoords = bc;
-    Normal = normal;
+    TexCoord = in_uv;
+    BaryCentricCoords = in_bc;
+    Normal = in_normal;
 }
+

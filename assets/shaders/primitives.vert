@@ -1,12 +1,13 @@
-#version 410
+#version 460 core
 
-layout (location = 0) in vec3 pos;
-layout (location = 1) in vec2 uv;
-layout (location = 2) in vec3 bc;
-layout (location = 3) in vec3 normal;
-layout (location = 4) in vec4 color;
-layout (location = 5) in uvec4 blendindices;
-layout (location = 6) in vec4 blendweights;
+layout (location = 0) in vec3  in_pos;
+layout (location = 1) in vec2  in_uv;
+layout (location = 2) in vec2  in_uvLightmap;
+layout (location = 3) in vec3  in_bc;
+layout (location = 4) in vec3  in_normal;
+layout (location = 5) in vec4  in_color;
+layout (location = 6) in uvec4 in_blendindices;
+layout (location = 7) in vec4  in_blendweights;
 
 
 layout (std140) uniform ViewProjMatrices {
@@ -30,16 +31,16 @@ out vec4 Pos;
 out mat4 ViewMat;
 
 void main() {
-    vec4 v = vec4(pos, 1.0);    
+    vec4 v = vec4(in_pos, 1.0);    
     gl_Position = proj * view * v;
     
-    TexCoord = uv;
-    BaryCentricCoords = bc;
-    Normal = view * vec4(normal, 0.0f);
-    Normal = view * vec4(normal, 0.0f);
-    Color = color;
+    TexCoord = in_uv;
+    BaryCentricCoords = in_bc;
+    Normal = view * vec4(in_normal, 0.0f);
+    Normal = view * vec4(in_normal, 0.0f);
+    Color = in_color;
     ViewPosWorldSpace = vec4(viewPos, 1.0f);
-    Pos = view * vec4(pos, 1.0);
+    Pos = view * vec4(in_pos, 1.0);
     ViewMat = view;
 }
 

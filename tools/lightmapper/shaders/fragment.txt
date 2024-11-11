@@ -1,0 +1,35 @@
+#version 330 core
+
+in vec2 fragmentTexCoord;
+in vec2 lightmapTexCoord;
+
+out vec4 color;
+
+uniform sampler2DArray diffuseTextureArray;  // Texture array for diffuse textures
+uniform sampler2D lightmapTexture;            // Global lightmap texture
+uniform float exposure;                        // Tone-mapping exposure
+uniform int textureLayer;                      // Texture layer index to sample from
+
+void main()
+{
+    // Sample the diffuse texture from the texture array
+    vec4 texColor = texture(diffuseTextureArray, vec3(fragmentTexCoord, textureLayer));
+
+    // Sample the lightmap texture
+    vec4 lightmapColor = texture(lightmapTexture, lightmapTexCoord);
+
+    // Combine texture with lightmap color
+    vec3 combinedColor = texColor.rgb * lightmapColor.rgb;
+
+    // Apply exposure-based tone mapping
+    vec3 mappedColor;
+    if (exposure > 0.0) {
+        mappedColor = vec3(1.0) - exp(-combinedColor * exposure);
+        mappedColor = pow(mappedColor, vec3(1.0 / 2.2));
+    } else {
+        mappedColor = combinedColor;
+    }
+
+    // Output final color with alpha set to 1.0
+    color = vec4(mappedColor, 1.0);
+}

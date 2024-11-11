@@ -27,7 +27,7 @@ private:
     // is *much* easier when their triangles are not
     // stored individually but rather in a triangle list
     // that contains *all* brush entities.
-    std::vector<TriPlane> m_TriPlanes;
+    std::vector<MapTri> m_MapTris;
 
 
 public:
@@ -46,8 +46,8 @@ public:
 
     bool HandleMessage(const Telegram& telegram) override;
 
-    std::vector<TriPlane>& TriPlanes() {
-        return m_TriPlanes;
+    std::vector<MapTri>& MapTris() {
+        return m_MapTris;
     }
 
     // NOTE: NOT FINAL. JUST HERE TO TEST THINGS OUT.

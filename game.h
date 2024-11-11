@@ -14,16 +14,15 @@
 
 class Game {
   public:
-    Game(std::string exePath, hkdInterface* interface, IRender* renderer);
+    Game(std::string exePath, hkdInterface *interface);
 
     void Init();
     bool RunFrame(double dt);
     void Shutdown();
 
   private:
-    IRender* m_Renderer;
-    hkdInterface* m_Interface;
-    std::string m_ExePath;
+    hkdInterface                *m_Interface;
+    std::string                 m_ExePath;
 
     Player* m_pPlayerEntity;
     EntityManager* m_pEntityManager;

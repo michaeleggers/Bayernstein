@@ -55,7 +55,7 @@ GLTexture::GLTexture(CFont* font)
     GLuint glTextureHandle;
     glGenTextures(1, &glTextureHandle);
     glBindTexture(GL_TEXTURE_2D, glTextureHandle);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLuint)x, (GLuint)y, 0, GL_ALPHA, GL_UNSIGNED_BYTE, font->m_Bitmap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLuint)x, (GLuint)y, 0, GL_RED, GL_UNSIGNED_BYTE, font->m_Bitmap);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
 
