@@ -1,0 +1,49 @@
+name: Build and Test
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: run on windows
+    runs-on: windows-latest
+    steps:
+    - name: Install CMake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '3.28.0'
+
+  # TODO: Download SDL lib and set env so that MSVC can link
+  #       against it.
+  #       @see: https://github.com/libsdl-org/SDL/issues/7219
+
+    - uses: actions/checkout@v4
+    - uses: ilammy/msvc-dev-cmd@v1.4.1
+
+    - name: Configure CMake
+      shell: cmd
+      run: | 
+        cmake ${{ github.workspace }} \
+        -G "Visual Studio 17 2022" \
+        -DCMAKE_C_COMPILER=cl \
+        -DCMAKE_CXX_COMPILER=cl \
+        -DCMAKE_BUILD_TYPE=Release \
+        -B ${{ github.workspace }}/build/Release
+      working-directory: ${{ github.workspace }}/build
+
+    - name: Build
+      shell: cmd
+      run: cmake --build .
+      working-directory: ${{ github.workspace }}/build/Release
+
+    - name: upload executable
+      uses: actions/upload-artifact@v4
+      with:
+        name: game_windows
+        path: ${{ github.workspace }}/bin
+
+    
