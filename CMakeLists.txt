@@ -111,6 +111,14 @@ add_executable(Game
     Body.h
     Intersections.cpp
     Intersections.h
+    CircularBuffer.cpp
+    CircularBuffer.h
+    Console/Console.cpp
+    Console/Console.h
+    Console/CommandManager.cpp
+    Console/CommandManager.h
+    Console/VariableManager.cpp
+    Console/VariableManager.h
     CWorld.cpp
     CWorld.h
     collision.cpp

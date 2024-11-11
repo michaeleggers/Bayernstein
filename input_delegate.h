@@ -10,6 +10,12 @@ public:
 
     void SetReceiver(IInputReceiver* receiver);
     void HandleInput();
+    /** Allow to disable this higher-level input system so that
+     *  only raw OS input is considered as input. This is
+     *  useful to not interfere with the console.
+    */
+    void Enable();
+    void Disable();
 
 private:
     /* Singleton! */
@@ -17,6 +23,7 @@ private:
     ~CInputDelegate() = default;
 
     IInputReceiver* m_InputReceiver = nullptr;
+    bool            m_Enabled = true;
 };
 
 #endif

@@ -2,6 +2,7 @@
 #define _INPUT_H_
 
 #include <SDL.h>
+#include <string>
 
 // Holds SDL mouse-motion state for current and previous frame.
 struct MouseMotion {
@@ -11,6 +12,16 @@ struct MouseMotion {
 
 void HandleInput(void);
 bool KeyWentDown(SDL_Keycode keyCode);
+
+/* 
+* Reflects what the message loop of the
+* operating system will do. If you press down the
+* key and keep it pressed, you will notice a
+* short delete between the initial press and
+* the 'keep pressed' state.
+*/
+bool KeyWentDownUnbuffered(SDL_Keycode keyCode);
+
 bool KeyWentUp(SDL_Keycode keyCode);
 bool KeyPressed(SDL_Keycode keyCode);
 bool MouseWentDown(int button);
@@ -20,4 +31,8 @@ bool RightMouseWentDown(void);
 const MouseMotion GetMouseMotion(void);
 bool ShouldClose(void);
 
+const std::string&  TextInput();
+void                ClearTextInput();
+
 #endif
+

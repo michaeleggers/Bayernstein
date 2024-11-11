@@ -210,6 +210,7 @@ static void DrawCoordinateSystem(IRender* renderer) {
 }
 
 bool Game::RunFrame(double dt) {
+
     m_AccumTime += dt;
 
     // Want to quit on ESCAPE
@@ -301,6 +302,7 @@ bool Game::RunFrame(double dt) {
     m_pEntityManager->UpdateEntities();
     Dispatcher->DispatchDelayedMessages();
 
+
     // Fix camera position
 
     //m_pPlayerEntity->UpdateCamera(&m_FollowCamera);
@@ -309,7 +311,6 @@ bool Game::RunFrame(double dt) {
     IRender* renderer = GetRenderer();
 
     // ImGUI stuff goes into GL default FBO
-    renderer->RenderBegin();
 
     ImGui::ShowDemoWindow();
 
@@ -416,9 +417,6 @@ bool Game::RunFrame(double dt) {
     } // End2D Scope
 #endif
 
-    // This call composits 2D and 3D together into the default FBO
-    // (along with ImGUI).
-    renderer->RenderEnd(); 
 
     return true;
 }

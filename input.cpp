@@ -11,17 +11,21 @@
 static Uint32       g_Events;
 static bool         g_Scancodes[SDL_NUM_SCANCODES];
 static bool         g_PrevScancodes[SDL_NUM_SCANCODES];
+static bool         g_PerFrameScancodes[SDL_NUM_SCANCODES];
 static Uint8        g_MouseButtons;
 static Uint8        g_PrevMouseButtons;
 static MouseMotion  g_MouseMotionState;
+
+static std::string g_EventText;
 
 void HandleInput(void)
 {
     memcpy(g_PrevScancodes, g_Scancodes, SDL_NUM_SCANCODES * sizeof(bool));
     g_PrevMouseButtons = g_MouseButtons;
-    //memset(g_Scancodes, 0, SDL_NUM_SCANCODES * sizeof(bool));
+    memset(g_PerFrameScancodes, 0, SDL_NUM_SCANCODES * sizeof(bool));
 
     g_Events = 0;
+    g_EventText = "";
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -36,10 +40,12 @@ void HandleInput(void)
         }
 
         if (event.type == SDL_KEYDOWN) {
-            g_Scancodes[event.key.keysym.scancode] = true;            
+            g_Scancodes[event.key.keysym.scancode] = true;
+            g_PerFrameScancodes[event.key.keysym.scancode] = true;
         }
         if (event.type == SDL_KEYUP) {
             g_Scancodes[event.key.keysym.scancode] = false;
+            g_PerFrameScancodes[event.key.keysym.scancode] = false;
         }
 
         if (event.type == SDL_MOUSEBUTTONDOWN) {
@@ -52,6 +58,11 @@ void HandleInput(void)
             g_MouseMotionState.prev = g_MouseMotionState.current;
             g_MouseMotionState.current = event.motion;
         }
+        
+        if (event.type == SDL_TEXTINPUT) {
+            auto str = std::string(event.text.text);
+            if (str.length() == 1) g_EventText = str; // ignore unicode characters (length > 1)
+        }
     }
 }
 
@@ -59,6 +70,11 @@ bool KeyWentDown(SDL_Keycode keyCode)
 {
     SDL_Scancode sc = SDL_GetScancodeFromKey(keyCode);
     return (!g_PrevScancodes[sc] && g_Scancodes[sc]);
+}
+
+bool KeyWentDownUnbuffered(SDL_Keycode keyCode) {
+    SDL_Scancode sc = SDL_GetScancodeFromKey(keyCode);
+    return g_PerFrameScancodes[sc];
 }
 
 bool KeyWentUp(SDL_Keycode keyCode)
@@ -116,4 +132,14 @@ bool ShouldClose(void)
 {    
     return g_Events & SDL_QUIT;
 }
+
+const std::string& TextInput()
+{
+    return g_EventText;
+}
+
+void ClearTextInput() {
+    g_EventText = "";
+}
+
 

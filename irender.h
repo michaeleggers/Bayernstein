@@ -13,6 +13,7 @@
 #include "camera.h"
 #include "r_common.h"
 #include "r_font.h"
+#include "Console/Console.h"
 
 enum DrawMode {
 	DRAW_MODE_SOLID,
@@ -61,6 +62,7 @@ public:
 					  ScreenSpaceCoordMode coordMode = COORD_MODE_REL) = 0;
 	virtual void Render(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
 	virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
+	virtual void RenderConsole(Console* console, CFont* font) = 0;
 	virtual void RenderEnd(void) = 0;
 	virtual void SetWindowTitle(char* windowTitle) = 0;
 

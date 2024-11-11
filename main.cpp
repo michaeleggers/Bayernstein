@@ -40,6 +40,7 @@
 #include "game.h"
 #include "TestClass.h"
 #include "utils.h"
+#include "Console/VariableManager.h"
 
 static bool         g_GameWantsToQuit;
 std::string         g_GameDir;
@@ -90,6 +91,9 @@ int main(int argc, char** argv)
         return -1;
     }    
 
+    VariableManager::Init();
+    Console* console = Console::Create(100, 32);
+
     // Init the game
 
     Game game(exePath, &interface);
@@ -109,9 +113,34 @@ int main(int argc, char** argv)
         startCounter = SDL_GetPerformanceCounter();
 
         HandleInput();
+       
+        g_Renderer->RenderBegin();
 
-        game.RunFrame(msPerFrame);
+        // caret is not a standalone key in german keyboard layout (`KeyWentDown(SDLK_CARET)` doesn't work)
+        if (TextInput() == "^") {
+            console->m_isActive = !(console->m_isActive);
+            console->m_blinkTimer = 0;
+            ClearTextInput(); // Remove caret from the buffer
+        } 
+        if (console->m_isActive) {
+            // FIXME: the game's 2d content disappears while console is open
+            // NOTE: (Michael): We let this unfixed for now and defer this
+            // to another time. To implement this cleanly a few things
+            // in the renderer have to be changed, eg. refactoring the
+            // render-internal render-command API. Since this API has
+            // to be changed anyways for regular 3D drawing I want to
+            // see what other requirements this change needs before
+            // investing too much time now and having to change everything
+            // later...
+            console->Run();
+        } else {
+            game.RunFrame(msPerFrame);
+        }
 
+        // This call composits 2D and 3D together into the default FBO
+        // (along with ImGUI).
+        g_Renderer->RenderEnd(); 
+    
         //printf("msPerFrame: %f\n", msPerFrame);
         //printf("FPS: %f\n", 1000.0f/msPerFrame);
 
@@ -138,3 +167,4 @@ int main(int argc, char** argv)
 
     return 0;
 }
+

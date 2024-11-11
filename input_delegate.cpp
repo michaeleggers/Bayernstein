@@ -14,10 +14,19 @@ void CInputDelegate::SetReceiver(IInputReceiver* receiver) {
 
 void CInputDelegate::HandleInput() {
     if ( m_InputReceiver != nullptr ) {
-        m_InputReceiver->HandleInput();
+        if ( m_Enabled ) {
+            m_InputReceiver->HandleInput();
+        }
     }
 }
 
+void CInputDelegate::Enable() {
+    m_Enabled = true;
+}
+
+void CInputDelegate::Disable() {
+    m_Enabled = false;
+}
 
 
 
