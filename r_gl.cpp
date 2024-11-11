@@ -554,9 +554,7 @@ void GLRender::RenderBegin(void)
 {  
     // Make sure the screenspace 2d FBO is being cleared.
     m_2dFBO->Bind();
-
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    
     // NOTE: Important to have alpha = 0.0f, otherwise we will end up with 
     // a base framebuffer that is fully opaque. But only the glyphs must 
     // be opaque after the fragment shader has run!
@@ -564,15 +562,19 @@ void GLRender::RenderBegin(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     //glDisable(GL_CULL_FACE);
-
     glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
-   
     m_2dFBO->Unbind(); // Switch back to GL default framebuffer.
     
+    // Make sure the console FBO is being cleared.
+    m_ConsoleFBO->Bind();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f); 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
+    m_ConsoleFBO->Unbind(); // Switch back to GL default framebuffer.
 
     // Render into the GL default FBO.
-
-    // SDL_GetWindowSize(m_Window, &m_WindowWidth, &m_WindowHeight);
     
     // See: https://wiki.libsdl.org/SDL2/SDL_GL_GetDrawableSize
     SDL_GL_GetDrawableSize(m_Window, &m_WindowWidth, &m_WindowHeight);
