@@ -78,11 +78,11 @@ void DoorOpening::Execute(Door* pDoor) {
     }
 
     // Open the door.
-    std::vector<TriPlane>& triPlanes = pDoor->TriPlanes();
-    for ( int i = 0; i < triPlanes.size(); i++ ) {
-        Tri& tri = triPlanes[ i ].tri;
+    std::vector<MapTri>& mapTris = pDoor->MapTris();
+    for ( int i = 0; i < mapTris.size(); i++ ) {
+        MapTri& mapTri = mapTris[ i ];
         for ( int j = 0; j < 3; j++ ) {
-            Vertex& v = tri.vertices[ j ];
+            Vertex& v = mapTri.tri.vertices[ j ];
             v.pos.z += pDoor->m_Speed * GetDeltaTime() / 1000.0;
         }
     }

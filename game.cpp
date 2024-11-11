@@ -51,9 +51,9 @@ void Game::Init() {
 
     // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
 #ifdef _WIN32
-    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/temple2.map");
+    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple2.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/enemy_test.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -146,8 +146,8 @@ void Game::Init() {
     // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
     // in the batch?
 
-    int hPlayerModel = m_Renderer->RegisterModel(m_pPlayerEntity->GetModel());
-    int hEnemyModel = m_Renderer->RegisterModel(enemy->GetModel());
+    int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
+    int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
 }
 
 static void DrawCoordinateSystem(IRender* renderer) {
@@ -193,11 +193,11 @@ bool Game::RunFrame(double dt) {
     // collision system!!! Arrays just always win... what can I say?
     // The brush entities should have pointers (indices) into the
     // CPU-side triangle array to know what geometry belongs to them.
-    std::vector<TriPlane> allTris = m_World.m_TriPlanes;
+    std::vector<MapTri> allTris = m_World.m_MapTris;
 #if 0 // if there are no doors in the world, this is not needed
     int be = m_World.m_BrushEntities[ 0 ];
     Door* pEntity = (Door*)m_pEntityManager->GetEntityFromID(be);
-    std::copy(pEntity->TriPlanes().begin(), pEntity->TriPlanes().end(), std::back_inserter(allTris));
+    std::copy(pEntity->MapTris().begin(), pEntity->MapTris().end(), std::back_inserter(allTris));
 #endif
 
     CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
@@ -209,11 +209,11 @@ bool Game::RunFrame(double dt) {
     m_pPlayerEntity->UpdatePosition(collisionInfo.basePos);
 
     EllipsoidCollider ecEnemy = enemy->GetEllipsoidCollider();
-    CollisionInfo enemyCollisionInfo = CollideEllipsoidWithTriPlane(ecEnemy,
-                                                                    static_cast<float>(dt) * enemy->GetVelocity(),
-                                                                    static_cast<float>(dt) * m_World.m_Gravity,
-                                                                    allTris.data(),
-                                                                    allTris.size());
+    CollisionInfo enemyCollisionInfo = CollideEllipsoidWithMapTris(ecEnemy,
+                                                                   static_cast<float>(dt) * enemy->GetVelocity(),
+                                                                   static_cast<float>(dt) * m_World.m_Gravity,
+                                                                   allTris.data(),
+                                                                   allTris.size());
 
     enemy->UpdatePosition(enemyCollisionInfo.basePos);
 
@@ -290,7 +290,7 @@ bool Game::RunFrame(double dt) {
         // auto type = enemy->m_Type;
 
         HKD_Model* models[ 2 ] = { m_pPlayerEntity->GetModel(), enemy->GetModel() };
-        m_Renderer->Render(&m_FollowCamera, models, 2);
+        renderer->Render(&m_FollowCamera, models, 2);
 
 #if 0
         if ( collisionInfo.didCollide ) {
@@ -306,11 +306,11 @@ bool Game::RunFrame(double dt) {
 #endif
 
         // Render Player's ellipsoid collider
-        m_Renderer->SetActiveCamera(&m_FollowCamera);
+        renderer->SetActiveCamera(&m_FollowCamera);
         HKD_Model* playerColliderModel[ 1 ] = { m_pPlayerEntity->GetModel() };
-        m_Renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
+        renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
 
-        m_Renderer->End3D();
+        renderer->End3D();
 
     } // End3D scope
 
