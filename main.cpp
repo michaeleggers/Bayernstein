@@ -132,7 +132,7 @@ int main(int argc, char** argv)
             // see what other requirements this change needs before
             // investing too much time now and having to change everything
             // later...
-            console->Run();
+            console->RunFrame();
         } else {
             game.RunFrame(msPerFrame);
         }

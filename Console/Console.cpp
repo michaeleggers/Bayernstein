@@ -157,7 +157,7 @@ void Console::PrintfImpl(const char* fmt, ...) {
     free(buffer); // TODO: Use scratch-buffer.
 }
 
-void Console::Run() {
+void Console::RunFrame() {
     float msPerFrame = (float)GetDeltaTime();
     m_blinkTimer += msPerFrame;
     if (TextInput().length()) {

@@ -70,7 +70,7 @@ public:
     /** Confirm and submit the current input (usually on line-feed). */
     void SubmitInput();
     /** Activate Console, receive input and render. */
-    void Run();
+    void RunFrame();
 
 
 public:
