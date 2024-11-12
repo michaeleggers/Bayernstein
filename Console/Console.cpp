@@ -162,7 +162,7 @@ void Console::Run() {
     m_blinkTimer += msPerFrame;
     if (TextInput().length()) {
         UpdateInput(TextInput());
-    } else if (KeyWentDownUnbuffered(SDLK_UP)) { // TODO: add support for 'repeat' mode
+    } else if (KeyWentDownUnbuffered(SDLK_UP)) { 
         SetInputFromHistory(1);
     } else if (KeyWentDownUnbuffered(SDLK_DOWN)) {
         SetInputFromHistory(-1);
