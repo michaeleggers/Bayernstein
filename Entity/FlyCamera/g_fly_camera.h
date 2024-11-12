@@ -18,7 +18,7 @@
 * the InputReceiver to get high-level input commands.
 * You can fly around in the world with this camera by
 * holding the right mouse-button and using WASD to 
-* move forwars/backwars/left/righ.
+* move forwards/backwards/left/right.
 * TODO: We could think about having the camera itself being a
 * BaseGameEntity. But I am not sure about this. We have to
 * think about Entities a bit more anyways later.
