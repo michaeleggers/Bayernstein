@@ -13,9 +13,9 @@
 #include "../../dependencies/glm/glm.hpp"
 
 /*
- * This  entity stores a regular Camera. But it also needs
+ * This entity stores a regular Camera. But it also needs
  * another target entity to follow. When the target entity
- * moves this entity (the camera) follow it. It is not
+ * moves, this entity (the camera) follows it. It is not
  * controllable by user input (Actually, it is because
  * you could always just use the low-level raw SDL inputs
  * from input.cpp, but responding to high-level inputmappings
