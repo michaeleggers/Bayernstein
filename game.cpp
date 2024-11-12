@@ -21,14 +21,17 @@
 #include "r_itexture.h"
 #include "utils.h"
 #include "hkd_interface.h"
+#include "input_handler.h"
+#include "input_delegate.h"
+#include "input_receiver.h"
 
 static int hkd_Clamp(int val, int clamp) {
     if ( val > clamp || val < clamp ) return clamp;
     return val;
 }
 
-Game::Game(std::string exePath, hkdInterface* interface) {
-    m_Interface = interface;
+Game::Game(std::string exePath, hkdInterface* pInterface) {
+    m_pInterface = pInterface;
     m_ExePath = exePath;
     m_pEntityManager = EntityManager::Instance();
 }
@@ -139,12 +142,56 @@ void Game::Init() {
 
     m_pPlayerEntity = new Player(idCounter++, playerStartPosition);
     m_pEntityManager->RegisterEntity(m_pPlayerEntity);
-    m_pEntityManager->RegisterEntity(new Enemy(idCounter++));
+    m_pEnemyEntity = new Enemy(idCounter++);
+    m_pEntityManager->RegisterEntity(m_pEnemyEntity);
+  
+    glm::vec3 debugPlayerStartPosition = playerStartPosition; // + glm::vec3(0.0f, 10.0f, 0.0f);
+    m_pDebugPlayerEntity = new Player(idCounter++, debugPlayerStartPosition);
+    m_pEntityManager->RegisterEntity(m_pDebugPlayerEntity);
 
+    m_pFlyCameraEntity = new CFlyCamera( idCounter++, glm::vec3(0.0f) );
+  
+    // FIX: If the follow camera is registered *before* one of the entities
+    // the follow camera will lag behind one frame because it won't
+    // get the most up to date position of its target!
+    // We can choose to have a dedicated array for all of the
+    // camera entity types and let the entity manager take care
+    // of correct update order.
+    m_pFollowCameraEntity = new CFollowCamera(idCounter++, m_pPlayerEntity);
+    m_pFollowCameraEntity->m_Camera = Camera(playerStartPosition);
+    m_pFollowCameraEntity->m_Camera.m_Pos.y -= 200.0f;
+    m_pFollowCameraEntity->m_Camera.m_Pos.z += 100.0f;
+    m_pFollowCameraEntity->m_Camera.RotateAroundSide(0.0f);
+    //m_pFollowCameraEntity->m_Camera.RotateAroundUp(180.0f);
+    m_pEntityManager->RegisterEntity(m_pFollowCameraEntity);
+   
     // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
     // in the batch?
 
     int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
+    //
+    int hDebugPlayerModel = renderer->RegisterModel(m_pDebugPlayerEntity->GetModel());
+   
+    // Test Input Binding
+
+    // Keyboard buttons
+    CInputHandler* inputHandler = CInputHandler::Instance();
+    inputHandler->BindInputToActionName(SDLK_SPACE, "jump");
+    inputHandler->BindInputToActionName(SDLK_0, "equip_rocketlauncher");
+    inputHandler->BindInputToActionName(SDLK_w, "forward");
+    inputHandler->BindInputToActionName(SDLK_s, "back");
+    inputHandler->BindInputToActionName(SDLK_a, "left");
+    inputHandler->BindInputToActionName(SDLK_d, "right");
+    inputHandler->BindInputToActionName(SDLK_LSHIFT, "speed");
+    inputHandler->BindInputToActionName(SDLK_c, "set_captain");
+    inputHandler->BindInputToActionName(SDLK_LEFT, "turn_left");
+    inputHandler->BindInputToActionName(SDLK_RIGHT, "turn_right");
+    // Mouse buttons
+    inputHandler->BindInputToActionName(SDL_BUTTON_LEFT, "fire"); 
+    inputHandler->BindInputToActionName(SDL_BUTTON_RIGHT, "look"); 
+
+    // Let the player receive input by default
+    CInputDelegate::Instance()->SetReceiver(m_pPlayerEntity);
 }
 
 static void DrawCoordinateSystem(IRender* renderer) {
@@ -165,15 +212,39 @@ static void DrawCoordinateSystem(IRender* renderer) {
 }
 
 bool Game::RunFrame(double dt) {
+
     m_AccumTime += dt;
 
     // Want to quit on ESCAPE
 
     if ( KeyPressed(SDLK_ESCAPE) ) {
-        m_Interface->QuitGame();
+        m_pInterface->QuitGame();
     }
 
+    // Toggle who should be controlled by the input system 
+    static IInputReceiver* receivers[3] = { m_pPlayerEntity, m_pDebugPlayerEntity, m_pFlyCameraEntity };
+    static BaseGameEntity* entities[3] = { m_pPlayerEntity, m_pDebugPlayerEntity, m_pFlyCameraEntity };
+    static Camera* renderCam = &m_pFollowCameraEntity->m_Camera;
+
+    // Toggle receivers
+    static int receiverToggle = 0;
+    if ( KeyWentDown(SDLK_u) ) {
+        printf("Switching to receiver num: %d\n", receiverToggle);
+        receiverToggle = ++receiverToggle % 3;
+        CInputDelegate::Instance()->SetReceiver( receivers[ receiverToggle ] ); 
+        m_pFollowCameraEntity->SetTarget( entities[ receiverToggle ] );
+        renderCam = &m_pFollowCameraEntity->m_Camera;
+        if ( entities[ receiverToggle ]->Type() == ET_FLY_CAMERA ) {
+            CFlyCamera* flyCamEnt = (CFlyCamera*)entities[ receiverToggle ];
+            renderCam = &flyCamEnt->m_Camera;
+        }
+    }
+    // Handle the input
+    CInputDelegate::Instance()->HandleInput();
+    
+
     EllipsoidCollider ec = m_pPlayerEntity->GetEllipsoidCollider();
+    EllipsoidCollider ecDebugPlayer = m_pDebugPlayerEntity->GetEllipsoidCollider();
 
     // Test collision between player and world geometry
 #if 1
@@ -185,8 +256,7 @@ bool Game::RunFrame(double dt) {
     // One GPU/CPU buffer for brush entities that we have to update.
     // But on CPU side all of the tries should reside in ONE buffer as
     // this guarantees cache locality and a *MUCH* easier time for the
-    // collision system!!! Arrays just always win... what can I say?
-    // The brush entities should have pointers (indices) into the
+    // collision system!!! Arrays just always win... what can I say? The brush entities should have pointers (indices) into the
     // CPU-side triangle array to know what geometry belongs to them.
     std::vector<MapTri> allTris = m_World.m_MapTris;
     int be = m_World.m_BrushEntities[ 0 ];
@@ -199,7 +269,14 @@ bool Game::RunFrame(double dt) {
                                                                allTris.data(),
                                                                allTris.size());
 
+    CollisionInfo collisionInfoDebugPlayer = CollideEllipsoidWithMapTris(ecDebugPlayer,
+                                                               static_cast<float>(dt) * m_pDebugPlayerEntity->GetVelocity(),
+                                                               static_cast<float>(dt) * m_World.m_Gravity,
+                                                               allTris.data(),
+                                                               allTris.size());
+
     m_pPlayerEntity->UpdatePosition(collisionInfo.basePos);
+    m_pDebugPlayerEntity->UpdatePosition(collisionInfoDebugPlayer.basePos);
 
 #endif
 
@@ -227,15 +304,15 @@ bool Game::RunFrame(double dt) {
     m_pEntityManager->UpdateEntities();
     Dispatcher->DispatchDelayedMessages();
 
+
     // Fix camera position
 
-    m_pPlayerEntity->UpdateCamera(&m_FollowCamera);
+    //m_pPlayerEntity->UpdateCamera(&m_FollowCamera);
 
     // Render stuff
     IRender* renderer = GetRenderer();
 
     // ImGUI stuff goes into GL default FBO
-    renderer->RenderBegin();
 
     ImGui::ShowDemoWindow();
 
@@ -271,8 +348,11 @@ bool Game::RunFrame(double dt) {
 
         DrawCoordinateSystem(renderer);
 
-        HKD_Model* models[ 1 ] = { m_pPlayerEntity->GetModel() };
-        renderer->Render(&m_FollowCamera, models, 1);
+        HKD_Model* models[ 2 ] = { 
+            m_pPlayerEntity->GetModel(),
+            m_pDebugPlayerEntity->GetModel()
+        };
+        renderer->Render( renderCam, models, 2 );
 
         if (collisionInfo.didCollide) {
             m_pPlayerEntity->GetModel()->debugColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); // red
@@ -286,15 +366,15 @@ bool Game::RunFrame(double dt) {
 #endif
 
         // Render Player's ellipsoid collider
-        renderer->SetActiveCamera(&m_FollowCamera);
+        //renderer->SetActiveCamera(&m_pFlyCameraEntity->m_Camera);
         HKD_Model* playerColliderModel[] = { m_pPlayerEntity->GetModel() };
-        renderer->RenderColliders(&m_FollowCamera, playerColliderModel, 1);
+        renderer->RenderColliders(renderCam, playerColliderModel, 1);
         
         renderer->End3D();
 
     } // End3D scope
 
-#if 0 // Toggle 2D Font/Box renderingtest
+#if 1 // Toggle 2D Font/Box renderingtest
 
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     // 2D stuff also has its own, dedicated FBO!
@@ -339,9 +419,6 @@ bool Game::RunFrame(double dt) {
     } // End2D Scope
 #endif
 
-    // This call composits 2D and 3D together into the default FBO
-    // (along with ImGUI).
-    renderer->RenderEnd(); 
 
     return true;
 }

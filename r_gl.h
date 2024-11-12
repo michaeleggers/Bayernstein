@@ -16,6 +16,7 @@
 #include "r_gl_texture.h"
 #include "r_gl_fbo.h"
 #include "camera.h"
+#include "Console/Console.h"
 
 struct GLMesh {
 	int			triOffset, triCount; // Offsets into VBO of tris
@@ -47,6 +48,7 @@ public:
 	virtual void RenderBegin(void)						override;
 	virtual void Render(Camera* camera, HKD_Model** models, uint32_t numModels) override;
 	virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) override;
+	virtual void RenderConsole(Console* console, CFont* font) override;
 	virtual void Begin3D() override;
 	virtual void End3D()   override;
 	virtual void DrawWorldTris() override;
@@ -112,6 +114,7 @@ private:
 
 	CglFBO*		                m_2dFBO;
 	CglFBO*						m_3dFBO;
+	CglFBO*						m_ConsoleFBO;
 	int							m_WindowWidth;
 	int							m_WindowHeight;
 
