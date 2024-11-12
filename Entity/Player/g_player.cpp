@@ -77,6 +77,11 @@ void Player::LoadModel(const char* path, glm::vec3 initialPosition) {
     m_EllipsoidCollider = GetEllipsoidCollider();
 }
 
+// NOTE: This is not being used now as the entity should not own
+// and/or update a camera by itself. The camera is an entity itself.
+// We leave it here anyways, because this shows how it could be done
+// if it turns out that camera-entities are dumb (I don't think so
+// but still...).
 void Player::UpdateCamera(Camera* camera) {
     // Fix camera position
     
