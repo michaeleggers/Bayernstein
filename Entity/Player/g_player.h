@@ -36,7 +36,6 @@ class Player : public BaseGameEntity, public IInputReceiver {
     void UpdatePlayerModel();
 
   public:
-    float m_RotationAngle;
     explicit Player(const int id, glm::vec3 initialPosition);
     ~Player() override {
         delete m_pStateMachine;

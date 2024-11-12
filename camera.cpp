@@ -39,8 +39,17 @@ void Camera::RotateAroundSide(float angle)
 	m_Orientation *= orientation;
 }
 
+void Camera::SetOrientationFromAngle(float angle, glm::vec3 axis) {
+	glm::quat orientation = glm::angleAxis( glm::radians(angle), axis );
+	m_Up = glm::rotate( orientation, glm::vec3(0.0f, 0.0f, 1.0f) );
+	m_Forward = glm::rotate( orientation, glm::vec3(0.0f, 1.0f, 0.0f) );
+	m_Side = glm::rotate( orientation, glm::vec3(1.0f, 0.0f, 0.0f) );
+	m_Orientation = orientation;
+}
+
 glm::mat4 Camera::ViewMatrix(void)
 {
 	glm::vec3 center = m_Pos + m_Forward;
 	return glm::lookAt(m_Pos, center, m_Up);
 }
+
