@@ -24,14 +24,15 @@ static void advanceToNextNonWhiteSpace(char* c) {
 bool IsStringFloat(const std::string& input) {
     std::string test = input;
     char* c = test.data();
+    bool dotAppeared = false;
     advanceToNextNonWhiteSpace(c);
     if ( *c == '-' || *c == '+' ) { // -, + allowed at the beginning of the number
         c++;
     }
     if ( *c == '.' ) { // leading . allowed
         c++;
+        dotAppeared = true;
     }
-    bool dotAppeared = false;
     while ( *c != '\0' ) {
         if ( *c >= '0' && *c <= '9' ) {
             c++;
