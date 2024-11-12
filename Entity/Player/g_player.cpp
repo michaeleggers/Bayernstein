@@ -97,6 +97,8 @@ void Player::UpdatePlayerModel() {
     ButtonState left = CHECK_ACTION("left");
     ButtonState right = CHECK_ACTION("right");
     ButtonState speed = CHECK_ACTION("speed");
+    ButtonState turnLeft = CHECK_ACTION("turn_left");
+    ButtonState turnRight = CHECK_ACTION("turn_right");
     
     double dt = GetDeltaTime();
     float followCamSpeed = 0.05f;
@@ -107,16 +109,23 @@ void Player::UpdatePlayerModel() {
     }
 
     // Model rotation
-    m_RotationAngle = followTurnSpeed * (float)dt;
-    if (KeyPressed(SDLK_RIGHT)) {
-        m_RotationAngle = -m_RotationAngle;
-        glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
-        m_Model.orientation *= rot;
+    if ( turnLeft == ButtonState::PRESSED ) {
+        m_RotationAngle += followTurnSpeed * (float)dt; // TODO: Should be a quaternion in base game entity.
     }
-    if (KeyPressed(SDLK_LEFT)) {
-        glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
-        m_Model.orientation *= rot;
+    if ( turnRight == ButtonState::PRESSED ) {
+        m_RotationAngle -= followTurnSpeed * (float)dt;
     }
+   
+    // TODO: If dealing with m_Orientation quaternion, this test can be omitted.
+    if (m_RotationAngle >= 360.0f) {
+        m_RotationAngle = 0.0f;
+    }
+    else if (m_RotationAngle < 0.0f) {
+        m_RotationAngle = 360.0f;
+    }
+
+    glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
+    m_Model.orientation = rot;
 
     m_Forward = glm::rotate(m_Model.orientation,
                             glm::vec3(0.0f, -1.0f, 0.0f)); // -1 because the model is facing -1 (Outside the screen)

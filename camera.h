@@ -15,6 +15,7 @@ public:
 	void Rotate(glm::quat quat);
 	void RotateAroundUp(float angle);
 	void RotateAroundSide(float angle);
+	void SetOrientationFromAngle(float angle, glm::vec3 axis);
 
 	glm::mat4 ViewMatrix(void);
 

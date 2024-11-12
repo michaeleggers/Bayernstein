@@ -61,7 +61,8 @@ public:
         return m_ID;
     }
     
-    glm::vec3  m_Position = glm::vec3(0.0f);
+    glm::vec3   m_Position = glm::vec3(0.0f);
+    float       m_RotationAngle = 0.0f; // TODO: Should be a quaternion called m_Orientation.
 };
 
 #endif // BASEGAMEENTITY_H

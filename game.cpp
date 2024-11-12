@@ -152,7 +152,7 @@ void Game::Init() {
     m_pFlyCameraEntity = new CFlyCamera( idCounter++, glm::vec3(0.0f) );
   
     // FIX: If the follow camera is registered *before* one of the entities
-    // the follow camera will lage behind one frame because it won't
+    // the follow camera will lag behind one frame because it won't
     // get the most up to date position of its target!
     // We can choose to have a dedicated array for all of the
     // camera entity types and let the entity manager take care
@@ -162,7 +162,7 @@ void Game::Init() {
     m_pFollowCameraEntity->m_Camera.m_Pos.y -= 200.0f;
     m_pFollowCameraEntity->m_Camera.m_Pos.z += 100.0f;
     m_pFollowCameraEntity->m_Camera.RotateAroundSide(0.0f);
-    m_pFollowCameraEntity->m_Camera.RotateAroundUp(180.0f);
+    //m_pFollowCameraEntity->m_Camera.RotateAroundUp(180.0f);
     m_pEntityManager->RegisterEntity(m_pFollowCameraEntity);
    
     // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
@@ -184,6 +184,8 @@ void Game::Init() {
     inputHandler->BindInputToActionName(SDLK_d, "right");
     inputHandler->BindInputToActionName(SDLK_LSHIFT, "speed");
     inputHandler->BindInputToActionName(SDLK_c, "set_captain");
+    inputHandler->BindInputToActionName(SDLK_LEFT, "turn_left");
+    inputHandler->BindInputToActionName(SDLK_RIGHT, "turn_right");
     // Mouse buttons
     inputHandler->BindInputToActionName(SDL_BUTTON_LEFT, "fire"); 
     inputHandler->BindInputToActionName(SDL_BUTTON_RIGHT, "look"); 
