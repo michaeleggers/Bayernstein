@@ -7,6 +7,7 @@
 #include "../../FSM/state_machine.h"
 #include "../../collision.h"
 #include "../../r_model.h"
+#include "../Path/path.h"
 #include "../moving_entity.h"
 #include "../steering_behaviour.h"
 
@@ -55,6 +56,10 @@ class Enemy : public MovingEntity {
     void SetArriveTarget(BaseGameEntity* target) {
         m_pSteeringBehaviour->SetTargetAgent(target);
         m_pSteeringBehaviour->ArriveOn();
+    }
+    void SetFollowPath(PatrolPath* path) {
+        m_pSteeringBehaviour->SetFollowPath(path);
+        m_pSteeringBehaviour->FollowPathOn();
     }
 
   public:

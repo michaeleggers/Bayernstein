@@ -91,7 +91,7 @@ add_executable(Game
     image.cpp
     polysoup.h
     polysoup.cpp
-        # map_parser.h
+    map_parser.h
     game.h
     game.cpp    
 
@@ -138,6 +138,8 @@ add_executable(Game
     collision.h
     Clock/clock.cpp
     Clock/clock.h
+    Path/path.cpp
+    Path/path.h
     Message/message_dispatcher.cpp
     Message/message_dispatcher.h
     Message/telegram.h
@@ -179,6 +181,3 @@ target_link_libraries(Game PUBLIC
     SDL2
     SDL2main
 )
-
-
-

@@ -135,6 +135,7 @@ void Player::UpdatePosition(glm::vec3 newPosition) {
     m_Model.position.y = newPosition.y;
     m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
     m_Position = newPosition;
+    m_Position.z = m_Position.z - GetEllipsoidCollider().radiusB;
 }
 
 EllipsoidCollider Player::GetEllipsoidCollider() const {

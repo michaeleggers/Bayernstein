@@ -62,3 +62,19 @@
 "classname" "monster_demon1"
 "origin" "0 0 20"
 }
+// entity 3
+{
+"classname" "path_corner"
+"origin" "-40 56 4"
+"targetname" "path1_1"
+"target" "path1_2"
+"property 1" ""
+}
+// entity 4
+{
+"classname" "path_corner"
+"origin" "168 56 4"
+"targetname" "path1_2"
+"target" "path1_3"
+"property 1" ""
+}

@@ -11,6 +11,7 @@
 
 #include "./Message/message_type.h"
 #include "CWorld.h"
+#include "Path/path.h"
 #include "Shape.h"
 #include "ShapeSphere.h"
 #include "camera.h"
@@ -31,6 +32,7 @@ Game::Game(std::string exePath, hkdInterface* interface) {
     m_Interface = interface;
     m_ExePath = exePath;
     m_pEntityManager = EntityManager::Instance();
+    m_pPath = new PatrolPath();
 }
 
 void Game::Init() {
@@ -51,9 +53,9 @@ void Game::Init() {
 
     // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
 #ifdef _WIN32
-    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
+    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test_2.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/enemy_test.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/enemy_test_2.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -85,8 +87,6 @@ void Game::Init() {
     m_World.InitWorld(worldTris, glm::vec3(0.0f, 0.0f, -0.5f)); // gravity
 
     int idCounter = 0; //FIX: Responsibility of entity manager
-    glm::vec3 playerStartPosition = glm::vec3(0.0f);
-    glm::vec3 enemyStartPosition = glm::vec3(0.0f);
     // Load and create all the entities
     for ( int i = 0; i < map.entities.size(); i++ ) {
         Entity& e = map.entities[ i ];
@@ -101,22 +101,38 @@ void Game::Init() {
                     m_World.m_BrushEntities.push_back(baseEntity->ID());
                     m_pEntityManager->RegisterEntity(baseEntity);
                 } else if ( prop.value == "info_player_start" ) {
-                    for ( Property& property : e.properties ) {
-                        if ( property.key == "origin" ) {
-                            std::vector<float> values = ParseFloatValues(property.value);
-                            playerStartPosition = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
-                        }
-                    }
+                    glm::vec3 playerStartPosition = GetOrigin(&e);
+                    // Cameras
+                    m_FollowCamera = Camera(playerStartPosition);
+                    m_FollowCamera.m_Pos.y -= 200.0f;
+                    m_FollowCamera.m_Pos.z += 100.0f;
+                    m_FollowCamera.RotateAroundSide(-20.0f);
+                    m_FollowCamera.RotateAroundUp(180.0f);
+
+                    m_pPlayerEntity = new Player(idCounter++, playerStartPosition);
+                    m_pEntityManager->RegisterEntity(m_pPlayerEntity);
+
+                    // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
+                    // in the batch?
+                    int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
 
                 } else if ( prop.value == "monster_demon1" ) {
                     // just a placeholder entity from trenchbroom/quake
-                    for ( Property& property : e.properties ) {
-                        if ( property.key == "origin" ) {
-                            std::vector<float> values = ParseFloatValues(property.value);
-                            enemyStartPosition = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
-                        }
-                    }
+                    glm::vec3 enemyStartPosition = GetOrigin(&e);
+                    Enemy* enemy = new Enemy(idCounter++, enemyStartPosition);
+                    m_pEntityManager->RegisterEntity(enemy);
 
+                    int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
+                } else if ( prop.value == "path_corner" ) {
+                    Waypoint point = GetWaypoint(&e);
+
+                    // I assume that the corner Points are in the right order. if not we need to rethink the data structure
+                    glm::vec3 pathCornerPosition = GetOrigin(&e);
+                    m_pPath->AddPoint(point);
+                    printf("Path corner entity found: %f, %f, %f\n",
+                           pathCornerPosition.x,
+                           pathCornerPosition.y,
+                           pathCornerPosition.z);
                 } else {
                     printf("Unknown entity type: %s\n", prop.value.c_str());
                 }
@@ -129,25 +145,6 @@ void Game::Init() {
     // reduce draw-calls and texture-binds when rendering world geometry.
 
     renderer->RegisterWorldTris(m_World.m_MapTris);
-
-    // Cameras
-    m_FollowCamera = Camera(playerStartPosition);
-    m_FollowCamera.m_Pos.y -= 200.0f;
-    m_FollowCamera.m_Pos.z += 100.0f;
-    m_FollowCamera.RotateAroundSide(0.0f);
-    m_FollowCamera.RotateAroundUp(180.0f);
-
-    m_pPlayerEntity = new Player(idCounter++, playerStartPosition);
-    m_pEntityManager->RegisterEntity(m_pPlayerEntity);
-
-    Enemy* enemy = new Enemy(idCounter++, enemyStartPosition);
-    m_pEntityManager->RegisterEntity(enemy);
-
-    // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
-    // in the batch?
-
-    int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
-    int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
 }
 
 static void DrawCoordinateSystem(IRender* renderer) {
@@ -178,7 +175,8 @@ bool Game::RunFrame(double dt) {
     EllipsoidCollider ec = m_pPlayerEntity->GetEllipsoidCollider();
 
     Enemy* enemy = m_pEntityManager->GetFirstEnemy();
-    enemy->SetArriveTarget(m_pPlayerEntity);
+    // enemy->SetArriveTarget(m_pPlayerEntity);
+    enemy->SetFollowPath(m_pPath);
 
     // Test collision between player and world geometry
 #if 1
@@ -287,6 +285,12 @@ bool Game::RunFrame(double dt) {
 
         DrawCoordinateSystem(renderer);
 
+#if 1 // debug path
+        std::vector<Vertex> vertices = m_pPath->GetPointsAsVertices();
+
+        renderer->ImDrawLines(vertices.data(), vertices.size(), true);
+#endif
+
         // auto type = enemy->m_Type;
 
         HKD_Model* models[ 2 ] = { m_pPlayerEntity->GetModel(), enemy->GetModel() };
@@ -367,6 +371,7 @@ bool Game::RunFrame(double dt) {
 }
 
 void Game::Shutdown() {
+    delete m_pPath;
 
     // NOTE: m_pEntityManager is static memory and cannot deleted with delete
     // (it never was heap allocated with 'new'). The entities have to

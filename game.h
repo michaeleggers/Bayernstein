@@ -8,6 +8,7 @@
 #include "Entity/Enemy/g_enemy.h"
 #include "Entity/Player/g_player.h"
 #include "Entity/entity_manager.h"
+#include "Path/path.h"
 #include "camera.h"
 #include "hkd_interface.h"
 #include "irender.h"
@@ -26,6 +27,7 @@ class Game {
 
     Player* m_pPlayerEntity;
     EntityManager* m_pEntityManager;
+    PatrolPath* m_pPath;
 
     Camera m_Camera;
     Camera m_FollowCamera;

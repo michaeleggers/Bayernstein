@@ -4,6 +4,7 @@
 
 #ifndef STEERING_BEHAVIOUR_H
 #define STEERING_BEHAVIOUR_H
+#include "../Path/path.h"
 #include "./base_game_entity.h"
 #include "moving_entity.h"
 #include <vector>
@@ -28,7 +29,8 @@ class SteeringBehaviour {
         // allignment = 0x00080,
         // obstacle_avoidance = 0x00100,
         // wall_avoidance = 0x00200,
-        // follow_path = 0x00400,
+        follow_path = 0x00400,
+        follow_waypoints = 0x00500,
         // pursuit = 0x00800,
         // evade = 0x01000,
         // interpose = 0x02000,
@@ -45,6 +47,7 @@ class SteeringBehaviour {
     //the current target
     glm::vec3 m_Target;
     BaseGameEntity* m_pTargetAgent;
+    PatrolPath* m_pPath;
 
     //the current position on the wander circle the agent is
     //attempting to steer towards
@@ -61,6 +64,8 @@ class SteeringBehaviour {
     float m_WeightSeek;
     float m_WeightFlee;
     float m_WeightArrive;
+    float m_WeightFollowPath;
+    float m_WeightFollowWaypoints;
 
     //binary flags to indicate whether or not a behavior should be active
     int m_Flags;
@@ -96,6 +101,9 @@ class SteeringBehaviour {
     glm::vec3 Arrive(glm::vec3 targetPos, Deceleration deceleration);
 
     glm::vec3 Wander();
+    glm::vec3 FollowPath(PatrolPath* path);
+    glm::vec3 FollowWaypoints(PatrolPath* path);
+    glm::vec3 SeekPathStart(PatrolPath* path);
 
     //calculates and sums the steering forces from any active behaviors
     glm::vec3 CalculateWeightedSum();
@@ -105,6 +113,11 @@ class SteeringBehaviour {
     glm::vec3 Calculate();
     void SetTargetAgent(BaseGameEntity* pAgent) {
         m_pTargetAgent = pAgent;
+    }
+    void SetFollowPath(PatrolPath* pPath) {
+        m_pPath = pPath;
+        FollowWaypointsOn();
+        // FollowPathOn();
     }
 
   public:
@@ -120,6 +133,12 @@ class SteeringBehaviour {
     void WanderOn() {
         m_Flags |= wander;
     }
+    void FollowPathOn() {
+        m_Flags |= follow_path;
+    }
+    void FollowWaypointsOn() {
+        m_Flags |= follow_waypoints;
+    }
 
     void FleeOff() {
         if ( On(flee) ) m_Flags ^= flee;
@@ -133,6 +152,12 @@ class SteeringBehaviour {
     void WanderOff() {
         if ( On(wander) ) m_Flags ^= wander;
     }
+    void FollowPathOff() {
+        if ( On(follow_path) ) m_Flags ^= follow_path;
+    }
+    void FollowWaypointsOff() {
+        if ( On(follow_waypoints) ) m_Flags ^= follow_waypoints;
+    }
 
     bool isFleeOn() {
         return On(flee);
@@ -145,6 +170,12 @@ class SteeringBehaviour {
     }
     bool isWanderOn() {
         return On(wander);
+    }
+    bool isFollowPathOn() {
+        return On(follow_path);
+    }
+    bool isFollowWaypointsOn() {
+        return On(follow_waypoints);
     }
 };
 

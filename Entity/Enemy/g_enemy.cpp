@@ -1,4 +1,4 @@
-//ene
+// benek
 // Created by benek on 10/14/24.
 //
 
@@ -18,7 +18,6 @@
 
 Enemy::Enemy(const int id, glm::vec3 initialPosition)
     : MovingEntity(id, ET_ENEMY),
-      m_pStateMachine(nullptr),
       m_AnimationState(ANIM_STATE_IDLE),
       m_EllipsoidCollider() {
     m_pStateMachine = new StateMachine(this);
@@ -38,6 +37,7 @@ void Enemy::Update() {
     glm::vec3 force = m_pSteeringBehaviour->Calculate();
     glm::vec3 acceleration = force / m_Mass;
     //update velocity
+    // m_Velocity += acceleration / 1000.0f;
     m_Velocity += acceleration * (float)dt / 1000.0f;
     m_Velocity = math::Truncate(m_Velocity, m_MaxSpeed);
 
@@ -109,6 +109,7 @@ void Enemy::UpdatePosition(glm::vec3 newPosition) {
     m_Model.position.y = newPosition.y;
     m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
     m_Position = newPosition;
+    printf("Position: %f, %f, %f\n", m_Position.x, m_Position.y, m_Position.z);
 }
 
 bool Enemy::HandleMessage(const Telegram& telegram) {
