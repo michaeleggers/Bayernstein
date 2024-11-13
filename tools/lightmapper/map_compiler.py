@@ -55,6 +55,7 @@ def generate_lightmaps(
     scene.generate_vertex_array()
     #scene.save_to_json(assets_path / f'compiled/{map_name}/{map_name}.json', assets_path)
     scene.save_to_json(output_path / f'{map_name}/{map_name}.json', assets_path)
+    scene.save_to_binary(output_path / f'{map_name}/{map_name}.ply')
 
     # Create the renderer
     lightmap_renderer = Renderer(
