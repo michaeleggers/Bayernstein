@@ -10,12 +10,16 @@ import os
 import random
 from PIL import Image
 from scipy.spatial import KDTree
+import struct
 
 import util.uv_mapper as uv_mapper
 import util.geometry as geometry
 from data_structures.color import Color
 from data_structures.patch import Patch
 from data_structures.vector3f import Vector3f as vec
+from data_structures.compiled_vertex import CompiledVertex
+from data_structures.compiled_triangle import CompiledTriangle
+
 
 from typing import List
 
@@ -178,6 +182,46 @@ class Scene:
             json.dump(data, file, indent=4)
 
         return self
+    
+    def save_to_binary(self, binary_path: Path) -> 'Scene':
+        compiled_triangles = []
+
+        for i, (triangle, tex_uv, lm_uv, emit) in enumerate(zip(self.triangles, self.texture_uvs, self.lightmap_uvs, self.emissions)):
+            
+            triangle_positions = [[vertex[0], vertex[1], vertex[2]] for vertex in triangle]
+            tex_uvs = [[float(u), float(v)] for u, v in tex_uv]
+            lm_uvs = [[float(u), float(v)] for u, v in lm_uv]
+            normal_array = geometry.calculate_normal(np.asarray(triangle_positions[0]),
+                                                    np.asarray(triangle_positions[1]),
+                                                    np.asarray(triangle_positions[2]))
+            normal = (float(normal_array[0]), float(normal_array[1]), float(normal_array[2]))
+
+
+            # Create 3 vertices for the current triangle
+            vertices = []
+            for j in range(3):
+                vertex = CompiledVertex(
+                    pos=triangle_positions[j],
+                    normal=normal,
+                    uv_texture=tex_uvs[j],
+                    uv_lightmap=lm_uvs[j]
+                )
+                vertices.append(vertex)
+
+            # Create a CompiledTriangle with these 3 vertices
+            compiled_triangle = CompiledTriangle(
+                vertices=vertices,
+                textureName='default.png',  # Example texture name, adjust as needed
+                surfaceFlags=1,
+                contentFlags=1
+            )
+
+            compiled_triangles.append(compiled_triangle)
+
+        # Write to binary file
+        with open(binary_path, 'wb') as f:
+            for triangle in compiled_triangles:
+                f.write(triangle.to_binary())
 
 
     def create_patches(self, patches_resolution: float = 0.0625) -> 'Scene':
