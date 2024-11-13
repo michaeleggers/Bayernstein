@@ -6,6 +6,7 @@
 #include <cstring>
 #include <string>
 #include <iostream>
+#include <stdio.h>
 
 struct CompiledVertex {
 	glm::vec3 pos;
