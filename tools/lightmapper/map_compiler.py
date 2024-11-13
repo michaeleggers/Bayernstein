@@ -30,7 +30,7 @@ def soup_map(assets_path: Path, map_path: Path) -> Path:
     
     # the parent folder of self
     base_path = Path(__file__).resolve().parent
-    souper_path = base_path / 'souper/bin/Debug/souper.exe'
+    souper_path = 'souper' # NOTE: Has to be discovarable by OS.
     temp_output_file = base_path / 'temp/temp.json'
 
     command = [str(souper_path), str(assets_path), str(map_path), str(temp_output_file)]
