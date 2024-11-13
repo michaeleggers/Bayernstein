@@ -199,7 +199,7 @@ bool Game::RunFrame(double dt) {
 #endif
 
     CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
-                                                              static_cast<float>(dt) * m_pPlayerEntity->GetVelocity(),
+                                                              static_cast<float>(dt) * m_pPlayerEntity->m_Velocity,
                                                               static_cast<float>(dt) * m_World.m_Gravity,
                                                               allTris.data(),
                                                               allTris.size());
@@ -208,7 +208,7 @@ bool Game::RunFrame(double dt) {
 
     EllipsoidCollider ecEnemy = enemy->GetEllipsoidCollider();
     CollisionInfo enemyCollisionInfo = CollideEllipsoidWithMapTris(ecEnemy,
-                                                                   static_cast<float>(dt) * enemy->GetVelocity(),
+                                                                   static_cast<float>(dt) * enemy->m_Velocity,
                                                                    static_cast<float>(dt) * m_World.m_Gravity,
                                                                    allTris.data(),
                                                                    allTris.size());
@@ -225,7 +225,7 @@ bool Game::RunFrame(double dt) {
         if ( pEntity->Type() == ET_DOOR ) {
             Door* pDoor = (Door*)pEntity;
             CollisionInfo ciDoor = PushTouch(ec,
-                                             static_cast<float>(dt) * m_pPlayerEntity->GetVelocity(), 
+                                             static_cast<float>(dt) * m_pPlayerEntity->m_Velocity, 
                                              pDoor->MapTris().data(), 
                                              pDoor->MapTris().size() );
             if (ciDoor.didCollide) { 
@@ -258,7 +258,7 @@ bool Game::RunFrame(double dt) {
         renderer->Begin3D();
 
         // Draw Debug Line for player veloctiy vector
-        Line velocityDebugLine = { Vertex(ecEnemy.center), Vertex(ecEnemy.center + 150.0f * enemy->GetVelocity()) };
+        Line velocityDebugLine = { Vertex(ecEnemy.center), Vertex(ecEnemy.center + 150.0f * enemy->m_Velocity) };
         velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
         velocityDebugLine.b.color = velocityDebugLine.a.color;
         renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);

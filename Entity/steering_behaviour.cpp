@@ -32,13 +32,13 @@ SteeringBehaviour::SteeringBehaviour(MovingEntity* pEntity)
 
 glm::vec3 SteeringBehaviour::CalculateWeightedSum() {
     if ( On(seek) && m_pTargetAgent ) {
-        m_SteeringForce += Seek(m_pTargetAgent->GetPosition()) * m_WeightSeek;
+        m_SteeringForce += Seek(m_pTargetAgent->m_Position) * m_WeightSeek;
     }
     if ( On(flee) && m_pTargetAgent ) {
-        m_SteeringForce += Flee(m_pTargetAgent->GetPosition()) * m_WeightFlee;
+        m_SteeringForce += Flee(m_pTargetAgent->m_Position) * m_WeightFlee;
     }
     if ( On(arrive) && m_pTargetAgent ) {
-        m_SteeringForce += Arrive(m_pTargetAgent->GetPosition(), m_Deceleration) * m_WeightArrive;
+        m_SteeringForce += Arrive(m_pTargetAgent->m_Position, m_Deceleration) * m_WeightArrive;
     }
     if ( On(wander) ) {
         m_SteeringForce += Wander() * m_WeightWander;
@@ -50,7 +50,7 @@ glm::vec3 SteeringBehaviour::CalculateWeightedSum() {
     if ( On(follow_waypoints) && m_pPath ) {
         m_SteeringForce += FollowWaypoints(m_pPath) * m_WeightFollowWaypoints;
     }
-    return math::Truncate(m_SteeringForce, m_pEntity->GetMaxForce());
+    return math::TruncateVec3(m_SteeringForce, m_pEntity->m_MaxForce);
 }
 
 glm::vec3 SteeringBehaviour::Wander() {
@@ -69,11 +69,11 @@ glm::vec3 SteeringBehaviour::Wander() {
     m_WanderTarget *= m_WanderRadius;
 
     //move the target into a position WanderDist in front of the agent
-    glm::vec3 target = m_WanderTarget + m_pEntity->GetForward() * m_WanderDistance;
+    glm::vec3 target = m_WanderTarget + m_pEntity->m_Forward * m_WanderDistance;
     //project the target into world space
-    target = math::ChangeOfBasis(target, m_pEntity->GetForward(), m_pEntity->GetSide(), m_pEntity->GetUp());
+    target = math::ChangeOfBasis(target, m_pEntity->m_Forward, m_pEntity->m_Side, m_pEntity->m_Up);
 
-    glm::vec3 position = m_pEntity->GetPosition();
+    glm::vec3 position = m_pEntity->m_Position;
     position.z = 0.0f; // for the random walk we don't want to change the z position
 
     //and steer towards it
@@ -86,9 +86,9 @@ glm::vec3 SteeringBehaviour::Wander() {
 //  direct the agent towards the target
 //------------------------------------------------------------------------
 glm::vec3 SteeringBehaviour::Seek(glm::vec3 targetPosition) {
-    glm::vec3 desiredVelocity = glm::normalize(targetPosition - m_pEntity->GetPosition()) * m_pEntity->GetMaxSpeed();
+    glm::vec3 desiredVelocity = glm::normalize(targetPosition - m_pEntity->m_Position) * m_pEntity->m_MaxSpeed;
 
-    return (desiredVelocity - m_pEntity->GetVelocity());
+    return (desiredVelocity - m_pEntity->m_Velocity);
 }
 
 //----------------------------- Flee -------------------------------------
@@ -105,9 +105,9 @@ glm::vec3 SteeringBehaviour::Flee(glm::vec3 targetPosition) {
   }
   */
 
-    glm::vec3 desiredVelocity = glm::normalize(m_pEntity->GetPosition() - targetPosition) * m_pEntity->GetMaxSpeed();
+    glm::vec3 desiredVelocity = glm::normalize(m_pEntity->m_Position - targetPosition) * m_pEntity->m_MaxSpeed;
 
-    return (desiredVelocity - m_pEntity->GetVelocity());
+    return (desiredVelocity - m_pEntity->m_Velocity);
 }
 
 //--------------------------- Arrive -------------------------------------
@@ -116,7 +116,7 @@ glm::vec3 SteeringBehaviour::Flee(glm::vec3 targetPosition) {
 //  target with a zero velocity
 //------------------------------------------------------------------------
 glm::vec3 SteeringBehaviour::Arrive(glm::vec3 targetPosition, Deceleration deceleration) {
-    glm::vec3 toTarget = targetPosition - m_pEntity->GetPosition();
+    glm::vec3 toTarget = targetPosition - m_pEntity->m_Position;
 
     //calculate the distance to the target
     double dist = glm::length(toTarget);
@@ -130,37 +130,22 @@ glm::vec3 SteeringBehaviour::Arrive(glm::vec3 targetPosition, Deceleration decel
         double speed = dist / ((double)deceleration * decelerationTweaker);
 
         //make sure the velocity does not exceed the max
-        speed = glm::min(speed, (double)m_pEntity->GetMaxSpeed());
+        speed = glm::min(speed, (double)m_pEntity->m_MaxSpeed);
 
         //from here proceed just like Seek except we don't need to normalize
         //the toTarget vector because we have already gone to the trouble
         //of calculating its length: dist.
         glm::vec3 desiredVelocity = toTarget * (float)speed / (float)dist;
 
-        return (desiredVelocity - m_pEntity->GetVelocity());
+        return (desiredVelocity - m_pEntity->m_Velocity);
     }
 
     return glm::vec3(0.0f, 0.0f, 0.0f);
 }
-glm::vec3 GetNormalPoint(glm::vec3 p, glm::vec3 a, glm::vec3 b) {
-    glm::vec3 ap = p - a;
-    glm::vec3 ab = b - a;
-    ab = glm::normalize(ab);
-    float dot = glm::dot(ap, ab);
-    ab = ab * dot;
-    return a + ab;
-}
-
-bool InSegmentRange(glm::vec3 start, glm::vec3 end, glm::vec3 point) {
-    float segmentLength = glm::distance(start, end);
-    float startToPoint = glm::distance(start, point);
-    float endToPoint = glm::distance(end, point);
-    return startToPoint + endToPoint <= segmentLength;
-}
 
 glm::vec3 SteeringBehaviour::FollowPath(PatrolPath* path) {
-    glm::vec3 futureVelocity = m_pEntity->GetVelocity() * 1.1f;
-    glm::vec3 futurePosition = m_pEntity->GetPosition() + futureVelocity;
+    glm::vec3 futureVelocity = m_pEntity->m_Velocity * 1.1f;
+    glm::vec3 futurePosition = m_pEntity->m_Position + futureVelocity;
     std::vector<Waypoint> points = path->GetPoints();
 
     float minDistance = std::numeric_limits<float>::max();
@@ -169,8 +154,8 @@ glm::vec3 SteeringBehaviour::FollowPath(PatrolPath* path) {
         glm::vec3 segmentStart = points[ i ].position;
         glm::vec3 segmentEnd = points[ i + 1 ].position;
 
-        glm::vec3 normalPoint = GetNormalPoint(futurePosition, segmentStart, segmentEnd);
-        if ( !InSegmentRange(segmentStart, segmentEnd, normalPoint) ) {
+        glm::vec3 normalPoint = math::GetNormalPoint(futurePosition, segmentStart, segmentEnd);
+        if ( !math::InSegmentRange(segmentStart, segmentEnd, normalPoint) ) {
             normalPoint = segmentEnd;
         }
         float distanceFromPath = glm::distance(futurePosition, normalPoint);
@@ -188,7 +173,7 @@ glm::vec3 SteeringBehaviour::FollowPath(PatrolPath* path) {
 }
 
 glm::vec3 SteeringBehaviour::FollowWaypoints(PatrolPath* pPath) {
-    if ( pPath->IsCurrentWaypointReached(m_pEntity->GetPosition()) ) {
+    if ( pPath->IsCurrentWaypointReached(m_pEntity->m_Position) ) {
         printf("current waypoint reached\n");
         pPath->TargetNextWaypoint();
     }

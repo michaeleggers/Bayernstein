@@ -2,10 +2,12 @@
 // Created by benek on 10/14/24.
 //
 
+#include <stdio.h>
+
 #include "message_dispatcher.h"
+
 #include "../Clock/clock.h"
 #include "message_type.h"
-#include <stdio.h>
 
 // uncomment below to send message info to the debug window
 // #define SHOW_MESSAGING_INFO

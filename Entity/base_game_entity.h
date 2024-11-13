@@ -29,14 +29,14 @@ class BaseGameEntity {
 
     EntityType m_Type;
 
-  protected:
-    glm::vec3 m_Position;
 
   public:
     // this is the next valid ID. Each time a BaseGameEntity is instantiated
     // this value is updated
     static int m_iNextValidID;
 
+    glm::vec3 m_Position;
+    
     explicit BaseGameEntity(const int id, EntityType type) {
         SetID(id);
         m_Type = type;
@@ -57,10 +57,6 @@ class BaseGameEntity {
 
     [[nodiscard]] int ID() const {
         return m_ID;
-    }
-
-    [[nodiscard]] glm::vec3 GetPosition() const {
-        return m_Position;
     }
 };
 

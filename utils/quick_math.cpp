@@ -3,7 +3,7 @@
 
 namespace math {
 
-glm::vec3 Truncate(const glm::vec3& vector, float max) {
+glm::vec3 TruncateVec3(const glm::vec3& vector, float max) {
     if ( glm::length(vector) > max ) {
         return glm::normalize(vector) * max;
     }
@@ -24,4 +24,21 @@ ChangeOfBasis(const glm::vec3& point, const glm::vec3& xAxis, const glm::vec3& y
 
     return transformedPoint;
 }
+
+glm::vec3 GetNormalPoint(glm::vec3 p, glm::vec3 a, glm::vec3 b) {
+    glm::vec3 ap = p - a;
+    glm::vec3 ab = b - a;
+    ab = glm::normalize(ab);
+    float dot = glm::dot(ap, ab);
+    ab = ab * dot;
+    return a + ab;
+}
+
+bool InSegmentRange(glm::vec3 start, glm::vec3 end, glm::vec3 point) {
+    float segmentLength = glm::distance(start, end);
+    float startToPoint = glm::distance(start, point);
+    float endToPoint = glm::distance(end, point);
+    return startToPoint + endToPoint <= segmentLength;
+}
+
 } // namespace math
