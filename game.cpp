@@ -457,9 +457,6 @@ bool Game::RunFrame(double dt) {
     } // End2D Scope
 #endif
 
-    // This call composits 2D and 3D together into the default FBO
-    // (along with ImGUI).
-    renderer->RenderEnd();
 
     return true;
 }
