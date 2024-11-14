@@ -36,7 +36,6 @@ std::vector<Vertex> PatrolPath::GetPointsAsVertices() {
 }
 
 bool PatrolPath::IsCurrentWaypointReached(glm::vec3 position) {
-    //glm::vec3 currentWaypointPosition = m_Points[ m_CurrentWaypointIndex ].position;
     const auto& currentWaypointEntry = m_TargetnameToWaypoint.find( m_CurrentWaypointName );
     if ( currentWaypointEntry == m_TargetnameToWaypoint.end() ) {
         return false;
@@ -50,22 +49,10 @@ bool PatrolPath::IsCurrentWaypointReached(glm::vec3 position) {
 }
 
 void PatrolPath::TargetNextWaypoint() {
-    m_PreviousWaypointIndex = m_CurrentWaypointIndex;
-    m_CurrentWaypointIndex = m_NextWaypointIndex;
-    m_NextWaypointIndex += 1;
-    if ( m_NextWaypointIndex >= m_Points.size() ) {
-        m_NextWaypointIndex = 0;
-    }
-
-    // Name version
     Waypoint currentWaypoint = GetCurrentWaypoint();
     m_PreviousWaypointName = m_CurrentWaypointName;
     m_CurrentWaypointName = currentWaypoint.sTarget;
     printf("Setting waypoint to: %s\n", m_CurrentWaypointName.c_str());
-    
-    // if ( m_NextWaypointIndex < 0 ) {
-    //     m_NextWaypointIndex = m_Points.size() - 1;
-    // }
 }
 
 Waypoint PatrolPath::GetCurrentWaypoint() {
@@ -73,7 +60,5 @@ Waypoint PatrolPath::GetCurrentWaypoint() {
     assert ( currentWaypointEntry != m_TargetnameToWaypoint.end() );
 
     return currentWaypointEntry->second;
-
-    //return m_Points[ m_CurrentWaypointIndex ];
 }
 

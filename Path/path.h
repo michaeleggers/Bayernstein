@@ -21,9 +21,6 @@ class PatrolPath {
         : m_Points(),
           m_Radius(25.0),
           m_direction(1),
-          m_CurrentWaypointIndex(0),
-          m_NextWaypointIndex(0),
-          m_PreviousWaypointIndex(0),
           m_CurrentWaypointName(""),
           m_NextWaypointName(""),
           m_PreviousWaypointName("")
@@ -34,9 +31,6 @@ class PatrolPath {
           m_name(pathname),
           m_Radius(25.0),
           m_direction(1),
-          m_CurrentWaypointIndex(0),
-          m_NextWaypointIndex(0),
-          m_PreviousWaypointIndex(0),
           m_CurrentWaypointName(""),
           m_NextWaypointName(""),
           m_PreviousWaypointName("")
@@ -63,9 +57,6 @@ private:
     float                                     m_Radius;
     std::string                               m_name;
     bool                                      m_IsClosed;
-    int                                       m_CurrentWaypointIndex;
-    int                                       m_NextWaypointIndex;
-    int                                       m_PreviousWaypointIndex;
     std::string                               m_CurrentWaypointName;
     std::string                               m_NextWaypointName;
     std::string                               m_PreviousWaypointName;
