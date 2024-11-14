@@ -8,9 +8,7 @@
 #include <unordered_map>
 
 struct Waypoint {
-    glm::vec3 position;
-    int id;
-    int target;
+    glm::vec3   position;
     std::string sTargetname;
     std::string sTarget;
 };

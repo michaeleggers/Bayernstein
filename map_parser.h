@@ -518,19 +518,9 @@ Waypoint GetWaypoint(Entity* entity) {
             std::vector<float> values = ParseFloatValues(property.value);
             waypoint.position = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
         } else if ( property.key == "targetname" ) {
-            char delimiter = '_';
-            std::vector<std::string> strings = SplitString(property.value, delimiter);
-            std::string string = strings[ 1 ];
-
-            waypoint.id = std::stoi(string);
             waypoint.sTargetname = property.value;
 
         } else if ( property.key == "target" ) {
-            char delimiter = '_';
-            std::vector<std::string> strings = SplitString(property.value, delimiter);
-            std::string string = strings[ 1 ];
-
-            waypoint.target = std::stoi(string);
             waypoint.sTarget = property.value;
         }
     }
