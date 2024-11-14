@@ -1,13 +1,11 @@
+import sys
 import argparse
-import os
 import subprocess
-import json
 from renderer import Renderer
 from lightmapper import Lightmapper
 from data_structures.scene import Scene
 from data_structures.color import Color
 from pathlib import Path
-
 
 def compile_map(
         assets_path: Path, 
@@ -19,7 +17,7 @@ def compile_map(
     ):
 
     temp_output_path = soup_map(assets_path=assets_path, map_path=map_path)
-    
+
     generate_lightmaps(temp_output_path, assets_path, map_path.stem, output_path, iterations, patches_resolution, atmospheric_color)
 
 def soup_map(assets_path: Path, map_path: Path) -> Path:
@@ -29,10 +27,18 @@ def soup_map(assets_path: Path, map_path: Path) -> Path:
     """
     
     # the parent folder of self
-    base_path = Path(__file__).resolve().parent
-    souper_path = base_path / 'souper/bin/Debug/souper.exe'
-    temp_output_file = base_path / 'temp/temp.json'
+    # Check if the script is running as a bundled executable
+    if getattr(sys, 'frozen', False):
+        # If running from the bundled executable, use the extracted folder
+        base_path = Path(sys._MEIPASS)
+    else:
+        # If running from the source code, use the regular script path
+        base_path = Path(__file__).resolve().parent
 
+    souper_path = base_path / 'souper/bin/Debug/souper.exe'
+    temp_output_file = assets_path / 'temp/temp.json'
+    # Ensure the temporary directory exists
+    temp_output_file.parent.mkdir(parents=True, exist_ok=True)
     command = [str(souper_path), str(assets_path), str(map_path), str(temp_output_file)]
     subprocess.run(command, check=True)
 

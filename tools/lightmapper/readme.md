@@ -6,6 +6,17 @@ This lightmapper, built primarily with PyOpenGL and GLFW, allows you to generate
 ## Getting Started
 ### Prerequisites
 
+It is recomended to use a virtual enviroment:
+
+1. Install Conda (if not already installed)
+2. You may need to initialize conda for Use in the PowerShell with:
+    `conda init powershell`
+3. Now you can create an enviroment with:
+    `conda create --name games_engineering python=3.12`
+4. Activate the enviroment with:
+    `conda activate games_engineering`
+5. Now install the required packages. Within this folder there is a requirements.txt with all the dependencies. You can automatically install them with `pip install -r path/to/requirements.txt`
+
 Before running the lightmapper, ensure the following dependencies are installed:
 
     - Python (3.x)
@@ -68,3 +79,13 @@ The lightmapper requires:
 ### Lightmap Visualizer
 
 The visualizer reads the generated lightmap and displays it, offering insight into how the lighting will look in the final scene.
+
+
+### Creating an executable
+
+pyinstaller --onefile --upx-dir="D:\data\Informatik\GamesEngineering\Bayernstein\tools\lightmapper\upx-4.2.4-win64" --exclude-module=ipykernel --add-binary "D:\data\Informatik\GamesEngineering\Bayernstein\tools\lightmapper\glfw3.dll;." --add-binary "D:\data\Informatik\GamesEngineering\Bayernstein\tools\lightmapper\souper\bin\Debug\souper.exe;souper/bin/Debug" --add-data "D:\data\Informatik\GamesEngineering\Bayernstein\tools\lightmapper\shaders;shaders" map_compiler.py
+
+
+### Running the executable
+
+.\map_compiler.exe D:\data\Informatik\GamesEngineering\Bayernstein\assets\ D:\data\Informatik\GamesEngineering\Bayernstein\assets\maps\test_map_open.map D:\data\Informatik\GamesEngineering\Bayernstein\assets\compiled 2 0.0625 --atmospheric_color=0.01,0.01,0.01

@@ -1,3 +1,4 @@
+import sys
 from OpenGL.GL import *
 from OpenGL.GL.shaders import compileProgram, compileShader
 from pathlib import Path
@@ -19,7 +20,15 @@ class Renderer:
 
     def __init__(self, width: int, height: int, scene: Scene, atmosphere_color: Color = Color(0.0, 0.0, 0.0), light_map_path: Path = None, lightmap_mode=False) -> None:
         
-        self.base_path = Path(__file__).resolve().parent
+
+        # the parent folder of self
+        # Check if the script is running as a bundled executable
+        if getattr(sys, 'frozen', False):
+            # If running from the bundled executable, use the extracted folder
+            self.base_path = Path(sys._MEIPASS)
+        else:
+            # If running from the source code, use the regular script path
+            self.base_path = Path(__file__).resolve().parent
         self.viewport_size = width
         self.scene = scene
 

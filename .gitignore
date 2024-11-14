@@ -28,3 +28,4 @@ tools/lightmapper/temp/lightmap.hdr
 **/logs/**
 
 **/*.zip
+assets/temp/temp.json

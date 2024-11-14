@@ -10,7 +10,6 @@ import os
 import random
 from PIL import Image
 from scipy.spatial import KDTree
-import struct
 
 import util.uv_mapper as uv_mapper
 import util.geometry as geometry
@@ -176,7 +175,6 @@ class Scene:
 
         # Ensure the directory exists
         json_path.parent.mkdir(parents=True, exist_ok=True)
-
         # Write JSON data to file
         with open(json_path, 'w') as file:
             json.dump(data, file, indent=4)
