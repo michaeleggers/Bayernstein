@@ -1,3 +1,6 @@
+# TODO: Put this somewhere in the readme later. Just for Michael to remember
+# Call this on Linux: python map_compiler.py ../../../../assets/ /maps/temple2.map ./ 3 0.5
+
 import sys
 import argparse
 import subprocess
@@ -35,7 +38,7 @@ def soup_map(assets_path: Path, map_path: Path) -> Path:
         # If running from the source code, use the regular script path
         base_path = Path(__file__).resolve().parent
 
-    souper_path = base_path / 'souper/bin/Debug/souper.exe'
+    souper_path = './souper/bin/souper' # TODO: This is OS dependent atm!
     temp_output_file = assets_path / 'temp/temp.json'
     # Ensure the temporary directory exists
     temp_output_file.parent.mkdir(parents=True, exist_ok=True)
