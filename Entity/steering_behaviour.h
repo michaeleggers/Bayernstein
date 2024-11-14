@@ -17,7 +17,77 @@ class SteeringBehaviour {
         dithered
     };
 
-  private:
+  public:
+    SteeringBehaviour(MovingEntity* pEntity);
+    glm::vec3 Calculate();
+    void SetTargetAgent(BaseGameEntity* pAgent) {
+        m_pTargetAgent = pAgent;
+    }
+    void SetFollowPath(PatrolPath* pPath) {
+        m_pPath = pPath;
+        FollowWaypointsOn();
+        // FollowPathOn();
+    }
+
+  public:
+    void FleeOn() {
+        m_Flags |= flee;
+    }
+    void SeekOn() {
+        m_Flags |= seek;
+    }
+    void ArriveOn() {
+        m_Flags |= arrive;
+    }
+    void WanderOn() {
+        m_Flags |= wander;
+    }
+    void FollowPathOn() {
+        m_Flags |= follow_path;
+    }
+    void FollowWaypointsOn() {
+        m_Flags |= follow_waypoints;
+    }
+
+    void FleeOff() {
+        if ( On(flee) ) m_Flags ^= flee;
+    }
+    void SeekOff() {
+        if ( On(seek) ) m_Flags ^= seek;
+    }
+    void ArriveOff() {
+        if ( On(arrive) ) m_Flags ^= arrive;
+    }
+    void WanderOff() {
+        if ( On(wander) ) m_Flags ^= wander;
+    }
+    void FollowPathOff() {
+        if ( On(follow_path) ) m_Flags ^= follow_path;
+    }
+    void FollowWaypointsOff() {
+        if ( On(follow_waypoints) ) m_Flags ^= follow_waypoints;
+    }
+
+    bool isFleeOn() {
+        return On(flee);
+    }
+    bool isSeekOn() {
+        return On(seek);
+    }
+    bool isArriveOn() {
+        return On(arrive);
+    }
+    bool isWanderOn() {
+        return On(wander);
+    }
+    bool isFollowPathOn() {
+        return On(follow_path);
+    }
+    bool isFollowWaypointsOn() {
+        return On(follow_waypoints);
+    }
+ 
+private:
     enum behavior_type {
         none = 0x00000,
         seek = 0x00002,
@@ -107,76 +177,7 @@ class SteeringBehaviour {
 
     //calculates and sums the steering forces from any active behaviors
     glm::vec3 CalculateWeightedSum();
-
-  public:
-    SteeringBehaviour(MovingEntity* pEntity);
-    glm::vec3 Calculate();
-    void SetTargetAgent(BaseGameEntity* pAgent) {
-        m_pTargetAgent = pAgent;
-    }
-    void SetFollowPath(PatrolPath* pPath) {
-        m_pPath = pPath;
-        FollowWaypointsOn();
-        // FollowPathOn();
-    }
-
-  public:
-    void FleeOn() {
-        m_Flags |= flee;
-    }
-    void SeekOn() {
-        m_Flags |= seek;
-    }
-    void ArriveOn() {
-        m_Flags |= arrive;
-    }
-    void WanderOn() {
-        m_Flags |= wander;
-    }
-    void FollowPathOn() {
-        m_Flags |= follow_path;
-    }
-    void FollowWaypointsOn() {
-        m_Flags |= follow_waypoints;
-    }
-
-    void FleeOff() {
-        if ( On(flee) ) m_Flags ^= flee;
-    }
-    void SeekOff() {
-        if ( On(seek) ) m_Flags ^= seek;
-    }
-    void ArriveOff() {
-        if ( On(arrive) ) m_Flags ^= arrive;
-    }
-    void WanderOff() {
-        if ( On(wander) ) m_Flags ^= wander;
-    }
-    void FollowPathOff() {
-        if ( On(follow_path) ) m_Flags ^= follow_path;
-    }
-    void FollowWaypointsOff() {
-        if ( On(follow_waypoints) ) m_Flags ^= follow_waypoints;
-    }
-
-    bool isFleeOn() {
-        return On(flee);
-    }
-    bool isSeekOn() {
-        return On(seek);
-    }
-    bool isArriveOn() {
-        return On(arrive);
-    }
-    bool isWanderOn() {
-        return On(wander);
-    }
-    bool isFollowPathOn() {
-        return On(follow_path);
-    }
-    bool isFollowWaypointsOn() {
-        return On(follow_waypoints);
-    }
 };
 
 #endif // STEERING_BEHAVIOUR_H
+
