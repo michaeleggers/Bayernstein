@@ -8,7 +8,6 @@
 #include "../r_common.h"
 
 void PatrolPath::AddPoint(Waypoint point) {
-    point.position.z = 0.0f;
     m_Points.push_back(point);
     m_TargetnameToWaypoint.insert({ point.sTargetname, point });
     if ( m_CurrentWaypointName.empty() ) {
@@ -62,6 +61,7 @@ void PatrolPath::TargetNextWaypoint() {
     Waypoint currentWaypoint = GetCurrentWaypoint();
     m_PreviousWaypointName = m_CurrentWaypointName;
     m_CurrentWaypointName = currentWaypoint.sTarget;
+    printf("Setting waypoint to: %s\n", m_CurrentWaypointName.c_str());
     
     // if ( m_NextWaypointIndex < 0 ) {
     //     m_NextWaypointIndex = m_Points.size() - 1;

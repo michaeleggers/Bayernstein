@@ -58,7 +58,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/enemy_test_mod.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple2.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -399,7 +399,7 @@ bool Game::RunFrame(double dt) {
         renderer->End3D();
     } // End3D scope
 
-#if 1 // Toggle 2D Font/Box renderingtest
+#if 0 // Toggle 2D Font/Box renderingtest
 
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     // 2D stuff also has its own, dedicated FBO!
