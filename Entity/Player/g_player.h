@@ -20,20 +20,6 @@
 
 
 class Player : public MovingEntity, public IInputReceiver {
-  private:
-    StateMachine<Player>* m_pStateMachine;
-    double m_AttackDelay = 100;
-    double m_LastAttack = 0;
-
-    HKD_Model m_Model;
-    // moving members
-  private:
-    glm::vec3 m_Forward, m_Side;
-    AnimState m_AnimationState;
-    EllipsoidCollider m_EllipsoidCollider;
-
-    void LoadModel(const char* path, glm::vec3 initialPosition);
-    void UpdatePlayerModel();
 
   public:
     explicit Player(const int id, glm::vec3 initialPosition);
@@ -66,6 +52,22 @@ class Player : public MovingEntity, public IInputReceiver {
         }
         return false;
     }
+  
+private:
+    StateMachine<Player>* m_pStateMachine;
+    double m_AttackDelay = 100;
+    double m_LastAttack = 0;
+
+    HKD_Model m_Model;
+    // moving members
+
+private:
+    glm::vec3 m_Forward, m_Side;
+    AnimState m_AnimationState;
+    EllipsoidCollider m_EllipsoidCollider;
+
+    void LoadModel(const char* path, glm::vec3 initialPosition);
+    void UpdatePlayerModel();
 };
 
 #endif // PLAYER_H

@@ -15,20 +15,6 @@
 #include "../../input_receiver.h"
 
 class Enemy : public MovingEntity {
-  private:
-    StateMachine<Enemy>* m_pStateMachine;
-    SteeringBehaviour* m_pSteeringBehaviour;
-    double m_Health = 100;
-
-    HKD_Model m_Model;
-    // moving members
-  private:
-    AnimState m_AnimationState;
-    EllipsoidCollider m_EllipsoidCollider;
-
-    void LoadModel(const char* path, glm::vec3 initialPosition);
-    void UpdateEnemyModel();
-
   public:
     void Update() override;
     explicit Enemy(int id, glm::vec3 initialPosition);
@@ -74,6 +60,22 @@ class Enemy : public MovingEntity {
     bool IsDead() {
         return m_Health <= 0.0;
     }
+  
+private:
+    StateMachine<Enemy>* m_pStateMachine;
+    SteeringBehaviour* m_pSteeringBehaviour;
+    double m_Health = 100;
+
+    HKD_Model m_Model;
+    // moving members
+
+private:
+    AnimState m_AnimationState;
+    EllipsoidCollider m_EllipsoidCollider;
+
+    void LoadModel(const char* path, glm::vec3 initialPosition);
+    void UpdateEnemyModel();
+
 };
 
 #endif // ENEMY_H
