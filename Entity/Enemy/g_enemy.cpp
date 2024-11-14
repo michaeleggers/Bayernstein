@@ -112,7 +112,7 @@ void Enemy::UpdatePosition(glm::vec3 newPosition) {
     m_Model.position.y = newPosition.y;
     m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
     m_Position = newPosition;
-    printf("Position: %f, %f, %f\n", m_Position.x, m_Position.y, m_Position.z);
+    //printf("Position: %f, %f, %f\n", m_Position.x, m_Position.y, m_Position.z);
 }
 
 bool Enemy::HandleMessage(const Telegram& telegram) {

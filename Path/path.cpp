@@ -31,7 +31,7 @@ std::vector<Vertex> PatrolPath::GetPointsAsVertices() {
 bool PatrolPath::IsCurrentWaypointReached(glm::vec3 position) {
     glm::vec3 currentWaypointPosition = m_Points[ m_CurrentWaypointIndex ].position;
     float distance = glm::distance(position, currentWaypointPosition);
-    printf("Distance to waypoint: %f\n", distance);
+    //printf("Distance to waypoint: %f\n", distance);
     return distance < m_Radius;
 }
 

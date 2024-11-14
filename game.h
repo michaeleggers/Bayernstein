@@ -36,7 +36,6 @@ class Game {
     EntityManager*              m_pEntityManager;
 
     Camera                      m_Camera;
-    Camera                      m_FollowCamera;
 
     std::vector<HKD_Model*>     m_Models;
     CFont*                      m_ConsoleFont;

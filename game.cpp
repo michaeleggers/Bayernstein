@@ -105,12 +105,6 @@ void Game::Init() {
                     m_pEntityManager->RegisterEntity(baseEntity);
                 } else if ( prop.value == "info_player_start" ) {
                     glm::vec3 playerStartPosition = GetOrigin(&e);
-                    // Cameras
-                    m_FollowCamera = Camera(playerStartPosition);
-                    m_FollowCamera.m_Pos.y -= 200.0f;
-                    m_FollowCamera.m_Pos.z += 100.0f;
-                    m_FollowCamera.RotateAroundSide(-20.0f);
-                    m_FollowCamera.RotateAroundUp(180.0f);
 
                     m_pPlayerEntity = new Player(idCounter++, playerStartPosition);
                     m_pEntityManager->RegisterEntity(m_pPlayerEntity);
@@ -149,18 +143,12 @@ void Game::Init() {
 
     renderer->RegisterWorldTris( m_World.m_MapTris );
 
-    // Cameras
-    //m_FollowCamera = Camera(m_pPlayerEntity->m_Position);
-    //m_FollowCamera.m_Pos.y -= 200.0f;
-    //m_FollowCamera.m_Pos.z += 100.0f;
-    //m_FollowCamera.RotateAroundSide(0.0f);
-    //m_FollowCamera.RotateAroundUp(180.0f);
-
     //m_pPlayerEntity = new Player(idCounter++, m_pPlayerEntity->m_Position);
     //m_pEntityManager->RegisterEntity(m_pPlayerEntity);
   
-    glm::vec3 debugPlayerStartPosition = m_pPlayerEntity->m_Position; // + glm::vec3(0.0f, 10.0f, 0.0f);
-    m_pDebugPlayerEntity = new Player(idCounter++, debugPlayerStartPosition);
+    glm::vec3 dbgPlayerStartPos = m_pPlayerEntity->m_Position + glm::vec3(20.0f, -100.0f, 10.0f);
+    m_pDebugPlayerEntity = new Player(idCounter++, dbgPlayerStartPos);
+    printf("Debug Player Start Pos: %f, %f, %f\n", dbgPlayerStartPos.x, dbgPlayerStartPos.y, dbgPlayerStartPos.z);
     m_pEntityManager->RegisterEntity(m_pDebugPlayerEntity);
 
     m_pFlyCameraEntity = new CFlyCamera( idCounter++, glm::vec3(0.0f) );
@@ -294,8 +282,6 @@ bool Game::RunFrame(double dt) {
                                                                allTris.data(),
                                                                allTris.size());
 
-    m_pPlayerEntity->UpdatePosition(collisionInfo.basePos);
-    m_pDebugPlayerEntity->UpdatePosition(collisionInfoDebugPlayer.basePos);
 
     EllipsoidCollider ecEnemy = enemy->GetEllipsoidCollider();
     CollisionInfo enemyCollisionInfo = CollideEllipsoidWithMapTris(ecEnemy,
@@ -304,6 +290,8 @@ bool Game::RunFrame(double dt) {
                                                                    allTris.data(),
                                                                    allTris.size());
 
+    m_pPlayerEntity->UpdatePosition(collisionInfo.basePos);
+    m_pDebugPlayerEntity->UpdatePosition(collisionInfoDebugPlayer.basePos);
     enemy->UpdatePosition(enemyCollisionInfo.basePos);
 
 #endif

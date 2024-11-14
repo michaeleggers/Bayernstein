@@ -40,8 +40,6 @@ class Player : public MovingEntity, public IInputReceiver {
 
     EllipsoidCollider GetEllipsoidCollider() const;
     HKD_Model* GetModel();
-    
-    glm::vec3 m_Velocity;
 
   public:
     bool CanAttack() {
