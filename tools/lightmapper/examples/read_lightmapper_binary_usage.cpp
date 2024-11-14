@@ -1,10 +1,12 @@
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 #define MAP_PARSER_IMPLEMENTATION
 #include "map_parser.h"
 #include "polysoup.h"
 #include <cstring>
-#include <windows.h>
 #include <string>
 #include <iostream>
+#include <stdio.h>
 
 struct CompiledVertex {
 	glm::vec3 pos;
@@ -19,7 +21,6 @@ struct CompiledTriangle {
 	uint64_t surfaceFlags;
 	uint64_t contentFlags;
 };
-
 
 std::vector<CompiledTriangle> loadTriangles(const std::string& filename) {
 	std::vector<CompiledTriangle> triangles;
@@ -51,12 +52,21 @@ std::vector<CompiledTriangle> loadTriangles(const std::string& filename) {
 	return triangles;
 }
 
+std::string g_GameDir;
 
-int main()
+int main(int argc, char** argv)
 {
 
+	if ( argc < 3 ) {
+		fprintf( stderr, "Usage:\n<relative-assets-dir> <absolute-lightmap-bin>\n\n" );
+		return -1;
+	}
+
+	g_GameDir = std::string( argv[1] );
+
 	// Load vertices from the binary file
-	std::string filename = "D:/data/Informatik/GamesEngineering/Bayernstein/assets/compiled/test_map_open/test_map_open.ply";
+	//std::string filename = "D:/data/Informatik/GamesEngineering/Bayernstein/assets/compiled/test_map_open/test_map_open.ply";
+	std::string filename = std::string( argv[2] );
 	auto triangles = loadTriangles(filename);
 
 	for (const auto& triangle : triangles) {
@@ -75,3 +85,4 @@ int main()
 
 	return 0;
 }
+

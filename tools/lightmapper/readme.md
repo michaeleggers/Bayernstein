@@ -30,6 +30,7 @@ Before running the lightmapper, ensure the following dependencies are installed:
     - tqdm
     - opencv-python
     - pyrr
+    - scipy
 
 Install the dependencies with:
 
