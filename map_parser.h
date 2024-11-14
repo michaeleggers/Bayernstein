@@ -523,6 +523,7 @@ Waypoint GetWaypoint(Entity* entity) {
             std::string string = strings[ 1 ];
 
             waypoint.id = std::stoi(string);
+            waypoint.sTargetname = property.value;
 
         } else if ( property.key == "target" ) {
             char delimiter = '_';
@@ -530,6 +531,7 @@ Waypoint GetWaypoint(Entity* entity) {
             std::string string = strings[ 1 ];
 
             waypoint.target = std::stoi(string);
+            waypoint.sTarget = property.value;
         }
     }
 
