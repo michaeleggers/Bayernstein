@@ -6,7 +6,10 @@
 
 #include "../../input.h"
 #include "../../utils/utils.h"
+#include "../../input_handler.h"
+#include "../../input_receiver.h"
 #include "g_player_states.h"
+
 #include <SDL.h>
 
 Player::Player(const int id, glm::vec3 initialPosition)
@@ -19,6 +22,20 @@ Player::Player(const int id, glm::vec3 initialPosition)
     m_Position = initialPosition;
 }
 
+// FIX: At the moment called by the game itself.
+// Must be called before entity system updates entities.
+// (Calls ::Update() on Entities).
+void Player::UpdatePosition(glm::vec3 newPosition) {
+
+    // Update the ellipsoid colliders for all animation states based on the new collision position
+    for (int i = 0; i < m_Model.animations.size(); i++) {
+        m_Model.ellipsoidColliders[i].center = newPosition;
+    }
+    m_Model.position.x = newPosition.x;
+    m_Model.position.y = newPosition.y;
+    m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
+}
+
 void Player::Update() {
 
     if ( KeyPressed(SDLK_w) ) {
@@ -29,7 +46,13 @@ void Player::Update() {
         m_pStateMachine->ChangeState(PlayerIdle::Instance());
     }
 
-    UpdatePlayerModel();
+    //UpdatePlayerModel();
+
+    double dt = GetDeltaTime();
+    UpdateModel(&m_Model, (float)dt);
+
+    m_Position = m_Model.position;
+
     m_pStateMachine->Update();
 }
 
@@ -56,19 +79,33 @@ void Player::LoadModel(const char* path, glm::vec3 initialPosition) {
     m_EllipsoidCollider = GetEllipsoidCollider();
 }
 
+// NOTE: This is not being used now as the entity should not own
+// and/or update a camera by itself. The camera is an entity itself.
+// We leave it here anyways, because this shows how it could be done
+// if it turns out that camera-entities are dumb (I don't think so
+// but still...).
 void Player::UpdateCamera(Camera* camera) {
     // Fix camera position
-    camera->m_Pos.x = m_Model.position.x;
-    camera->m_Pos.y = m_Model.position.y;
-    camera->m_Pos.z = m_Model.position.z + 70.0f;
-    camera->m_Pos += (-m_Forward * 80.0f);
-    // m_RotationAngle should already have the information about if we want to move left or right
-    if ( KeyPressed(SDLK_RIGHT) || KeyPressed(SDLK_LEFT) ) {
-        camera->RotateAroundUp(m_RotationAngle);
-    }
+    //camera->m_Pos.x = m_Model.position.x;
+    //camera->m_Pos.y = m_Model.position.y;
+    //camera->m_Pos.z = m_Model.position.z + 70.0f;
+    //camera->m_Pos += (-m_Forward * 80.0f);
+    //// m_RotationAngle should already have the information about if we want to move left or right
+    //if (KeyPressed(SDLK_RIGHT) || KeyPressed(SDLK_LEFT)) {
+    //    camera->RotateAroundUp(m_RotationAngle);
+    //}
 }
 
 void Player::UpdatePlayerModel() {
+   
+    ButtonState forward = CHECK_ACTION("forward");
+    ButtonState back = CHECK_ACTION("back");
+    ButtonState left = CHECK_ACTION("left");
+    ButtonState right = CHECK_ACTION("right");
+    ButtonState speed = CHECK_ACTION("speed");
+    ButtonState turnLeft = CHECK_ACTION("turn_left");
+    ButtonState turnRight = CHECK_ACTION("turn_right");
+    
     double dt = GetDeltaTime();
     float followCamSpeed = 0.03f;
     float followTurnSpeed = 0.1f;
@@ -78,16 +115,23 @@ void Player::UpdatePlayerModel() {
     }
 
     // Model rotation
-    m_RotationAngle = followTurnSpeed * (float)dt;
-    if ( KeyPressed(SDLK_RIGHT) ) {
-        m_RotationAngle = -m_RotationAngle;
-        glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), m_Up);
-        m_Model.orientation *= rot;
+    if ( turnLeft == ButtonState::PRESSED ) {
+        m_RotationAngle += followTurnSpeed * (float)dt; // TODO: Should be a quaternion in base game entity.
     }
-    if ( KeyPressed(SDLK_LEFT) ) {
-        glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), m_Up);
-        m_Model.orientation *= rot;
+    if ( turnRight == ButtonState::PRESSED ) {
+        m_RotationAngle -= followTurnSpeed * (float)dt;
     }
+   
+    // TODO: If dealing with m_Orientation quaternion, this test can be omitted.
+    if (m_RotationAngle >= 360.0f) {
+        m_RotationAngle = 0.0f;
+    }
+    else if (m_RotationAngle < 0.0f) {
+        m_RotationAngle = 360.0f;
+    }
+
+    glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
+    m_Model.orientation = rot;
 
     m_Forward = glm::rotate(m_Model.orientation,
                             glm::vec3(0.0f, -1.0f, 0.0f)); // -1 because the model is facing -1 (Outside the screen)
@@ -97,45 +141,47 @@ void Player::UpdatePlayerModel() {
     m_Velocity = glm::vec3(0.0f);
     float t = (float)dt * followCamSpeed;
     AnimState playerAnimState = ANIM_STATE_IDLE;
-    if ( KeyPressed(SDLK_w) ) {
+    
+    if ( forward == ButtonState::PRESSED ) {
         m_Velocity += t * m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
-    if ( KeyPressed(SDLK_s) ) {
+    if ( back == ButtonState::PRESSED ) {
         m_Velocity -= t * m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
-    if ( KeyPressed(SDLK_d) ) {
+    if ( right == ButtonState::PRESSED ) {
         m_Velocity += t * m_Side;
         playerAnimState = ANIM_STATE_RUN;
     }
-    if ( KeyPressed(SDLK_a) ) {
+    if ( left == ButtonState::PRESSED ) {
         m_Velocity -= t * m_Side;
         playerAnimState = ANIM_STATE_RUN;
     }
 
-    if ( playerAnimState == ANIM_STATE_RUN ) {
-        if ( KeyPressed(SDLK_LSHIFT) ) {
+    if (playerAnimState == ANIM_STATE_RUN) {
+        if ( speed == ButtonState::PRESSED ) {
             playerAnimState = ANIM_STATE_WALK;
         }
     }
 
+    // Test the input handler here.
+    ButtonState jumpState = CHECK_ACTION("jump");
+    if (jumpState == ButtonState::PRESSED) {
+        printf("I am jumping!\n");
+    }
+    ButtonState fireState = CHECK_ACTION("fire");
+    if (fireState == ButtonState::PRESSED) {
+        printf("FIRE!\n");
+    }
+    ButtonState prevWeapon = CHECK_ACTION("switch_to_prev_weapon");
+    if (prevWeapon == ButtonState::WENT_DOWN) {
+        printf("Switching to previous weapon!\n");
+    }
+    
     SetAnimState(&m_Model, playerAnimState);
 
-    UpdateModel(&m_Model, (float)dt);
-}
-
-void Player::UpdatePosition(glm::vec3 newPosition) {
-
-    // Update the ellipsoid colliders for all animation states based on the new collision position
-    for ( int i = 0; i < m_Model.animations.size(); i++ ) {
-        m_Model.ellipsoidColliders[ i ].center = newPosition;
-    }
-    m_Model.position.x = newPosition.x;
-    m_Model.position.y = newPosition.y;
-    m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
-    m_Position = newPosition;
-    m_Position.z = m_Position.z - GetEllipsoidCollider().radiusB;
+    // UpdateModel(&m_Model, (float)dt);
 }
 
 EllipsoidCollider Player::GetEllipsoidCollider() const {
@@ -146,10 +192,15 @@ HKD_Model* Player::GetModel() {
     return &m_Model;
 }
 
-glm::vec3 Player::GetVelocity() const {
-    return m_Velocity;
-}
-
 bool Player::HandleMessage(const Telegram& telegram) {
     return m_pStateMachine->HandleMessage(telegram);
 }
+
+void Player::HandleInput() {
+    ButtonState captainState = CHECK_ACTION("set_captain");
+    if ( captainState == ButtonState::WENT_DOWN ) {
+        printf("Player: I am the captain!\n");
+    }
+    UpdatePlayerModel();
+}
+

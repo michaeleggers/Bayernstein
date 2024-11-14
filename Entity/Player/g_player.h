@@ -5,19 +5,21 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#define GLM_FORCE_RADIANS
+#include "../../dependencies/glm/ext.hpp"
+#include "../../dependencies/glm/glm.hpp"
+
 #include "../../Clock/clock.h"
 #include "../../FSM/state_machine.h"
 #include "../../Message/message_dispatcher.h"
 #include "../../camera.h"
 #include "../../collision.h"
 #include "../../r_model.h"
+#include "../../input_receiver.h"
 #include "../moving_entity.h"
 
-#define GLM_FORCE_RADIANS
-#include "../../dependencies/glm/ext.hpp"
-#include "../../dependencies/glm/glm.hpp"
 
-class Player : public MovingEntity {
+class Player : public MovingEntity, public IInputReceiver {
   private:
     StateMachine<Player>* m_pStateMachine;
     double m_AttackDelay = 100;
@@ -26,7 +28,7 @@ class Player : public MovingEntity {
     HKD_Model m_Model;
     // moving members
   private:
-    float m_RotationAngle;
+    glm::vec3 m_Forward, m_Side;
     AnimState m_AnimationState;
     EllipsoidCollider m_EllipsoidCollider;
 
@@ -35,12 +37,14 @@ class Player : public MovingEntity {
 
   public:
     explicit Player(const int id, glm::vec3 initialPosition);
-
     ~Player() override {
         delete m_pStateMachine;
     }
 
     void Update() override;
+    bool HandleMessage(const Telegram& telegram) override;
+    void HandleInput() override;
+    
     void UpdateCamera(Camera* camera);
     void UpdatePosition(glm::vec3 newPosition);
 
@@ -48,11 +52,10 @@ class Player : public MovingEntity {
         return m_pStateMachine;
     }
 
-    bool HandleMessage(const Telegram& telegram) override;
-
     EllipsoidCollider GetEllipsoidCollider() const;
     HKD_Model* GetModel();
-    glm::vec3 GetVelocity() const;
+    
+    glm::vec3 m_Velocity;
 
   public:
     bool CanAttack() {
@@ -66,3 +69,4 @@ class Player : public MovingEntity {
 };
 
 #endif // PLAYER_H
+

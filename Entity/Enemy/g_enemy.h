@@ -4,12 +4,15 @@
 
 #ifndef ENEMY_H
 #define ENEMY_H
+
 #include "../../FSM/state_machine.h"
 #include "../../collision.h"
 #include "../../r_model.h"
 #include "../Path/path.h"
 #include "../moving_entity.h"
 #include "../steering_behaviour.h"
+#include "../base_game_entity.h"
+#include "../../input_receiver.h"
 
 class Enemy : public MovingEntity {
   private:
@@ -74,3 +77,4 @@ class Enemy : public MovingEntity {
 };
 
 #endif // ENEMY_H
+

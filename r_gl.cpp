@@ -25,9 +25,16 @@
 #include "r_gl_texture_mgr.h"
 #include "r_gl_fbo.h"
 #include "input.h" 
+#include "Console/Console.h"
+#include "Console/VariableManager.h"
 
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
+
+ConsoleVariable scr_consize = {"scr_consize", 0.45f};
+ConsoleVariable scr_conopacity = {"scr_conopacity", 0.95f};
+ConsoleVariable scr_conwraplines = {"scr_conwraplines", 1};
+
 
 void GLAPIENTRY OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
                                     GLsizei length, const GLchar* message, const void* userParam) {
@@ -117,6 +124,8 @@ void GLRender::Shutdown(void) {
 
     // Destroy FBOs
     delete m_2dFBO;
+    delete m_3dFBO;
+    delete m_ConsoleFBO;
 }
 
 bool GLRender::Init(void) {
@@ -259,6 +268,12 @@ bool GLRender::Init(void) {
     // FBO for rendering text and other 2d elements (shapes, sprites, ...)
     // on top of the 3d scene.
     m_2dFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    m_ConsoleFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    VariableManager::Register(&scr_consize);
+    VariableManager::Register(&scr_conopacity);
+    VariableManager::Register(&scr_conwraplines);
 
     return true;
 }
@@ -539,9 +554,7 @@ void GLRender::RenderBegin(void)
 {  
     // Make sure the screenspace 2d FBO is being cleared.
     m_2dFBO->Bind();
-
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    
     // NOTE: Important to have alpha = 0.0f, otherwise we will end up with 
     // a base framebuffer that is fully opaque. But only the glyphs must 
     // be opaque after the fragment shader has run!
@@ -549,15 +562,19 @@ void GLRender::RenderBegin(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     //glDisable(GL_CULL_FACE);
-
     glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
-   
     m_2dFBO->Unbind(); // Switch back to GL default framebuffer.
     
+    // Make sure the console FBO is being cleared.
+    m_ConsoleFBO->Bind();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f); 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
+    m_ConsoleFBO->Unbind(); // Switch back to GL default framebuffer.
 
     // Render into the GL default FBO.
-
-    // SDL_GetWindowSize(m_Window, &m_WindowWidth, &m_WindowHeight);
     
     // See: https://wiki.libsdl.org/SDL2/SDL_GL_GetDrawableSize
     SDL_GL_GetDrawableSize(m_Window, &m_WindowWidth, &m_WindowHeight);
@@ -576,14 +593,11 @@ void GLRender::RenderBegin(void)
 void GLRender::Begin3D(void) {
     // Render into the 3D scene FBO
     m_3dFBO->Bind();
-    
     SDL_GL_GetDrawableSize(m_Window, &m_WindowWidth, &m_WindowHeight);
     float windowAspect = (float)m_WindowWidth / (float)m_WindowHeight;
     glViewport(0, 0, m_WindowWidth, m_WindowHeight);
-
     glClearColor(0.f, 0.f, 1.0f, 1.0f); 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 }
 
 void GLRender::End3D(void) {
@@ -769,7 +783,7 @@ void GLRender::Begin2D() {
     
     glDisable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glDisable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE); // necessary: text is drawn backwards and allows drawing shapes with negative width/height
 
     glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
 
@@ -790,6 +804,7 @@ void GLRender::End2D() {
     //m_FontBatch->Unbind();
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 
     // TODO: (Michael): Unbind bound (font-)textures?
 }
@@ -1019,9 +1034,77 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
     }
 }
 
+void GLRender::RenderConsole(Console* console, CFont* font) {
+    if (!console->m_isActive) return;
+
+    const float relHeight = scr_consize.value;
+    const float height = m_WindowHeight * relHeight;
+    const float borderWidth = 2.0f;
+    const float textMargin = 10.0f;
+    const float lineHeight = font->m_Size + textMargin; // TODO: possibly derive from font *line gap* metric in the future?
+    const float charWidth = font->m_Size * 0.602f; // assumes mono-space font  // FIXME: this is just an estimation, should be derived from the font!
+    
+    const float inputY = height - font->m_Size - textMargin;
+    float logY = inputY - textMargin * 2 - font->m_Size;
+    const int maxLines = floor(logY / lineHeight) + 1;
+    const int maxChars = floor((m_WindowWidth - 2 * textMargin) / charWidth);
+
+    Begin2D();
+    m_ConsoleFBO->Bind();
+    // draw background/frame
+    SetShapeColor(glm::vec4(0.05f, 0.05f, 0.05f, scr_conopacity.value));
+    DrawBox(0.0f, 0.0f, 1.0f, relHeight);
+    SetShapeColor(glm::vec4(1.0f));
+    DrawBox(0.0f, 0.0f, borderWidth, height, COORD_MODE_ABS);
+    DrawBox(m_WindowWidth, 0.0f, -borderWidth, height, COORD_MODE_ABS);
+    DrawBox(0.0f, 0.0f, m_WindowWidth, borderWidth, COORD_MODE_ABS);
+    DrawBox(0.0f, inputY - textMargin, m_WindowWidth, -borderWidth, COORD_MODE_ABS);
+    DrawBox(0.0f, height, m_WindowWidth, -borderWidth, COORD_MODE_ABS);
+
+    // draw input
+    SetFont(font, glm::vec4(1.0f));
+    std::string prefix = "> ";
+    int maxInputChars = maxChars - prefix.length();
+    int textOffset = ((console->CursorPos() - 1) / maxInputChars) * maxInputChars; // integer division
+    if (console->CurrentInput().length() > maxInputChars) prefix = "<>"; // indicate line overflow
+    std::string inputText = prefix + console->CurrentInput().substr(textOffset, maxInputChars);
+    R_DrawText(inputText, textMargin, inputY, COORD_MODE_ABS);
+
+    // draw cursor
+    if (console->m_blinkTimer < 500.0) {
+        float cursorX = textMargin + (console->CursorPos() - textOffset + prefix.length()) * charWidth;
+        SetShapeColor(glm::vec4(0.8f, 0.8f, 0.8f, 1.0f));
+        DrawBox(cursorX - 2.5f, inputY - 3.0f, 5.0f, font->m_Size + 4.0f, COORD_MODE_ABS);
+    } else if (console->m_blinkTimer > 1000.0) {
+        console->m_blinkTimer = 0;
+    }
+
+    // draw log lines
+    for (int i = 0; i < maxLines; i++) {
+        std::string line;
+        if (!console->m_lineBuffer.Get(i, &line)) break;
+        if (scr_conwraplines.value && line.length() > maxChars) {
+            std::vector<std::string> segments;
+            for (int offset = 0; offset < line.length(); offset += maxChars) {
+                segments.push_back(line.substr(offset, maxChars));
+            }
+            for (int j = segments.size() - 1; j >= 0; j--) {
+                R_DrawText(segments[j], textMargin, logY, COORD_MODE_ABS);
+                logY -= lineHeight; 
+                if (++i == maxLines) break;
+            }
+        } else {
+            R_DrawText(line, textMargin, logY, COORD_MODE_ABS);
+            logY -= lineHeight; 
+        }
+    }
+
+    m_ConsoleFBO->Unbind();
+    End2D();
+}
+
 void GLRender::RenderEnd(void)
 {
-
     // At this point the GL default FBO must be active!
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -1047,6 +1130,9 @@ void GLRender::RenderEnd(void)
 
     GLuint texLoc2d = glGetUniformLocation(m_CompositeShader->Program(),
                                            "screenspace2dTexture");
+
+    GLuint texLocConsole = glGetUniformLocation(m_CompositeShader->Program(),
+                                                "consoleTexture");
     
     glUniform1i(texLoc3d, 0);
     // Bind the 3d scene FBO and draw it.
@@ -1060,6 +1146,12 @@ void GLRender::RenderEnd(void)
     glActiveTexture( GL_TEXTURE1 );
     glBindTexture( GL_TEXTURE_2D, screenSpace2dTexture.m_gl_Handle ); 
 
+    glUniform1i(texLocConsole, 2);
+    // Bind the 2d console FBO texture and draw on top.
+    CglRenderTexture consoleTexture = m_ConsoleFBO->m_ColorTexture;
+    glActiveTexture( GL_TEXTURE2 );
+    glBindTexture( GL_TEXTURE_2D, consoleTexture.m_gl_Handle ); 
+    
     glDrawArrays( GL_TRIANGLES, 0, 6 );
 
     // FIX: This is the reason why textures in OpenGL suck!!! If we are

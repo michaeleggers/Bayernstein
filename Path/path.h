@@ -24,11 +24,17 @@ class PatrolPath {
 
   public:
     int m_direction; // 1 is forward and -1 is backward
+  
   public:
     PatrolPath()
         : m_Points(),
           m_Radius(35.0),
-          m_direction(1) {};
+          m_direction(1),
+          m_CurrentWaypointIndex(0),
+          m_NextWaypointIndex(0),
+          m_PreviousWaypointIndex(0)
+  {};
+
     PatrolPath(std::string pathname)
         : m_Points(),
           m_name(pathname),
@@ -49,3 +55,4 @@ class PatrolPath {
 };
 
 #endif
+

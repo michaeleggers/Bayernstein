@@ -494,6 +494,9 @@ Map getMap(char* mapData, size_t mapDataLength, MapVersion mapVersion) {
     return map;
 }
 
+// FIX: No more functions must be added to this file. The map parser just
+// gets the data from the MAP file. Nothing more. Move this function
+// out.
 glm::vec3 GetOrigin(Entity* entity) {
     for ( Property& property : entity->properties ) {
         if ( property.key == "origin" ) {
@@ -505,6 +508,9 @@ glm::vec3 GetOrigin(Entity* entity) {
     assert(false && "Entity has no origin property!");
 }
 
+// FIX: No more functions must be added to this file. The map parser just
+// gets the data from the MAP file. Nothing more. Move this function
+// out.
 Waypoint GetWaypoint(Entity* entity) {
     Waypoint waypoint = {};
     for ( Property& property : entity->properties ) {

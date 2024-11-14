@@ -4,10 +4,11 @@
 #include <string>
 #include <vector>
 
-float RandBetween(float min, float max);
-
-double GetDeltaTime();
-std::vector<std::string> SplitString(const std::string& input, char delimiter);
-std::vector<float> ParseFloatValues(const std::string& input);
+double                      GetDeltaTime();
+float                       RandBetween(float min, float max);
+bool                        IsStringFloat(const std::string& string);
+std::vector<std::string>    SplitString(const std::string& input, char delimiter);
+std::vector<float>          ParseFloatValues(const std::string& input);
 
 #endif
+

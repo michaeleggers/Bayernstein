@@ -3,18 +3,21 @@
 //
 
 #include "g_enemy.h"
-#include "../../input.h"
-#include "../../utils/quick_math.h"
-#include "../../utils/utils.h"
-#include "g_enemy_states.h"
-#include <SDL.h>
+
 #include <stdio.h>
+#include <SDL.h>
 
 #define GLM_FORCE_RADIANS
 #include "../../dependencies/glm/ext.hpp"
 #include "../../dependencies/glm/glm.hpp"
 #include "../../dependencies/glm/gtx/quaternion.hpp"
 #include "../../dependencies/glm/gtx/vector_angle.hpp"
+
+#include "../../input.h"
+#include "../../utils/quick_math.h"
+#include "../../utils/utils.h"
+#include "g_enemy_states.h"
+#include "../../input_handler.h"
 
 Enemy::Enemy(const int id, glm::vec3 initialPosition)
     : MovingEntity(id, ET_ENEMY),
@@ -115,3 +118,5 @@ void Enemy::UpdatePosition(glm::vec3 newPosition) {
 bool Enemy::HandleMessage(const Telegram& telegram) {
     return m_pStateMachine->HandleMessage(telegram);
 }
+
+
