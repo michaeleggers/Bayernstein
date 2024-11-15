@@ -32,6 +32,7 @@ public:
     void        InitStaticGeometry(std::vector<MapTri> tris);
     void        AddBrushesToDynamicGeometry(const std::vector<Brush>& brushes);
     void        CollideEntitiesWithWorld();
+    void        CollideEntities();
     
     uint64_t OffsetDynamicGeometry() {
         return m_OffsetDynamicGeometry;

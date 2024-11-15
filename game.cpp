@@ -177,27 +177,9 @@ bool Game::RunFrame(double dt) {
     // Collide entities with the world geometry and bounce off of it.
     m_World.CollideEntitiesWithWorld();
 
-    // Check if player has contacts with brush entities (doors).
+    // Check if player has contacts with other entities (including brush entities such as doors).
+    m_World.CollideEntities();
 
-    // Check if player runs against door
-#if 0 
-    for ( int i = 0; i < m_World.m_BrushEntities.size(); i++ ) {
-        int be = m_World.m_BrushEntities[ i ];
-        BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID(be);
-        if ( pEntity->Type() == ET_DOOR ) {
-            Door* pDoor = (Door*)pEntity;
-            CollisionInfo ciDoor = PushTouch(ec,
-                                             static_cast<float>(dt) * m_pPlayerEntity->m_Velocity, 
-                                             pDoor->MapTris().data(), 
-                                             pDoor->MapTris().size() );
-            if (ciDoor.didCollide) { 
-                printf("COLLIDED!\n");
-                Dispatcher->DispatchMessage(
-                    SEND_MSG_IMMEDIATELY, m_pPlayerEntity->ID(), pDoor->ID(), message_type::Collision, 0);
-            }
-        }
-    }
-#endif
 
     // Run the message system
     m_pEntityManager->UpdateEntities();

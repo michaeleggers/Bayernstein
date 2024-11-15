@@ -19,6 +19,7 @@
 #include "hkd_interface.h"
 #include "Entity/base_game_entity.h"
 #include "utils/utils.h"
+#include "Message/message_type.h"
 
 void CWorld::InitWorld(glm::vec3 gravity) {
     m_Gravity = gravity;
@@ -121,20 +122,50 @@ void CWorld::CollideEntitiesWithWorld() {
     std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
     double dt = GetDeltaTime();
     for (int i = 0; i < entities.size(); i++) {
-        BaseGameEntity* entity = entities[i];
+        BaseGameEntity* pEntity = entities[i];
 
         // FIX: Higher level entity type or entity flags (eg. FLAG_COLLIDABLE).
-        if ( (entity->Type() == ET_PLAYER) || (entity->Type() == ET_ENEMY) ) {
+        if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
 
-            EllipsoidCollider ec = entity->GetEllipsoidCollider();
-            printf("velocity: %f %f %f\n", entity->m_Velocity.x, entity->m_Velocity.y, entity->m_Velocity.z);
+            EllipsoidCollider ec = pEntity->GetEllipsoidCollider();
+            printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
             CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
-                                                                      static_cast<float>(dt) * entity->m_Velocity,
+                                                                      static_cast<float>(dt) * pEntity->m_Velocity,
                                                                       static_cast<float>(dt) * m_Gravity,
                                                                       m_MapTris.data(),
                                                                       m_MapTris.size());
 
-            entity->UpdatePosition(collisionInfo.basePos);
+            pEntity->UpdatePosition(collisionInfo.basePos);
+        }
+    }
+}
+
+void CWorld::CollideEntities() {
+    std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
+    double dt = GetDeltaTime();
+    for (int i = 0; i < entities.size(); i++) {
+        BaseGameEntity* pEntity = entities[i];
+        for (int j = i+1; j < entities.size(); j++) {
+  
+            BaseGameEntity* pOther = entities[j];
+            if ( pOther->ID() == pEntity->ID() ) { // Don't collide with itself.
+                continue;
+            }
+   
+            if ( pOther->Type() == ET_DOOR ) {
+                Door* pDoor = (Door*)pOther;
+                EllipsoidCollider ec = pEntity->GetEllipsoidCollider();
+                CollisionInfo ci = PushTouch(ec,
+                                             static_cast<float>(dt) * pEntity->m_Velocity, 
+                                             pDoor->MapTris().data(), 
+                                             pDoor->MapTris().size());
+                if (ci.didCollide) { 
+                    printf("COLLIDED!\n");
+                    Dispatcher->DispatchMessage(
+                        SEND_MSG_IMMEDIATELY, pEntity->ID(), pDoor->ID(), message_type::Collision, 0);
+                }
+            }
+            
         }
     }
 }
