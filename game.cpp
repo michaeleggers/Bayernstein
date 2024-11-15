@@ -174,9 +174,10 @@ bool Game::RunFrame(double dt) {
     // Handle the input
     CInputDelegate::Instance()->HandleInput();
 
+    // Collide entities with the world geometry and bounce off of it.
     m_World.CollideEntitiesWithWorld();
 
-
+    // Check if player has contacts with brush entities (doors).
 
     // Check if player runs against door
 #if 0 
