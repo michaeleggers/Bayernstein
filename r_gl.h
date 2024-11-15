@@ -83,6 +83,7 @@ private:
 	// Draw world polygons based on their texture handle.
 	std::unordered_map<uint64_t, GLBatchDrawCmd> m_TexHandleToWorldDrawCmd;
 	GLBatch*					m_WorldBatch;
+	GLBatch*					m_BrushBatch; // World geometry from brush entities.
 
 	GLBatch*					m_ModelBatch;
 	std::vector<GLBatchDrawCmd> m_ModelDrawCmds;

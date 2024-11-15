@@ -114,6 +114,12 @@ void GLRender::Shutdown(void) {
     m_ShapesBatch->Kill();
     delete m_ShapesBatch;
 
+    m_WorldBatch->Kill();
+    delete m_WorldBatch;
+
+    m_BrushBatch->Kill();
+    delete m_BrushBatch;
+
     m_FontShader->Unload();
     
     m_ModelShader->Unload();
@@ -252,6 +258,7 @@ bool GLRender::Init(void) {
     m_FontBatch = new GLBatch(1000, 1000);
     m_ShapesBatch = new GLBatch(1000, 1000);
     m_WorldBatch = new GLBatch(5000);
+    m_BrushBatch = new GLBatch(5000);
 
     // Initialize shaders
 
@@ -310,9 +317,11 @@ void GLRender::RegisterFont(CFont* font) {
 
 void GLRender::RegisterWorld(CWorld& world) {
     std::vector<MapTri>& tris = world.MapTris();
-    // Sort Tris by texture
+    uint64_t numStaticTris = world.StaticGeometryCount();
+
+    // Sort static Tris by texture
     std::unordered_map<uint64_t, std::vector<MapTri*> > texHandle2Tris{};
-    for (int i = 0; i < tris.size(); i++) {
+    for (int i = 0; i < numStaticTris; i++) {
         MapTri* pTri = &tris[ i ];
         if ( texHandle2Tris.contains(pTri->hTexture) ) {
             std::vector<MapTri*>* triList = &texHandle2Tris.at(pTri->hTexture);
@@ -340,6 +349,10 @@ void GLRender::RegisterWorld(CWorld& world) {
         };
         m_TexHandleToWorldDrawCmd.insert({ texHandle, drawCmd });
     }
+}
+
+void GLRender::RegisterBrush(Brush& brush) {
+    
 }
 
 // Returns the CPU handle

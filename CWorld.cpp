@@ -128,7 +128,7 @@ void CWorld::CollideEntitiesWithWorld() {
         if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
 
             EllipsoidCollider ec = pEntity->GetEllipsoidCollider();
-            printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
+            //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
             CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
                                                                       static_cast<float>(dt) * pEntity->m_Velocity,
                                                                       static_cast<float>(dt) * m_Gravity,

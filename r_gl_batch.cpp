@@ -39,6 +39,7 @@ GLBatch::GLBatch(uint32_t maxVerts)
 
     glGenBuffers(1, &m_VBO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+    // FIX: Make configurable if data is dynamic or static.
     glBufferData(GL_ARRAY_BUFFER, m_MaxVerts * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 
     // Input assembly for vertex shader
