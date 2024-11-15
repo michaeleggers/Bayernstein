@@ -263,7 +263,8 @@ bool Game::RunFrame(double dt) {
     // collision system!!! Arrays just always win... what can I say? The brush entities should have pointers (indices) into the
     // CPU-side triangle array to know what geometry belongs to them.
     std::vector<MapTri> allTris = m_World.m_MapTris;
-#if 0 // if there are no doors in the world, this is not needed
+
+#if 1 // if there are no doors in the world, this is not needed
     int be = m_World.m_BrushEntities[ 0 ];
     Door* pEntity = (Door*)m_pEntityManager->GetEntityFromID(be);
     std::copy(pEntity->MapTris().begin(), pEntity->MapTris().end(), std::back_inserter(allTris));
@@ -296,7 +297,7 @@ bool Game::RunFrame(double dt) {
 #endif
 
     // Check if player runs against door
-#if 0
+#if 1 
     for ( int i = 0; i < m_World.m_BrushEntities.size(); i++ ) {
         int be = m_World.m_BrushEntities[ i ];
         BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID(be);
