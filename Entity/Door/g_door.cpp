@@ -17,8 +17,8 @@ void Door::Update() {
 }
 
 Door::Door(const int id, 
-           std::vector<Property>& properties, 
-           std::vector<Brush>& brushes) : 
+           const std::vector<Property>& properties, 
+           const std::vector<Brush>& brushes) : 
     BaseGameEntity(id, ET_DOOR),
     m_pStateMachine(nullptr) {
 
@@ -28,7 +28,7 @@ Door::Door(const int id,
     // Get all the door's properties from the MAP file.
     
     for (int i = 0; i < properties.size(); i++) {
-        Property& prop = properties[ i ];
+        const Property& prop = properties[ i ];
         if (prop.key == "angle") {
             // TODO: Parse the value (prop.value is always a string)
             // and assing to m_Angle;

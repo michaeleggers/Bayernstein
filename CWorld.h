@@ -15,23 +15,47 @@
 
 #include "r_common.h"
 #include "./Entity/base_game_entity.h"
+#include "Entity/Door/g_door.h"
+#include "Entity/Enemy/g_enemy.h"
+#include "Entity/Player/g_player.h"
+#include "Entity/FollowCamera/g_follow_camera.h"
+#include "Entity/FlyCamera/g_fly_camera.h"
+#include "Entity/entity_manager.h"
 #include "map_parser.h"
 #include "polysoup.h"
 
 class CWorld {
 public:
-    void InitWorld(glm::vec3 gravity);
-    void InitWorldFromMap(const Map& map);
-    void InitStaticGeometry(std::vector<MapTri> tris);
-    void AddDynamicGeometry(std::vector<MapTri> tris);
+    void        InitWorld(glm::vec3 gravity);
+    void        InitWorldFromMap(const Map& map);
+    void        InitStaticGeometry(std::vector<MapTri> tris);
+    void        AddDynamicGeometry(std::vector<MapTri> tris);
+    void        AddBrushesToDynamicGeometry(const std::vector<Brush>& brushes);
 
-    static std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys);
+    uint64_t OffsetDynamicGeometry() {
+        return m_OffsetDynamicGeometry;
+    }
+   
+    /*
+    * Easier to understand in code when only the number of
+    * static tris is needed.
+    */
+    uint64_t StaticGeometryCount() {
+        return m_OffsetDynamicGeometry;
+    }
+
+    static glm::vec3            GetOrigin(const Entity* entity);
+    static Waypoint             GetWaypoint(const Entity* entity);
+    static std::vector<MapTri>  CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys);
     
     std::vector<MapTri>          m_MapTris;
     uint64_t                     m_StaticGeometryEndIndex;
     bool                         m_StaticGeometryInitialized = false;
     std::vector<int>             m_BrushEntities;
     glm::vec3                    m_Gravity;
+
+private:
+    uint64_t                     m_OffsetDynamicGeometry;
 
 };
 

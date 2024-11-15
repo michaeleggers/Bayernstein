@@ -65,36 +65,6 @@ void Game::Init() {
     Map map = getMap(&mapData[ 0 ], inputLength, mapVersion);
 
     m_World.InitWorldFromMap(map);
-/*
-    std::vector<MapPolygon> polysoup = createPolysoup(map);
-    std::vector<MapPolygon> tris = triangulate(polysoup);
-    glm::vec4 triColor = glm::vec4(0.1f, 0.8f, 1.0f, 1.0f);
-    for ( int i = 0; i < tris.size(); i++ ) {
-        MapPolygon mapPoly = tris[ i ];
-
-        Vertex A = { glm::vec3(mapPoly.vertices[ 0 ].pos.x, mapPoly.vertices[ 0 ].pos.y, mapPoly.vertices[ 0 ].pos.z),
-                     mapPoly.vertices[ 0 ].uv };
-        Vertex B = { glm::vec3(mapPoly.vertices[ 1 ].pos.x, mapPoly.vertices[ 1 ].pos.y, mapPoly.vertices[ 1 ].pos.z),
-                     mapPoly.vertices[ 1 ].uv };
-        Vertex C = { glm::vec3(mapPoly.vertices[ 2 ].pos.x, mapPoly.vertices[ 2 ].pos.y, mapPoly.vertices[ 2 ].pos.z),
-                     mapPoly.vertices[ 2 ].uv };
-
-        A.color = triColor;
-        B.color = triColor;
-        C.color = triColor;
-        MapTri tri = { .tri = { A, B, C } };
-        tri.textureName = mapPoly.textureName;
-        //FIX: Search through all supported image formats not just PNG.
-        tri.hTexture = renderer->RegisterTextureGetHandle(tri.textureName + ".tga");
-        worldTris.push_back(tri);
-    }
-
-    m_World.InitWorld(
-        glm::vec3(0.0f, 0.0f, -0.5f) // gravity
-    ); 
-
-    m_World.InitStaticGeometry(worldTris);
-*/
 
     int idCounter = 0; //FIX: Responsibility of entity manager
     // Load and create all the entities
@@ -147,7 +117,7 @@ void Game::Init() {
     // Creates batches for each texture-name. That way we can
     // reduce draw-calls and texture-binds when rendering world geometry.
 
-    renderer->RegisterWorldTris( m_World.m_MapTris );
+    renderer->RegisterWorld( m_World);
 
     //m_pPlayerEntity = new Player(idCounter++, m_pPlayerEntity->m_Position);
     //m_pEntityManager->RegisterEntity(m_pPlayerEntity);

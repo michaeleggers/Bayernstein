@@ -308,7 +308,8 @@ void GLRender::RegisterFont(CFont* font) {
     GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(font);
 }
 
-void GLRender::RegisterWorldTris(std::vector<MapTri>& tris) {
+void GLRender::RegisterWorld(const CWorld& world) {
+    /*
     // Sort Tris by texture
     std::unordered_map<uint64_t, std::vector<MapTri*> > texHandle2Tris{};
     for (int i = 0; i < tris.size(); i++) {
@@ -337,6 +338,7 @@ void GLRender::RegisterWorldTris(std::vector<MapTri>& tris) {
         };
         m_TexHandleToWorldDrawCmd.insert({ texHandle, drawCmd });
     }
+    */
 }
 
 // Returns the CPU handle
