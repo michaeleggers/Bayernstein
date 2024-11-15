@@ -50,11 +50,13 @@ void Enemy::Update() {
         glm::vec3 newForward = glm::normalize(m_Velocity);
 
         // Calculate the rotation needed to align the current forward direction with the new forward direction
-        float rotationAngle = glm::orientedAngle(m_Forward, newForward, m_Up);
-        glm::quat rotation = glm::angleAxis(rotationAngle, m_Up);
+        //float rotationAngle = glm::orientedAngle(m_Forward, newForward, m_Up);
+        //glm::quat rotation = glm::angleAxis(rotationAngle, m_Up);
 
         // Apply the rotation to the current orientation
-        m_Model.orientation = m_Model.orientation * rotation;
+        float absOrientationAngle = glm::orientedAngle(glm::vec3(0.0f, -1.0f, 0.0f), newForward, m_Up);
+        glm::quat newForwardOrientation = glm::angleAxis(absOrientationAngle, m_Up);
+        m_Model.orientation = newForwardOrientation;
 
         // Update the forward and side vectors
         m_Forward = newForward;
