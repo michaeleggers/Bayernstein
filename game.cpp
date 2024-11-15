@@ -51,7 +51,7 @@ void Game::Init() {
 
     // Load world triangles from Quake .MAP file
 
-    std::vector<MapTri> worldTris{};
+    //std::vector<MapTri> worldTris{};
     MapVersion mapVersion = VALVE_220; // TODO: Change to MAP_TYPE_QUAKE
 
     // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
@@ -63,9 +63,11 @@ void Game::Init() {
 
     size_t inputLength = mapData.length();
     Map map = getMap(&mapData[ 0 ], inputLength, mapVersion);
+
+    m_World.InitWorldFromMap(map);
+/*
     std::vector<MapPolygon> polysoup = createPolysoup(map);
     std::vector<MapPolygon> tris = triangulate(polysoup);
-
     glm::vec4 triColor = glm::vec4(0.1f, 0.8f, 1.0f, 1.0f);
     for ( int i = 0; i < tris.size(); i++ ) {
         MapPolygon mapPoly = tris[ i ];
@@ -87,7 +89,12 @@ void Game::Init() {
         worldTris.push_back(tri);
     }
 
-    m_World.InitWorld(worldTris, glm::vec3(0.0f, 0.0f, -0.5f)); // gravity
+    m_World.InitWorld(
+        glm::vec3(0.0f, 0.0f, -0.5f) // gravity
+    ); 
+
+    m_World.InitStaticGeometry(worldTris);
+*/
 
     int idCounter = 0; //FIX: Responsibility of entity manager
     // Load and create all the entities
