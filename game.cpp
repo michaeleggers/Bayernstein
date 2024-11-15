@@ -58,7 +58,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/enemy_test.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple2.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -113,7 +113,7 @@ void Game::Init() {
                     // in the batch?
                     int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
 
-                } else if ( prop.value == "monster_demon1" ) {
+                } else if ( prop.value == "monster_soldier" ) {
                     // just a placeholder entity from trenchbroom/quake
                     glm::vec3 enemyStartPosition = GetOrigin(&e);
                     Enemy* enemy = new Enemy(idCounter++, enemyStartPosition);

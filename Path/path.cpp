@@ -5,7 +5,6 @@
 #include <vector>
 
 void PatrolPath::AddPoint(Waypoint point) {
-    point.position.z = 0.0f;
     m_Points.push_back(point);
 }
 
