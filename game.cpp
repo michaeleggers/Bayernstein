@@ -35,7 +35,6 @@ Game::Game(std::string exePath, hkdInterface* pInterface) {
     m_pInterface = pInterface;
     m_ExePath = exePath;
     m_pEntityManager = EntityManager::Instance();
-    m_pPath = new PatrolPath();
 }
 
 void Game::Init() {
@@ -65,53 +64,7 @@ void Game::Init() {
     Map map = getMap(&mapData[ 0 ], inputLength, mapVersion);
 
     m_World.InitWorldFromMap(map);
-
-    int idCounter = 0; //FIX: Responsibility of entity manager
-    // Load and create all the entities
-    for ( int i = 0; i < map.entities.size(); i++ ) {
-        Entity& e = map.entities[ i ];
-        BaseGameEntity* baseEntity = NULL;
-        // Check the classname
-        for ( int j = 0; j < e.properties.size(); j++ ) {
-            Property& prop = e.properties[ j ];
-            if ( prop.key == "classname" ) {
-                if ( prop.value == "func_door" ) {
-                    baseEntity = new Door(idCounter++, e.properties, e.brushes); // later: Entity manager allocates entities!
-                    m_World.m_BrushEntities.push_back(baseEntity->ID());
-                    m_pEntityManager->RegisterEntity(baseEntity);
-                } else if ( prop.value == "info_player_start" ) {
-                    glm::vec3 playerStartPosition = GetOrigin(&e);
-
-                    m_pPlayerEntity = new Player(idCounter++, playerStartPosition);
-                    m_pEntityManager->RegisterEntity(m_pPlayerEntity);
-
-                    // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
-                    // in the batch?
-                    int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
-
-                } else if ( prop.value == "monster_soldier" ) {
-                    // just a placeholder entity from trenchbroom/quake
-                    glm::vec3 enemyStartPosition = GetOrigin(&e);
-                    Enemy* enemy = new Enemy(idCounter++, enemyStartPosition);
-                    m_pEntityManager->RegisterEntity(enemy);
-
-                    int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
-                } else if ( prop.value == "path_corner" ) {
-                    Waypoint point = GetWaypoint(&e);
-
-                    // I assume that the corner Points are in the right order. if not we need to rethink the data structure
-                    glm::vec3 pathCornerPosition = GetOrigin(&e);
-                    m_pPath->AddPoint(point);
-                    printf("Path corner entity found: %f, %f, %f\n",
-                           pathCornerPosition.x,
-                           pathCornerPosition.y,
-                           pathCornerPosition.z);
-                } else {
-                    printf("Unknown entity type: %s\n", prop.value.c_str());
-                }
-            }
-        }
-    }
+    m_pPlayerEntity = m_World.PlayerEntity();
 
     // Register World Triangles at GPU.
     // Creates batches for each texture-name. That way we can
@@ -121,13 +74,16 @@ void Game::Init() {
 
     //m_pPlayerEntity = new Player(idCounter++, m_pPlayerEntity->m_Position);
     //m_pEntityManager->RegisterEntity(m_pPlayerEntity);
-  
+ 
+#if 0 // Enable second debug player
     glm::vec3 dbgPlayerStartPos = m_pPlayerEntity->m_Position + glm::vec3(20.0f, -100.0f, 10.0f);
-    m_pDebugPlayerEntity = new Player(idCounter++, dbgPlayerStartPos);
+    m_pDebugPlayerEntity = new Player(dbgPlayerStartPos);
     printf("Debug Player Start Pos: %f, %f, %f\n", dbgPlayerStartPos.x, dbgPlayerStartPos.y, dbgPlayerStartPos.z);
     m_pEntityManager->RegisterEntity(m_pDebugPlayerEntity);
+    int hDebugPlayerModel = renderer->RegisterModel(m_pDebugPlayerEntity->GetModel());
+#endif 
 
-    m_pFlyCameraEntity = new CFlyCamera( idCounter++, glm::vec3(0.0f) );
+    m_pFlyCameraEntity = new CFlyCamera( glm::vec3(0.0f) );
   
     // FIX: If the follow camera is registered *before* one of the entities
     // the follow camera will lag behind one frame because it won't
@@ -135,7 +91,7 @@ void Game::Init() {
     // We can choose to have a dedicated array for all of the
     // camera entity types and let the entity manager take care
     // of correct update order.
-    m_pFollowCameraEntity = new CFollowCamera(idCounter++, m_pPlayerEntity);
+    m_pFollowCameraEntity = new CFollowCamera(m_pPlayerEntity);
     m_pFollowCameraEntity->m_Camera = Camera(m_pPlayerEntity->m_Position);
     m_pFollowCameraEntity->m_Camera.m_Pos.y -= 200.0f;
     m_pFollowCameraEntity->m_Camera.m_Pos.z += 100.0f;
@@ -148,7 +104,6 @@ void Game::Init() {
 
     //int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
     //
-    int hDebugPlayerModel = renderer->RegisterModel(m_pDebugPlayerEntity->GetModel());
    
     // Test Input Binding
 
@@ -199,15 +154,15 @@ bool Game::RunFrame(double dt) {
     }
 
     // Toggle who should be controlled by the input system 
-    static IInputReceiver* receivers[3] = { m_pPlayerEntity, m_pDebugPlayerEntity, m_pFlyCameraEntity };
-    static BaseGameEntity* entities[3] = { m_pPlayerEntity, m_pDebugPlayerEntity, m_pFlyCameraEntity };
+    static IInputReceiver* receivers[2] = { m_pPlayerEntity, m_pFlyCameraEntity };
+    static BaseGameEntity* entities[2] = { m_pPlayerEntity, m_pFlyCameraEntity };
     static Camera* renderCam = &m_pFollowCameraEntity->m_Camera;
 
     // Toggle receivers
     static int receiverToggle = 0;
     if ( KeyWentDown(SDLK_u) ) {
         printf("Switching to receiver num: %d\n", receiverToggle);
-        receiverToggle = ++receiverToggle % 3;
+        receiverToggle = ++receiverToggle % 2;
         CInputDelegate::Instance()->SetReceiver( receivers[ receiverToggle ] ); 
         m_pFollowCameraEntity->SetTarget( entities[ receiverToggle ] );
         renderCam = &m_pFollowCameraEntity->m_Camera;
@@ -218,63 +173,13 @@ bool Game::RunFrame(double dt) {
     }
     // Handle the input
     CInputDelegate::Instance()->HandleInput();
-    
 
-    EllipsoidCollider ec = m_pPlayerEntity->GetEllipsoidCollider();
-    EllipsoidCollider ecDebugPlayer = m_pDebugPlayerEntity->GetEllipsoidCollider();
-
-    Enemy* enemy = m_pEntityManager->GetFirstEnemy();
-    // enemy->SetArriveTarget(m_pPlayerEntity);
-    enemy->SetFollowPath(m_pPath);
-
-    // Test collision between player and world geometry
-#if 1
-    // FIX: Just for the record. This is super dumb and not performant at all!
-    // I (Michael) just did this to test the messaging system with doors.
-    // We should have a list of brush entity geometry that is attached
-    // to the list of static world geometry. The renderer allocates two
-    // buffers: One GPU only buffer for static geometry.
-    // One GPU/CPU buffer for brush entities that we have to update.
-    // But on CPU side all of the tries should reside in ONE buffer as
-    // this guarantees cache locality and a *MUCH* easier time for the
-    // collision system!!! Arrays just always win... what can I say? The brush entities should have pointers (indices) into the
-    // CPU-side triangle array to know what geometry belongs to them.
-    std::vector<MapTri> allTris = m_World.m_MapTris;
-
-#if 1 // if there are no doors in the world, this is not needed
-    int be = m_World.m_BrushEntities[ 0 ];
-    Door* pEntity = (Door*)m_pEntityManager->GetEntityFromID(be);
-    std::copy(pEntity->MapTris().begin(), pEntity->MapTris().end(), std::back_inserter(allTris));
-#endif
-
-    CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
-                                                              static_cast<float>(dt) * m_pPlayerEntity->m_Velocity,
-                                                              static_cast<float>(dt) * m_World.m_Gravity,
-                                                              allTris.data(),
-                                                              allTris.size());
-
-    CollisionInfo collisionInfoDebugPlayer = CollideEllipsoidWithMapTris(ecDebugPlayer,
-                                                               static_cast<float>(dt) * m_pDebugPlayerEntity->m_Velocity,
-                                                               static_cast<float>(dt) * m_World.m_Gravity,
-                                                               allTris.data(),
-                                                               allTris.size());
+    m_World.CollideEntitiesWithWorld();
 
 
-    EllipsoidCollider ecEnemy = enemy->GetEllipsoidCollider();
-    CollisionInfo enemyCollisionInfo = CollideEllipsoidWithMapTris(ecEnemy,
-                                                                   static_cast<float>(dt) * enemy->m_Velocity,
-                                                                   static_cast<float>(dt) * m_World.m_Gravity,
-                                                                   allTris.data(),
-                                                                   allTris.size());
-
-    m_pPlayerEntity->UpdatePosition(collisionInfo.basePos);
-    m_pDebugPlayerEntity->UpdatePosition(collisionInfoDebugPlayer.basePos);
-    enemy->UpdatePosition(enemyCollisionInfo.basePos);
-
-#endif
 
     // Check if player runs against door
-#if 1 
+#if 0 
     for ( int i = 0; i < m_World.m_BrushEntities.size(); i++ ) {
         int be = m_World.m_BrushEntities[ i ];
         BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID(be);
@@ -313,17 +218,19 @@ bool Game::RunFrame(double dt) {
     {
         renderer->Begin3D();
 
+#if 0 // FIX: How to easily enable debug-line drawing?
+        
         // Draw Debug Line for player veloctiy vector
         Line velocityDebugLine = { Vertex(ecEnemy.center), Vertex(ecEnemy.center + 150.0f * enemy->m_Velocity) };
         velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
         velocityDebugLine.b.color = velocityDebugLine.a.color;
         renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
-
+#endif
         // Render World Geometry (Batched triangles)
         //renderer->SetActiveCamera(&m_FollowCamera);
         //renderer->DrawWorldTris();
 
-#if 0
+#if 0 // FIX: Give Brush entities pointers to their geometry data on GPU/CPU
 
         // Render Brush Entities
         for ( int i = 0; i < m_World.m_BrushEntities.size(); i++ ) {
@@ -341,18 +248,18 @@ bool Game::RunFrame(double dt) {
 
         DrawCoordinateSystem(renderer);
 
-#if 1 // debug path
+#if 0 // debug path
         std::vector<Vertex> vertices = m_pPath->GetPointsAsVertices();
         renderer->ImDrawLines(vertices.data(), vertices.size(), true);
 #endif
 
-        HKD_Model* models[ 3 ] = { 
-            m_pPlayerEntity->GetModel(),
-            m_pDebugPlayerEntity->GetModel(),
-            enemy->GetModel()
+#if 1 // Toggle moving entity rendering. Also renders world.
+        HKD_Model* models[ 1 ] = { 
+            m_pPlayerEntity->GetModel()
+            //enemy->GetModel()
         };
-        renderer->Render( renderCam, models, 3 );
-
+        renderer->Render( renderCam, models, 1 );
+#endif
 
         // auto type = enemy->m_Type;
 
@@ -427,7 +334,6 @@ bool Game::RunFrame(double dt) {
 }
 
 void Game::Shutdown() {
-    delete m_pPath;
 
     // NOTE: m_pEntityManager is static memory and cannot deleted with delete
     // (it never was heap allocated with 'new'). The entities have to

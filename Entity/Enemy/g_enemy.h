@@ -17,7 +17,7 @@
 class Enemy : public MovingEntity {
   public:
     void Update() override;
-    explicit Enemy(int id, glm::vec3 initialPosition);
+    explicit Enemy(glm::vec3 initialPosition);
 
     ~Enemy() override {
         delete m_pStateMachine;
@@ -28,9 +28,9 @@ class Enemy : public MovingEntity {
     }
 
     bool HandleMessage(const Telegram& message) override;
-    EllipsoidCollider GetEllipsoidCollider() const;
+    EllipsoidCollider GetEllipsoidCollider() const override;
     HKD_Model* GetModel();
-    void UpdatePosition(glm::vec3 newPosition);
+    void UpdatePosition(glm::vec3 newPosition) override;
 
     void SetSeekTarget(BaseGameEntity* target) {
         m_pSteeringBehaviour->SetTargetAgent(target);

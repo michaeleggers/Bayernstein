@@ -37,7 +37,7 @@ public:
 	virtual void Shutdown(void)		= 0;
 	virtual int  RegisterModel(HKD_Model* model)	= 0;
 	virtual void RegisterFont(CFont* font) = 0;
-	virtual void RegisterWorld(const CWorld& world) = 0;
+	virtual void RegisterWorld(CWorld& world) = 0;
 	virtual uint64_t RegisterTextureGetHandle(std::string name) = 0;
 	virtual void SetActiveCamera(Camera* camera) = 0;
 	virtual std::vector<ITexture*> ModelTextures(int gpuModelHandle) = 0;

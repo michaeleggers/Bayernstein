@@ -21,6 +21,7 @@ EntityManager::~EntityManager() {
 }
 
 void EntityManager::RegisterEntity(BaseGameEntity* pNewEntity) {
+    pNewEntity->SetID(m_ID++);
     m_EntityMap.insert(std::make_pair(pNewEntity->ID(), pNewEntity));
 }
 
@@ -59,3 +60,13 @@ void EntityManager::UpdateEntities() {
         entity->Update();
     }
 }
+
+std::vector<BaseGameEntity*> EntityManager::Entities() {
+    std::vector<BaseGameEntity*> entities{};
+    for ( auto [ id, entity ] : m_EntityMap ) {
+        entities.push_back( entity );
+    }
+
+    return entities;
+}
+

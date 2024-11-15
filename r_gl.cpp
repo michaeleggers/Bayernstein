@@ -308,8 +308,8 @@ void GLRender::RegisterFont(CFont* font) {
     GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(font);
 }
 
-void GLRender::RegisterWorld(const CWorld& world) {
-    /*
+void GLRender::RegisterWorld(CWorld& world) {
+    std::vector<MapTri>& tris = world.MapTris();
     // Sort Tris by texture
     std::unordered_map<uint64_t, std::vector<MapTri*> > texHandle2Tris{};
     for (int i = 0; i < tris.size(); i++) {
@@ -324,6 +324,8 @@ void GLRender::RegisterWorld(const CWorld& world) {
     }
 
     // Upload tris to GPU and generate draw cmds.
+    
+    // FIX: ALL tris are registered here. Brush entities should go into a dedicated dynamic batch.
     for (auto& [ texHandle, triList ] : texHandle2Tris) {
         MapTri** pTris = triList.data();
         int vertexOffset = m_WorldBatch->Add( (MapTri*)*pTris, triList.size(), true, DRAW_MODE_SOLID );
@@ -338,7 +340,6 @@ void GLRender::RegisterWorld(const CWorld& world) {
         };
         m_TexHandleToWorldDrawCmd.insert({ texHandle, drawCmd });
     }
-    */
 }
 
 // Returns the CPU handle

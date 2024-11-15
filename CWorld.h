@@ -21,6 +21,7 @@
 #include "Entity/FollowCamera/g_follow_camera.h"
 #include "Entity/FlyCamera/g_fly_camera.h"
 #include "Entity/entity_manager.h"
+#include "Path/path.h"
 #include "map_parser.h"
 #include "polysoup.h"
 
@@ -29,9 +30,9 @@ public:
     void        InitWorld(glm::vec3 gravity);
     void        InitWorldFromMap(const Map& map);
     void        InitStaticGeometry(std::vector<MapTri> tris);
-    void        AddDynamicGeometry(std::vector<MapTri> tris);
     void        AddBrushesToDynamicGeometry(const std::vector<Brush>& brushes);
-
+    void        CollideEntitiesWithWorld();
+    
     uint64_t OffsetDynamicGeometry() {
         return m_OffsetDynamicGeometry;
     }
@@ -44,6 +45,14 @@ public:
         return m_OffsetDynamicGeometry;
     }
 
+    Player* PlayerEntity() {
+        return m_pPlayerEntity;
+    }
+
+    std::vector<MapTri>& MapTris() {
+        return m_MapTris;
+    }
+
     static glm::vec3            GetOrigin(const Entity* entity);
     static Waypoint             GetWaypoint(const Entity* entity);
     static std::vector<MapTri>  CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys);
@@ -53,9 +62,12 @@ public:
     bool                         m_StaticGeometryInitialized = false;
     std::vector<int>             m_BrushEntities;
     glm::vec3                    m_Gravity;
+    // FIX: Where to put paths? Shouldn't they also be entities themselves??
+    PatrolPath*                  m_pPath = nullptr;
 
 private:
     uint64_t                     m_OffsetDynamicGeometry;
+    Player*                      m_pPlayerEntity = nullptr;
 
 };
 

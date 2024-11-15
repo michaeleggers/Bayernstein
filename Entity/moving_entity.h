@@ -13,9 +13,8 @@
 class MovingEntity : public BaseGameEntity {
 
   public:
-    MovingEntity(const int id, EntityType type)
-        : BaseGameEntity(id, type),
-          m_Velocity(0.0f),
+    MovingEntity(EntityType type)
+        : BaseGameEntity(type),
           m_Forward(0.0f, -1.0f, 0.0f),
           m_Side(1.0f, 0.0f, 0.0f),
           m_Up(0.0f, 0.0f, 1.0f),
@@ -43,8 +42,6 @@ class MovingEntity : public BaseGameEntity {
     // using the MessageDispatcher singleton class
     virtual bool HandleMessage(const Telegram& telegram) = 0;
     
-    glm::vec3 m_Velocity;
-
     //a normalized vector pointing in the direction the entity is heading.
     glm::vec3 m_Forward;
 

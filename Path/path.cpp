@@ -43,7 +43,7 @@ bool PatrolPath::IsCurrentWaypointReached(glm::vec3 position) {
     const Waypoint& waypoint = currentWaypointEntry->second;
     glm::vec3 currentWaypointPosition = waypoint.position;
     float distance = glm::distance(position, currentWaypointPosition);
-    printf("Distance to waypoint: %f\n", distance);
+    //printf("Distance to waypoint: %f\n", distance);
     
     return distance < m_Radius;
 }

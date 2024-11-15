@@ -10,14 +10,10 @@
 #include <map>
 
 class EntityManager {
-  private:
+private:
     typedef std::map<int, BaseGameEntity*> EntityMap;
 
-  private:
-    EntityMap m_EntityMap;
-    EntityManager() = default;
-
-  public:
+public:
     // copy ctor and assignment should be private
     EntityManager(const EntityManager&) = delete;
     EntityManager& operator=(const EntityManager&) = delete;
@@ -36,6 +32,17 @@ class EntityManager {
     void RemoveEntity(const BaseGameEntity* pEntity);
 
     void UpdateEntities();
+
+    // FIX: Slow!
+    std::vector<BaseGameEntity*> Entities();
+  
+
+private:
+    EntityMap m_EntityMap;
+    EntityManager() = default;
+    int m_ID        = 0;
+
 };
 
 #endif // ENTITYMANAGER_H
+

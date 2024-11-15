@@ -4,8 +4,8 @@
 
 #include "../../camera.h"
 
-CFollowCamera::CFollowCamera(const int id, BaseGameEntity* target)
-    : BaseGameEntity(id, ET_CAMERA) {
+CFollowCamera::CFollowCamera(BaseGameEntity* target)
+    : BaseGameEntity(ET_CAMERA) {
 
     assert( target != nullptr );
 

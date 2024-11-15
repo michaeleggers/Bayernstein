@@ -19,8 +19,8 @@
 #include "g_enemy_states.h"
 #include "../../input_handler.h"
 
-Enemy::Enemy(const int id, glm::vec3 initialPosition)
-    : MovingEntity(id, ET_ENEMY),
+Enemy::Enemy(glm::vec3 initialPosition)
+    : MovingEntity(ET_ENEMY),
       m_AnimationState(ANIM_STATE_IDLE),
       m_EllipsoidCollider() {
     m_pStateMachine = new StateMachine(this);

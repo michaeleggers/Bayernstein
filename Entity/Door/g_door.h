@@ -32,7 +32,7 @@ private:
 
 public:
 
-    explicit Door(const int id, const std::vector<Property>& properties, const std::vector<Brush>& brushes);
+    explicit Door(const std::vector<Property>& properties, const std::vector<Brush>& brushes);
     
     void Update() override;
 

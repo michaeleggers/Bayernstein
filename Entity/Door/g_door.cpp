@@ -16,10 +16,9 @@ void Door::Update() {
     m_pStateMachine->Update();
 }
 
-Door::Door(const int id, 
-           const std::vector<Property>& properties, 
+Door::Door(const std::vector<Property>& properties, 
            const std::vector<Brush>& brushes) : 
-    BaseGameEntity(id, ET_DOOR),
+    BaseGameEntity(ET_DOOR),
     m_pStateMachine(nullptr) {
 
     m_pStateMachine = new StateMachine(this);

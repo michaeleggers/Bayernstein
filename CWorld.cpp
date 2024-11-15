@@ -4,6 +4,8 @@
 
 #include "CWorld.h"
 
+#include <assert.h>
+
 #include <string.h>
 #include <vector>
 
@@ -16,6 +18,7 @@
 #include "irender.h"
 #include "hkd_interface.h"
 #include "Entity/base_game_entity.h"
+#include "utils/utils.h"
 
 void CWorld::InitWorld(glm::vec3 gravity) {
     m_Gravity = gravity;
@@ -25,6 +28,9 @@ void CWorld::InitWorldFromMap(const Map& map) {
     // Get some subsystems
     EntityManager* m_pEntityManager = EntityManager::Instance();
     IRender* renderer = GetRenderer();
+   
+    // FIX: See declaration in header.
+    m_pPath = new PatrolPath();
    
     // TODO: Init via .MAP property.
     m_Gravity = glm::vec3(0.0f, 0.0f, -0.5f);
@@ -41,7 +47,6 @@ void CWorld::InitWorldFromMap(const Map& map) {
     // Now initialize all the entities. Those also include brush
     // entities that get appended to m_MapTris. We remember where
     // the brush entities start in m_OffsetDynamicGeometry.
-    int idCounter = 0; //FIX: Responsibility of entity manager
     // Load and create all the entities
     for ( int i = 0; i < map.entities.size(); i++ ) {
         const Entity& e = map.entities[ i ];
@@ -51,24 +56,29 @@ void CWorld::InitWorldFromMap(const Map& map) {
             const Property& prop = e.properties[ j ];
             if ( prop.key == "classname" ) {
                 if ( prop.value == "func_door" ) {
-                    baseEntity = new Door(idCounter++, e.properties, e.brushes); 
+                    baseEntity = new Door(e.properties, e.brushes); 
                     AddBrushesToDynamicGeometry( e.brushes );
                     m_BrushEntities.push_back(baseEntity->ID());
-                    m_pEntityManager->RegisterEntity(baseEntity);
+                    m_pEntityManager->RegisterEntity(baseEntity); // FIX: If one forgets this call the entity has no ID!
                 } else if ( prop.value == "info_player_start" ) {
-                    // TODO: This is a special case. Not sure yet how to deal with it.
+                    assert( m_pPlayerEntity == nullptr ); // There can only be one
+                    glm::vec3 playerStartPosition = CWorld::GetOrigin(&e);
+                    m_pPlayerEntity = new Player(playerStartPosition);
+                    m_pEntityManager->RegisterEntity(m_pPlayerEntity);
+                    // Upload this model to the GPU. Not using the handle atm.
+                    int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
                 } else if ( prop.value == "monster_soldier" ) {
                     // just a placeholder entity from trenchbroom/quake
-                    glm::vec3 enemyStartPosition = GetOrigin(&e);
-                    Enemy* enemy = new Enemy(idCounter++, enemyStartPosition);
+                    glm::vec3 enemyStartPosition = CWorld::GetOrigin(&e);
+                    Enemy* enemy = new Enemy(enemyStartPosition);
                     m_pEntityManager->RegisterEntity(enemy);
 
                     int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
-                } else if ( prop.value == "path_corner" ) {
-                    Waypoint point = GetWaypoint(&e);
+                } else if ( prop.value == "path_corner" ) { // FIX: Should be an entity type as well.
+                    Waypoint point = CWorld::GetWaypoint(&e);
 
                     // I assume that the corner Points are in the right order. if not we need to rethink the data structure
-                    glm::vec3 pathCornerPosition = GetOrigin(&e);
+                    glm::vec3 pathCornerPosition = CWorld::GetOrigin(&e);
                     m_pPath->AddPoint(point);
                     printf("Path corner entity found: %f, %f, %f\n",
                            pathCornerPosition.x,
@@ -80,6 +90,14 @@ void CWorld::InitWorldFromMap(const Map& map) {
             }
         }
     }
+
+    // NOTE: At the moment, maps without an 'info_player_start' are not allowed.
+    assert( m_pPlayerEntity != nullptr );
+
+    // FIX: The path should be set by the level designer in TrenchBroom. Just for debug now.
+    Enemy* enemy = m_pEntityManager->GetFirstEnemy();
+    // enemy->SetArriveTarget(m_pPlayerEntity);
+    enemy->SetFollowPath(m_pPath);
 }
 
 void CWorld::InitStaticGeometry(std::vector<MapTri> tris) {
@@ -99,9 +117,26 @@ void CWorld::AddBrushesToDynamicGeometry(const std::vector<Brush>& brushes) {
     }
 }
 
-void CWorld::AddDynamicGeometry(std::vector<MapTri> tris) {
-    // Static geometry must be initialized before any other geometry!
-    assert( m_StaticGeometryInitialized );
+void CWorld::CollideEntitiesWithWorld() {
+    std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
+    double dt = GetDeltaTime();
+    for (int i = 0; i < entities.size(); i++) {
+        BaseGameEntity* entity = entities[i];
+
+        // FIX: Higher level entity type or entity flags (eg. FLAG_COLLIDABLE).
+        if ( (entity->Type() == ET_PLAYER) || (entity->Type() == ET_ENEMY) ) {
+
+            EllipsoidCollider ec = entity->GetEllipsoidCollider();
+            printf("velocity: %f %f %f\n", entity->m_Velocity.x, entity->m_Velocity.y, entity->m_Velocity.z);
+            CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
+                                                                      static_cast<float>(dt) * entity->m_Velocity,
+                                                                      static_cast<float>(dt) * m_Gravity,
+                                                                      m_MapTris.data(),
+                                                                      m_MapTris.size());
+
+            entity->UpdatePosition(collisionInfo.basePos);
+        }
+    }
 }
 
 std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys) {
@@ -134,8 +169,8 @@ std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolyg
     return mapTris;
 }
 
-glm::vec3 GetOrigin(const Entity* entity) {
-    for ( Property& property : entity->properties ) {
+glm::vec3 CWorld::GetOrigin(const Entity* entity) {
+    for ( const Property& property : entity->properties ) {
         if ( property.key == "origin" ) {
             std::vector<float> values = ParseFloatValues(property.value);
             return glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
@@ -145,9 +180,9 @@ glm::vec3 GetOrigin(const Entity* entity) {
     assert(false && "Entity has no origin property!");
 }
 
-Waypoint GetWaypoint(const Entity* entity) {
+Waypoint CWorld::GetWaypoint(const Entity* entity) {
     Waypoint waypoint = {};
-    for ( Property& property : entity->properties ) {
+    for ( const Property& property : entity->properties ) {
         if ( property.key == "origin" ) {
             std::vector<float> values = ParseFloatValues(property.value);
             waypoint.position = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
@@ -161,4 +196,5 @@ Waypoint GetWaypoint(const Entity* entity) {
 
     return waypoint;
 }
+
 

@@ -34,7 +34,7 @@ public:
 	virtual void Shutdown(void)							override;
 	virtual int  RegisterModel(HKD_Model* model)		override;
 	virtual void RegisterFont(CFont* font) override;
-	virtual void RegisterWorld(const CWorld& world) override;
+	virtual void RegisterWorld(CWorld& world) override;
 	virtual uint64_t RegisterTextureGetHandle(std::string name) override;
 	virtual void SetActiveCamera(Camera* camera) override;
 	virtual std::vector<ITexture*> ModelTextures(int gpuModelHandle)	override;

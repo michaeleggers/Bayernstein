@@ -12,8 +12,8 @@
 
 #include <SDL.h>
 
-Player::Player(const int id, glm::vec3 initialPosition)
-    : MovingEntity(id, ET_PLAYER),
+Player::Player(glm::vec3 initialPosition)
+    : MovingEntity(ET_PLAYER),
       m_pStateMachine(nullptr),
       m_AnimationState(ANIM_STATE_IDLE) {
     m_pStateMachine = new StateMachine(this);

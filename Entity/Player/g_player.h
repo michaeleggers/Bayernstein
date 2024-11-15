@@ -22,7 +22,7 @@
 class Player : public MovingEntity, public IInputReceiver {
 
   public:
-    explicit Player(const int id, glm::vec3 initialPosition);
+    explicit Player(glm::vec3 initialPosition);
     ~Player() override {
         delete m_pStateMachine;
     }
@@ -32,13 +32,14 @@ class Player : public MovingEntity, public IInputReceiver {
     void HandleInput() override;
     
     void UpdateCamera(Camera* camera);
-    void UpdatePosition(glm::vec3 newPosition);
+    void UpdatePosition(glm::vec3 newPosition) override;
 
     [[nodiscard]] StateMachine<Player>* GetFSM() const {
         return m_pStateMachine;
     }
 
-    EllipsoidCollider GetEllipsoidCollider() const;
+    EllipsoidCollider GetEllipsoidCollider() const override;
+
     HKD_Model* GetModel();
 
   public:

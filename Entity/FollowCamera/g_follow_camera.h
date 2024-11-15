@@ -24,8 +24,7 @@
 class CFollowCamera : public BaseGameEntity {
 
 public:
-    CFollowCamera(const int id, 
-                  BaseGameEntity* target = nullptr);
+    CFollowCamera(BaseGameEntity* target = nullptr);
     ~CFollowCamera();
 
     void Update() override;

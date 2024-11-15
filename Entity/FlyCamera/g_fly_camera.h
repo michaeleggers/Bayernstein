@@ -27,7 +27,7 @@ class CFlyCamera : public BaseGameEntity, public IInputReceiver {
 
 public:
     CFlyCamera() = delete;
-    CFlyCamera(const int id, glm::vec3 pos = glm::vec3(0.0f)); 
+    CFlyCamera(glm::vec3 pos = glm::vec3(0.0f)); 
     ~CFlyCamera();
 
     void Update() override;
