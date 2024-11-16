@@ -13,6 +13,7 @@
 #include "../base_game_entity.h"
 #include "../../map_parser.h"
 #include "../../r_common.h"
+#include "../../r_model.h"
 
 class Door : public BaseGameEntity {
 private:
@@ -29,6 +30,7 @@ private:
     // that contains *all* brush entities.
     std::vector<MapTri> m_MapTris;
 
+    HKD_Model m_Model;
 
 public:
 
@@ -48,6 +50,10 @@ public:
 
     std::vector<MapTri>& MapTris() {
         return m_MapTris;
+    }
+
+    HKD_Model* GetModel() {
+        return &m_Model;
     }
 
     // NOTE: NOT FINAL. JUST HERE TO TEST THINGS OUT.

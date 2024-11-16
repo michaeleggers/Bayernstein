@@ -24,6 +24,7 @@
 #include "Path/path.h"
 #include "map_parser.h"
 #include "polysoup.h"
+#include "r_model.h"
 
 class CWorld {
 public:
@@ -54,6 +55,10 @@ public:
         return m_MapTris;
     }
 
+    std::vector<HKD_Model*>& Models() {
+        return m_Models;
+    }
+
     static glm::vec3            GetOrigin(const Entity* entity);
     static Waypoint             GetWaypoint(const Entity* entity);
     static std::vector<MapTri>  CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys);
@@ -65,11 +70,13 @@ public:
     glm::vec3                    m_Gravity;
     // FIX: Where to put paths? Shouldn't they also be entities themselves??
     PatrolPath*                  m_pPath = nullptr;
+    // FIX: Get entities from entity manager and check which are renderable via Flag.
 
 private:
     uint64_t                     m_OffsetDynamicGeometry;
+    // FIX: Does the player really *always* have to exist?
     Player*                      m_pPlayerEntity = nullptr;
-
+    std::vector<HKD_Model*>      m_Models; 
 };
 
 

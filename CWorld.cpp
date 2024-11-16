@@ -60,7 +60,8 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     baseEntity = new Door(e.properties, e.brushes); 
                     AddBrushesToDynamicGeometry( e.brushes );
                     m_BrushEntities.push_back(baseEntity->ID());
-                    m_pEntityManager->RegisterEntity(baseEntity); // FIX: If one forgets this call the entity has no ID!
+                    m_pEntityManager->RegisterEntity(baseEntity); 
+                    //m_Models.push_back( ((Door*)baseEntity)->GetModel() );
                 } else if ( prop.value == "info_player_start" ) {
                     assert( m_pPlayerEntity == nullptr ); // There can only be one
                     glm::vec3 playerStartPosition = CWorld::GetOrigin(&e);
@@ -68,6 +69,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     m_pEntityManager->RegisterEntity(m_pPlayerEntity);
                     // Upload this model to the GPU. Not using the handle atm.
                     int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
+                    m_Models.push_back(m_pPlayerEntity->GetModel());
                 } else if ( prop.value == "monster_soldier" ) {
                     // just a placeholder entity from trenchbroom/quake
                     glm::vec3 enemyStartPosition = CWorld::GetOrigin(&e);
@@ -75,6 +77,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     m_pEntityManager->RegisterEntity(enemy);
 
                     int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
+                    m_Models.push_back(enemy->GetModel());
                 } else if ( prop.value == "path_corner" ) { // FIX: Should be an entity type as well.
                     Waypoint point = CWorld::GetWaypoint(&e);
 

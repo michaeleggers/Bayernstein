@@ -237,11 +237,8 @@ bool Game::RunFrame(double dt) {
 #endif
 
 #if 1 // Toggle moving entity rendering. Also renders world.
-        HKD_Model* models[ 1 ] = { 
-            m_pPlayerEntity->GetModel()
-            //enemy->GetModel()
-        };
-        renderer->Render( renderCam, models, 1 );
+        renderer->Render(renderCam, m_World.Models().data(),
+                         m_World.Models().size());
 #endif
 
         // auto type = enemy->m_Type;

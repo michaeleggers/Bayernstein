@@ -121,13 +121,38 @@ HKD_Model CreateModelFromIQM(IQMModel* model)
     return result;
 }
 
-HKD_Model CreateModelFromBrushes(std::vector<Brush>& brushes) {
+// Assume only triangles for each MapPoly.
+std::vector<Tri> CreateTrisFromMapPolys(std::vector<MapPolygon>& mapPolys) {
+    std::vector<Tri> tris{};
+    for (int i = 0; i < mapPolys.size(); i++) {
+        MapPolygon& mapPoly = mapPolys[i];
+        assert( mapPoly.vertices.size() == 3 );
+        Vertex A = { glm::vec3(mapPoly.vertices[ 0 ].pos.x, 
+                               mapPoly.vertices[ 0 ].pos.y, 
+                               mapPoly.vertices[ 0 ].pos.z),
+                    mapPoly.vertices[ 0 ].uv };
+        Vertex B = { glm::vec3(mapPoly.vertices[ 1 ].pos.x, 
+                               mapPoly.vertices[ 1 ].pos.y, 
+                               mapPoly.vertices[ 1 ].pos.z),
+                     mapPoly.vertices[ 1 ].uv };
+        Vertex C = { glm::vec3(mapPoly.vertices[ 2 ].pos.x, 
+                               mapPoly.vertices[ 2 ].pos.y, 
+                               mapPoly.vertices[ 2 ].pos.z),
+                     mapPoly.vertices[ 2 ].uv };
 
+        Tri tri = { A, B, C };
+        tris.push_back(tri);
+    }
+
+    return tris;
+}
+
+HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes) {
     // Convert brushes to tris and sort them according to their texture name.
     std::unordered_map<std::string, std::vector<MapPolygon> > texName2polygons{};
     size_t totalTris = 0;
     for (int i = 0; i < brushes.size(); i++) {
-        Brush& brush = brushes[i];
+        const Brush& brush = brushes[i];
         std::vector<MapPolygon> polys = createPolysoup(brush);
         std::vector<MapPolygon> mapTris = triangulate(polys);
         totalTris += mapTris.size();
@@ -144,10 +169,9 @@ HKD_Model CreateModelFromBrushes(std::vector<Brush>& brushes) {
     }
 
     // Assign sorted MapPolygons to model as meshes.
-    /*
-    HKD_Model result{};
-    result.type = HKD_MODEL_TYPE_STATIC;
-    result.tris.resize(totalTris);
+    HKD_Model model{};
+    model.type = HKD_MODEL_TYPE_STATIC;
+    model.tris.resize(totalTris);
     size_t triOffset = 0;
     for (auto & [ textureName, mapPolys ] : texName2polygons) {
         HKD_Mesh mesh{};
@@ -156,16 +180,14 @@ HKD_Model CreateModelFromBrushes(std::vector<Brush>& brushes) {
         mesh.firstTri = triOffset;
         size_t numTris = mapPolys.size();
         mesh.numTris = numTris;
-        for (int i = 0; i < numTris; i++) {
-            MapPolygon& mapPoly = mapPolys[i];
-            result.tris[triOffset + i] = mapPoly.tri;
-        }
+        std::vector<Tri> tris = CreateTrisFromMapPolys( mapPolys );
+        memcpy( model.tris.data() + triOffset, tris.data(), numTris * sizeof(Tri) );
         triOffset += numTris;
-        result.meshes.push_back(mesh);
+        model.meshes.push_back(mesh);
     }
-    */
     
-    return {};
+    
+    return model;
 }
 
 static glm::mat4 PoseToMatrix(Pose pose) 

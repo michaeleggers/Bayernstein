@@ -4,15 +4,16 @@
 
 #include "g_door.h"
 
+#include <SDL.h>
+
 #include "g_door_states.h"
 #include "../../map_parser.h"
 #include "../../polysoup.h"
 #include "../../r_common.h"
-
-#include <SDL.h>
+#include "../../hkd_interface.h"
+#include "../../r_model.h"
 
 void Door::Update() {
-
     m_pStateMachine->Update();
 }
 
@@ -30,12 +31,17 @@ Door::Door(const std::vector<Property>& properties,
         const Property& prop = properties[ i ];
         if (prop.key == "angle") {
             // TODO: Parse the value (prop.value is always a string)
-            // and assing to m_Angle;
+            // and assign to m_Angle;
         }
         else if (prop.key == "delay") {
         }
         // And so on...
     }
+
+    // Load the model from brushes
+    m_Model = CreateModelFromBrushes( brushes );
+    IRender* renderer = GetRenderer();
+    //renderer->RegisterModel(&m_Model);
 
     // Get the brush (geometry) that defines this door
     // Assume just one brush for now... // TODO: Could be more brushes!

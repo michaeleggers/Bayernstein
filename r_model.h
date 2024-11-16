@@ -73,7 +73,7 @@ struct HKD_Model {
 };
 
 HKD_Model CreateModelFromIQM(IQMModel* model);
-HKD_Model CreateModelFromBrushes(std::vector<Brush>& brushes);
+HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes);
 void UpdateModel(HKD_Model* model, float dt);
 void ApplyPhysicsToModel(HKD_Model* model);
 void UpdateRigidBodyTransform(HKD_Model* model);
