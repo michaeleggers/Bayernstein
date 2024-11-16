@@ -1,5 +1,7 @@
 #include "r_model.h"
 
+#include <unordered_map>
+
 
 #define GLM_FORCE_RADIANS
 #include "dependencies/glm/glm.hpp"
@@ -8,6 +10,8 @@
 
 #include "r_common.h"
 #include "collision.h"
+#include "map_parser.h"
+#include "polysoup.h"
 
 //glm::vec3 pos;
 //glm::vec3 uv;
@@ -115,6 +119,53 @@ HKD_Model CreateModelFromIQM(IQMModel* model)
     result.gpuModelHandle = -1;    
 
     return result;
+}
+
+HKD_Model CreateModelFromBrushes(std::vector<Brush>& brushes) {
+
+    // Convert brushes to tris and sort them according to their texture name.
+    std::unordered_map<std::string, std::vector<MapPolygon> > texName2polygons{};
+    size_t totalTris = 0;
+    for (int i = 0; i < brushes.size(); i++) {
+        Brush& brush = brushes[i];
+        std::vector<MapPolygon> polys = createPolysoup(brush);
+        std::vector<MapPolygon> mapTris = triangulate(polys);
+        totalTris += mapTris.size();
+        for (int j = 0; j < mapTris.size(); j++) {
+            MapPolygon& mapTri = mapTris[j];
+            const auto& entry = texName2polygons.find(mapTri.textureName);
+            if ( entry == texName2polygons.end() ) {
+                texName2polygons.insert({ mapTri.textureName, {mapTri} });
+            }
+            else {
+                entry->second.push_back(mapTri);
+            }
+        }
+    }
+
+    // Assign sorted MapPolygons to model as meshes.
+    /*
+    HKD_Model result{};
+    result.type = HKD_MODEL_TYPE_STATIC;
+    result.tris.resize(totalTris);
+    size_t triOffset = 0;
+    for (auto & [ textureName, mapPolys ] : texName2polygons) {
+        HKD_Mesh mesh{};
+        mesh.isTextured = true;
+        mesh.textureFileName = textureName;
+        mesh.firstTri = triOffset;
+        size_t numTris = mapPolys.size();
+        mesh.numTris = numTris;
+        for (int i = 0; i < numTris; i++) {
+            MapPolygon& mapPoly = mapPolys[i];
+            result.tris[triOffset + i] = mapPoly.tri;
+        }
+        triOffset += numTris;
+        result.meshes.push_back(mesh);
+    }
+    */
+    
+    return {};
 }
 
 static glm::mat4 PoseToMatrix(Pose pose) 
