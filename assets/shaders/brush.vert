@@ -23,18 +23,19 @@ layout (std140) uniform Settings {
     uvec4 bitFields;
 };
 
-uniform mat4 model;
+uniform vec3 position;
 
 out vec2 TexCoord;
 out vec3 BaryCentricCoords;
 out vec3 Normal;
 
 void main() {
-    vec4 v = proj * view * model * vec4(in_pos, 1.0);
+    vec3 v3 = in_pos + position; 
+    vec4 v4 = proj * view * vec4(v3, 1.0);
     TexCoord = in_uv;
     BaryCentricCoords = in_bc;
     Normal = in_normal;
 
-    gl_Position = v;
+    gl_Position = v4;
 }
 

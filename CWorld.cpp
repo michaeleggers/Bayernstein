@@ -59,7 +59,6 @@ void CWorld::InitWorldFromMap(const Map& map) {
                 if ( prop.value == "func_door" ) {
                     baseEntity = new Door(e.properties, e.brushes); 
                     AddBrushesToDynamicGeometry( e.brushes );
-                    m_BrushEntities.push_back(baseEntity->ID());
                     m_pEntityManager->RegisterEntity(baseEntity); 
                     HKD_Model* model = ((Door*)baseEntity)->GetModel();
                     m_BrushModels.push_back( model );

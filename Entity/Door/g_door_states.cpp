@@ -5,6 +5,8 @@
 #include "g_door_states.h"
 
 #include "../../utils/utils.h"
+#include "../../r_model.h"
+#include "../../CWorld.h"
 #include "../Message/message_type.h"
 #include <stdio.h>
 
@@ -78,6 +80,9 @@ void DoorOpening::Execute(Door* pDoor) {
     }
 
     // Open the door.
+    
+    HKD_Model* doorModel = pDoor->GetModel();
+    doorModel->position.z += pDoor->m_Speed *GetDeltaTime() / 1000.0;
     std::vector<MapTri>& mapTris = pDoor->MapTris();
     for ( int i = 0; i < mapTris.size(); i++ ) {
         MapTri& mapTri = mapTris[ i ];

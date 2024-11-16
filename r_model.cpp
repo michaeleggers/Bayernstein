@@ -185,8 +185,9 @@ HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes) {
         triOffset += numTris;
         model.meshes.push_back(mesh);
     }
-    
-    model.position     = glm::vec3(0.0f);
+
+    // Brush entities start at their world pos defined in TrenchBroom.
+    model.position     = glm::vec3(0.0f); 
     model.orientation  = glm::angleAxis(glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     model.scale        = glm::vec3(1.0f);
 

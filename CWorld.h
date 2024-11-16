@@ -70,6 +70,7 @@ public:
     std::vector<MapTri>          m_MapTris;
     uint64_t                     m_StaticGeometryEndIndex;
     bool                         m_StaticGeometryInitialized = false;
+    // FIX: Still needed?
     std::vector<int>             m_BrushEntities;
     glm::vec3                    m_Gravity;
     // FIX: Where to put paths? Shouldn't they also be entities themselves??

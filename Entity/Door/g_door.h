@@ -63,7 +63,7 @@ public:
     double m_ClosingDelayInMs = 100.0;
 
     // Speed the door opens/closes with
-    double m_Speed = 100.0;
+    double m_Speed = 30.0;
 
     // This is the angle in degrees the door slides to when opening.
     // On closing it is just the opposite direction.

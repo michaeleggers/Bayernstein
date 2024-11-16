@@ -766,7 +766,7 @@ void GLRender::Render(Camera* camera,
     for (int i = 0; i < numBrushModels; i++) {
         GLModel model = m_Models[ brushModels[i]->gpuModelHandle ];
         glm::mat4 modelMatrix = CreateModelMatrix( brushModels[i] );
-        m_BrushShader->SetMat4( "model", glm::mat4(1.0f) );
+        m_BrushShader->SetVec3( "position", brushModels[i]->position );
 
         for (int j = 0; j < model.meshes.size(); j++) {
             GLMesh* mesh = &model.meshes[j];
