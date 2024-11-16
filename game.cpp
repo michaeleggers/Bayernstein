@@ -237,8 +237,9 @@ bool Game::RunFrame(double dt) {
 #endif
 
 #if 1 // Toggle moving entity rendering. Also renders world.
-        renderer->Render(renderCam, m_World.Models().data(),
-                         m_World.Models().size());
+        renderer->Render(renderCam, 
+                         m_World.Models().data(), m_World.Models().size(),
+                         m_World.BrushModels().data(), m_World.BrushModels().size());
 #endif
 
         // auto type = enemy->m_Type;

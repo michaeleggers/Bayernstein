@@ -311,6 +311,30 @@ int GLRender::RegisterModel(HKD_Model* model)
     return gpuModelHandle;
 }
 
+// FIX: Same as RegisterModel just with a different batch!
+int GLRender::RegisterBrush(HKD_Model* model) {
+    GLModel gl_model = {};
+    int offset = m_BrushBatch->Add(&model->tris[0], model->tris.size());
+
+    for (int i = 0; i < model->meshes.size(); i++) {
+        HKD_Mesh* mesh = &model->meshes[i];
+        GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(mesh->textureFileName);        
+        GLMesh gl_mesh = {
+            .triOffset = offset/3 + (int)mesh->firstTri,
+            .triCount = (int)mesh->numTris,
+            .texture = texture
+        };
+        gl_model.meshes.push_back(gl_mesh);
+    }
+
+    m_Models.push_back(gl_model);
+
+    int gpuModelHandle = m_Models.size() - 1;
+    model->gpuModelHandle = gpuModelHandle;
+
+    return gpuModelHandle;
+}
+
 void GLRender::RegisterFont(CFont* font) {
     GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(font);
 }
@@ -666,7 +690,9 @@ void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryTy
     }
 }
 
-void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
+void GLRender::Render(Camera* camera, 
+                      HKD_Model** models, uint32_t numModels,
+                      HKD_Model** brushModels, uint32_t numBrushModels)
 {    
     // Camera and render settings
 
@@ -732,6 +758,23 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     /*    glDrawArrays( GL_TRIANGLES, 0, batch->VertCount() );*/
     /*}*/
 
+    // Draw Brush Models
+
+    m_BrushBatch->Bind();
+    m_BrushShader->Activate();
+    m_BrushShader->SetViewProjMatrices(view, proj);
+    for (int i = 0; i < numBrushModels; i++) {
+        GLModel model = m_Models[ brushModels[i]->gpuModelHandle ];
+        glm::mat4 modelMatrix = CreateModelMatrix( brushModels[i] );
+        m_BrushShader->SetMat4( "model", glm::mat4(1.0f) );
+
+        for (int j = 0; j < model.meshes.size(); j++) {
+            GLMesh* mesh = &model.meshes[j];
+            glBindTexture(GL_TEXTURE_2D, mesh->texture->m_gl_Handle);
+            glDrawArrays(GL_TRIANGLES, 3*mesh->triOffset, 3 * mesh->triCount);
+        }
+    }
+    
     // Draw Models
     
     m_ModelBatch->Bind();
@@ -1275,7 +1318,15 @@ void GLRender::InitShaders()
         "shaders/world.vert",
         "shaders/world.frag"
     )) {
-        printf("Problems initializing composite shader!\n");
+        printf("Problems initializing world shader!\n");
+    }
+    
+    m_BrushShader = new Shader();
+    if ( !m_BrushShader->Load(
+        "shaders/brush.vert",
+        "shaders/brush.frag"
+    )) {
+        printf("Problems initializing brush shader!\n");
     }
 }
 

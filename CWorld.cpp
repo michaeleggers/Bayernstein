@@ -61,7 +61,8 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     AddBrushesToDynamicGeometry( e.brushes );
                     m_BrushEntities.push_back(baseEntity->ID());
                     m_pEntityManager->RegisterEntity(baseEntity); 
-                    //m_Models.push_back( ((Door*)baseEntity)->GetModel() );
+                    HKD_Model* model = ((Door*)baseEntity)->GetModel();
+                    m_BrushModels.push_back( model );
                 } else if ( prop.value == "info_player_start" ) {
                     assert( m_pPlayerEntity == nullptr ); // There can only be one
                     glm::vec3 playerStartPosition = CWorld::GetOrigin(&e);

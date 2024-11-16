@@ -59,6 +59,10 @@ public:
         return m_Models;
     }
 
+    std::vector<HKD_Model*>& BrushModels() {
+        return m_BrushModels;
+    }
+
     static glm::vec3            GetOrigin(const Entity* entity);
     static Waypoint             GetWaypoint(const Entity* entity);
     static std::vector<MapTri>  CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys);
@@ -77,6 +81,7 @@ private:
     // FIX: Does the player really *always* have to exist?
     Player*                      m_pPlayerEntity = nullptr;
     std::vector<HKD_Model*>      m_Models; 
+    std::vector<HKD_Model*>      m_BrushModels;
 };
 
 

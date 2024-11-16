@@ -41,7 +41,7 @@ Door::Door(const std::vector<Property>& properties,
     // Load the model from brushes
     m_Model = CreateModelFromBrushes( brushes );
     IRender* renderer = GetRenderer();
-    //renderer->RegisterModel(&m_Model);
+    renderer->RegisterBrush(&m_Model);
 
     // Get the brush (geometry) that defines this door
     // Assume just one brush for now... // TODO: Could be more brushes!

@@ -176,7 +176,7 @@ HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes) {
     for (auto & [ textureName, mapPolys ] : texName2polygons) {
         HKD_Mesh mesh{};
         mesh.isTextured = true;
-        mesh.textureFileName = textureName;
+        mesh.textureFileName = textureName + ".tga"; // FIX: Check for all formats.
         mesh.firstTri = triOffset;
         size_t numTris = mapPolys.size();
         mesh.numTris = numTris;
@@ -186,7 +186,10 @@ HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes) {
         model.meshes.push_back(mesh);
     }
     
-    
+    model.position     = glm::vec3(0.0f);
+    model.orientation  = glm::angleAxis(glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model.scale        = glm::vec3(1.0f);
+
     return model;
 }
 
