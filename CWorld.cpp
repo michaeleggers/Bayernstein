@@ -144,12 +144,24 @@ void CWorld::CollideEntitiesWithWorld() {
     }
 }
 
+// FIX: Slow. Can we do better? Push touch is more than an overlap check!
+// We need to recheck all the entities in the inner loop because only
+// the first entity from the outer loop is the one who 'pushes'.
 void CWorld::CollideEntities() {
+    
     std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
     double dt = GetDeltaTime();
+  
+    // Push Touch: Entity 'bumps' into other entity.
     for (int i = 0; i < entities.size(); i++) {
         BaseGameEntity* pEntity = entities[i];
-        for (int j = i+1; j < entities.size(); j++) {
+        
+        // Ignore non moving entities. They cannot 'bump' without velocity.
+        if ( glm::length(pEntity->m_Velocity) <= 0.0f ) {
+            continue;
+        }
+
+        for (int j = 0; j < entities.size(); j++) {
   
             BaseGameEntity* pOther = entities[j];
             if ( pOther->ID() == pEntity->ID() ) { // Don't collide with itself.

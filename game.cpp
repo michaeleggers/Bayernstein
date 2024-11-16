@@ -178,7 +178,7 @@ bool Game::RunFrame(double dt) {
     m_World.CollideEntitiesWithWorld();
 
     // Check if player has contacts with other entities (including brush entities such as doors).
-    //m_World.CollideEntities();
+    m_World.CollideEntities();
 
 
     // Run the message system

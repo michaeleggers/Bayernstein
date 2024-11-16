@@ -118,6 +118,7 @@ void DoorOpened::Exit(Door* pDoor) {
 }
 
 bool DoorOpened::OnMessage(Door* agent, const Telegram& telegram) {
+    printf("Door received telegram: %s\n", MessageToString(telegram.Message).c_str());
 
     return false;
 }
