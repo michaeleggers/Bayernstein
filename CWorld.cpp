@@ -21,6 +21,12 @@
 #include "utils/utils.h"
 #include "Message/message_type.h"
 
+CWorld* CWorld::Instance() {
+    static CWorld m_World;
+
+    return &m_World;
+}
+
 void CWorld::InitWorld(glm::vec3 gravity) {
     m_Gravity = gravity;
 }

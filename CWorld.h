@@ -28,6 +28,7 @@
 
 class CWorld {
 public:
+    static CWorld* Instance();
     void        InitWorld(glm::vec3 gravity);
     void        InitWorldFromMap(const Map& map);
     void        InitStaticGeometry(std::vector<MapTri> tris);
@@ -71,13 +72,15 @@ public:
     uint64_t                     m_StaticGeometryEndIndex;
     bool                         m_StaticGeometryInitialized = false;
     // FIX: Still needed?
-    std::vector<int>             m_BrushEntities;
     glm::vec3                    m_Gravity;
     // FIX: Where to put paths? Shouldn't they also be entities themselves??
     PatrolPath*                  m_pPath = nullptr;
     // FIX: Get entities from entity manager and check which are renderable via Flag.
 
 private:
+    CWorld() = default;
+    ~CWorld() = default;
+
     uint64_t                     m_OffsetDynamicGeometry;
     // FIX: Does the player really *always* have to exist?
     Player*                      m_pPlayerEntity = nullptr;

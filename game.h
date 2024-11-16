@@ -43,7 +43,7 @@ class Game {
 
     double                      m_AccumTime;
 
-    CWorld                      m_World;
+    CWorld*                     m_World;
 };
 
 #endif

@@ -63,8 +63,9 @@ void Game::Init() {
     size_t inputLength = mapData.length();
     Map map = getMap(&mapData[ 0 ], inputLength, mapVersion);
 
-    m_World.InitWorldFromMap(map);
-    m_pPlayerEntity = m_World.PlayerEntity();
+    m_World = CWorld::Instance();
+    m_World->InitWorldFromMap(map);
+    m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.
     // Creates batches for each texture-name. That way we can
@@ -175,10 +176,10 @@ bool Game::RunFrame(double dt) {
     CInputDelegate::Instance()->HandleInput();
 
     // Collide entities with the world geometry and bounce off of it.
-    m_World.CollideEntitiesWithWorld();
+    m_World->CollideEntitiesWithWorld();
 
     // Check if player has contacts with other entities (including brush entities such as doors).
-    m_World.CollideEntities();
+    m_World->CollideEntities();
 
 
     // Run the message system
@@ -238,8 +239,8 @@ bool Game::RunFrame(double dt) {
 
 #if 1 // Toggle moving entity rendering. Also renders world.
         renderer->Render(renderCam, 
-                         m_World.Models().data(), m_World.Models().size(),
-                         m_World.BrushModels().data(), m_World.BrushModels().size());
+                         m_World->Models().data(), m_World->Models().size(),
+                         m_World->BrushModels().data(), m_World->BrushModels().size());
 #endif
 
         // auto type = enemy->m_Type;
