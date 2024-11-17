@@ -29,21 +29,21 @@ std::vector<Vertex> PatrolPath::GetPointsAsVertices() {
 
 bool PatrolPath::IsCurrentWaypointReached(glm::vec3 position) {
     glm::vec3 currentWaypointPosition = m_Points[ m_CurrentWaypointIndex ].position;
-    float distance = glm::distance(position, currentWaypointPosition);
+    float     distance                = glm::distance(position, currentWaypointPosition);
     //printf("Distance to waypoint: %f\n", distance);
     return distance < m_Radius;
 }
 
 void PatrolPath::TargetNextWaypoint() {
     m_PreviousWaypointIndex = m_CurrentWaypointIndex;
-    m_CurrentWaypointIndex = m_NextWaypointIndex;
-    m_NextWaypointIndex += 1;
+    m_CurrentWaypointIndex  = m_NextWaypointIndex;
+    m_NextWaypointIndex += m_direction;
     if ( m_NextWaypointIndex >= m_Points.size() ) {
         m_NextWaypointIndex = 0;
     }
-    // if ( m_NextWaypointIndex < 0 ) {
-    //     m_NextWaypointIndex = m_Points.size() - 1;
-    // }
+    if ( m_NextWaypointIndex < 0 ) {
+        m_NextWaypointIndex = m_Points.size() - 1;
+    }
 }
 
 Waypoint PatrolPath::GetCurrentWaypoint() {

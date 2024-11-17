@@ -48,8 +48,8 @@ class Enemy : public MovingEntity {
     }
     void SetFollowPath(PatrolPath* path) {
         m_pSteeringBehaviour->SetFollowPath(path);
-        m_pSteeringBehaviour->FollowPathOn();
-        // m_pSteeringBehaviour->FollowWaypointsOn();
+        // m_pSteeringBehaviour->FollowPathOn();
+        m_pSteeringBehaviour->FollowWaypointsOn();
     }
 
   public:

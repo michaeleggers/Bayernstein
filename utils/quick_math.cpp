@@ -33,14 +33,18 @@ glm::vec3 GetNormalPoint(glm::vec3 p, glm::vec3 a, glm::vec3 b) {
     float denominator = glm::dot(ab, ab);
 
     float result = (nominator / denominator);
-    return result * glm::normalize(ab);
+    return a + result * ab;
 }
 
 bool InSegmentRange(glm::vec3 start, glm::vec3 end, glm::vec3 point) {
-    float segmentLength = glm::distance(start, end);
-    float startToPoint  = glm::distance(start, point);
-    float endToPoint    = glm::distance(end, point);
-    return startToPoint + endToPoint <= segmentLength;
+    glm::vec3 ap = point - start;
+    glm::vec3 ab = end - start;
+
+    float nominator   = glm::dot(ap, ab);
+    float denominator = glm::dot(ab, ab);
+
+    float result = (nominator / denominator);
+    return (0.0f <= result) && (result <= 1.0f);
 }
 
 } // namespace math
