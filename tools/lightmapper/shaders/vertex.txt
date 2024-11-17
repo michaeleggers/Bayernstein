@@ -3,7 +3,7 @@
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec2 inDiffuseUV;
 layout(location = 2) in vec2 inLightmapUV;
-layout(location = 3) in int textureIndex;
+layout(location = 3) in float textureIndex;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -11,7 +11,7 @@ uniform mat4 projection;
 
 out vec2 diffuseUV;
 out vec2 lightmapUV;
-flat out int texIndex;
+flat out float texIndex;
 
 void main()
 {
