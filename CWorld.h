@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <stdint.h>
+#include <unordered_map>
 
 #include "r_common.h"
 #include "./Entity/base_game_entity.h"
@@ -71,11 +72,10 @@ public:
     std::vector<MapTri>          m_MapTris;
     uint64_t                     m_StaticGeometryEndIndex;
     bool                         m_StaticGeometryInitialized = false;
-    // FIX: Still needed?
     glm::vec3                    m_Gravity;
     // FIX: Where to put paths? Shouldn't they also be entities themselves??
+    std::unordered_map<std::string, Waypoint> m_NameToWaypoint;
     PatrolPath*                  m_pPath = nullptr;
-    // FIX: Get entities from entity manager and check which are renderable via Flag.
 
 private:
     CWorld() = default;

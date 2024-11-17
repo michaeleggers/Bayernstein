@@ -21,6 +21,7 @@
 #include "utils/utils.h"
 #include "Message/message_type.h"
 
+
 CWorld* CWorld::Instance() {
     static CWorld m_World;
 
@@ -81,17 +82,19 @@ void CWorld::InitWorldFromMap(const Map& map) {
                 } else if ( prop.value == "monster_soldier" ) {
                     // just a placeholder entity from trenchbroom/quake
                     glm::vec3 enemyStartPosition = CWorld::GetOrigin(&e);
-                    Enemy* enemy = new Enemy(enemyStartPosition);
+                    Enemy* enemy = new Enemy(e.properties);
                     m_pEntityManager->RegisterEntity(enemy);
 
                     int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
                     m_Models.push_back(enemy->GetModel());
                 } else if ( prop.value == "path_corner" ) { // FIX: Should be an entity type as well.
                     Waypoint point = CWorld::GetWaypoint(&e);
-
+                    m_pPath->AddPoint(point);
+                    // FIX: Very crude way of remembering waypoint names just so
+                    // that later on we can get its path.
+                    m_NameToWaypoint.insert({ point.sTargetname, point });
                     // I assume that the corner Points are in the right order. if not we need to rethink the data structure
                     glm::vec3 pathCornerPosition = CWorld::GetOrigin(&e);
-                    m_pPath->AddPoint(point);
                     printf("Path corner entity found: %f, %f, %f\n",
                            pathCornerPosition.x,
                            pathCornerPosition.y,
@@ -106,10 +109,24 @@ void CWorld::InitWorldFromMap(const Map& map) {
     // NOTE: At the moment, maps without an 'info_player_start' are not allowed.
     assert( m_pPlayerEntity != nullptr );
 
-    // FIX: The path should be set by the level designer in TrenchBroom. Just for debug now.
-    Enemy* enemy = m_pEntityManager->GetFirstEnemy();
-    // enemy->SetArriveTarget(m_pPlayerEntity);
-    enemy->SetFollowPath(m_pPath);
+    // Now that everything is initialized, set up the paths for the enemy
+    std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
+    for (int i = 0; i < entities.size(); i++) {
+        BaseGameEntity* entity = entities[i];
+        if (entity->Type() == ET_ENEMY) {
+            Enemy* enemy = (Enemy*)entity;
+            if ( !enemy->m_Target.empty() ) {
+                const auto& waypointEntry = m_NameToWaypoint.find(enemy->m_Target);
+                if (waypointEntry == m_NameToWaypoint.end()) {
+                    printf("WARNING: Enemy wants to set its target to: %s, but no such targetname exists!\n",
+                           enemy->m_Target.c_str());
+                    continue;
+                }
+                PatrolPath* pPath = waypointEntry->second.pPatrolPath;
+                enemy->SetFollowPath(pPath);
+            }
+        }
+    }
 }
 
 void CWorld::InitStaticGeometry(std::vector<MapTri> tris) {

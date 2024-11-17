@@ -13,16 +13,19 @@
 #include "../steering_behaviour.h"
 #include "../base_game_entity.h"
 #include "../../input_receiver.h"
+#include "../../map_parser.h"
 
 class Enemy : public MovingEntity {
   public:
     void Update() override;
-    explicit Enemy(glm::vec3 initialPosition);
+
+    explicit Enemy(const std::vector<Property>& properties);
 
     ~Enemy() override {
         delete m_pStateMachine;
         delete m_pSteeringBehaviour;
     }
+   
     [[nodiscard]] StateMachine<Enemy>* GetFSM() const {
         return m_pStateMachine;
     }

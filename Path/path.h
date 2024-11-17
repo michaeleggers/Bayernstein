@@ -7,10 +7,13 @@
 #include <vector>
 #include <unordered_map>
 
+class PatrolPath; // Forward declare so that Waypoint struct can use it.
+
 struct Waypoint {
     glm::vec3   position;
     std::string sTargetname;
     std::string sTarget;
+    PatrolPath* pPatrolPath = nullptr; // nullptr = doesn't belong to a patrol path
 };
 
 class PatrolPath {
@@ -38,7 +41,7 @@ class PatrolPath {
         m_name = name;
     }
 
-    void                  AddPoint(Waypoint point);
+    void                  AddPoint(Waypoint& point);
     std::vector<Waypoint> GetPoints();
     float                 GetRadius();
     bool                  IsCurrentWaypointReached(glm::vec3 position);

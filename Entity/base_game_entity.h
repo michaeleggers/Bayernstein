@@ -11,6 +11,8 @@
 
 #include "../Message/telegram.h"
 #include "../collision.h"
+#include "../utils/utils.h"
+#include "../map_parser.h"
 
 
 // NOTE: (Michael): This is essentially what a discriminated union would give us in C.
@@ -35,6 +37,31 @@ class BaseGameEntity {
         m_Type = type;
     }
 
+    template<typename T>
+    T GetProperty(const std::vector<Property>& properties, std::string propName) {
+        for ( const Property& property : properties ) {
+            if ( property.key == propName ) {
+                return ParseProperty<T>(property.value);
+            }
+        }
+
+        return T{};
+    }
+
+    template<typename T>
+    T ParseProperty(const std::string& value);
+
+    template<>
+    glm::vec3 ParseProperty<glm::vec3>(const std::string& sValue) {
+        std::vector<float> origin = ParseFloatValues(sValue);
+        return glm::vec3( origin[0], origin[1], origin[2] );
+    }
+
+    template<>
+    std::string ParseProperty<std::string>(const std::string& value) {
+        return value;
+    }
+
     virtual ~BaseGameEntity() = default;
 
     // all entities must implement an update function
@@ -55,12 +82,13 @@ class BaseGameEntity {
     [[nodiscard]] int ID() const {
         return m_ID;
     }
-   
 
     // FIX: Should make pure virtual. Not all entities
     // have this of course, but we want to make things
     // simple for now so we just say every entity has it.
     // Same with position and velocity...
+    // We should think about an Actor-Component model. Maybe
+    // overkill, but at least discuss it.
     virtual EllipsoidCollider GetEllipsoidCollider() const {
         return {};
     };
@@ -68,6 +96,7 @@ class BaseGameEntity {
     glm::vec3   m_Position = glm::vec3(0.0f);
     glm::vec3   m_Velocity = glm::vec3(0.0f); // TODO: Actually make use of it and remove from subclasses!
     float       m_RotationAngle = 0.0f; // TODO: Should be a quaternion called m_Orientation.
+    std::string m_Target = "";
 };
 
 #endif // BASEGAMEENTITY_H
