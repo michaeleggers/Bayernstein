@@ -29,7 +29,7 @@ class Scene:
 
     def __init__(self, map_path, assets_path, lightmap_path = None) -> None:
 
-        textures_directory = Path(str(assets_path) +  '\\textures')
+        textures_directory = Path(assets_path) / 'textures'
         self.triangles, self.texture_uvs, self.lightmap_uvs, self.textures, self.emissions = self.load_from_json(map_path, assets_path)
         self.texture_array, self.texture_array_uvs, self.texture_index_mapping = self.create_texture_array(self.textures, self.texture_uvs, textures_directory)
         if lightmap_path:
@@ -239,7 +239,7 @@ class Scene:
         texture_index_mapping = {}  # Dictionary to map texture names to indices
 
         for index, texture_name in enumerate(textures):
-            path = os.path.join(textures_directory, texture_name + ".png")
+            path = Path(textures_directory) / f"{texture_name}.png"
             image = Image.open(path).convert("RGBA")
             images[texture_name] = image
             max_width = max(max_width, image.width)

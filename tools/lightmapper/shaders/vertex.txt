@@ -1,19 +1,22 @@
 #version 330 core
 
-layout (location=0) in vec3 vertexPos;
-layout (location=1) in vec2 vertexTexCoord;         // Diffuse texture coordinates
-layout (location=2) in vec2 vertexLightmapTexCoord; // Lightmap texture coordinates
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec2 inDiffuseUV;
+layout(location = 2) in vec2 inLightmapUV;
+layout(location = 3) in int textureIndex;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-out vec2 fragmentTexCoord;
-out vec2 lightmapTexCoord;
+out vec2 diffuseUV;
+out vec2 lightmapUV;
+flat out int texIndex;
 
 void main()
 {
-    gl_Position = projection * view * model * vec4(vertexPos, 1.0);
-    fragmentTexCoord = vertexTexCoord;
-    lightmapTexCoord = vertexLightmapTexCoord;  // Pass lightmap UVs to fragment shader
+    gl_Position = projection * view * model * vec4(inPosition, 1.0); // Fixed variable name
+    diffuseUV = inDiffuseUV;
+    lightmapUV = inLightmapUV;
+    texIndex = textureIndex;
 }

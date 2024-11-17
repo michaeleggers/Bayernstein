@@ -29,3 +29,4 @@ tools/lightmapper/temp/lightmap.hdr
 
 **/*.zip
 assets/temp/temp.json
+debug_patches.png
