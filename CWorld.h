@@ -86,6 +86,8 @@ private:
     Player*                      m_pPlayerEntity = nullptr;
     std::vector<HKD_Model*>      m_Models; 
     std::vector<HKD_Model*>      m_BrushModels;
+    // Keep references to brush entities' map tris
+    std::vector< std::vector<MapTri>* >  m_pBrushMapTris;
 };
 
 

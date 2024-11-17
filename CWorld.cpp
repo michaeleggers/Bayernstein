@@ -68,6 +68,8 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     m_pEntityManager->RegisterEntity(baseEntity); 
                     HKD_Model* model = ((Door*)baseEntity)->GetModel();
                     m_BrushModels.push_back( model );
+                    std::vector<MapTri>& mapTris = ((Door*)baseEntity)->MapTris();
+                    m_pBrushMapTris.push_back( &mapTris );
                 } else if ( prop.value == "info_player_start" ) {
                     assert( m_pPlayerEntity == nullptr ); // There can only be one
                     glm::vec3 playerStartPosition = CWorld::GetOrigin(&e);
@@ -142,7 +144,11 @@ void CWorld::CollideEntitiesWithWorld() {
                                                                       static_cast<float>(dt) * pEntity->m_Velocity,
                                                                       static_cast<float>(dt) * m_Gravity,
                                                                       m_MapTris.data(),
-                                                                      m_MapTris.size());
+                                                                      StaticGeometryCount(),
+                                                                      m_pBrushMapTris);
+
+
+            // Iterate over brush entities and check for collision as well...
 
             pEntity->UpdatePosition(collisionInfo.basePos);
         }
