@@ -30,9 +30,7 @@
 class CWorld {
 public:
     static CWorld* Instance();
-    void        InitWorld(glm::vec3 gravity);
     void        InitWorldFromMap(const Map& map);
-    void        InitStaticGeometry(std::vector<MapTri> tris);
     void        AddBrushesToDynamicGeometry(const std::vector<Brush>& brushes);
     void        CollideEntitiesWithWorld();
     void        CollideEntities();

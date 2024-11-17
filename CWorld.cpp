@@ -28,10 +28,6 @@ CWorld* CWorld::Instance() {
     return &m_World;
 }
 
-void CWorld::InitWorld(glm::vec3 gravity) {
-    m_Gravity = gravity;
-}
-
 void CWorld::InitWorldFromMap(const Map& map) {
     // Get some subsystems
     EntityManager* m_pEntityManager = EntityManager::Instance();
@@ -127,15 +123,6 @@ void CWorld::InitWorldFromMap(const Map& map) {
             }
         }
     }
-}
-
-void CWorld::InitStaticGeometry(std::vector<MapTri> tris) {
-    // Static Geometry cannot be initialized twice!
-    assert( !m_StaticGeometryInitialized );
-
-    m_MapTris = tris;
-
-    m_StaticGeometryInitialized = true;
 }
 
 void CWorld::AddBrushesToDynamicGeometry(const std::vector<Brush>& brushes) {
@@ -244,6 +231,8 @@ std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolyg
     return mapTris;
 }
 
+// NOTE: Keept this. Getting properties is done via the template stuff
+// in base_entity but maybe the template stuff turns out to be dumb.
 glm::vec3 CWorld::GetOrigin(const Entity* entity) {
     for ( const Property& property : entity->properties ) {
         if ( property.key == "origin" ) {
@@ -255,6 +244,8 @@ glm::vec3 CWorld::GetOrigin(const Entity* entity) {
     assert(false && "Entity has no origin property!");
 }
 
+// NOTE: Keept this. Getting properties is done via the template stuff
+// in base_entity but maybe the template stuff turns out to be dumb.
 Waypoint CWorld::GetWaypoint(const Entity* entity) {
     Waypoint waypoint = {};
     for ( const Property& property : entity->properties ) {
