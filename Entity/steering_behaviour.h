@@ -20,12 +20,12 @@ class SteeringBehaviour {
   public:
     SteeringBehaviour(MovingEntity* pEntity);
     glm::vec3 Calculate();
-    void SetTargetAgent(BaseGameEntity* pAgent) {
+    void      SetTargetAgent(BaseGameEntity* pAgent) {
         m_pTargetAgent = pAgent;
     }
     void SetFollowPath(PatrolPath* pPath) {
         m_pPath = pPath;
-        FollowWaypointsOn();
+        // FollowWaypointsOn();
         // FollowPathOn();
     }
 
@@ -86,12 +86,12 @@ class SteeringBehaviour {
     bool isFollowWaypointsOn() {
         return On(follow_waypoints);
     }
- 
-private:
+
+  private:
     enum behavior_type {
-        none = 0x00000,
-        seek = 0x00002,
-        flee = 0x00004,
+        none   = 0x00000,
+        seek   = 0x00002,
+        flee   = 0x00004,
         arrive = 0x00008,
         wander = 0x00010,
         // cohesion = 0x00020,
@@ -99,14 +99,14 @@ private:
         // allignment = 0x00080,
         // obstacle_avoidance = 0x00100,
         // wall_avoidance = 0x00200,
-        follow_path = 0x00400,
-        follow_waypoints = 0x00500,
-        // pursuit = 0x00800,
-        // evade = 0x01000,
-        // interpose = 0x02000,
-        // hide = 0x04000,
-        // flock = 0x08000,
-        // offset_pursuit = 0x10000,
+        follow_path      = 0x00400,
+        follow_waypoints = 0x00800,
+        // pursuit = 0x01000,
+        // evade = 0x02000,
+        // interpose = 0x04000,
+        // hide = 0x08000,
+        // flock = 0x10000,
+        // offset_pursuit = 0x20000,
     };
 
   private:
@@ -115,9 +115,9 @@ private:
     //the selected behaviors
     glm::vec3 m_SteeringForce;
     //the current target
-    glm::vec3 m_Target;
+    glm::vec3       m_Target;
     BaseGameEntity* m_pTargetAgent;
-    PatrolPath* m_pPath;
+    PatrolPath*     m_pPath;
 
     //the current position on the wander circle the agent is
     //attempting to steer towards
@@ -143,9 +143,9 @@ private:
     //Arrive makes use of these to determine how quickly a vehicle
     //should decelerate to its target
     enum Deceleration {
-        slow = 1,
+        slow   = 1,
         normal = 2,
-        fast = 3
+        fast   = 3
     };
 
     //default
@@ -180,4 +180,3 @@ private:
 };
 
 #endif // STEERING_BEHAVIOUR_H
-

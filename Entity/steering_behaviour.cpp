@@ -12,15 +12,18 @@ SteeringBehaviour::SteeringBehaviour(MovingEntity* pEntity)
       m_WeightSeek(1.0f),
       m_WeightFlee(1.0f),
       m_WeightArrive(1.0f),
-      m_WeightFollowPath(0.0f),
-      m_WeightFollowWaypoints(2.0f),
+      m_WeightFollowPath(1.0f),
+      m_WeightFollowWaypoints(1.0f),
       m_Deceleration(normal),
       m_WanderDistance(7.0f),
       m_WanderJitter(1.0f),
       m_WanderRadius(5.0f),
       m_SteeringForce(0.0f),
       m_Target(0.0f),
-      m_SummingMethod(weighted_average)
+      m_SummingMethod(weighted_average),
+      m_pTargetAgent(nullptr),
+      m_pPath(nullptr),
+      m_WanderTarget(0.0)
 
 {
     //stuff for the wander behavior
@@ -56,7 +59,7 @@ glm::vec3 SteeringBehaviour::CalculateWeightedSum() {
 glm::vec3 SteeringBehaviour::Wander() {
     //this behavior is dependent on the update rate, so this line must
     //be included when using time independent framerate.
-    float jitterThisTimeSlice = m_WanderJitter * GetDeltaTime();
+    float jitterThisTimeSlice = m_WanderJitter * (float)GetDeltaTime();
 
     //first, add a small random vector to the target's position
     m_WanderTarget += glm::vec3(
@@ -74,7 +77,7 @@ glm::vec3 SteeringBehaviour::Wander() {
     target = math::ChangeOfBasis(target, m_pEntity->m_Forward, m_pEntity->m_Side, m_pEntity->m_Up);
 
     glm::vec3 position = m_pEntity->m_Position;
-    position.z = 0.0f; // for the random walk we don't want to change the z position
+    position.z         = 0.0f; // for the random walk we don't want to change the z position
 
     //and steer towards it
     return target - position;
@@ -144,15 +147,20 @@ glm::vec3 SteeringBehaviour::Arrive(glm::vec3 targetPosition, Deceleration decel
 }
 
 glm::vec3 SteeringBehaviour::FollowPath(PatrolPath* path) {
-    glm::vec3 futureVelocity = m_pEntity->m_Velocity * 1.1f;
-    glm::vec3 futurePosition = m_pEntity->m_Position + futureVelocity;
+    glm::vec3 futurePosition;
+    if ( glm::length(m_pEntity->m_Velocity) == 0.0f ) {
+        futurePosition = m_pEntity->m_Position;
+    } else {
+        glm::vec3 futureVelocity = glm::normalize(m_pEntity->m_Velocity) * 30.0f;
+        futurePosition           = m_pEntity->m_Position + futureVelocity;
+    }
     std::vector<Waypoint> points = path->GetPoints();
 
-    float minDistance = std::numeric_limits<float>::max();
-    glm::vec3 target = glm::vec3(0.0f);
+    float     minDistance = std::numeric_limits<float>::max();
+    glm::vec3 target      = glm::vec3(0.0f);
     for ( int i = 0; i < points.size() - 1; i++ ) {
         glm::vec3 segmentStart = points[ i ].position;
-        glm::vec3 segmentEnd = points[ i + 1 ].position;
+        glm::vec3 segmentEnd   = points[ i + 1 ].position;
 
         glm::vec3 normalPoint = math::GetNormalPoint(futurePosition, segmentStart, segmentEnd);
         if ( !math::InSegmentRange(segmentStart, segmentEnd, normalPoint) ) {
@@ -162,13 +170,15 @@ glm::vec3 SteeringBehaviour::FollowPath(PatrolPath* path) {
         if ( path->GetRadius() < distanceFromPath ) {
             if ( distanceFromPath < minDistance ) {
                 minDistance = distanceFromPath;
-                target = segmentStart + (normalPoint - segmentStart) * 1.1f;
+                target      = (segmentStart + normalPoint) * 1.7f;
+                //segmentStart + glm::normalize(normalPoint - segmentStart) * 30.0f;
+                // break;
             }
         }
     }
 
     glm::vec3 force = Seek(target);
-    force.z = 0.0f;
+    force.z         = 0.0f;
     return force;
 }
 
@@ -179,8 +189,8 @@ glm::vec3 SteeringBehaviour::FollowWaypoints(PatrolPath* pPath) {
     }
 
     glm::vec3 target = pPath->GetCurrentWaypoint().position;
-    glm::vec3 force = Seek(target);
-    force.z = 0.0f;
+    glm::vec3 force  = Seek(target);
+    force.z          = 0.0f;
     return force;
 }
 
