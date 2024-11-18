@@ -30,3 +30,4 @@ tools/lightmapper/temp/lightmap.hdr
 **/*.zip
 assets/temp/temp.json
 debug_patches.png
+tools/lightmapper/util/debug/debug_uv_maps.png
