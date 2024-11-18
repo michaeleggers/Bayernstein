@@ -1,6 +1,6 @@
 # Lightmapper for TrenchBroom Scenes
 
-This lightmapper, built primarily with PyOpenGL and GLFW, allows you to generate and visualize lightmaps for 3D scenes created in TrenchBroom. The main interaction point (for now) is the `lightmapper.ipynb` notebook, which provides controls for configuring, rendering, and displaying the lightmaps.
+This lightmapper, built primarily with PyOpenGL and GLFW, allows you to generate and visualize lightmaps for 3D scenes created in TrenchBroom. 
 
 
 ## Getting Started
@@ -15,7 +15,7 @@ It is recomended to use a virtual enviroment:
     `conda create --name games_engineering python=3.12`
 4. Activate the enviroment with:
     `conda activate games_engineering`
-5. Now install the required packages. Within this folder there is a requirements.txt with all the dependencies. You can automatically install them with `pip install -r path/to/requirements.txt`
+5. Now install the required packages. Within this folder there is a requirements.txt with all the dependencies. You can automatically install them with `pip install -r tools/lightmapper/requirements.txt`
 
 Before running the lightmapper, ensure the following dependencies are installed:
 

@@ -5,11 +5,14 @@ import sys
 import os
 import argparse
 import subprocess
+import platform
+
 from renderer import Renderer
 from lightmapper import Lightmapper
 from data_structures.scene import Scene
 from data_structures.color import Color
 from pathlib import Path
+
 
 def compile_map(
         assets_path: Path, 
@@ -41,8 +44,15 @@ def soup_map(assets_path: Path, map_path: Path) -> Path:
 
     if os.name == 'nt':  # Windows
         souper_path = base_path / 'souper/bin/Debug/souper.exe'
-    else:  # Unix (Linux, macOS)
-        souper_path = base_path / 'souper/bin/souper'
+    elif platform.system() == 'Darwin':  # macOS
+        souper_path = base_path / 'souper/bin/souper-macos'
+    elif platform.system() == 'Linux':  # Linux
+        souper_path = base_path / 'souper/bin/souper-linux'
+    else:
+        raise OSError("Unsupported operating system")
+    
+    #souper_path = Path('/Users/fabiandepaoli/Library/Mobile Documents/com~apple~CloudDocs/SharedData/HM/GamesEngineering/Bayernstein/tools/lightmapper/souper/bin/souper-macos')
+    
     temp_output_file = assets_path / 'temp/temp.json'
     # Ensure the temporary directory exists
     temp_output_file.parent.mkdir(parents=True, exist_ok=True)
