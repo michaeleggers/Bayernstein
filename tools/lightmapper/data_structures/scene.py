@@ -557,8 +557,14 @@ class Scene:
                 color = random_color
                 pixels[x, y] = color  # Set pixel color
 
+        # Define the path for the debug folder relative to the current script's location
+        debug_path = Path(__file__).resolve().parent / "debug" 
+
+        # Ensure the debug directory exists
+        debug_path.mkdir(parents=True, exist_ok=True)
+
         # Save the image
-        image.save("debug_patches.png")
+        image.save(debug_path / "debug_uv_maps.png")
 
         
     
