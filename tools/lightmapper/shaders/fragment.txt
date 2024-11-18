@@ -2,7 +2,7 @@
 
 in vec2 diffuseUV;
 in vec2 lightmapUV;
-flat in int texIndex;
+flat in float texIndex;
 
 out vec4 color;
 

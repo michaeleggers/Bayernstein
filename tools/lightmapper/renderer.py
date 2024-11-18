@@ -45,7 +45,7 @@ class Renderer:
         self._initialize_camera()
 
     def _initialize_glfw(self, width: int, height: int, lightmap_mode: bool) -> None:
-
+        
         # Initialize GLFW
         if not glfw.init():
             raise Exception("GLFW could not be initialized")
@@ -105,68 +105,81 @@ class Renderer:
         glEnable(GL_DEPTH_TEST)
 
     def _initialize_assets(self, scene: Scene, light_map_path: Path) -> None:
-        # VertexBufferObject
+        """Initialize OpenGL buffers, textures, and shaders."""
+        
+        # Vertex Buffer Object (VBO) and Vertex Array Object (VAO)
         self.vao = glGenVertexArrays(1)
         glBindVertexArray(self.vao)
+
         self.vbo = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
         glBufferData(GL_ARRAY_BUFFER, scene.vertex_array.nbytes, scene.vertex_array, GL_STATIC_DRAW)
+
+        # Texture Array Setup
+        texture_array = self.scene.texture_array
+        num_layers, max_height, max_width, _ = texture_array.shape
+
+        # Create and bind the texture array
+        self.texture_array_id = glGenTextures(1)
+        glActiveTexture(GL_TEXTURE0)  # Ensure GL_TEXTURE0 is active for the texture array
+        glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_array_id)
+        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, max_width, max_height, num_layers, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_array)
+
+        # Set texture parameters for the texture array
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glGenerateMipmap(GL_TEXTURE_2D_ARRAY)
+
+        # Lightmap Setup
+        lightmap = self.scene.light_map
+        lightmap_width, lightmap_height = lightmap.shape[:2]
+        self.lightmap_texture_id = glGenTextures(1)
+
+        # Create and bind the lightmap texture
+        glActiveTexture(GL_TEXTURE1)  # Use GL_TEXTURE1 for the lightmap
+        glBindTexture(GL_TEXTURE_2D, self.lightmap_texture_id)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, lightmap_width, lightmap_height, 0, GL_RGB, GL_FLOAT, lightmap)
+
+        # Texture parameters for lightmap
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
         # Compile and link shaders
         self.shader = shader.create_shader(
             vertex_filepath=self.base_path / 'shaders/vertex.txt',
             fragment_filepath=self.base_path / 'shaders/fragment.txt'
         )
+
+        # Now the shader is available, we can set the uniforms
         glUseProgram(self.shader)
 
-        # Texture Array (GL_TEXTURE0)
-        texture_array = scene.texture_array
-        num_layers, max_height, max_width, _ = texture_array.shape
-        self.texture_array_id = glGenTextures(1)
-        glActiveTexture(GL_TEXTURE0)  # Ensure this is dedicated to diffuse texture array
-        glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_array_id)
-        glTexImage3D(
-            GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, max_width, max_height, num_layers,
-            0, GL_RGBA, GL_UNSIGNED_BYTE, texture_array
-        )
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glGenerateMipmap(GL_TEXTURE_2D_ARRAY)
+        # Set uniform for the diffuse texture array
         glUniform1i(glGetUniformLocation(self.shader, "diffuseTextureArray"), 0)
 
-        # Lightmap (GL_TEXTURE2) - Changed from GL_TEXTURE1 to avoid conflicts
-        lightmap = scene.light_map
-        lightmap_width, lightmap_height = lightmap.shape[:2]
-        self.lightmap_texture_id = glGenTextures(1)
-        glActiveTexture(GL_TEXTURE2)  # Use a different texture unit (e.g., GL_TEXTURE2)
-        glBindTexture(GL_TEXTURE_2D, self.lightmap_texture_id)
-        glTexImage2D(
-            GL_TEXTURE_2D, 0, GL_RGB32F, lightmap_width, lightmap_height,
-            0, GL_RGB, GL_FLOAT, lightmap
-        )
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glUniform1i(glGetUniformLocation(self.shader, "lightmapTexture"), 2)
+        # Set uniform for the lightmap texture
+        glUniform1i(glGetUniformLocation(self.shader, "lightmapTexture"), 1)
 
-        # Set vertex attributes
-        stride = 32  # Size of each vertex entry in bytes
+        # Set vertex attributes (Position, UVs, Texture index)
         glEnableVertexAttribArray(0)  # Position (x, y, z)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(0))
-        glEnableVertexAttribArray(1)  # Diffuse texture UV (u_t, v_t)
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(12))
-        glEnableVertexAttribArray(2)  # Lightmap texture UV (u_l, v_l)
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(20))
-        glEnableVertexAttribArray(3)  # Texture index
-        glVertexAttribIPointer(3, 1, GL_INT, stride, ctypes.c_void_p(28))
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(0))
 
-        glBindVertexArray(0)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glEnableVertexAttribArray(1)  # Diffuse texture UV (u_t, v_t)
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(12))
+
+        glEnableVertexAttribArray(2)  # Lightmap texture UV (u_l, v_l)
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(20))
+
+        glEnableVertexAttribArray(3)  # Texture index
+        glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(28))
 
     def _initialize_uniforms(self, fov=90) -> None:
+        """Initialize uniforms for the shader program."""
+        
+        # Use the shader program
         glUseProgram(self.shader)
 
         # Set the exposure uniform
@@ -186,7 +199,7 @@ class Renderer:
 
         # Bind texture samplers to their respective texture units
         glUniform1i(glGetUniformLocation(self.shader, "diffuseTextureArray"), 0)  # GL_TEXTURE0
-        glUniform1i(glGetUniformLocation(self.shader, "lightmapTexture"), 2)      # GL_TEXTURE2
+        glUniform1i(glGetUniformLocation(self.shader, "lightmapTexture"), 1)      # GL_TEXTURE1
 
 
     def _initialize_camera(self) -> None:
@@ -205,7 +218,7 @@ class Renderer:
         self.pitch = np.degrees(np.arcsin(self.camera_front[1]))
         self.sensitivity = 1.0
 
-    def update_ligth_map(self):
+    def update_light_map(self):
         
         #glDeleteTextures(1, (self.lightmap_texture_id))
 
