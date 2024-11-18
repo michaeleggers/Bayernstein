@@ -11,6 +11,10 @@
     "@slidev/cli": "^0.50.0-beta.7",
     "@slidev/theme-default": "latest",
     "@slidev/theme-seriph": "latest",
-    "vue": "^3.5.13"
+    "vue": "^3.5.13",
+    "slidev-addon-citations": "^0.0.13"
+  },
+  "devDependencies": {
+    "playwright-chromium": "^1.48.2"
   }
 }
