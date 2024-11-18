@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <vector>
+#include <unordered_set>
 
 #define GLM_FORCE_RADIANS
 #include "dependencies/glm/glm.hpp"
@@ -32,9 +33,6 @@ void CWorld::InitWorldFromMap(const Map& map) {
     // Get some subsystems
     EntityManager* m_pEntityManager = EntityManager::Instance();
     IRender* renderer = GetRenderer();
-   
-    // FIX: See declaration in header.
-    m_pPath = new PatrolPath();
    
     // TODO: Init via .MAP property.
     m_Gravity = glm::vec3(0.0f, 0.0f, -0.5f);
@@ -85,7 +83,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     m_Models.push_back(enemy->GetModel());
                 } else if ( prop.value == "path_corner" ) { // FIX: Should be an entity type as well.
                     Waypoint point = CWorld::GetWaypoint(&e);
-                    m_pPath->AddPoint(point);
+                    //m_pPath->AddPoint(point);
                     // FIX: Very crude way of remembering waypoint names just so
                     // that later on we can get its path.
                     m_NameToWaypoint.insert({ point.sTargetname, point });
@@ -103,23 +101,75 @@ void CWorld::InitWorldFromMap(const Map& map) {
     }
 
     // NOTE: At the moment, maps without an 'info_player_start' are not allowed.
+    // FIX: (Michael): I think it should be possible to not have a player?
     assert( m_pPlayerEntity != nullptr );
 
-    // Now that everything is initialized, set up the paths for the enemy
+    // Create paths from waypoints
+    std::unordered_set<std::string> visited; // waypoints that are already part of any path
+
+    for (const auto& [targetname, waypoint] : m_NameToWaypoint) {
+        // Skip waypoints already in a patrol path
+        if (visited.count(targetname)) {
+            continue;
+        }
+
+        // Start a new patrol path
+        PatrolPath currentPath;
+        Waypoint current = waypoint;
+        std::unordered_set<std::string> pathVisited; // Track for cycles
+
+        while ( !current.sTarget.empty() ) { // Does the waypoint point to another?
+            if (pathVisited.count(current.sTargetname)) {
+                // Cycle detected, break the path
+                break;
+            }
+
+            pathVisited.insert(current.sTargetname);
+            currentPath.AddPoint(current);
+            visited.insert(current.sTargetname);
+
+            // Move to the next waypoint if it exists
+            auto it = m_NameToWaypoint.find(current.sTarget);
+            if (it != m_NameToWaypoint.end()) {
+                current = it->second;
+            } else {
+                break; // End of the chain
+            }
+        }
+
+        // Add the completed path to the list of paths
+        if ( !currentPath.GetPoints().empty() ) {
+            m_Paths.push_back(currentPath);
+        }
+    }
+    // Waypoints now all points to an instance inside the m_Paths vector.
+    // A waypoint not being path of a 'chain' also points to a path:
+    // It is a path with that poor, lonely waypoint. I kinda feel sorry for it...
+
+    // Now that everything is initialized, set up the paths for the enemy.
+    // FIX: Need a target to Entity map. But waypoints are no entities at the moment.
+    // So atm it is expected that the target the entity points to is a waypoint!
     std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
     for (int i = 0; i < entities.size(); i++) {
         BaseGameEntity* entity = entities[i];
         if (entity->Type() == ET_ENEMY) {
             Enemy* enemy = (Enemy*)entity;
             if ( !enemy->m_Target.empty() ) {
-                const auto& waypointEntry = m_NameToWaypoint.find(enemy->m_Target);
-                if (waypointEntry == m_NameToWaypoint.end()) {
-                    printf("WARNING: Enemy wants to set its target to: %s, but no such targetname exists!\n",
-                           enemy->m_Target.c_str());
-                    continue;
+                // Find the waypoint and its path
+                // FIX: This also is easier if waypoints are entities
+                for (int j = 0; j < m_Paths.size(); j++) {
+                    PatrolPath& path = m_Paths[j];
+                    std::vector<Waypoint> points = path.GetPoints();
+                    for (int k = 0; k < points.size(); k++) {
+                        Waypoint point = points[k];
+                        if ( enemy->m_Target == point.sTargetname ) {
+                            // copy its path for internat use in this enemy
+                            PatrolPath* pPathCopy = new PatrolPath(&path);
+                            pPathCopy->SetCurrentWaypoint(enemy->m_Target);
+                            enemy->SetFollowPath(pPathCopy);
+                        }
+                    }
                 }
-                PatrolPath* pPath = waypointEntry->second.pPatrolPath;
-                enemy->SetFollowPath(pPath);
             }
         }
     }

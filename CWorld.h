@@ -73,7 +73,7 @@ public:
     glm::vec3                    m_Gravity;
     // FIX: Where to put paths? Shouldn't they also be entities themselves??
     std::unordered_map<std::string, Waypoint> m_NameToWaypoint;
-    PatrolPath*                  m_pPath = nullptr;
+    std::vector<PatrolPath>      m_Paths;
 
 private:
     CWorld() = default;

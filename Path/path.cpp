@@ -7,7 +7,7 @@
 #include "../dependencies/glm/glm.hpp"
 #include "../r_common.h"
 
-void PatrolPath::AddPoint(Waypoint& point) {
+void PatrolPath::AddPoint(Waypoint point) {
     point.pPatrolPath = this;
     m_Points.push_back(point);
     m_TargetnameToWaypoint.insert({ point.sTargetname, point });
@@ -15,7 +15,7 @@ void PatrolPath::AddPoint(Waypoint& point) {
     // TODO: m_CurrentWaypointName probably should be whatever is
     // specified for the entity targeting this path waypoint?
     if ( m_CurrentWaypointName.empty() ) {
-        m_name = point.sTargetname;
+        m_Name = point.sTargetname;
         m_CurrentWaypointName = point.sTargetname;
     }
 }
@@ -65,5 +65,9 @@ Waypoint PatrolPath::GetCurrentWaypoint() {
     assert ( currentWaypointEntry != m_TargetnameToWaypoint.end() );
 
     return currentWaypointEntry->second;
+}
+
+void PatrolPath::SetCurrentWaypoint(std::string targetname) {
+    m_CurrentWaypointName = targetname;
 }
 

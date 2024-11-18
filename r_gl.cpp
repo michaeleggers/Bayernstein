@@ -257,7 +257,7 @@ bool GLRender::Init(void) {
     m_ColliderBatch = new GLBatch(1000);
     m_FontBatch = new GLBatch(1000, 1000);
     m_ShapesBatch = new GLBatch(1000, 1000);
-    m_WorldBatch = new GLBatch(5000);
+    m_WorldBatch = new GLBatch(10000);
     m_BrushBatch = new GLBatch(5000);
 
     // Initialize shaders

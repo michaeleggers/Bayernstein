@@ -24,6 +24,7 @@ class Enemy : public MovingEntity {
     ~Enemy() override {
         delete m_pStateMachine;
         delete m_pSteeringBehaviour;
+        delete m_Path; 
     }
    
     [[nodiscard]] StateMachine<Enemy>* GetFSM() const {
@@ -49,7 +50,9 @@ class Enemy : public MovingEntity {
         m_pSteeringBehaviour->SetTargetAgent(target);
         m_pSteeringBehaviour->ArriveOn();
     }
+
     void SetFollowPath(PatrolPath* path) {
+        m_Path = path;
         m_pSteeringBehaviour->SetFollowPath(path);
         m_pSteeringBehaviour->FollowPathOn();
     }
@@ -69,7 +72,9 @@ private:
     SteeringBehaviour* m_pSteeringBehaviour;
     double m_Health = 100;
 
-    HKD_Model m_Model;
+    // FIX: Those should be components for next milestone.
+    HKD_Model   m_Model;
+    PatrolPath* m_Path;
     // moving members
 
 private:
