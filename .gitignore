@@ -17,17 +17,16 @@
 
 # Some local docs
 **/line_vs_swept_sphere.md
-**/__pycache__/**
-tools/lightmapper/debug_lightmap.png
-tools/lightmapper/debug_uv_maps.png
-tools/lightmapper/temp/lightmap.hdr
-
 **/assets/models/**
 **/assets/maps/**
 **/assets/textures/**
 **/logs/**
 
 **/*.zip
-assets/temp/temp.json
-debug_patches.png
-tools/lightmapper/util/debug/debug_uv_maps.png
+
+
+# lightmapper
+**/__pycache__/**
+**/debug/**
+**/assets/compiled/**
+**/temp/**
