@@ -50,9 +50,11 @@ $\bf{a} = \frac{\bf{f}}{m}$
 $\bf{v_{new}} = \bf{v_{old}} + \bf{a}$
 </div>
 </div>
+
 ---
 level: 2
 ---
+
 # Steering Force
 
 ![Steering Prämisse](../public/img/bene/05_steering_2.webp)
