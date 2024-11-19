@@ -1,7 +1,13 @@
 # Fabi's Section
+<style>
+img {
+  image-rendering: pixelated;
+}
+</style>
 
 ---
-level: 2
+backgroundOverlay: none
+backgroundColor: white
 ---
 
 # Ziele für Meilenstein 2
@@ -66,7 +72,68 @@ level: 2
 </template>
 </v-switch>
 
+---
+
+# Hemicube Platzierung
+
+![Alt text](/img/fabian/img_hemicube_placement.png){width=90% height=90%}
 
 ---
 
 # Hemicube Platzierung
+
+![Alt text](/img/fabian/img_hemicube_pov.png){width=90% height=90%}
+
+---
+
+# Hemicube Platzierung
+
+![Alt text](/img/fabian/img_hemicube_placement.png){width=90% height=90%}
+
+---
+
+# Hemicube Platzierung
+
+![Alt text](/img/fabian/img_ref.png){width=90% height=90%}
+
+---
+
+
+# Hemicube Platzierung
+<style>
+img {
+  image-rendering: pixelated;
+}
+</style>
+![Alt text](/img/fabian/img_uvs.png){width=100% height=100%}
+
+---
+
+# Hemicube Platzierung
+<style>
+img {
+  image-rendering: pixelated;
+}
+</style>
+![Alt text](/img/fabian/img_lm_nofill.png){width=100% height=100%}
+
+---
+
+# Hemicube Platzierung
+<style>
+img {
+  image-rendering: pixelated;
+}
+</style>
+![Alt text](/img/fabian/img_lm_filled.png){width=90% height=90%}
+
+---
+
+# Ziele für Meilenstein 3
+
+- Patch Processing Pipeline
+- Dynamic Patch Resolution
+- Verbessertes UV-Mapping
+- Bugfix Renderer
+
+
