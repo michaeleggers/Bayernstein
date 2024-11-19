@@ -44,12 +44,8 @@ def soup_map(assets_path: Path, map_path: Path) -> Path:
 
     if os.name == 'nt':  # Windows
         souper_path = base_path / 'souper/bin/Debug/souper.exe'
-    elif platform.system() == 'Darwin':  # macOS
-        souper_path = base_path / 'souper/bin/souper-macos'
-    elif platform.system() == 'Linux':  # Linux
-        souper_path = base_path / 'souper/bin/souper-linux'
-    else:
-        raise OSError("Unsupported operating system")
+    else:  # macOS / Linux
+        souper_path = base_path / 'souper/bin/souper'
     
     #souper_path = Path('/Users/fabiandepaoli/Library/Mobile Documents/com~apple~CloudDocs/SharedData/HM/GamesEngineering/Bayernstein/tools/lightmapper/souper/bin/souper-macos')
     
