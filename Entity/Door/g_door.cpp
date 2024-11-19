@@ -26,17 +26,8 @@ Door::Door(const std::vector<Property>& properties,
     m_pStateMachine->SetCurrentState(DoorClosed::Instance());
 
     // Get all the door's properties from the MAP file.
-    
-    for (int i = 0; i < properties.size(); i++) {
-        const Property& prop = properties[ i ];
-        if (prop.key == "angle") {
-            // TODO: Parse the value (prop.value is always a string)
-            // and assign to m_Angle;
-        }
-        else if (prop.key == "delay") {
-        }
-        // And so on...
-    }
+    BaseGameEntity::GetProperty<double>(properties, "speed", &m_Speed);
+    BaseGameEntity::GetProperty<double>(properties, "angle", &m_Angle);
 
     // Load the model from brushes
     m_Model = CreateModelFromBrushes( brushes );

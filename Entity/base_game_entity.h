@@ -38,30 +38,43 @@ class BaseGameEntity {
     }
 
     template<typename T>
-    T GetProperty(const std::vector<Property>& properties, std::string propName) {
+    bool GetProperty(const std::vector<Property>& properties, std::string propName, T* value) {
         for ( const Property& property : properties ) {
             if ( property.key == propName ) {
-                return ParseProperty<T>(property.value);
+                *value = ParseProperty<T>(property.value);
+                return true;
             }
         }
 
-        return T{};
+        return false;
     }
 
     template<typename T>
-    T ParseProperty(const std::string& value);
+    T ParseProperty(const std::string& sValue);
 
     template<>
     glm::vec3 ParseProperty<glm::vec3>(const std::string& sValue) {
-        std::vector<float> origin = ParseFloatValues(sValue);
+        std::vector<float> origin = ParseFloatValues<float>(sValue);
         return glm::vec3( origin[0], origin[1], origin[2] );
     }
 
     template<>
-    std::string ParseProperty<std::string>(const std::string& value) {
-        return value;
+    std::string ParseProperty<std::string>(const std::string& sValue) {
+        return sValue;
     }
 
+    template<>
+    float ParseProperty<float>(const std::string& sValue) {
+        std::vector<float> floats = ParseFloatValues<float>(sValue);
+        return floats[ 0 ];
+    }
+    
+    template<>
+    double ParseProperty<double>(const std::string& sValue) {
+        std::vector<double> floats = ParseFloatValues<double>(sValue);
+        return floats[ 0 ];
+    }
+    
     virtual ~BaseGameEntity() = default;
 
     // all entities must implement an update function
