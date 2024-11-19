@@ -6,6 +6,11 @@
 
 #include <SDL.h>
 
+#define GLM_FORCE_RADIANS
+#include "../../dependencies/glm/glm.hpp"
+#include "../../dependencies/glm/ext.hpp"
+#include "../../dependencies/glm/gtx/quaternion.hpp"
+
 #include "g_door_states.h"
 #include "../../map_parser.h"
 #include "../../polysoup.h"
@@ -26,16 +31,14 @@ Door::Door(const std::vector<Property>& properties,
     m_pStateMachine->SetCurrentState(DoorClosed::Instance());
 
     // Get all the door's properties from the MAP file.
-    
-    for (int i = 0; i < properties.size(); i++) {
-        const Property& prop = properties[ i ];
-        if (prop.key == "angle") {
-            // TODO: Parse the value (prop.value is always a string)
-            // and assign to m_Angle;
-        }
-        else if (prop.key == "delay") {
-        }
-        // And so on...
+    BaseGameEntity::GetProperty<double>(properties, "speed", &m_Speed);
+    float angle;
+    if ( BaseGameEntity::GetProperty<float>(properties, "angle", &angle) ) {
+        m_Angle = (int)angle;
+    }
+    float lip;
+    if ( BaseGameEntity::GetProperty<float>(properties, "lip", &lip) ) {
+        m_Lip = (int)lip;
     }
 
     // Load the model from brushes
@@ -51,6 +54,8 @@ Door::Door(const std::vector<Property>& properties,
     // NOTE: Just make doors golden for now. Obviously we texture them later.
     // TODO: This stuff happens quite common. Also: Maybe tris are sufficient?
     glm::vec4 triColor = glm::vec4(1.0f, 0.9f, 0.0f, 1.0f); 
+    glm::vec3 mins = glm::vec3(99999.0f);
+    glm::vec3 maxs = glm::vec3(-99999.0f);
     for (int i = 0; i < mapTris.size(); i++) {
 
         MapPolygon mapPoly = mapTris[ i ];
@@ -64,6 +69,17 @@ Door::Door(const std::vector<Property>& properties,
         Vertex C = { glm::vec3(mapPoly.vertices[2].pos.x, 
                                mapPoly.vertices[2].pos.y, 
                                mapPoly.vertices[2].pos.z) };
+
+        float minX = glm::min( A.pos.x, B.pos.x, C.pos.x );
+        float minY = glm::min( A.pos.y, B.pos.y, C.pos.y );
+        float minZ = glm::min( A.pos.z, B.pos.z, C.pos.z );
+        float maxX = glm::max( A.pos.x, B.pos.x, C.pos.x );
+        float maxY = glm::max( A.pos.y, B.pos.y, C.pos.y );
+        float maxZ = glm::max( A.pos.z, B.pos.z, C.pos.z );
+
+        mins = glm::min( mins, glm::vec3(minX, minY, minZ) );
+        maxs = glm::max( maxs, glm::vec3(maxX, maxY, maxZ) );
+
         A.color = triColor;
         B.color = triColor;
         C.color = triColor;
@@ -71,6 +87,30 @@ Door::Door(const std::vector<Property>& properties,
 
         m_MapTris.push_back(tri);
     }
+
+    m_Mins = mins;
+    m_Maxs = maxs;
+
+    // Distance to travel is the width of the door in the travel direction.
+    glm::vec3 worldUp = glm::vec3(0.0f, 0.0f, 1.0f);
+    glm::vec3 worldForward = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::quat qDir;
+    if (m_Angle == -1 ) { // Door moves upward
+        qDir = glm::angleAxis( glm::radians(-90.0f), worldForward ); 
+    }
+    else if (m_Angle == -2) { // Door moves downward
+        qDir = glm::angleAxis( glm::radians(90.0f), worldForward ); 
+    }
+    else {
+        qDir = glm::angleAxis( glm::radians((float)m_Angle), worldUp );
+    }
+
+    m_Direction = glm::rotate( qDir, m_Direction );
+
+    // Compute distance to travel
+    glm::vec3 minsToMaxs = maxs - mins;
+    glm::vec3 directedLength = m_Direction * minsToMaxs;
+    m_Distance = glm::length(directedLength) - (double)m_Lip;
 }
 
 bool Door::HandleMessage(const Telegram& telegram) {

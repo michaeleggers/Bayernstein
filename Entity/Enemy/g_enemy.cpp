@@ -27,8 +27,9 @@ Enemy::Enemy(const std::vector<Property>& properties)
     m_pStateMachine->SetCurrentState(EnemyIdle::Instance());
    
     // We want position and, if applicable, a target.
-    m_Position = BaseGameEntity::GetProperty<glm::vec3>(properties, "origin");
-    m_Target = BaseGameEntity::GetProperty<std::string>(properties, "target");
+    BaseGameEntity::GetProperty<glm::vec3>(properties, "origin", &m_Position);
+    // FIX: Mem Leak on exit if target is not being set.
+    BaseGameEntity::GetProperty<std::string>(properties, "target", &m_Target);
 
     LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
     m_Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
