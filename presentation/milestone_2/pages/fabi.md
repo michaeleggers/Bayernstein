@@ -1,4 +1,4 @@
-# Fabi's Section
+# Lightmapper
 <style>
 img {
   image-rendering: pixelated;
@@ -15,7 +15,7 @@ backgroundColor: white
 <v-switch>
 <template #0>
 
-- Integration der Lightmaps
+- Integration des Lightmappers
 - Texturen
 - Verbesserte UV Zuordnung
 - Performance
@@ -24,7 +24,7 @@ backgroundColor: white
 </template>
 <template #1>
 
-- <span style="color: #77dd77;">Integration der Lightmaps</span>
+- <span style="color: #77dd77;">Integration des Lightmappers</span>
 - <span style="color: #77dd77;">Texturen</span>
 - <span style="color: #ff6961;">Verbesserte UV Zuordnung</span>
 - <span style="color: #ff6961;">Performance</span>
@@ -34,7 +34,7 @@ backgroundColor: white
 
 <template #2>
 
-- <span style="color: #77dd77;">Integration der Lightmaps</span>
+- <span style="color: #77dd77;">Integration des Lightmappers</span>
 - <span style="color: #77dd77;">Texturen</span>
 - <span style="color: #ff6961;">Verbesserte UV Zuordnung</span>
 - <span style="color: #ff6961;">Performance</span>
@@ -47,28 +47,15 @@ backgroundColor: white
 
 <template #3>
 
-- <span style="color: #77dd77;">Integration der Lightmaps</span>
-- <span style="color: #77dd77;">Texturen</span>
-- <span style="color: #ff6961;">Verbesserte UV Zuordnung</span>
-- <span style="color: #ff6961;">Performance</span>
-- <span style="color: #fdfd96;">Lineare Textur-Filterung</span>
-- <span style="color: #fdfd96;">Renderer verbessern</span>
-- <span style="color: #77dd77;">Usability</span>
-- <span style="color: #77dd77;">Plattformübergreifende Kompatibilität</span>
-- <span style="color: #fdfd96;">Hemicube Platzierung</span>
-</template>
-
-<template #4>
-
-- <span style="color: #77dd77;opacity: 0.5;">Integration der Lightmaps</span>
+- <span style="color: #77dd77;opacity: 0.5;">Integration des Lightmappers</span>
 - <span style="color: #77dd77;opacity: 0.5;">Texturen</span>
 - <span style="color: #ff6961;opacity: 0.5;">Verbesserte UV Zuordnung</span>
 - <span style="color: #ff6961;opacity: 0.5;">Performance</span>
 - <span style="color: #fdfd96;opacity: 0.5;">Lineare Textur-Filterung</span>
 - <span style="color: #fdfd96;opacity: 0.5;">Renderer verbessern</span>
-- <span style="color: #77dd77;opacity: 0.5;">Usability</span>
-- <span style="color: #77dd77;opacity: 0.5;">Plattformübergreifende Kompatibilität</span>
-- **<span style="color: #fdfd96; font-size: 24px;">Hemicube Platzierung</span>**
+- <span style="color: #84b6f4;opacity: 0.5;">Usability</span>
+- <span style="color: #84b6f4;opacity: 0.5;">Plattformübergreifende Kompatibilität</span>
+- **<span style="color: #84b6f4; font-size: 24px;">Hemicube Platzierung</span>**
 </template>
 </v-switch>
 
