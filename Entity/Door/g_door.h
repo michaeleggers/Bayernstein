@@ -67,12 +67,20 @@ public:
 
     // This is the angle in degrees the door slides to when opening.
     // On closing it is just the opposite direction.
-    double m_Angle = 0.0;
+    int m_Angle = 0;
+
+    int m_Lip = 0;
 
     // The distance the door travels when opening.
     double m_Distance = 70.0;
 
     double m_CurrentDistance = 0.0;
+
+    // +x is angle = 0
+    glm::vec3 m_Direction = glm::vec3(1.0f, 0.0f, 0.0f);
+
+    glm::vec3 m_Mins = glm::vec3(0.0f);
+    glm::vec3 m_Maxs = glm::vec3(0.0f);
 };
 
 #endif // _DOOR_H_
