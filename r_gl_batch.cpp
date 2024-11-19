@@ -152,7 +152,7 @@ int GLBatch::Add(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
     return offset;
 }
 
-int GLBatch::Add(MapTri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
+int GLBatch::AddMapTris(MapTri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
     std::vector<Tri> rawTris{};
     rawTris.resize( numTris );
     for (int i = 0; i < numTris; i++) {

@@ -273,9 +273,8 @@ std::vector<MapPolygon> createPolysoup(Map map, SoupFlags soupFlags)
     std::vector<MapPolygon> polys;
     for (auto e = map.entities.begin(); e != map.entities.end(); e++) {
        
-        // Check if we wannt also want the brush entities included or not (default = not).
-        if ( !hasClassname(*e, "worldspawn") 
-            && (!hasClassname(*e, "func_group"))
+        // Check if we also want the brush entities included or not (default = not).
+        if ( !hasClassname(*e, "worldspawn") && !hasClassname(*e, "func_group")
             && (soupFlags == SOUP_GET_WORLDSPAWN_ONLY) ) {
             continue;
         }

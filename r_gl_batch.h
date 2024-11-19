@@ -20,7 +20,7 @@ public:
 	GLBatch(uint32_t maxVerts, uint32_t maxIndices);
 
 	int				Add(Tri* tris, uint32_t numTris, bool cullFace = true, DrawMode drawMode = DRAW_MODE_SOLID);
-	int				Add(MapTri* tris, uint32_t numTris, bool cullFace = true, DrawMode drawMode = DRAW_MODE_SOLID);
+	int				AddMapTris(MapTri* tris, uint32_t numTris, bool cullFace = true, DrawMode drawMode = DRAW_MODE_SOLID);
 	int				Add(Vertex* verts, uint32_t numVerts, bool cullFace = true, DrawMode drawMode = DRAW_MODE_LINES);
 	bool			Add(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, int* out_offset, int* out_idxOffset, bool cullFace = true, DrawMode drawMode = DRAW_MODE_SOLID);
 	void			Bind();

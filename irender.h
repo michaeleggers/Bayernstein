@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <string>
+#include <stdint.h>
 
 #include "irender.h"
 #include "r_itexture.h"
@@ -23,12 +24,12 @@ enum DrawMode {
 };
 
 struct GLBatchDrawCmd { // TODO: Rename
-	int				offset;		// offset into vertex buffer (VBO)
-	int				indexOffset;	// offset into index buffer (iVBO)
-	uint32_t		numVerts;
-	uint32_t		numIndices;
-	bool			cullFace;
-	DrawMode		drawMode;
+	int		offset;		// offset into vertex buffer (VBO)
+	int		indexOffset;	// offset into index buffer (iVBO)
+	uint32_t	numVerts;
+	uint32_t	numIndices;
+	bool		cullFace;
+	DrawMode	drawMode;
 };
 
 class IRender {

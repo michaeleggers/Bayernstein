@@ -257,8 +257,8 @@ bool GLRender::Init(void) {
     m_ColliderBatch = new GLBatch(1000);
     m_FontBatch = new GLBatch(1000, 1000);
     m_ShapesBatch = new GLBatch(1000, 1000);
-    m_WorldBatch = new GLBatch(10000);
-    m_BrushBatch = new GLBatch(5000);
+    m_WorldBatch = new GLBatch(100000);
+    m_BrushBatch = new GLBatch(50000);
 
     // Initialize shaders
 
@@ -344,15 +344,16 @@ void GLRender::RegisterWorld(CWorld* world) {
     uint64_t numStaticTris = world->StaticGeometryCount();
 
     // Sort static Tris by texture
-    std::unordered_map<uint64_t, std::vector<MapTri*> > texHandle2Tris{};
+    std::unordered_map<uint64_t, std::vector<MapTri> > texHandle2Tris{};
+
     for (int i = 0; i < numStaticTris; i++) {
-        MapTri* pTri = &tris[ i ];
-        if ( texHandle2Tris.contains(pTri->hTexture) ) {
-            std::vector<MapTri*>* triList = &texHandle2Tris.at(pTri->hTexture);
-            triList->push_back(pTri);
+        MapTri pTri = tris[ i ];
+        if ( texHandle2Tris.contains(pTri.hTexture) ) {
+            std::vector<MapTri>& triList = texHandle2Tris.at(pTri.hTexture);
+            triList.push_back(pTri);
         } else {
-            std::vector<MapTri*> newTriList{ pTri };
-            texHandle2Tris.insert({ pTri->hTexture, newTriList });
+            std::vector<MapTri> newTriList{ pTri };
+            texHandle2Tris.insert({ pTri.hTexture, newTriList });
         }
     }
 
@@ -360,8 +361,8 @@ void GLRender::RegisterWorld(CWorld* world) {
     
     // FIX: ALL tris are registered here. Brush entities should go into a dedicated dynamic batch.
     for (auto& [ texHandle, triList ] : texHandle2Tris) {
-        MapTri** pTris = triList.data();
-        int vertexOffset = m_WorldBatch->Add( (MapTri*)*pTris, triList.size(), true, DRAW_MODE_SOLID );
+        std::vector<MapTri> pTris = triList;
+        int vertexOffset = m_WorldBatch->AddMapTris( pTris.data(), triList.size(), true, DRAW_MODE_SOLID );
         assert( vertexOffset >= 0 && "Tried to add Tris to World Batch but it returned a negative offset!" );
         GLBatchDrawCmd drawCmd = {
             vertexOffset, // Vertex Buffer offset is the current vert count of the batch
