@@ -63,57 +63,55 @@ backgroundColor: white
 
 # Hemicube Platzierung
 
+<v-switch>
+<template #0>
+
 ![Alt text](/img/fabian/img_hemicube_placement.png){width=90% height=90%}
-
----
-
-# Hemicube Platzierung
+</template>
+<template #1>
 
 ![Alt text](/img/fabian/img_hemicube_pov.png){width=90% height=90%}
-
----
-
-# Hemicube Platzierung
+</template>
+<template #2>
 
 ![Alt text](/img/fabian/img_hemicube_placement.png){width=90% height=90%}
-
----
-
-# Hemicube Platzierung
+</template>
+<template #3>
 
 ![Alt text](/img/fabian/img_ref.png){width=90% height=90%}
+</template>
+<template #4>
 
----
-
-
-# Hemicube Platzierung
 <style>
 img {
   image-rendering: pixelated;
 }
 </style>
+
 ![Alt text](/img/fabian/img_uvs.png){width=100% height=100%}
+</template>
+<template #5>
 
----
-
-# Hemicube Platzierung
 <style>
 img {
   image-rendering: pixelated;
 }
 </style>
+
 ![Alt text](/img/fabian/img_lm_nofill.png){width=100% height=100%}
+</template>
+<template #6>
 
----
-
-# Hemicube Platzierung
 <style>
 img {
   image-rendering: pixelated;
 }
 </style>
+
 ![Alt text](/img/fabian/img_lm_filled.png){width=90% height=90%}
 
+</template>
+</v-switch>
 ---
 
 # Ziele für Meilenstein 3
@@ -122,5 +120,6 @@ img {
 - Dynamic Patch Resolution
 - Verbessertes UV-Mapping
 - Bugfix Renderer
+
 
 
