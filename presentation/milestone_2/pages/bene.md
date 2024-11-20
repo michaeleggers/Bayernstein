@@ -25,7 +25,7 @@ level: 2
 # Das ist passiert
 
 <video controls class="h-[90%]">
-  <source src="../public/img/bene/steering-behaviours.webm" type="video/webm">
+  <source src="/img/bene/steering-behaviours.webm" type="video/webm">
   Your browser does not support the video tag.
 </video>
 
@@ -100,25 +100,25 @@ level: 2
 <v-switch>
 <template #0>
 
-![Steering Prämisse](../public/img/bene/05_steering_2.webp)
+![Steering Prämisse](/img/bene/05_steering_2.webp)
 
 </template>
 <template #1>
 
-![Gewünschte Geschwindigkeit](../public/img/bene/05_steering_3.webp)
+![Gewünschte Geschwindigkeit](/img/bene/05_steering_3.webp)
 
 </template>
 
 <template #2>
 
-![Maximale Geschwindigkeit](../public/img/bene/05_steering_4.webp)
+![Maximale Geschwindigkeit](/img/bene/05_steering_4.webp)
 
 </template>
 
 
 <template #3>
 
-![Neue Kraft](../public/img/bene/05_steering_5.webp)
+![Neue Kraft](/img/bene/05_steering_5.webp)
 
 </template>
 </v-switch>
@@ -137,7 +137,7 @@ level: 2
 
 ## Pfad Verfolgung
 
-![Pfand Verfolgung](../public/img/bene/05_steering_21.webp)
+![Pfand Verfolgung](/img/bene/05_steering_21.webp)
 
 <footer class="absolute bottom-0 left-0 right-0 p-2">
     <small>
@@ -158,7 +158,7 @@ hide: true
 
 ## Multi Segment Pfad
 
-![Welches Segment ist das Richtige](../public/img/bene/05_steering_33.webp)
+![Welches Segment ist das Richtige](/img/bene/05_steering_33.webp)
 
 <footer class="absolute bottom-0 left-0 right-0 p-2">
     <small>
