@@ -121,7 +121,7 @@ hideInToc: true
 Wahrscheinlich schlechte Implementierung. Optimierung über Compute Shader wäre möglich.
 
 - Entity System: Wir überlegen auf ein **Actor-Component** Modell wie in Unreal Engine umzustellen,
-um den Code innerhalb einer Entity etwas aufzuräumen gleichartiges Verhalten syntaktisch zu komprimieren.
+um den Code innerhalb einer Entity etwas aufzuräumen und identischen Code syntaktisch zu komprimieren.
 
 - Engine unterstützt ausschließlich TGA-Files für Welttexturen.
 
