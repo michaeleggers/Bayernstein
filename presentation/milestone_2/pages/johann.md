@@ -5,7 +5,6 @@ layout: center
 # Audio 
 
 ---
-title: Audio
 hideInToc: true
 ---
 
@@ -50,7 +49,7 @@ ul:last-child li::marker {
 
 <div class="col-container">
     <div class="col">
-        <h4>OpenAL</h4>
+        <h4>OpenAL <Cite bref="open-al" /></h4>
         <ul>
             <li>scheinbar sehr mächtig</li>
             <li>speziell für 3D Game-Audio designed</li>
@@ -62,7 +61,7 @@ ul:last-child li::marker {
         </ul>
     </div>
     <div class="col">
-        <h4>miniaudio</h4>
+        <h4>miniaudio <Cite bref="miniaudio" /></h4>
         <ul>
             <li>Feature-Umfang: <div style="opacity:0.6;">2d/3d audio, Effekte per Node-Graph System, Mixing, ...</div></li>
             <li>Low-Level und High-Level API</li>
@@ -73,7 +72,7 @@ ul:last-child li::marker {
         </ul>
     </div>
     <div class="col" style="box-shadow: 0 0 20px #0008">
-        <h4><strong>SoLoud</strong></h4>
+        <h4><strong>SoLoud</strong> <Cite bref="soloud" /></h4>
         <ul>
             <li>Dokumentation (und Code-Snippets) leicht zu verstehen</li>
             <li>Feature-Umfang: <div style="opacity:0.6;">2d/3d audio, Effekte, Mixing, integrierter Synthesizer, ...</div></li>
@@ -81,7 +80,7 @@ ul:last-child li::marker {
         </ul>
         <ul>
             <li>ggf. langsamer / weniger optimiert als (lower-level) Alternativen</li>
-            <li>evtl. eingeschränkt für weiter fortgeschrittene Use-Cases</li>
+            <li>evtl. eingeschränkt für weiter fortgeschrittenere Use-Cases</li>
         </ul>
     </div>
 </div>
