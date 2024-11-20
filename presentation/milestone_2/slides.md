@@ -26,6 +26,7 @@ addons:
 biblio:
   filename:
     - references.bib
+hideInToc: true
 ---
 
 # Games Engineering
@@ -82,6 +83,11 @@ level: 2
 ---
 src: ./pages/michi.md
 ---
+
+---
+src: ./pages/nico.md
+---
+
 ---
 src: ./pages/fabi.md
 ---
@@ -91,21 +97,13 @@ src: ./pages/johann.md
 ---
 
 ---
-src: ./pages/nico.md
----
-
----
 src: ./pages/bene.md
 ---
-
-
 
 ---
 
 # Ausblick
 
-test zitat:
-<Cite bref="Simpson" />
 
 ---
 

@@ -4,7 +4,6 @@ layout: center
 
 # Gegner KI
 
-<!-- This is a **note** -->
 
 ---
 level: 2
@@ -18,29 +17,45 @@ Was ist passiert?
 - Seek, Flee, Arrive
 - Follow Path, Follow Waypoints
 
+
 ---
 level: 2
 ---
 
-# Was ist passiert
+# Das ist passiert
 
 <video controls class="h-[90%]">
   <source src="../public/img/bene/steering-behaviours.webm" type="video/webm">
   Your browser does not support the video tag.
 </video>
 
+<!-- 
+- seek 
+- flee
+- arrive
+- follow waypoints
+    -> folgt nur punkten, ohne pfad dazwischen
+- waypoints & path
+    -> versucht zurück zum pfad 
+ -->
 ---
 level: 2
 ---
 
 # Steering Behaviours
 
-Craig Reynolds beschreibt 3 Layer
+Craig Reynolds beschreibt 3 Layer [@Reynolds1987]
 
 - Action Selection
 - Steering
 - Locomotion
 
+<!--
+- action selection -> state machine
+- steering behaviours
+- locomotion -> wie man von a nach b kommt. vgl auto vs laufen
+
+-->
 ---
 level: 2
 ---
@@ -60,7 +75,7 @@ $\mathbf{steeringForce} = \mathbf{desiredVelocity} - \mathbf{currentVelocity}$
 level: 2
 ---
 
-# Wie wird die Kraft zu Bewegung
+# Wie wird Kraft zu Bewegung
 
 2. Newtonsches Gesetz wird abgeleitet zu:
 
@@ -82,55 +97,39 @@ level: 2
 
 ## Steering Force
 
+<v-switch>
+<template #0>
+
 ![Steering Prämisse](../public/img/bene/05_steering_2.webp)
 
-<footer class="absolute bottom-0 left-0 right-0 p-2">
-    <small>
-        Bildquelle: <a href="https://natureofcode.com/autonomous-agents/">https://natureofcode.com/autonomous-agents/</a>
-    </small>
-</footer>
-
----
-level: 2
----
-
-## Steering Force
+</template>
+<template #1>
 
 ![Gewünschte Geschwindigkeit](../public/img/bene/05_steering_3.webp)
 
-<footer class="absolute bottom-0 left-0 right-0 p-2">
-    <small>
-        Bildquelle: <a href="https://natureofcode.com/autonomous-agents/">https://natureofcode.com/autonomous-agents/</a>
-    </small>
-</footer>
+</template>
 
----
-level: 2
----
-
-## Steering Force
+<template #2>
 
 ![Maximale Geschwindigkeit](../public/img/bene/05_steering_4.webp)
 
-<footer class="absolute bottom-0 left-0 right-0 p-2">
-    <small>
-        Bildquelle: <a href="https://natureofcode.com/autonomous-agents/">https://natureofcode.com/autonomous-agents/</a>
-    </small>
-</footer>
+</template>
 
----
-level: 2
----
 
-## Steering Force
+<template #3>
 
 ![Neue Kraft](../public/img/bene/05_steering_5.webp)
 
+</template>
+</v-switch>
+
+
 <footer class="absolute bottom-0 left-0 right-0 p-2">
     <small>
-        Bildquelle: <a href="https://natureofcode.com/autonomous-agents/">https://natureofcode.com/autonomous-agents/</a>
+        Bildquelle: <a href="https://natureofcode.com/autonomous-agents/">https://natureofcode.com/autonomous-agents/</a>[@shiffman24]
     </small>
 </footer>
+
 
 ---
 level: 2
@@ -145,6 +144,12 @@ level: 2
         Bildquelle: <a href="https://natureofcode.com/autonomous-agents/">https://natureofcode.com/autonomous-agents/</a>
     </small>
 </footer>
+
+<!--
+- aktuelle richtung + offset
+- projektion auf pfad
+- segment start + projektion + offset
+-->
 
 ---
 level: 2
