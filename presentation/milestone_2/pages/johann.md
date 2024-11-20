@@ -102,7 +102,7 @@ Notwendig (Basics):
 
 Nice to have:
 - Spiel-Zustand für Sounds (z.B. Wechsel von 'idle' zu 'combat' Modus)
-- Sound-Randomisierung (z.B. mehrere Samples, volume/pitch/effect Moodulationen, etc.)
+- Sound-Randomisierung (z.B. mehrere Samples, volume/pitch/effect Modulationen, etc.)
 - Prozedurale Sounds mit dynamischer Länge (z.B. Türen, bewegbare Plattformen, etc.)
 - Räumliche Sound-Effekte (Räume, obstruction / occlusion / attenuation, etc.)
 
