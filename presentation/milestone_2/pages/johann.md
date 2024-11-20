@@ -1,5 +1,12 @@
 ---
+layout: center
+---
+
+# Audio 
+
+---
 title: Audio
+hideInToc: true
 ---
 
 # Audio (Library)

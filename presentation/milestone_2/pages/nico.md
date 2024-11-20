@@ -1,20 +1,11 @@
+---
+layout: center
+---
 
-<style>
-.centered-text {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; /* Volle Höhe des Viewports */
-  font-size: 4rem; /* Große Schrift */
-  font-weight: bold; /* Fettschrift */
-  text-align: center;
-}
-</style>
+# Demo & Level Design
 
-<div class="centered-text">
-  Demo aktueller Stand
-</div>
-
+---
+hideInToc: true
 ---
 
 # Trenchbroom Ansicht
@@ -48,6 +39,8 @@
   <p>Trenchbroom Ansicht</p>
 </div>
 
+---
+hideInToc: true
 ---
 
 # Trim Sheets für die Texturen

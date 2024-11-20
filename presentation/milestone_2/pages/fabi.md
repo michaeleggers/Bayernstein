@@ -1,11 +1,11 @@
+---
+layout: intro
+---
+
 # Lightmapper
-<style>
-img {
-  image-rendering: pixelated;
-}
-</style>
 
 ---
+hideInToc: true
 backgroundOverlay: none
 backgroundColor: white
 ---
@@ -60,6 +60,8 @@ backgroundColor: white
 </v-switch>
 
 ---
+hideInToc: true
+---
 
 # Hemicube Platzierung
 
@@ -112,6 +114,8 @@ img {
 
 </template>
 </v-switch>
+---
+hideInToc: true
 ---
 
 # Ziele für Meilenstein 3

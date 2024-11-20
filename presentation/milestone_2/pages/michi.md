@@ -7,6 +7,8 @@
 - Bugfixes
 
 ---
+hideInToc: true
+---
 
 # Input System
 
@@ -41,6 +43,8 @@ if (jumpState == ButtonState::PRESSED) {
 ```
 
 ---
+hideInToc: true
+---
 
 # Herausforderungen
 
@@ -57,6 +61,8 @@ um den Code innerhalb einer Entity etwas aufzuräumen gleichartiges Verhalten sy
 
 - Engine unterstützt ausschließlich TGA-Files für Welttexturen.
 
+---
+hideInToc: true
 ---
 
 # Zu implementierende Features
