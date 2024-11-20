@@ -170,7 +170,7 @@ hide: true
 level: 2
 ---
 
-# Ausblick
+# Ausblick Gegner KI
 
 - Bug Fixing
 - State Machine & Steerign Behaviours zusammen bringen
