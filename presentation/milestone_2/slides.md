@@ -79,7 +79,9 @@ level: 2
 # Agenda
 
 <Toc maxDepth="1"/>
-
+---
+src: ./pages/michi.md
+---
 ---
 src: ./pages/fabi.md
 ---
@@ -96,9 +98,7 @@ src: ./pages/nico.md
 src: ./pages/bene.md
 ---
 
----
-src: ./pages/michi.md
----
+
 
 ---
 
