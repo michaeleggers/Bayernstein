@@ -68,7 +68,7 @@ class Lightmapper:
             self.scene.light_map = new_lightmap
             #temporary_lightmap_path = Path(self.base_path / 'temp' / 'lightmap.hdr')
             #self.scene.generate_light_map(temporary_lightmap_path)
-            self.renderer.update_ligth_map()
+            self.renderer.update_light_map()
             
 
         self.scene.generate_light_map(lightmap_path)

@@ -1,7 +1,12 @@
-import argparse
+# TODO: Put this somewhere in the readme later. Just for Michael to remember
+# Call this on Linux: python map_compiler.py ../../../../assets/ /maps/temple2.map ./ 3 0.5
+
+import sys
 import os
+import argparse
 import subprocess
-import json
+import platform
+
 from renderer import Renderer
 from lightmapper import Lightmapper
 from data_structures.scene import Scene
@@ -19,7 +24,7 @@ def compile_map(
     ):
 
     temp_output_path = soup_map(assets_path=assets_path, map_path=map_path)
-    
+
     generate_lightmaps(temp_output_path, assets_path, map_path.stem, output_path, iterations, patches_resolution, atmospheric_color)
 
 def soup_map(assets_path: Path, map_path: Path) -> Path:
@@ -29,10 +34,24 @@ def soup_map(assets_path: Path, map_path: Path) -> Path:
     """
     
     # the parent folder of self
-    base_path = Path(__file__).resolve().parent
-    souper_path = base_path / 'souper/bin/Debug/souper.exe'
-    temp_output_file = base_path / 'temp/temp.json'
+    # Check if the script is running as a bundled executable
+    if getattr(sys, 'frozen', False):
+        # If running from the bundled executable, use the extracted folder
+        base_path = Path(sys._MEIPASS)
+    else:
+        # If running from the source code, use the regular script path
+        base_path = Path(__file__).resolve().parent
 
+    if os.name == 'nt':  # Windows
+        souper_path = base_path / 'souper/bin/Debug/souper.exe'
+    else:  # macOS / Linux
+        souper_path = base_path / 'souper/bin/souper'
+    
+    #souper_path = Path('/Users/fabiandepaoli/Library/Mobile Documents/com~apple~CloudDocs/SharedData/HM/GamesEngineering/Bayernstein/tools/lightmapper/souper/bin/souper-macos')
+    
+    temp_output_file = assets_path / 'temp/temp.json'
+    # Ensure the temporary directory exists
+    temp_output_file.parent.mkdir(parents=True, exist_ok=True)
     command = [str(souper_path), str(assets_path), str(map_path), str(temp_output_file)]
     subprocess.run(command, check=True)
 
@@ -55,6 +74,7 @@ def generate_lightmaps(
     scene.generate_vertex_array()
     #scene.save_to_json(assets_path / f'compiled/{map_name}/{map_name}.json', assets_path)
     scene.save_to_json(output_path / f'{map_name}/{map_name}.json', assets_path)
+    scene.save_to_binary(output_path / f'{map_name}/{map_name}.ply')
 
     # Create the renderer
     lightmap_renderer = Renderer(

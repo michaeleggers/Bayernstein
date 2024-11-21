@@ -16,6 +16,9 @@ import util.geometry as geometry
 from data_structures.color import Color
 from data_structures.patch import Patch
 from data_structures.vector3f import Vector3f as vec
+from data_structures.compiled_vertex import CompiledVertex
+from data_structures.compiled_triangle import CompiledTriangle
+
 
 from typing import List
 
@@ -26,7 +29,7 @@ class Scene:
 
     def __init__(self, map_path, assets_path, lightmap_path = None) -> None:
 
-        textures_directory = Path(str(assets_path) +  '\\textures')
+        textures_directory = Path(assets_path) / 'textures'
         self.triangles, self.texture_uvs, self.lightmap_uvs, self.textures, self.emissions = self.load_from_json(map_path, assets_path)
         self.texture_array, self.texture_array_uvs, self.texture_index_mapping = self.create_texture_array(self.textures, self.texture_uvs, textures_directory)
         if lightmap_path:
@@ -172,12 +175,51 @@ class Scene:
 
         # Ensure the directory exists
         json_path.parent.mkdir(parents=True, exist_ok=True)
-
         # Write JSON data to file
         with open(json_path, 'w') as file:
             json.dump(data, file, indent=4)
 
         return self
+    
+    def save_to_binary(self, binary_path: Path) -> 'Scene':
+        compiled_triangles = []
+
+        for i, (triangle, tex_uv, lm_uv, emit) in enumerate(zip(self.triangles, self.texture_uvs, self.lightmap_uvs, self.emissions)):
+            
+            triangle_positions = [[vertex[0], vertex[1], vertex[2]] for vertex in triangle]
+            tex_uvs = [[float(u), float(v)] for u, v in tex_uv]
+            lm_uvs = [[float(u), float(v)] for u, v in lm_uv]
+            normal_array = geometry.calculate_normal(np.asarray(triangle_positions[0]),
+                                                    np.asarray(triangle_positions[1]),
+                                                    np.asarray(triangle_positions[2]))
+            normal = (float(normal_array[0]), float(normal_array[1]), float(normal_array[2]))
+
+
+            # Create 3 vertices for the current triangle
+            vertices = []
+            for j in range(3):
+                vertex = CompiledVertex(
+                    pos=triangle_positions[j],
+                    normal=normal,
+                    uv_texture=tex_uvs[j],
+                    uv_lightmap=lm_uvs[j]
+                )
+                vertices.append(vertex)
+
+            # Create a CompiledTriangle with these 3 vertices
+            compiled_triangle = CompiledTriangle(
+                vertices=vertices,
+                textureName='default.png',  # Example texture name, adjust as needed
+                surfaceFlags=1,
+                contentFlags=1
+            )
+
+            compiled_triangles.append(compiled_triangle)
+
+        # Write to binary file
+        with open(binary_path, 'wb') as f:
+            for triangle in compiled_triangles:
+                f.write(triangle.to_binary())
 
 
     def create_patches(self, patches_resolution: float = 0.0625) -> 'Scene':
@@ -197,7 +239,7 @@ class Scene:
         texture_index_mapping = {}  # Dictionary to map texture names to indices
 
         for index, texture_name in enumerate(textures):
-            path = os.path.join(textures_directory, texture_name + ".png")
+            path = Path(textures_directory) / f"{texture_name}.png"
             image = Image.open(path).convert("RGBA")
             images[texture_name] = image
             max_width = max(max_width, image.width)
@@ -515,8 +557,14 @@ class Scene:
                 color = random_color
                 pixels[x, y] = color  # Set pixel color
 
+        # Define the path for the debug folder relative to the current script's location
+        debug_path = Path(__file__).resolve().parent / "debug" 
+
+        # Ensure the debug directory exists
+        debug_path.mkdir(parents=True, exist_ok=True)
+
         # Save the image
-        image.save("debug_patches.png")
+        image.save(debug_path / "debug_uv_maps.png")
 
         
     

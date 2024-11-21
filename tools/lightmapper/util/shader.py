@@ -1,5 +1,8 @@
 from OpenGL.GL import *
 from OpenGL.GL.shaders import compileProgram,compileShader
+from OpenGL.GL import glGetString, GL_VERSION
+
+
 
 def create_shader(vertex_filepath: str, fragment_filepath: str) -> int:
     """
@@ -23,8 +26,19 @@ def create_shader(vertex_filepath: str, fragment_filepath: str) -> int:
 
     with open(fragment_filepath,'r') as f:
         fragment_src = f.readlines()
+
+
+    vertex_shader = compileShader(vertex_src, GL_VERTEX_SHADER)
+    if not vertex_shader:
+        print(glGetShaderInfoLog(vertex_shader))
+
+    fragment_shader = compileShader(fragment_src, GL_FRAGMENT_SHADER)
+    if not fragment_shader:
+        print(glGetShaderInfoLog(fragment_shader))
+  
+    # Check for errors in program linking
+    shader_program = compileProgram(vertex_shader, fragment_shader, validate=False)
+    if not shader_program:
+        print(glGetProgramInfoLog(shader_program))
     
-    shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER),
-                            compileShader(fragment_src, GL_FRAGMENT_SHADER))
-    
-    return shader
+    return shader_program
