@@ -1048,6 +1048,7 @@ void GLRender::RenderConsole(Console* console, CFont* font) {
     float logY = inputY - textMargin * 2 - font->m_Size;
     const int maxLines = floor(logY / lineHeight) + 1;
     const int maxChars = floor((m_WindowWidth - 2 * textMargin) / charWidth);
+    const bool isScrollable = console->m_lineBuffer.Size() > maxLines;
 
     Begin2D();
     m_ConsoleFBO->Bind();
@@ -1079,10 +1080,24 @@ void GLRender::RenderConsole(Console* console, CFont* font) {
         console->m_blinkTimer = 0;
     }
 
+    // draw bottom scroll indicator
+    if (isScrollable && console->ScrollPos() != 0) {
+        R_DrawText(std::string(maxChars, '^'), textMargin, logY + lineHeight * 0.7f, COORD_MODE_ABS);
+    }
+
     // draw log lines
     for (int i = 0; i < maxLines; i++) {
+        int lineOffset = isScrollable ? console->ScrollPos() + i : i;
         std::string line;
-        if (!console->m_lineBuffer.Get(i, &line)) break;
+        if (!console->m_lineBuffer.Get(lineOffset, &line)) {
+            if (isScrollable) {
+                std::string msg = " END OF LOG ";
+                int chars = (maxChars - msg.length()) / 2;
+                msg = std::string(chars, '-') + msg;
+                R_DrawText(msg + std::string(maxChars - msg.length(), '-'), textMargin, logY, COORD_MODE_ABS);
+            }
+            break;
+        }
         if (scr_conwraplines.value && line.length() > maxChars) {
             std::vector<std::string> segments;
             for (int offset = 0; offset < line.length(); offset += maxChars) {

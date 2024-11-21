@@ -15,6 +15,7 @@ static bool         g_PerFrameScancodes[SDL_NUM_SCANCODES];
 static Uint8        g_MouseButtons;
 static Uint8        g_PrevMouseButtons;
 static MouseMotion  g_MouseMotionState;
+static MouseWheel   g_MouseWheelState;
 
 static std::string g_EventText;
 
@@ -26,6 +27,7 @@ void HandleInput(void)
 
     g_Events = 0;
     g_EventText = "";
+    g_MouseWheelState.updated = false;
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -57,6 +59,11 @@ void HandleInput(void)
         if (event.type == SDL_MOUSEMOTION) {
             g_MouseMotionState.prev = g_MouseMotionState.current;
             g_MouseMotionState.current = event.motion;
+        }
+        if (event.type == SDL_MOUSEWHEEL) {
+            g_MouseWheelState.prev = g_MouseWheelState.current;
+            g_MouseWheelState.current = event.wheel;
+            g_MouseWheelState.updated = true;
         }
         
         if (event.type == SDL_TEXTINPUT) {
@@ -126,6 +133,10 @@ bool RightMouseWentDown(void)
 
 const MouseMotion GetMouseMotion(void) {
     return g_MouseMotionState;
+}
+
+const MouseWheel GetMouseWheel(void) {
+    return g_MouseWheelState;
 }
 
 bool ShouldClose(void)
