@@ -5,10 +5,11 @@
 #ifndef MESSAGEDISPATCHER_H
 #define MESSAGEDISPATCHER_H
 
+#include <set>
+
 #include "../Entity/base_game_entity.h"
 #include "../Entity/entity_manager.h"
 #include "telegram.h"
-#include <set>
 
 // to make life easier...
 #define Dispatcher MessageDispatcher::Instance()

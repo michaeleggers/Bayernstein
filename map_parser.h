@@ -21,22 +21,23 @@
 #ifndef _PARSER_H_
 #define _PARSER_H_
 
-#include <string>
-#include <iostream>
+#include "Path/path.h"
+#include "dependencies/glm/glm.hpp"
+#include "utils/utils.h"
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include <vector>
 
-enum MapVersion
-{
+enum MapVersion {
     QUAKE,
     VALVE_220
 };
 
-enum TokenType
-{
+enum TokenType {
     LBRACE,
     RBRACE,
     LPAREN,
@@ -51,49 +52,41 @@ enum TokenType
     END_OF_INPUT
 };
 
-struct MapVertex
-{
+struct MapVertex {
     double x, y, z;
 };
 
-struct Face
-{
-    MapVertex       vertices[3];     // Define the plane.
-    std::string     textureName;
-    double          xOffset, yOffset;
-    double          rotation;
-    double          xScale, yScale;
+struct Face {
+    MapVertex vertices[ 3 ]; // Define the plane.
+    std::string textureName;
+    double xOffset, yOffset;
+    double rotation;
+    double xScale, yScale;
 
     // Valve 220 texture format
-    double          tx1, ty1, tz1, tOffset1;
-    double          tx2, ty2, tz2, tOffset2;
+    double tx1, ty1, tz1, tOffset1;
+    double tx2, ty2, tz2, tOffset2;
 };
 
-struct Brush
-{
+struct Brush {
     std::vector<Face> faces;
 };
 
-struct Property
-{
+struct Property {
     std::string key;
     std::string value;
 };
 
-struct Entity
-{
+struct Entity {
     std::vector<Property> properties;
-    std::vector<Brush>    brushes;
+    std::vector<Brush> brushes;
 };
 
-struct Map
-{
+struct Map {
     std::vector<Entity> entities;
 };
 
 Map getMap(char* mapData, size_t mapDataLength, MapVersion mapVersion = QUAKE);
-
-
 
 /* 
 * 
@@ -101,82 +94,83 @@ Map getMap(char* mapData, size_t mapDataLength, MapVersion mapVersion = QUAKE);
 * 
 */
 
-
-
 #ifdef MAP_PARSER_IMPLEMENTATION
 
-static int          g_InputLength;
-static int          g_LineNo;
-static MapVersion   g_MapVersion;
+static int g_InputLength;
+static int g_LineNo;
+static MapVersion g_MapVersion;
 
-static int advanceCursor(int* pos, int steps)
-{
+static int advanceCursor(int* pos, int steps) {
     int advanceable = g_InputLength - *pos + steps;
-    if (advanceable > 0) {
+    if ( advanceable > 0 ) {
         *pos += advanceable;
         return advanceable;
     }
     return 0;
 }
 
-static void advanceToNextNonWhitespace(char* c, int* pos)
-{
+static void advanceToNextNonWhitespace(char* c, int* pos) {
     char* cur = c + *pos;
-    while (isspace(*cur)) {
-        if (*cur == '\n') { // TODO: Get Env-Newline?
+    while ( isspace(*cur) ) {
+        if ( *cur == '\n' ) { // TODO: Get Env-Newline?
             g_LineNo++;
         }
-        cur++; *pos += 1;
+        cur++;
+        *pos += 1;
     }
 }
 
-static void advanceToNextWhitespaceOrLinebreak(char** c, int* pos)
-{
-    while (!isspace(**c) && **c != '\n' && **c != '\r') {
-        *c += 1; *pos += 1;
+static void advanceToNextWhitespaceOrLinebreak(char** c, int* pos) {
+    while ( !isspace(**c) && **c != '\n' && **c != '\r' ) {
+        *c += 1;
+        *pos += 1;
     }
 }
 
-static void skipLinebreaks(char* c, int* pos)
-{
+static void skipLinebreaks(char* c, int* pos) {
     char* cur = c + *pos;
-    while (*cur == '\r' || *cur == '\n') {
-        cur++; *pos += 1; g_LineNo++;
-    }
-}
-
-static void advanceToNextLine(char* c, int* pos)
-{
-    char* cur = c + *pos;
-    while (*cur != '\r' && *cur != '\n') {
-        cur++; *pos += 1;
-    }
-    if (*cur == '\r') {
-        cur++; *pos += 1;
-    }
-    if (*cur == '\n') {
-        cur++; *pos += 1;
+    while ( *cur == '\r' || *cur == '\n' ) {
+        cur++;
+        *pos += 1;
         g_LineNo++;
     }
 }
 
-static std::string getString(char* c, int* pos)
-{
+static void advanceToNextLine(char* c, int* pos) {
+    char* cur = c + *pos;
+    while ( *cur != '\r' && *cur != '\n' ) {
+        cur++;
+        *pos += 1;
+    }
+    if ( *cur == '\r' ) {
+        cur++;
+        *pos += 1;
+    }
+    if ( *cur == '\n' ) {
+        cur++;
+        *pos += 1;
+        g_LineNo++;
+    }
+}
+
+static std::string getString(char* c, int* pos) {
     char* cur = c + *pos;
 
-    cur++; *pos += 1; // advance over "
+    cur++;
+    *pos += 1; // advance over "
     std::string result = "";
-    while (*cur != '\"') {
-        result += *cur; *pos += 1; cur++;
+    while ( *cur != '\"' ) {
+        result += *cur;
+        *pos += 1;
+        cur++;
     }
     *pos += 1; // advance over "
 
     return result;
 }
 
-static TokenType getToken(char* c, int* pos)
-{
-    if (*pos >= g_InputLength) {
+static TokenType getToken(char* c, int* pos) {
+    if ( *pos >= g_InputLength ) {
         return END_OF_INPUT;
     }
 
@@ -185,41 +179,32 @@ static TokenType getToken(char* c, int* pos)
     advanceToNextNonWhitespace(c, pos);
     skipLinebreaks(c, pos);
 
-    while (*(c + *pos) == '/') { // Skip over all comments
+    while ( *(c + *pos) == '/' ) { // Skip over all comments
         advanceToNextLine(c, pos);
         advanceToNextNonWhitespace(c, pos);
     }
 
     char* cur = c + *pos;
 
-    if (*cur == '{') {
+    if ( *cur == '{' ) {
         result = LBRACE;
-    }
-    else if (*cur == '}') {
+    } else if ( *cur == '}' ) {
         result = RBRACE;
-    }
-    else if (*cur == '(') {
+    } else if ( *cur == '(' ) {
         result = LPAREN;
-    }
-    else if (*cur == ')') {
+    } else if ( *cur == ')' ) {
         result = RPAREN;
-    }
-    else if (*cur == '[') {
+    } else if ( *cur == '[' ) {
         result = LBRACKET;
-    }
-    else if (*cur == ']') {
+    } else if ( *cur == ']' ) {
         result = RBRACKET;
-    }
-    else if (*cur == '"') {
+    } else if ( *cur == '"' ) {
         result = STRING;
-    }
-    else if (*cur >= '0' && *cur <= '9' || *cur == '-') { // TODO: MINUS own token and check again if really NUMBER
+    } else if ( *cur >= '0' && *cur <= '9' || *cur == '-' ) { // TODO: MINUS own token and check again if really NUMBER
         result = NUMBER;
-    }
-    else if (*cur >= 0x21 && *cur <= 0x7E) { // '!' - '~'
+    } else if ( *cur >= 0x21 && *cur <= 0x7E ) { // '!' - '~'
         result = TEXNAME;
-    }
-    else {
+    } else {
         result = UNKNOWN;
         *pos += 1;
     }
@@ -227,87 +212,106 @@ static TokenType getToken(char* c, int* pos)
     return result;
 }
 
-static std::string tokenToString(TokenType tokenType)
-{
-    switch (tokenType)
-    {
-    case LBRACE: return "LBRACE"; break;
-    case RBRACE: return "RBRACE"; break;
-    case LPAREN: return "LPAREN"; break;
-    case RPAREN: return "RPAREN"; break;
-    case NUMBER: return "NUMBER"; break;
-    case STRING: return "STRING"; break;
-    case COMMENT: return "COMMENT"; break;
-    case TEXNAME: return "TEXNAME"; break;
-    case UNKNOWN: return "UNKNOWN"; break;
-    default: return "!!! H E L P !!!";
+static std::string tokenToString(TokenType tokenType) {
+    switch ( tokenType ) {
+    case LBRACE:
+        return "LBRACE";
+        break;
+    case RBRACE:
+        return "RBRACE";
+        break;
+    case LPAREN:
+        return "LPAREN";
+        break;
+    case RPAREN:
+        return "RPAREN";
+        break;
+    case NUMBER:
+        return "NUMBER";
+        break;
+    case STRING:
+        return "STRING";
+        break;
+    case COMMENT:
+        return "COMMENT";
+        break;
+    case TEXNAME:
+        return "TEXNAME";
+        break;
+    case UNKNOWN:
+        return "UNKNOWN";
+        break;
+    default:
+        return "!!! H E L P !!!";
     }
 }
 
-static bool check(TokenType got, TokenType expected)
-{
-    if (expected != got) {
-        fprintf(stderr, "ERROR: Expected Token: %s, but got: %s in line %d\n",
-            tokenToString(expected).c_str(), tokenToString(got).c_str(), g_LineNo);
+static bool check(TokenType got, TokenType expected) {
+    if ( expected != got ) {
+        fprintf(stderr,
+                "ERROR: Expected Token: %s, but got: %s in line %d\n",
+                tokenToString(expected).c_str(),
+                tokenToString(got).c_str(),
+                g_LineNo);
         exit(-1);
     }
 
     return true;
 }
 
-static double parseNumber(char* c, int* pos)
-{
+static double parseNumber(char* c, int* pos) {
     char* cur = c + *pos;
     std::string number = "";
-    while (*cur == '-' || *cur >= '0' && *cur <= '9' || *cur == '.') {
-        number += *cur; cur++; *pos += 1;
+    while ( *cur == '-' || *cur >= '0' && *cur <= '9' || *cur == '.' ) {
+        number += *cur;
+        cur++;
+        *pos += 1;
     }
     return atof(number.c_str());
 }
 
-static MapVertex getVertex(char* c, int* pos)
-{
-    MapVertex v = { };
+static MapVertex getVertex(char* c, int* pos) {
+    MapVertex v = {};
     std::vector<double> values;
-    for (int i = 0; i < 3; i++) { // A face is defined by 3 vertices.
+    for ( int i = 0; i < 3; i++ ) { // A face is defined by 3 vertices.
         advanceToNextNonWhitespace(c, pos);
         double value = parseNumber(c, pos);
         values.push_back(value);
     }
 
-    v.x = values[0];
-    v.y = values[1];
-    v.z = values[2];
+    v.x = values[ 0 ];
+    v.y = values[ 1 ];
+    v.z = values[ 2 ];
 
     return v;
 }
 
-static double getNumber(char* c, int* pos)
-{
+static double getNumber(char* c, int* pos) {
     char* cur = c + *pos;
     std::string number = "";
-    while (*cur == '-' || *cur >= '0' && *cur <= '9' || *cur == '.' || *cur == 'e') {
-        number += *cur; cur++; *pos += 1;
+    while ( *cur == '-' || *cur >= '0' && *cur <= '9' || *cur == '.' || *cur == 'e' ) {
+        number += *cur;
+        cur++;
+        *pos += 1;
     }
     return atof(number.c_str());
 }
 
-static std::string getTextureName(char* c, int* pos)
-{
+static std::string getTextureName(char* c, int* pos) {
     char* cur = c + *pos;
 
     std::string textureName = "";
     char* end = cur;
     advanceToNextWhitespaceOrLinebreak(&end, pos);
-    while (cur != end) {
-        textureName += *cur; cur++;
+    while ( cur != end ) {
+        textureName += *cur;
+        cur++;
     }
 
     return textureName;
 }
 
-static Property getProperty(char* c, int* pos)
-{
+static Property getProperty(char* c, int* pos) {
     check(getToken(c, pos), STRING);
     std::string key = getString(c, pos);
     check(getToken(c, pos), STRING);
@@ -319,21 +323,22 @@ static Property getProperty(char* c, int* pos)
 /*
 * TODO: getFace and getFaceValve220 are fairly similar. Try to compress this?
 */
-static Face getFace(char* c, int* pos)
-{
-    Face face = { };
+static Face getFace(char* c, int* pos) {
+    Face face = {};
 
     /* 3 Vertices defining the plane */
-    for (size_t i = 0; i < 3; ++i) {
-        check(getToken(c, pos), LPAREN); *pos += 1;
+    for ( size_t i = 0; i < 3; ++i ) {
+        check(getToken(c, pos), LPAREN);
+        *pos += 1;
         check(getToken(c, pos), NUMBER);
         double x = getNumber(c, pos);
         check(getToken(c, pos), NUMBER);
         double y = getNumber(c, pos);
         check(getToken(c, pos), NUMBER);
         double z = getNumber(c, pos);
-        check(getToken(c, pos), RPAREN); *pos += 1;
-        face.vertices[i] = { x, y, z };
+        check(getToken(c, pos), RPAREN);
+        *pos += 1;
+        face.vertices[ i ] = { x, y, z };
     }
 
     /* Texture stuff */
@@ -359,8 +364,8 @@ static Face getFace(char* c, int* pos)
     * 
     * TODO: Figure out what those 3 extra numbers are in Q2.
     */
-    int *currentPos = pos; // save original (eg. do a lookahead)
-    if (getToken(c, currentPos) == NUMBER) { 
+    int* currentPos = pos; // save original (eg. do a lookahead)
+    if ( getToken(c, currentPos) == NUMBER ) {
 
         getToken(c, pos); // if the lookahead returned a NUMBER get the token again to advance pos.
         getNumber(c, pos);
@@ -373,28 +378,30 @@ static Face getFace(char* c, int* pos)
     return face;
 }
 
-static Face getFaceValve220(char* c, int* pos)
-{
-    Face face = { };
+static Face getFaceValve220(char* c, int* pos) {
+    Face face = {};
 
     /* 3 Vertices defining the plane */
-    for (size_t i = 0; i < 3; ++i) {
-        check(getToken(c, pos), LPAREN); *pos += 1;
+    for ( size_t i = 0; i < 3; ++i ) {
+        check(getToken(c, pos), LPAREN);
+        *pos += 1;
         check(getToken(c, pos), NUMBER);
         double x = getNumber(c, pos);
         check(getToken(c, pos), NUMBER);
         double y = getNumber(c, pos);
         check(getToken(c, pos), NUMBER);
         double z = getNumber(c, pos);
-        check(getToken(c, pos), RPAREN); *pos += 1;
-        face.vertices[i] = { x, y, z };
+        check(getToken(c, pos), RPAREN);
+        *pos += 1;
+        face.vertices[ i ] = { x, y, z };
     }
 
     check(getToken(c, pos), TEXNAME);
     face.textureName = getTextureName(c, pos);
 
     /* Texture stuff */
-    check(getToken(c, pos), LBRACKET); *pos += 1;
+    check(getToken(c, pos), LBRACKET);
+    *pos += 1;
     check(getToken(c, pos), NUMBER);
     face.tx1 = getNumber(c, pos);
     check(getToken(c, pos), NUMBER);
@@ -403,9 +410,11 @@ static Face getFaceValve220(char* c, int* pos)
     face.tz1 = getNumber(c, pos);
     check(getToken(c, pos), NUMBER);
     face.tOffset1 = getNumber(c, pos);
-    check(getToken(c, pos), RBRACKET); *pos += 1;
+    check(getToken(c, pos), RBRACKET);
+    *pos += 1;
 
-    check(getToken(c, pos), LBRACKET); *pos += 1;
+    check(getToken(c, pos), LBRACKET);
+    *pos += 1;
     check(getToken(c, pos), NUMBER);
     face.tx2 = getNumber(c, pos);
     check(getToken(c, pos), NUMBER);
@@ -414,7 +423,8 @@ static Face getFaceValve220(char* c, int* pos)
     face.tz2 = getNumber(c, pos);
     check(getToken(c, pos), NUMBER);
     face.tOffset2 = getNumber(c, pos);
-    check(getToken(c, pos), RBRACKET); *pos += 1;
+    check(getToken(c, pos), RBRACKET);
+    *pos += 1;
 
     check(getToken(c, pos), NUMBER);
     face.rotation = getNumber(c, pos);
@@ -426,21 +436,19 @@ static Face getFaceValve220(char* c, int* pos)
     return face;
 }
 
-static Brush getBrush(char* c, int* pos)
-{
-    Brush brush = { };
+static Brush getBrush(char* c, int* pos) {
+    Brush brush = {};
 
-    while (getToken(c, pos) == LPAREN) {
-        if (g_MapVersion == VALVE_220) {
+    while ( getToken(c, pos) == LPAREN ) {
+        if ( g_MapVersion == VALVE_220 ) {
             brush.faces.push_back(getFaceValve220(c, pos));
-        }
-        else {
+        } else {
             brush.faces.push_back(getFace(c, pos));
         }
     }
 
     int faceCount = brush.faces.size();
-    if (faceCount < 6) {
+    if ( faceCount < 6 ) {
         fprintf(stderr, "WARNING (Line %d): Brush found with only %d faces!\n", g_LineNo, faceCount);
     }
 
@@ -450,41 +458,82 @@ static Brush getBrush(char* c, int* pos)
 /**
 * I assume that the grammar does not allow a brush *before* a property within an entity!
 */
-static Entity getEntity(char* c, int* pos)
-{
-    Entity e = { };
+static Entity getEntity(char* c, int* pos) {
+    Entity e = {};
 
-    while (getToken(c, pos) == STRING) {
+    while ( getToken(c, pos) == STRING ) {
         e.properties.push_back(getProperty(c, pos));
     }
 
-    while (getToken(c, pos) == LBRACE) {
+    while ( getToken(c, pos) == LBRACE ) {
         *pos += 1;
         e.brushes.push_back(getBrush(c, pos));
         check(getToken(c, pos), RBRACE);
         *pos += 1;
     }
 
-    check(getToken(c, pos), RBRACE); *pos += 1;
+    check(getToken(c, pos), RBRACE);
+    *pos += 1;
 
     return e;
 }
 
-Map getMap(char* mapData, size_t mapDataLength, MapVersion mapVersion)
-{
+Map getMap(char* mapData, size_t mapDataLength, MapVersion mapVersion) {
     Map map = {};
 
     g_InputLength = mapDataLength;
     g_LineNo = 1; // Editors often start at line 1
     g_MapVersion = mapVersion;
     int pos = 0;
-    check(getToken(&mapData[0], &pos), LBRACE); // Map file must start with an entity!
-    while (getToken(&mapData[0], &pos) == LBRACE) {
+    check(getToken(&mapData[ 0 ], &pos), LBRACE); // Map file must start with an entity!
+    while ( getToken(&mapData[ 0 ], &pos) == LBRACE ) {
         pos++;
-        map.entities.push_back(getEntity(&mapData[0], &pos));
+        map.entities.push_back(getEntity(&mapData[ 0 ], &pos));
     }
 
     return map;
+}
+
+// FIX: No more functions must be added to this file. The map parser just
+// gets the data from the MAP file. Nothing more. Move this function
+// out.
+glm::vec3 GetOrigin(Entity* entity) {
+    for ( Property& property : entity->properties ) {
+        if ( property.key == "origin" ) {
+            std::vector<float> values = ParseFloatValues(property.value);
+            return glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
+        }
+    }
+
+    assert(false && "Entity has no origin property!");
+}
+
+// FIX: No more functions must be added to this file. The map parser just
+// gets the data from the MAP file. Nothing more. Move this function
+// out.
+Waypoint GetWaypoint(Entity* entity) {
+    Waypoint waypoint = {};
+    for ( Property& property : entity->properties ) {
+        if ( property.key == "origin" ) {
+            std::vector<float> values = ParseFloatValues(property.value);
+            waypoint.position = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
+        } else if ( property.key == "targetname" ) {
+            char delimiter = '_';
+            std::vector<std::string> strings = SplitString(property.value, delimiter);
+            std::string string = strings[ 1 ];
+
+            waypoint.id = std::stoi(string);
+
+        } else if ( property.key == "target" ) {
+            char delimiter = '_';
+            std::vector<std::string> strings = SplitString(property.value, delimiter);
+            std::string string = strings[ 1 ];
+
+            waypoint.target = std::stoi(string);
+        }
+    }
+
+    return waypoint;
 }
 
 #endif

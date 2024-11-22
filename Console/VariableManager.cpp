@@ -4,7 +4,7 @@
 
 #include "CommandManager.h"
 #include "Console.h"
-#include "../utils.h"
+#include "../utils/utils.h"
 
 
 void Reset_f(std::vector<std::string> args) {

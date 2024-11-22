@@ -7,7 +7,7 @@
 #include "CommandManager.h"
 #include "VariableManager.h"
 
-#include "../utils.h"
+#include "../utils/utils.h"
 #include "../irender.h"
 #include "../r_font.h"
 #include "../hkd_interface.h"

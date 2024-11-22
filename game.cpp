@@ -11,16 +11,17 @@
 
 #include "./Message/message_type.h"
 #include "CWorld.h"
+#include "Path/path.h"
 #include "Shape.h"
 #include "ShapeSphere.h"
 #include "camera.h"
+#include "hkd_interface.h"
 #include "input.h"
 #include "physics.h"
 #include "polysoup.h"
 #include "r_font.h"
 #include "r_itexture.h"
-#include "utils.h"
-#include "hkd_interface.h"
+#include "utils/utils.h"
 #include "input_handler.h"
 #include "input_delegate.h"
 #include "input_receiver.h"
@@ -34,6 +35,7 @@ Game::Game(std::string exePath, hkdInterface* pInterface) {
     m_pInterface = pInterface;
     m_ExePath = exePath;
     m_pEntityManager = EntityManager::Instance();
+    m_pPath = new PatrolPath();
 }
 
 void Game::Init() {
@@ -46,7 +48,7 @@ void Game::Init() {
     IRender* renderer = GetRenderer();
     renderer->RegisterFont(m_ConsoleFont);
     renderer->RegisterFont(m_ConsoleFont30);
-    
+
     // Load world triangles from Quake .MAP file
 
     std::vector<MapTri> worldTris{};
@@ -54,9 +56,9 @@ void Game::Init() {
 
     // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
 #ifdef _WIN32
-    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/temple2.map");
+    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple2.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/enemy_test.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -67,27 +69,18 @@ void Game::Init() {
     glm::vec4 triColor = glm::vec4(0.1f, 0.8f, 1.0f, 1.0f);
     for ( int i = 0; i < tris.size(); i++ ) {
         MapPolygon mapPoly = tris[ i ];
-      
-        Vertex A = { 
-            glm::vec3(mapPoly.vertices[0].pos.x,
-                      mapPoly.vertices[0].pos.y,
-                      mapPoly.vertices[0].pos.z),
-                      mapPoly.vertices[0].uv };
-        Vertex B = { 
-            glm::vec3(mapPoly.vertices[1].pos.x,
-                      mapPoly.vertices[1].pos.y,
-                      mapPoly.vertices[1].pos.z),
-                      mapPoly.vertices[1].uv };
-        Vertex C = { 
-            glm::vec3(mapPoly.vertices[2].pos.x,
-                      mapPoly.vertices[2].pos.y,
-                      mapPoly.vertices[2].pos.z),
-                      mapPoly.vertices[2].uv };
+
+        Vertex A = { glm::vec3(mapPoly.vertices[ 0 ].pos.x, mapPoly.vertices[ 0 ].pos.y, mapPoly.vertices[ 0 ].pos.z),
+                     mapPoly.vertices[ 0 ].uv };
+        Vertex B = { glm::vec3(mapPoly.vertices[ 1 ].pos.x, mapPoly.vertices[ 1 ].pos.y, mapPoly.vertices[ 1 ].pos.z),
+                     mapPoly.vertices[ 1 ].uv };
+        Vertex C = { glm::vec3(mapPoly.vertices[ 2 ].pos.x, mapPoly.vertices[ 2 ].pos.y, mapPoly.vertices[ 2 ].pos.z),
+                     mapPoly.vertices[ 2 ].uv };
 
         A.color = triColor;
         B.color = triColor;
         C.color = triColor;
-        MapTri tri = { .tri = {A, B, C} };
+        MapTri tri = { .tri = { A, B, C } };
         tri.textureName = mapPoly.textureName;
         //FIX: Search through all supported image formats not just PNG.
         tri.hTexture = renderer->RegisterTextureGetHandle(tri.textureName + ".tga");
@@ -97,8 +90,6 @@ void Game::Init() {
     m_World.InitWorld(worldTris, glm::vec3(0.0f, 0.0f, -0.5f)); // gravity
 
     int idCounter = 0; //FIX: Responsibility of entity manager
-    glm::vec3 playerStartPosition = glm::vec3(0.0f);
-   
     // Load and create all the entities
     for ( int i = 0; i < map.entities.size(); i++ ) {
         Entity& e = map.entities[ i ];
@@ -113,41 +104,53 @@ void Game::Init() {
                     m_World.m_BrushEntities.push_back(baseEntity->ID());
                     m_pEntityManager->RegisterEntity(baseEntity);
                 } else if ( prop.value == "info_player_start" ) {
-                    for ( Property& property : e.properties ) {
-                        if ( property.key == "origin" ) {
-                            std::vector<float> values = ParseFloatValues(property.value);
-                            playerStartPosition = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
-                        }
-                    }
+                    glm::vec3 playerStartPosition = GetOrigin(&e);
 
+                    m_pPlayerEntity = new Player(idCounter++, playerStartPosition);
+                    m_pEntityManager->RegisterEntity(m_pPlayerEntity);
+
+                    // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
+                    // in the batch?
+                    int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
+
+                } else if ( prop.value == "monster_demon1" ) {
+                    // just a placeholder entity from trenchbroom/quake
+                    glm::vec3 enemyStartPosition = GetOrigin(&e);
+                    Enemy* enemy = new Enemy(idCounter++, enemyStartPosition);
+                    m_pEntityManager->RegisterEntity(enemy);
+
+                    int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
+                } else if ( prop.value == "path_corner" ) {
+                    Waypoint point = GetWaypoint(&e);
+
+                    // I assume that the corner Points are in the right order. if not we need to rethink the data structure
+                    glm::vec3 pathCornerPosition = GetOrigin(&e);
+                    m_pPath->AddPoint(point);
+                    printf("Path corner entity found: %f, %f, %f\n",
+                           pathCornerPosition.x,
+                           pathCornerPosition.y,
+                           pathCornerPosition.z);
                 } else {
                     printf("Unknown entity type: %s\n", prop.value.c_str());
                 }
             }
         }
     }
-   
+
     // Register World Triangles at GPU.
     // Creates batches for each texture-name. That way we can
     // reduce draw-calls and texture-binds when rendering world geometry.
 
     renderer->RegisterWorldTris( m_World.m_MapTris );
 
-    // Cameras
-    m_FollowCamera = Camera(playerStartPosition);
-    m_FollowCamera.m_Pos.y -= 200.0f;
-    m_FollowCamera.m_Pos.z += 100.0f;
-    m_FollowCamera.RotateAroundSide(0.0f);
-    m_FollowCamera.RotateAroundUp(180.0f);
-
-    m_pPlayerEntity = new Player(idCounter++, playerStartPosition);
-    m_pEntityManager->RegisterEntity(m_pPlayerEntity);
-    m_pEnemyEntity = new Enemy(idCounter++);
-    m_pEntityManager->RegisterEntity(m_pEnemyEntity);
+    //m_pPlayerEntity = new Player(idCounter++, m_pPlayerEntity->m_Position);
+    //m_pEntityManager->RegisterEntity(m_pPlayerEntity);
   
-    glm::vec3 debugPlayerStartPosition = playerStartPosition; // + glm::vec3(0.0f, 10.0f, 0.0f);
-    m_pDebugPlayerEntity = new Player(idCounter++, debugPlayerStartPosition);
+    glm::vec3 dbgPlayerStartPos = m_pPlayerEntity->m_Position + glm::vec3(20.0f, -100.0f, 10.0f);
+    m_pDebugPlayerEntity = new Player(idCounter++, dbgPlayerStartPos);
+    printf("Debug Player Start Pos: %f, %f, %f\n", dbgPlayerStartPos.x, dbgPlayerStartPos.y, dbgPlayerStartPos.z);
     m_pEntityManager->RegisterEntity(m_pDebugPlayerEntity);
+    int hDebugPlayerModel = renderer->RegisterModel(m_pDebugPlayerEntity->GetModel());
 
     m_pFlyCameraEntity = new CFlyCamera( idCounter++, glm::vec3(0.0f) );
   
@@ -158,7 +161,7 @@ void Game::Init() {
     // camera entity types and let the entity manager take care
     // of correct update order.
     m_pFollowCameraEntity = new CFollowCamera(idCounter++, m_pPlayerEntity);
-    m_pFollowCameraEntity->m_Camera = Camera(playerStartPosition);
+    m_pFollowCameraEntity->m_Camera = Camera(m_pPlayerEntity->m_Position);
     m_pFollowCameraEntity->m_Camera.m_Pos.y -= 200.0f;
     m_pFollowCameraEntity->m_Camera.m_Pos.z += 100.0f;
     m_pFollowCameraEntity->m_Camera.RotateAroundSide(0.0f);
@@ -168,9 +171,8 @@ void Game::Init() {
     // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
     // in the batch?
 
-    int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
+    //int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
     //
-    int hDebugPlayerModel = renderer->RegisterModel(m_pDebugPlayerEntity->GetModel());
    
     // Test Input Binding
 
@@ -216,7 +218,6 @@ bool Game::RunFrame(double dt) {
     m_AccumTime += dt;
 
     // Want to quit on ESCAPE
-
     if ( KeyPressed(SDLK_ESCAPE) ) {
         m_pInterface->QuitGame();
     }
@@ -246,6 +247,10 @@ bool Game::RunFrame(double dt) {
     EllipsoidCollider ec = m_pPlayerEntity->GetEllipsoidCollider();
     EllipsoidCollider ecDebugPlayer = m_pDebugPlayerEntity->GetEllipsoidCollider();
 
+    Enemy* enemy = m_pEntityManager->GetFirstEnemy();
+    // enemy->SetArriveTarget(m_pPlayerEntity);
+    enemy->SetFollowPath(m_pPath);
+
     // Test collision between player and world geometry
 #if 1
     // FIX: Just for the record. This is super dumb and not performant at all!
@@ -259,36 +264,47 @@ bool Game::RunFrame(double dt) {
     // collision system!!! Arrays just always win... what can I say? The brush entities should have pointers (indices) into the
     // CPU-side triangle array to know what geometry belongs to them.
     std::vector<MapTri> allTris = m_World.m_MapTris;
+#if 0 // if there are no doors in the world, this is not needed
     int be = m_World.m_BrushEntities[ 0 ];
     Door* pEntity = (Door*)m_pEntityManager->GetEntityFromID(be);
     std::copy(pEntity->MapTris().begin(), pEntity->MapTris().end(), std::back_inserter(allTris));
+#endif
 
     CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
-                                                               static_cast<float>(dt) * m_pPlayerEntity->GetVelocity(),
+                                                              static_cast<float>(dt) * m_pPlayerEntity->m_Velocity,
+                                                              static_cast<float>(dt) * m_World.m_Gravity,
+                                                              allTris.data(),
+                                                              allTris.size());
+
+    CollisionInfo collisionInfoDebugPlayer = CollideEllipsoidWithMapTris(ecDebugPlayer,
+                                                               static_cast<float>(dt) * m_pDebugPlayerEntity->m_Velocity,
                                                                static_cast<float>(dt) * m_World.m_Gravity,
                                                                allTris.data(),
                                                                allTris.size());
 
-    CollisionInfo collisionInfoDebugPlayer = CollideEllipsoidWithMapTris(ecDebugPlayer,
-                                                               static_cast<float>(dt) * m_pDebugPlayerEntity->GetVelocity(),
-                                                               static_cast<float>(dt) * m_World.m_Gravity,
-                                                               allTris.data(),
-                                                               allTris.size());
+
+    EllipsoidCollider ecEnemy = enemy->GetEllipsoidCollider();
+    CollisionInfo enemyCollisionInfo = CollideEllipsoidWithMapTris(ecEnemy,
+                                                                   static_cast<float>(dt) * enemy->m_Velocity,
+                                                                   static_cast<float>(dt) * m_World.m_Gravity,
+                                                                   allTris.data(),
+                                                                   allTris.size());
 
     m_pPlayerEntity->UpdatePosition(collisionInfo.basePos);
     m_pDebugPlayerEntity->UpdatePosition(collisionInfoDebugPlayer.basePos);
+    enemy->UpdatePosition(enemyCollisionInfo.basePos);
 
 #endif
 
     // Check if player runs against door
-#if 1
+#if 0
     for ( int i = 0; i < m_World.m_BrushEntities.size(); i++ ) {
         int be = m_World.m_BrushEntities[ i ];
         BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID(be);
         if ( pEntity->Type() == ET_DOOR ) {
             Door* pDoor = (Door*)pEntity;
             CollisionInfo ciDoor = PushTouch(ec,
-                                             static_cast<float>(dt) * m_pPlayerEntity->GetVelocity(), 
+                                             static_cast<float>(dt) * m_pPlayerEntity->m_Velocity, 
                                              pDoor->MapTris().data(), 
                                              pDoor->MapTris().size() );
             if (ciDoor.didCollide) { 
@@ -319,9 +335,9 @@ bool Game::RunFrame(double dt) {
     // Main 3D: This is where all the 3D rendering happens (in its own FBO)
     {
         renderer->Begin3D();
-        
+
         // Draw Debug Line for player veloctiy vector
-        Line velocityDebugLine = { Vertex(ec.center), Vertex(ec.center + 200.0f * m_pPlayerEntity->GetVelocity()) };
+        Line velocityDebugLine = { Vertex(ecEnemy.center), Vertex(ecEnemy.center + 150.0f * enemy->m_Velocity) };
         velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
         velocityDebugLine.b.color = velocityDebugLine.a.color;
         renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
@@ -348,33 +364,43 @@ bool Game::RunFrame(double dt) {
 
         DrawCoordinateSystem(renderer);
 
-        HKD_Model* models[ 2 ] = { 
-            m_pPlayerEntity->GetModel(),
-            m_pDebugPlayerEntity->GetModel()
-        };
-        renderer->Render( renderCam, models, 2 );
+#if 1 // debug path
+        std::vector<Vertex> vertices = m_pPath->GetPointsAsVertices();
+        renderer->ImDrawLines(vertices.data(), vertices.size(), true);
+#endif
 
-        if (collisionInfo.didCollide) {
+        HKD_Model* models[ 3 ] = { 
+            m_pPlayerEntity->GetModel(),
+            m_pDebugPlayerEntity->GetModel(),
+            enemy->GetModel()
+        };
+        renderer->Render( renderCam, models, 3 );
+
+
+        // auto type = enemy->m_Type;
+
+
+#if 0
+        if ( collisionInfo.didCollide ) {
             m_pPlayerEntity->GetModel()->debugColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); // red
         } else {
             m_pPlayerEntity->GetModel()->debugColor = glm::vec4(1.0f); // white
         }
+#endif
 
 #if 0 // Toggle draw hitpoint
         renderer->SetActiveCamera(&m_FollowCamera);
         renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
 #endif
 
-        // Render Player's ellipsoid collider
         //renderer->SetActiveCamera(&m_pFlyCameraEntity->m_Camera);
         HKD_Model* playerColliderModel[] = { m_pPlayerEntity->GetModel() };
         renderer->RenderColliders(renderCam, playerColliderModel, 1);
         
         renderer->End3D();
-
     } // End3D scope
 
-#if 1 // Toggle 2D Font/Box renderingtest
+#if 0 // Toggle 2D Font/Box renderingtest
 
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     // 2D stuff also has its own, dedicated FBO!
@@ -424,6 +450,7 @@ bool Game::RunFrame(double dt) {
 }
 
 void Game::Shutdown() {
+    delete m_pPath;
 
     // NOTE: m_pEntityManager is static memory and cannot deleted with delete
     // (it never was heap allocated with 'new'). The entities have to

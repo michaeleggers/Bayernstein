@@ -7,7 +7,7 @@
 #include "../../input_handler.h"
 #include "../../input_receiver.h"
 #include "../../input.h"
-#include "../../utils.h"
+#include "../../utils/utils.h"
 
 CFlyCamera::CFlyCamera(const int id, glm::vec3 pos)
 	: BaseGameEntity(id, ET_FLY_CAMERA) {

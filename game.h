@@ -10,6 +10,7 @@
 #include "Entity/FollowCamera/g_follow_camera.h"
 #include "Entity/FlyCamera/g_fly_camera.h"
 #include "Entity/entity_manager.h"
+#include "Path/path.h"
 #include "camera.h"
 #include "hkd_interface.h"
 #include "irender.h"
@@ -26,6 +27,7 @@ class Game {
     hkdInterface*               m_pInterface;
     std::string                 m_ExePath;
 
+    PatrolPath*                 m_pPath;
     Player*                     m_pPlayerEntity;
     Player*                     m_pDebugPlayerEntity; // Entity we can fly around with
     Enemy*                      m_pEnemyEntity;
@@ -34,7 +36,6 @@ class Game {
     EntityManager*              m_pEntityManager;
 
     Camera                      m_Camera;
-    Camera                      m_FollowCamera;
 
     std::vector<HKD_Model*>     m_Models;
     CFont*                      m_ConsoleFont;

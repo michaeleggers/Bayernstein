@@ -23,7 +23,7 @@ enum EntityType {
 };
 
 class BaseGameEntity {
-private:
+  private:
     int m_ID{};
 
     // this must be called within the constructor to make sure the ID is set
@@ -31,10 +31,11 @@ private:
     // or equal to the next valid ID, before setting the ID and incrementing
     // the next valid ID
     void SetID(int value);
-    
+
     EntityType m_Type;
 
-public:
+
+  public:
     // this is the next valid ID. Each time a BaseGameEntity is instantiated
     // this value is updated
     static int m_iNextValidID;
