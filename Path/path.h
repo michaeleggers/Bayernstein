@@ -13,8 +13,8 @@ class PatrolPath; // Forward declare so that Waypoint struct can use it.
 
 struct Waypoint {
     glm::vec3   position;
-    std::string sTargetname;
-    std::string sTarget;
+    std::string targetname;
+    std::string target;
     PatrolPath* pPatrolPath = nullptr; // nullptr = doesn't belong to a patrol path
 };
 

@@ -86,7 +86,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     //m_pPath->AddPoint(point);
                     // FIX: Very crude way of remembering waypoint names just so
                     // that later on we can get its path.
-                    m_NameToWaypoint.insert({ point.sTargetname, point });
+                    m_NameToWaypoint.insert({ point.targetname, point });
                     // I assume that the corner Points are in the right order. if not we need to rethink the data structure
                     glm::vec3 pathCornerPosition = CWorld::GetOrigin(&e);
                     printf("Path corner entity found: %f, %f, %f\n",
@@ -118,18 +118,18 @@ void CWorld::InitWorldFromMap(const Map& map) {
         Waypoint current = waypoint;
         std::unordered_set<std::string> pathVisited; // Track for cycles
 
-        while ( !current.sTarget.empty() ) { // Does the waypoint point to another?
-            if (pathVisited.count(current.sTargetname)) {
+        while ( !current.target.empty() ) { // Does the waypoint point to another?
+            if (pathVisited.count(current.targetname)) {
                 // Cycle detected, break the path
                 break;
             }
 
-            pathVisited.insert(current.sTargetname);
+            pathVisited.insert(current.targetname);
             currentPath.AddPoint(current);
-            visited.insert(current.sTargetname);
+            visited.insert(current.targetname);
 
             // Move to the next waypoint if it exists
-            auto it = m_NameToWaypoint.find(current.sTarget);
+            auto it = m_NameToWaypoint.find(current.target);
             if (it != m_NameToWaypoint.end()) {
                 current = it->second;
             } else {
@@ -162,7 +162,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     std::vector<Waypoint> points = path.GetPoints();
                     for (int k = 0; k < points.size(); k++) {
                         Waypoint point = points[k];
-                        if ( enemy->m_Target == point.sTargetname ) {
+                        if ( enemy->m_Target == point.targetname ) {
                             // copy its path for internat use in this enemy
                             PatrolPath* pPathCopy = new PatrolPath(&path);
                             pPathCopy->SetCurrentWaypoint(enemy->m_Target);
@@ -303,10 +303,10 @@ Waypoint CWorld::GetWaypoint(const Entity* entity) {
             std::vector<float> values = ParseFloatValues<float>(property.value);
             waypoint.position = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
         } else if ( property.key == "targetname" ) {
-            waypoint.sTargetname = property.value;
+            waypoint.targetname = property.value;
 
         } else if ( property.key == "target" ) {
-            waypoint.sTarget = property.value;
+            waypoint.target = property.value;
         }
     }
 

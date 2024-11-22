@@ -10,13 +10,13 @@
 void PatrolPath::AddPoint(Waypoint point) {
     point.pPatrolPath = this;
     m_Points.push_back(point);
-    m_TargetnameToWaypoint.insert({ point.sTargetname, point });
+    m_TargetnameToWaypoint.insert({ point.targetname, point });
     // TODO: Not sure if the path name should be the first waypoint added.
     // TODO: m_CurrentWaypointName probably should be whatever is
     // specified for the entity targeting this path waypoint?
     if ( m_CurrentWaypointName.empty() ) {
-        m_Name = point.sTargetname;
-        m_CurrentWaypointName = point.sTargetname;
+        m_Name = point.targetname;
+        m_CurrentWaypointName = point.targetname;
     }
 }
 
@@ -56,7 +56,7 @@ bool PatrolPath::IsCurrentWaypointReached(glm::vec3 position) {
 void PatrolPath::TargetNextWaypoint() {
     Waypoint currentWaypoint = GetCurrentWaypoint();
     m_PreviousWaypointName = m_CurrentWaypointName;
-    m_CurrentWaypointName = currentWaypoint.sTarget;
+    m_CurrentWaypointName = currentWaypoint.target;
     printf("Setting waypoint to: %s\n", m_CurrentWaypointName.c_str());
 }
 
