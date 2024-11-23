@@ -270,7 +270,7 @@ std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolyg
 glm::vec3 CWorld::GetOrigin(const Entity* entity) {
     for ( const Property& property : entity->properties ) {
         if ( property.key == "origin" ) {
-            std::vector<float> values = ParseFloatValues<float>(property.value);
+            std::vector<float> values = ParseValues<float>(property.value);
             return glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
         }
     }
@@ -284,7 +284,7 @@ Waypoint CWorld::GetWaypoint(const Entity* entity) {
     Waypoint waypoint = {};
     for ( const Property& property : entity->properties ) {
         if ( property.key == "origin" ) {
-            std::vector<float> values = ParseFloatValues<float>(property.value);
+            std::vector<float> values = ParseValues<float>(property.value);
             waypoint.position = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
         } else if ( property.key == "targetname" ) {
             waypoint.targetname = property.value;

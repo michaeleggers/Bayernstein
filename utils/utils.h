@@ -19,8 +19,11 @@ float StringToFloat<float>(const char* str, char** end);
 template<>
 double StringToFloat<double>(const char* str, char** end);
 
+template<>
+int StringToFloat<int>(const char* str, char** end);
+
 template<typename T>
-std::vector<T> ParseFloatValues(const std::string& input) {
+std::vector<T> ParseValues(const std::string& input) {
     std::vector<T> values;
     const char* str = input.c_str();
     T value = 0.0;

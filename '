@@ -31,8 +31,7 @@ Door::Door(const std::vector<Property>& properties,
     m_pStateMachine->SetCurrentState(DoorClosed::Instance());
 
     // Get all the door's properties from the MAP file.
-    BaseGameEntity::GetProperty<double>(properties, "speed", &m_Speed);
-    BaseGameEntity::GetProperty<int>(properties, "angle", &m_Angle);
+    BaseGameEntity::GetProperty<int>(properties, "speed", &m_Speed);
     BaseGameEntity::GetProperty<int>(properties, "lip", &m_Lip);
 
     // Load the model from brushes

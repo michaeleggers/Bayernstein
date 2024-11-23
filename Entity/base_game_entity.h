@@ -54,7 +54,7 @@ class BaseGameEntity {
 
     template<>
     glm::vec3 ParseProperty<glm::vec3>(const std::string& sValue) {
-        std::vector<float> origin = ParseFloatValues<float>(sValue);
+        std::vector<float> origin = ParseValues<float>(sValue);
         return glm::vec3( origin[0], origin[1], origin[2] );
     }
 
@@ -65,14 +65,20 @@ class BaseGameEntity {
 
     template<>
     float ParseProperty<float>(const std::string& sValue) {
-        std::vector<float> floats = ParseFloatValues<float>(sValue);
+        std::vector<float> floats = ParseValues<float>(sValue);
         return floats[ 0 ];
     }
     
     template<>
     double ParseProperty<double>(const std::string& sValue) {
-        std::vector<double> floats = ParseFloatValues<double>(sValue);
+        std::vector<double> floats = ParseValues<double>(sValue);
         return floats[ 0 ];
+    }
+    
+    template<>
+    int ParseProperty<int>(const std::string& sValue) {
+        std::vector<int> ints = ParseValues<int>(sValue);
+        return ints[ 0 ];
     }
     
     virtual ~BaseGameEntity() = default;

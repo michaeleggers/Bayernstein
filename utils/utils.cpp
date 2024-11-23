@@ -1,7 +1,6 @@
 #include "utils.h"
 
 #include <glm/glm.hpp>
-#include <sstream>
 #include <stdlib.h>
 
 float RandBetween(float min, float max) {
@@ -81,3 +80,9 @@ template <>
 double StringToFloat<double>(const char* str, char** end) {
     return std::strtod(str, end);
 }
+
+template <>
+int StringToFloat<int>(const char* str, char** end) {
+    return strtol(str, end, 10);
+}
+
