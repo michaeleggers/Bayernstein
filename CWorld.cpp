@@ -85,10 +85,6 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     Waypoint point = CWorld::GetWaypoint(&e);
                     m_NameToWaypoint.insert({ point.targetname, point });
                     glm::vec3 pathCornerPosition = CWorld::GetOrigin(&e);
-                    printf("Path corner entity found: %f, %f, %f\n",
-                           pathCornerPosition.x,
-                           pathCornerPosition.y,
-                           pathCornerPosition.z);
                 } else {
                     printf("Unknown entity type: %s\n", prop.value.c_str());
                 }
