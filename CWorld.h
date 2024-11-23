@@ -31,35 +31,30 @@ class CWorld {
 public:
     static CWorld* Instance();
     void        InitWorldFromMap(const Map& map);
-    void        AddBrushesToDynamicGeometry(const std::vector<Brush>& brushes);
     void        CollideEntitiesWithWorld();
     void        CollideEntities();
     
-    uint64_t OffsetDynamicGeometry() {
-        return m_OffsetDynamicGeometry;
-    }
-   
     /*
     * Easier to understand in code when only the number of
     * static tris is needed.
     */
     uint64_t StaticGeometryCount() {
-        return m_OffsetDynamicGeometry;
+        return m_StaticGeometryCount;
     }
 
     Player* PlayerEntity() {
         return m_pPlayerEntity;
     }
 
-    std::vector<MapTri>& MapTris() {
+    std::vector<MapTri>& GetMapTris() {
         return m_MapTris;
     }
 
-    std::vector<HKD_Model*>& Models() {
+    std::vector<HKD_Model*>& GetModelPtrs() {
         return m_Models;
     }
 
-    std::vector<HKD_Model*>& BrushModels() {
+    std::vector<HKD_Model*>& GetBrushModelPtrs() {
         return m_BrushModels;
     }
 
@@ -68,8 +63,6 @@ public:
     static std::vector<MapTri>  CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys);
     
     std::vector<MapTri>          m_MapTris;
-    uint64_t                     m_StaticGeometryEndIndex;
-    bool                         m_StaticGeometryInitialized = false;
     glm::vec3                    m_Gravity;
     // FIX: Where to put paths? Shouldn't they also be entities themselves??
     std::unordered_map<std::string, Waypoint> m_NameToWaypoint;
@@ -79,11 +72,11 @@ private:
     CWorld() = default;
     ~CWorld() = default;
 
-    uint64_t                     m_OffsetDynamicGeometry;
+    uint64_t                             m_StaticGeometryCount;
     // FIX: Does the player really *always* have to exist?
-    Player*                      m_pPlayerEntity = nullptr;
-    std::vector<HKD_Model*>      m_Models; 
-    std::vector<HKD_Model*>      m_BrushModels;
+    Player*                              m_pPlayerEntity = nullptr;
+    std::vector<HKD_Model*>              m_Models; 
+    std::vector<HKD_Model*>              m_BrushModels;
     // Keep references to brush entities' map tris
     std::vector< std::vector<MapTri>* >  m_pBrushMapTris;
 };

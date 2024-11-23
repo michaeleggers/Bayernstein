@@ -42,13 +42,14 @@ void CWorld::InitWorldFromMap(const Map& map) {
     // Convert to tris
     m_MapTris = CWorld::CreateMapTrisFromMapPolys(polysoup);
     
-    // Everything *after* the static geometry is dynamic (brush entities).
-    // Remember where they start:
-    m_OffsetDynamicGeometry = m_MapTris.size();
+    m_StaticGeometryCount = m_MapTris.size();
 
     // Now initialize all the entities. Those also include brush
-    // entities that get appended to m_MapTris. We remember where
-    // the brush entities start in m_OffsetDynamicGeometry.
+    // entities. Those entities store their own geometry as MapTris.
+    // We keep pointers to those triangles as the brush entities (eg. doors)
+    // update their position. We must know about this positional update
+    // in order to collide with the tris correctly.
+
     // Load and create all the entities
     for ( int i = 0; i < map.entities.size(); i++ ) {
         const Entity& e = map.entities[ i ];
@@ -59,7 +60,6 @@ void CWorld::InitWorldFromMap(const Map& map) {
             if ( prop.key == "classname" ) {
                 if ( prop.value == "func_door" ) {
                     baseEntity = new Door(e.properties, e.brushes); 
-                    AddBrushesToDynamicGeometry( e.brushes );
                     m_pEntityManager->RegisterEntity(baseEntity); 
                     HKD_Model* model = ((Door*)baseEntity)->GetModel();
                     m_BrushModels.push_back( model );
@@ -135,7 +135,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
         }
     }
     // Waypoints now all points to an instance inside the m_Paths vector.
-    // A waypoint not being path of a 'chain' also points to a path:
+    // A waypoint not being part of a 'chain' also points to a path:
     // It is a path with that poor, lonely waypoint. I kinda feel sorry for it...
 
     // Now that everything is initialized, set up the paths for the enemy.
@@ -155,7 +155,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     for (int k = 0; k < points.size(); k++) {
                         Waypoint point = points[k];
                         if ( enemy->m_Target == point.targetname ) {
-                            // copy its path for internat use in this enemy
+                            // copy its path for internal use in this enemy
                             PatrolPath* pPathCopy = new PatrolPath(&path);
                             pPathCopy->SetCurrentWaypoint(enemy->m_Target);
                             enemy->SetFollowPath(pPathCopy);
@@ -164,14 +164,6 @@ void CWorld::InitWorldFromMap(const Map& map) {
                 }
             }
         }
-    }
-}
-
-void CWorld::AddBrushesToDynamicGeometry(const std::vector<Brush>& brushes) {
-    for (int i = 0; i < brushes.size(); i++) {
-        std::vector<MapPolygon> mapPolys = createPolysoup( brushes[i] );
-        std::vector<MapTri> mapTris = CreateMapTrisFromMapPolys(mapPolys);
-        std::copy( mapTris.begin(), mapTris.end(), std::back_inserter(m_MapTris) );
     }
 }
 
@@ -273,7 +265,7 @@ std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolyg
     return mapTris;
 }
 
-// NOTE: Keept this. Getting properties is done via the template stuff
+// NOTE: Keep this. Getting properties is done via the template stuff
 // in base_entity but maybe the template stuff turns out to be dumb.
 glm::vec3 CWorld::GetOrigin(const Entity* entity) {
     for ( const Property& property : entity->properties ) {
@@ -286,7 +278,7 @@ glm::vec3 CWorld::GetOrigin(const Entity* entity) {
     assert(false && "Entity has no origin property!");
 }
 
-// NOTE: Keept this. Getting properties is done via the template stuff
+// NOTE: Keep this. Getting properties is done via the template stuff
 // in base_entity but maybe the template stuff turns out to be dumb.
 Waypoint CWorld::GetWaypoint(const Entity* entity) {
     Waypoint waypoint = {};

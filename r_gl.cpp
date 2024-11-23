@@ -340,7 +340,7 @@ void GLRender::RegisterFont(CFont* font) {
 }
 
 void GLRender::RegisterWorld(CWorld* world) {
-    std::vector<MapTri>& tris = world->MapTris();
+    std::vector<MapTri>& tris = world->GetMapTris();
     uint64_t numStaticTris = world->StaticGeometryCount();
 
     // Sort static Tris by texture

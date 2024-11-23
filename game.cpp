@@ -57,7 +57,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/Prototype2.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple2.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -216,21 +216,6 @@ bool Game::RunFrame(double dt) {
         //renderer->SetActiveCamera(&m_FollowCamera);
         //renderer->DrawWorldTris();
 
-#if 0 // FIX: Give Brush entities pointers to their geometry data on GPU/CPU
-
-        // Render Brush Entities
-        for ( int i = 0; i < m_World.m_BrushEntities.size(); i++ ) {
-            int be = m_World.m_BrushEntities[ i ];
-            BaseGameEntity* pEntity = m_pEntityManager->GetEntityFromID(be);
-            if ( pEntity->Type() == ET_DOOR ) {
-                Door* pDoor = (Door*)pEntity;
-                renderer->ImDrawMapTris(pDoor->Tris().data(),
-                                          pDoor->Tris().size(),
-                                          true,
-                                          DRAW_MODE_SOLID);
-            }
-        }
-#endif
 
         DrawCoordinateSystem(renderer);
 
@@ -241,8 +226,8 @@ bool Game::RunFrame(double dt) {
 
 #if 1 // Toggle moving entity rendering. Also renders world.
         renderer->Render(renderCam, 
-                         m_World->Models().data(), m_World->Models().size(),
-                         m_World->BrushModels().data(), m_World->BrushModels().size());
+                         m_World->GetModelPtrs().data(), m_World->GetModelPtrs().size(),
+                         m_World->GetBrushModelPtrs().data(), m_World->GetBrushModelPtrs().size());
 #endif
 
         // auto type = enemy->m_Type;
