@@ -50,7 +50,7 @@ public:
         m_Name = other->m_Name;
         m_Radius = other->m_Radius;
         m_direction = other->m_direction;
-        m_NextWaypointName = "";
+        m_NextWaypointName = other->m_NextWaypointName;
         m_PreviousWaypointName = "";
     }
 
@@ -66,6 +66,7 @@ public:
     void                  TargetNextWaypoint();
     Waypoint              GetCurrentWaypoint();
     void                  SetCurrentWaypoint(std::string targetname);
+    void                  SetNextWaypoint(std::string targetname);
     std::vector<Vertex>   GetPointsAsVertices();
   
 public:

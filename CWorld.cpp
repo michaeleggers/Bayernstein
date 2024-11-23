@@ -158,6 +158,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                             // copy its path for internal use in this enemy
                             PatrolPath* pPathCopy = new PatrolPath(&path);
                             pPathCopy->SetCurrentWaypoint(enemy->m_Target);
+                            pPathCopy->SetNextWaypoint(point.target);
                             enemy->SetFollowPath(pPathCopy);
                         }
                     }
