@@ -74,7 +74,6 @@ public:
 private:
     std::vector<Waypoint>                     m_Points;
     std::unordered_map<std::string, Waypoint> m_TargetnameToWaypoint;
-    std::vector<PatrolPath>                   m_Paths;
     float                                     m_Radius;
     std::string                               m_Name;
     bool                                      m_IsClosed;
