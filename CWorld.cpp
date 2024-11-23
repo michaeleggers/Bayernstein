@@ -83,11 +83,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     m_Models.push_back(enemy->GetModel());
                 } else if ( prop.value == "path_corner" ) { // FIX: Should be an entity type as well.
                     Waypoint point = CWorld::GetWaypoint(&e);
-                    //m_pPath->AddPoint(point);
-                    // FIX: Very crude way of remembering waypoint names just so
-                    // that later on we can get its path.
                     m_NameToWaypoint.insert({ point.targetname, point });
-                    // I assume that the corner Points are in the right order. if not we need to rethink the data structure
                     glm::vec3 pathCornerPosition = CWorld::GetOrigin(&e);
                     printf("Path corner entity found: %f, %f, %f\n",
                            pathCornerPosition.x,
