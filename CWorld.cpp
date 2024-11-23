@@ -53,17 +53,16 @@ void CWorld::InitWorldFromMap(const Map& map) {
     // Load and create all the entities
     for ( int i = 0; i < map.entities.size(); i++ ) {
         const Entity& e = map.entities[ i ];
-        BaseGameEntity* baseEntity = NULL;
         // Check the classname
         for ( int j = 0; j < e.properties.size(); j++ ) {
             const Property& prop = e.properties[ j ];
             if ( prop.key == "classname" ) {
                 if ( prop.value == "func_door" ) {
-                    baseEntity = new Door(e.properties, e.brushes); 
-                    m_pEntityManager->RegisterEntity(baseEntity); 
-                    HKD_Model* model = ((Door*)baseEntity)->GetModel();
+                    Door* door = new Door(e.properties, e.brushes); 
+                    m_pEntityManager->RegisterEntity(door); 
+                    HKD_Model* model = door->GetModel();
                     m_BrushModels.push_back( model );
-                    std::vector<MapTri>& mapTris = ((Door*)baseEntity)->MapTris();
+                    std::vector<MapTri>& mapTris = door->MapTris();
                     m_pBrushMapTris.push_back( &mapTris );
                 } else if ( prop.value == "info_player_start" ) {
                     assert( m_pPlayerEntity == nullptr ); // There can only be one
