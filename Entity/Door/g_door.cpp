@@ -17,6 +17,7 @@
 #include "../../r_common.h"
 #include "../../hkd_interface.h"
 #include "../../r_model.h"
+#include "../../globals.h"
 
 void Door::Update() {
     m_pStateMachine->Update();
@@ -86,17 +87,15 @@ Door::Door(const std::vector<Property>& properties,
     m_Maxs = maxs;
 
     // Distance to travel is the width of the door in the travel direction.
-    glm::vec3 worldUp = glm::vec3(0.0f, 0.0f, 1.0f);
-    glm::vec3 worldForward = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::quat qDir;
     if (m_Angle == -1 ) { // Door moves upward
-        qDir = glm::angleAxis( glm::radians(-90.0f), worldForward ); 
+        qDir = glm::angleAxis( glm::radians(-90.0f), DOD_WORLD_FORWARD ); 
     }
     else if (m_Angle == -2) { // Door moves downward
-        qDir = glm::angleAxis( glm::radians(90.0f), worldForward ); 
+        qDir = glm::angleAxis( glm::radians(90.0f), DOD_WORLD_FORWARD ); 
     }
     else {
-        qDir = glm::angleAxis( glm::radians((float)m_Angle), worldUp );
+        qDir = glm::angleAxis( glm::radians((float)m_Angle), DOD_WORLD_UP );
     }
 
     m_Direction = glm::rotate( qDir, m_Direction );
