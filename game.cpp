@@ -57,7 +57,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple2.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/Prototype2.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -200,6 +200,12 @@ bool Game::RunFrame(double dt) {
     // ImGUI stuff goes into GL default FBO
 
     ImGui::ShowDemoWindow();
+
+    ImGui::Begin("Statistics");
+    ImGui::Text( "World Tri count: %d", m_World->StaticGeometryCount() );
+    ImGui::Text( "Brush Entity count: %d", m_World->GetModelPtrs().size() );
+    ImGui::Text( "Total Entity count: %d", EntityManager::Instance()->Entities().size() );
+    ImGui::End();
 
     // Main 3D: This is where all the 3D rendering happens (in its own FBO)
     {
