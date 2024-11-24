@@ -1,5 +1,5 @@
 //
-// Created by me on 10/14/24.
+// Created by me on 11/23/24.
 //
 
 #ifndef _FP_PLAYER_H_
@@ -21,8 +21,9 @@
 
 class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
 
-  public:
+public:
     explicit FirstPersonPlayer(glm::vec3 initialPosition);
+    
     ~FirstPersonPlayer() override {
         delete m_pStateMachine;
     }
@@ -42,7 +43,7 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
 
     HKD_Model* GetModel();
 
-  public:
+public:
     bool CanAttack() {
         double currentTime = Clock->GetTime();
         if ( currentTime >= m_LastAttack + m_AttackDelay ) {
@@ -50,6 +51,10 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
             return true;
         }
         return false;
+    }
+
+    Camera& GetCamera() {
+        return m_Camera;
     }
   
 private:
@@ -61,9 +66,15 @@ private:
     // moving members
 
 private:
-    glm::vec3 m_Forward, m_Side;
-    AnimState m_AnimationState;
-    EllipsoidCollider m_EllipsoidCollider;
+    glm::vec3           m_Forward, m_Side;
+    AnimState           m_AnimationState;
+    EllipsoidCollider   m_EllipsoidCollider;
+    Camera              m_Camera;
+    float               m_LookSpeed = 0.01f;
+	int                 m_MouseX = 0;
+	int                 m_MouseY = 0;
+	int                 m_MousePrevX = 0;
+	int                 m_MousePrevY = 0;
 
     void LoadModel(const char* path, glm::vec3 initialPosition);
     void UpdatePlayerModel();

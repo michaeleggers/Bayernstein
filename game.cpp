@@ -160,7 +160,7 @@ bool Game::RunFrame(double dt) {
     // Toggle who should be controlled by the input system 
     static IInputReceiver* receivers[2] = { m_pPlayerEntity, m_pFlyCameraEntity };
     static BaseGameEntity* entities[2] = { m_pPlayerEntity, m_pFlyCameraEntity };
-    static Camera* renderCam = &m_pFollowCameraEntity->m_Camera;
+    static Camera* renderCam = &m_pPlayerEntity->GetCamera();
 
     // Toggle receivers
     static int receiverToggle = 0;
@@ -169,7 +169,7 @@ bool Game::RunFrame(double dt) {
         receiverToggle = ++receiverToggle % 2;
         CInputDelegate::Instance()->SetReceiver( receivers[ receiverToggle ] ); 
         m_pFollowCameraEntity->SetTarget( entities[ receiverToggle ] );
-        renderCam = &m_pFollowCameraEntity->m_Camera;
+        renderCam = &m_pPlayerEntity->GetCamera();
         if ( entities[ receiverToggle ]->Type() == ET_FLY_CAMERA ) {
             CFlyCamera* flyCamEnt = (CFlyCamera*)entities[ receiverToggle ];
             renderCam = &flyCamEnt->m_Camera;

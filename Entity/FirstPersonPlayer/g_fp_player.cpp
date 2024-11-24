@@ -20,6 +20,7 @@ FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
     m_pStateMachine->SetCurrentState(FirstPersonPlayerIdle::Instance());
     LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
     m_Position = initialPosition;
+    m_Camera = Camera(initialPosition);
 }
 
 // FIX: At the moment called by the game itself.
@@ -117,6 +118,15 @@ void FirstPersonPlayer::UpdatePlayerModel() {
 
     if ( mouseLook == ButtonState::MOVED ) {
         printf("Mouse moved.\n");
+        const MouseMotion mouseMotion = GetMouseMotion();
+        m_MousePrevX = m_MouseX;
+        m_MousePrevY = m_MouseY;
+        m_MouseX = mouseMotion.current.x;
+        m_MouseY = mouseMotion.current.y;
+        int dX = m_MouseX - m_MousePrevX;
+        int dY = m_MouseY - m_MousePrevY;
+        m_Camera.RotateAroundUp( -dt*m_LookSpeed*(float)dX );   
+        m_Camera.RotateAroundSide( -dt*m_LookSpeed*(float)dY );
     }
 
     // Model rotation
