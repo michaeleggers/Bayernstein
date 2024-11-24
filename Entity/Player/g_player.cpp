@@ -201,6 +201,10 @@ void Player::HandleInput() {
     if ( captainState == ButtonState::WENT_DOWN ) {
         printf("Player: I am the captain!\n");
     }
+    ButtonState mouseMove = CHECK_ACTION("mlook");
+    if ( mouseMove == ButtonState::MOVED ) {
+        printf("Mouse moved\n");
+    }
     UpdatePlayerModel();
 }
 

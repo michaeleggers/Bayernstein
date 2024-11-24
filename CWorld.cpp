@@ -67,7 +67,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                 } else if ( prop.value == "info_player_start" ) {
                     assert( m_pPlayerEntity == nullptr ); // There can only be one
                     glm::vec3 playerStartPosition = CWorld::GetOrigin(&e);
-                    m_pPlayerEntity = new Player(playerStartPosition);
+                    m_pPlayerEntity = new FirstPersonPlayer(playerStartPosition);
                     m_pEntityManager->RegisterEntity(m_pPlayerEntity);
                     // Upload this model to the GPU. Not using the handle atm.
                     int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
@@ -77,7 +77,6 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     glm::vec3 enemyStartPosition = CWorld::GetOrigin(&e);
                     Enemy* enemy = new Enemy(e.properties);
                     m_pEntityManager->RegisterEntity(enemy);
-
                     int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
                     m_Models.push_back(enemy->GetModel());
                 } else if ( prop.value == "path_corner" ) { // FIX: Should be an entity type as well.

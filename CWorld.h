@@ -19,6 +19,7 @@
 #include "Entity/Door/g_door.h"
 #include "Entity/Enemy/g_enemy.h"
 #include "Entity/Player/g_player.h"
+#include "Entity/FirstPersonPlayer/g_fp_player.h"
 #include "Entity/FollowCamera/g_follow_camera.h"
 #include "Entity/FlyCamera/g_fly_camera.h"
 #include "Entity/entity_manager.h"
@@ -42,7 +43,7 @@ public:
         return m_StaticGeometryCount;
     }
 
-    Player* PlayerEntity() {
+    FirstPersonPlayer* PlayerEntity() {
         return m_pPlayerEntity;
     }
 
@@ -74,7 +75,7 @@ private:
 
     uint64_t                             m_StaticGeometryCount;
     // FIX: Does the player really *always* have to exist?
-    Player*                              m_pPlayerEntity = nullptr;
+    FirstPersonPlayer*                   m_pPlayerEntity = nullptr;
     std::vector<HKD_Model*>              m_Models; 
     std::vector<HKD_Model*>              m_BrushModels;
     // Keep references to brush entities' map tris

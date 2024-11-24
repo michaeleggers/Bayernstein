@@ -125,6 +125,7 @@ void Game::Init() {
     // Mouse buttons
     inputHandler->BindInputToActionName(SDL_BUTTON_LEFT, "fire"); 
     inputHandler->BindInputToActionName(SDL_BUTTON_RIGHT, "look"); 
+    inputHandler->BindInputToActionName(SDL_MOUSEMOTION, "mlook"); 
 
     // Let the player receive input by default
     CInputDelegate::Instance()->SetReceiver(m_pPlayerEntity);

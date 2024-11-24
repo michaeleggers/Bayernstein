@@ -29,6 +29,7 @@ bool MouseWentUp(int button);
 bool MousePressed(int button);
 bool RightMouseWentDown(void);
 const MouseMotion GetMouseMotion(void);
+bool MouseMoved(int event);
 bool ShouldClose(void);
 
 const std::string&  TextInput();

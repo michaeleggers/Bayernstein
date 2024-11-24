@@ -105,6 +105,7 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     ButtonState speed = CHECK_ACTION("speed");
     ButtonState turnLeft = CHECK_ACTION("turn_left");
     ButtonState turnRight = CHECK_ACTION("turn_right");
+    ButtonState mouseLook = CHECK_ACTION("mlook");
     
     double dt = GetDeltaTime();
     float followCamSpeed = 0.03f;
@@ -112,6 +113,10 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     if ( KeyPressed(SDLK_LSHIFT) ) {
         followCamSpeed *= 0.3f;
         followTurnSpeed *= 0.3f;
+    }
+
+    if ( mouseLook == ButtonState::MOVED ) {
+        printf("Mouse moved.\n");
     }
 
     // Model rotation
