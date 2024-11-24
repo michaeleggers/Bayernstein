@@ -50,7 +50,7 @@ public:
         m_Name = other->m_Name;
         m_Radius = other->m_Radius;
         m_direction = other->m_direction;
-        m_NextWaypointName = "";
+        m_NextWaypointName = other->m_NextWaypointName;
         m_PreviousWaypointName = "";
     }
 
@@ -66,6 +66,7 @@ public:
     void                  TargetNextWaypoint();
     Waypoint              GetCurrentWaypoint();
     void                  SetCurrentWaypoint(std::string targetname);
+    void                  SetNextWaypoint(std::string targetname);
     std::vector<Vertex>   GetPointsAsVertices();
   
 public:
@@ -74,7 +75,6 @@ public:
 private:
     std::vector<Waypoint>                     m_Points;
     std::unordered_map<std::string, Waypoint> m_TargetnameToWaypoint;
-    std::vector<PatrolPath>                   m_Paths;
     float                                     m_Radius;
     std::string                               m_Name;
     bool                                      m_IsClosed;

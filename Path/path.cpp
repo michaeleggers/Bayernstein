@@ -17,6 +17,7 @@ void PatrolPath::AddPoint(Waypoint point) {
     if ( m_CurrentWaypointName.empty() ) {
         m_Name = point.targetname;
         m_CurrentWaypointName = point.targetname;
+        m_NextWaypointName = point.target;
     }
 }
 
@@ -71,3 +72,6 @@ void PatrolPath::SetCurrentWaypoint(std::string targetname) {
     m_CurrentWaypointName = targetname;
 }
 
+void PatrolPath::SetNextWaypoint(std::string targetname) {
+    m_NextWaypointName = targetname;
+}

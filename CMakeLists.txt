@@ -126,6 +126,7 @@ add_executable(Game
     CWorld.h
     collision.cpp
     collision.h
+    globals.h
     Clock/clock.cpp
     Clock/clock.h
     Path/path.cpp

@@ -42,28 +42,27 @@ void CWorld::InitWorldFromMap(const Map& map) {
     // Convert to tris
     m_MapTris = CWorld::CreateMapTrisFromMapPolys(polysoup);
     
-    // Everything *after* the static geometry is dynamic (brush entities).
-    // Remember where they start:
-    m_OffsetDynamicGeometry = m_MapTris.size();
+    m_StaticGeometryCount = m_MapTris.size();
 
     // Now initialize all the entities. Those also include brush
-    // entities that get appended to m_MapTris. We remember where
-    // the brush entities start in m_OffsetDynamicGeometry.
+    // entities. Those entities store their own geometry as MapTris.
+    // We keep pointers to those triangles as the brush entities (eg. doors)
+    // update their position. We must know about this positional update
+    // in order to collide with the tris correctly.
+
     // Load and create all the entities
     for ( int i = 0; i < map.entities.size(); i++ ) {
         const Entity& e = map.entities[ i ];
-        BaseGameEntity* baseEntity = NULL;
         // Check the classname
         for ( int j = 0; j < e.properties.size(); j++ ) {
             const Property& prop = e.properties[ j ];
             if ( prop.key == "classname" ) {
                 if ( prop.value == "func_door" ) {
-                    baseEntity = new Door(e.properties, e.brushes); 
-                    AddBrushesToDynamicGeometry( e.brushes );
-                    m_pEntityManager->RegisterEntity(baseEntity); 
-                    HKD_Model* model = ((Door*)baseEntity)->GetModel();
+                    Door* door = new Door(e.properties, e.brushes); 
+                    m_pEntityManager->RegisterEntity(door); 
+                    HKD_Model* model = door->GetModel();
                     m_BrushModels.push_back( model );
-                    std::vector<MapTri>& mapTris = ((Door*)baseEntity)->MapTris();
+                    std::vector<MapTri>& mapTris = door->MapTris();
                     m_pBrushMapTris.push_back( &mapTris );
                 } else if ( prop.value == "info_player_start" ) {
                     assert( m_pPlayerEntity == nullptr ); // There can only be one
@@ -83,16 +82,8 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     m_Models.push_back(enemy->GetModel());
                 } else if ( prop.value == "path_corner" ) { // FIX: Should be an entity type as well.
                     Waypoint point = CWorld::GetWaypoint(&e);
-                    //m_pPath->AddPoint(point);
-                    // FIX: Very crude way of remembering waypoint names just so
-                    // that later on we can get its path.
                     m_NameToWaypoint.insert({ point.targetname, point });
-                    // I assume that the corner Points are in the right order. if not we need to rethink the data structure
                     glm::vec3 pathCornerPosition = CWorld::GetOrigin(&e);
-                    printf("Path corner entity found: %f, %f, %f\n",
-                           pathCornerPosition.x,
-                           pathCornerPosition.y,
-                           pathCornerPosition.z);
                 } else {
                     printf("Unknown entity type: %s\n", prop.value.c_str());
                 }
@@ -143,7 +134,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
         }
     }
     // Waypoints now all points to an instance inside the m_Paths vector.
-    // A waypoint not being path of a 'chain' also points to a path:
+    // A waypoint not being part of a 'chain' also points to a path:
     // It is a path with that poor, lonely waypoint. I kinda feel sorry for it...
 
     // Now that everything is initialized, set up the paths for the enemy.
@@ -163,23 +154,16 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     for (int k = 0; k < points.size(); k++) {
                         Waypoint point = points[k];
                         if ( enemy->m_Target == point.targetname ) {
-                            // copy its path for internat use in this enemy
+                            // copy its path for internal use in this enemy
                             PatrolPath* pPathCopy = new PatrolPath(&path);
                             pPathCopy->SetCurrentWaypoint(enemy->m_Target);
+                            pPathCopy->SetNextWaypoint(point.target);
                             enemy->SetFollowPath(pPathCopy);
                         }
                     }
                 }
             }
         }
-    }
-}
-
-void CWorld::AddBrushesToDynamicGeometry(const std::vector<Brush>& brushes) {
-    for (int i = 0; i < brushes.size(); i++) {
-        std::vector<MapPolygon> mapPolys = createPolysoup( brushes[i] );
-        std::vector<MapTri> mapTris = CreateMapTrisFromMapPolys(mapPolys);
-        std::copy( mapTris.begin(), mapTris.end(), std::back_inserter(m_MapTris) );
     }
 }
 
@@ -281,12 +265,12 @@ std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolyg
     return mapTris;
 }
 
-// NOTE: Keept this. Getting properties is done via the template stuff
+// NOTE: Keep this. Getting properties is done via the template stuff
 // in base_entity but maybe the template stuff turns out to be dumb.
 glm::vec3 CWorld::GetOrigin(const Entity* entity) {
     for ( const Property& property : entity->properties ) {
         if ( property.key == "origin" ) {
-            std::vector<float> values = ParseFloatValues<float>(property.value);
+            std::vector<float> values = ParseValues<float>(property.value);
             return glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
         }
     }
@@ -294,13 +278,13 @@ glm::vec3 CWorld::GetOrigin(const Entity* entity) {
     assert(false && "Entity has no origin property!");
 }
 
-// NOTE: Keept this. Getting properties is done via the template stuff
+// NOTE: Keep this. Getting properties is done via the template stuff
 // in base_entity but maybe the template stuff turns out to be dumb.
 Waypoint CWorld::GetWaypoint(const Entity* entity) {
     Waypoint waypoint = {};
     for ( const Property& property : entity->properties ) {
         if ( property.key == "origin" ) {
-            std::vector<float> values = ParseFloatValues<float>(property.value);
+            std::vector<float> values = ParseValues<float>(property.value);
             waypoint.position = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
         } else if ( property.key == "targetname" ) {
             waypoint.targetname = property.value;
