@@ -4,13 +4,20 @@
 
 #include "g_fp_player.h"
 
+#include <SDL.h>
+
+#define GLM_FORCE_RADIANS
+#include "../../dependencies/glm/glm.hpp"
+#include "../../dependencies/glm/ext.hpp"
+#include "../../dependencies/glm/gtx/quaternion.hpp"
+
 #include "../../input.h"
 #include "../../utils/utils.h"
 #include "../../input_handler.h"
 #include "../../input_receiver.h"
+#include "../../globals.h"
 #include "g_fp_player_states.h"
 
-#include <SDL.h>
 
 FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
     : MovingEntity(ET_PLAYER),
@@ -125,8 +132,18 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         m_MouseY = mouseMotion.current.y;
         int dX = m_MouseX - m_MousePrevX;
         int dY = m_MouseY - m_MousePrevY;
-        m_Camera.RotateAroundUp( -dt*m_LookSpeed*(float)dX );   
-        m_Camera.RotateAroundSide( -dt*m_LookSpeed*(float)dY );
+
+        // Compute rotation angles based on mouse input
+        float rotAngleUp   = -dt * m_LookSpeed * (float)dX;
+        float rotAngleSide = dt * m_LookSpeed * (float)dY;
+
+        // Get current pitch (x-axis angle) from camera orientation
+
+        // Calculate the new pitch and clamp it
+
+        // Apply constrained rotation
+        m_Camera.RotateAroundWorldUp(rotAngleUp);     // Horizontal rotation (yaw)
+        m_Camera.RotateAroundSide(-rotAngleSide);
     }
 
     // Model rotation

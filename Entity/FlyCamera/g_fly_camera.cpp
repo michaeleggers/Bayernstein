@@ -61,7 +61,7 @@ void CFlyCamera::HandleInput() {
 		m_MouseY = mouseMotion.current.y;
 		int dX = m_MouseX - m_MousePrevX;
 		int dY = m_MouseY - m_MousePrevY;
-		m_Camera.RotateAroundUp( -dt*m_LookSpeed*(float)dX );	
+		m_Camera.RotateAroundWorldUp( -dt*m_LookSpeed*(float)dX );	
 		m_Camera.RotateAroundSide( -dt*m_LookSpeed*(float)dY );
 	}
 	else if (look == ButtonState::WENT_UP) {

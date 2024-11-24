@@ -86,7 +86,7 @@ void Game::Init() {
 
     m_pFlyCameraEntity = new CFlyCamera( glm::vec3(-912, -586, 609) );
     m_pFlyCameraEntity->m_Camera.RotateAroundSide(-45.0f);
-    m_pFlyCameraEntity->m_Camera.RotateAroundUp(180.0f);
+    m_pFlyCameraEntity->m_Camera.RotateAroundWorldUp(180.0f);
   
     // FIX: If the follow camera is registered *before* one of the entities
     // the follow camera will lag behind one frame because it won't

@@ -147,8 +147,8 @@ bool GLRender::Init(void) {
     // Create an application window with the following settings:
     m_Window = SDL_CreateWindow(
         "HKD",
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
+        0,
+        0,
         WINDOW_WIDTH,
         WINDOW_HEIGHT,
         SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI

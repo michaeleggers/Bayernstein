@@ -70,11 +70,11 @@ private:
     AnimState           m_AnimationState;
     EllipsoidCollider   m_EllipsoidCollider;
     Camera              m_Camera;
-    float               m_LookSpeed = 0.01f;
-	int                 m_MouseX = 0;
-	int                 m_MouseY = 0;
-	int                 m_MousePrevX = 0;
-	int                 m_MousePrevY = 0;
+    float               m_LookSpeed = 0.06f;
+    int                 m_MouseX = 0;
+    int                 m_MouseY = 0;
+    int                 m_MousePrevX = 0;
+    int                 m_MousePrevY = 0;
 
     void LoadModel(const char* path, glm::vec3 initialPosition);
     void UpdatePlayerModel();
