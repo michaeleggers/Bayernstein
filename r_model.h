@@ -39,6 +39,9 @@ enum HKD_ModelType {
     HKD_MODEL_TYPE_ANIMATED
 };
 
+#define MODEL_RENDER_FLAG_NONE      (0x00000001 << 0)
+#define MODEL_RENDER_FLAG_IGNORE    (0x00000001 << 1)
+
 struct HKD_Model {
     HKD_ModelType type;
     std::string filename;
@@ -70,6 +73,7 @@ struct HKD_Model {
     // Rigid Body Physics
     bool isRigidBody;
     Body body;
+    uint32_t renderFlags;
 };
 
 HKD_Model CreateModelFromIQM(IQMModel* model);

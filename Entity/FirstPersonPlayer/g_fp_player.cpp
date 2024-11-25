@@ -60,6 +60,8 @@ void FirstPersonPlayer::Update() {
     UpdateModel(&m_Model, (float)dt);
 
     m_Position = m_Model.position;
+    m_Camera.m_Pos = m_Model.position;
+    m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, 50.0f);
 
     m_pStateMachine->Update();
 }
@@ -70,6 +72,7 @@ void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition) {
 
     // Convert the model to our internal format
     m_Model = CreateModelFromIQM(&iqmModel);
+    m_Model.renderFlags |= MODEL_RENDER_FLAG_IGNORE;
     m_Model.isRigidBody = false;
     m_Model.position = initialPosition;
     m_Model.scale = glm::vec3(22.0f);
@@ -116,49 +119,35 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     ButtonState mouseLook = CHECK_ACTION("mlook");
     
     double dt = GetDeltaTime();
-    float followCamSpeed = 0.03f;
+    float followCamSpeed = 0.3f;
     float followTurnSpeed = 0.3f;
     if ( KeyPressed(SDLK_LSHIFT) ) {
         followCamSpeed *= 0.3f;
         followTurnSpeed *= 0.3f;
     }
 
+    glm::quat qYaw = glm::angleAxis( glm::radians(-m_Yaw), DOD_WORLD_UP );
     if ( mouseLook == ButtonState::MOVED ) {
         const MouseMotion mouseMotion = GetMouseMotion();
-        m_MousePrevX = m_MouseX;
-        m_MousePrevY = m_MouseY;
-        m_MouseX = mouseMotion.current.x;
-        m_MouseY = mouseMotion.current.y;
-        int dX = m_MouseX - m_MousePrevX;
-        int dY = m_MouseY - m_MousePrevY;
-
-        dX = mouseMotion.current.xrel;
-        dY = mouseMotion.current.yrel;
-
+        m_MouseX = mouseMotion.current.xrel;
+        m_MouseY = mouseMotion.current.yrel;
+        
         // Compute rotation angles based on mouse input
-        float rotAngleUp   = dt * m_LookSpeed * (float)dX;
-        float rotAngleSide = dt * m_LookSpeed * (float)dY;
+        float rotAngleUp   = dt/1000.0f * m_LookSpeed * (float)m_MouseX;
+        float rotAngleSide = dt/1000.0f * m_LookSpeed * (float)m_MouseY;
 
         m_Pitch += rotAngleSide;
-        m_Yaw += rotAngleUp;
+        m_Yaw   += rotAngleUp;
         
         m_Pitch = glm::clamp( m_Pitch, -89.0f, 89.0f );
         glm::quat qPitch = glm::angleAxis( glm::radians(-m_Pitch), DOD_WORLD_RIGHT );
-        glm::quat qYaw = glm::angleAxis( glm::radians(-m_Yaw), DOD_WORLD_UP );
+        qYaw = glm::angleAxis( glm::radians(-m_Yaw), DOD_WORLD_UP );
         glm::quat qTotal = qYaw * qPitch;
 
         m_Camera.m_Forward = glm::rotate(qTotal, DOD_WORLD_FORWARD);
         m_Camera.m_Up = glm::rotate(qTotal, DOD_WORLD_UP);
         m_Camera.m_Side = glm::rotate(qTotal, DOD_WORLD_RIGHT);
         m_Camera.m_Orientation = qTotal;
-
-
-        //m_Camera.RotateAroundSide(-rotAngleSide);
-        //
-        //glm::vec3 viewForward = glm::rotate( qPitch, m_Camera.m_Side );
-        //glm::vec3 viewUp      = glm::rotate( qPitch, m_Camera.m_Up );
-        //m_Camera.SetForward(viewForward);
-        //m_Camera.SetUp(viewUp);
     }
 
     // Model rotation
@@ -180,7 +169,8 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     }
 
     glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
-    m_Model.orientation = rot;
+    glm::quat modelForwardFix = glm::angleAxis( glm::radians(180.0f), DOD_WORLD_UP );
+    m_Model.orientation = modelForwardFix * qYaw;
 
     m_Forward = glm::rotate(m_Model.orientation,
                             glm::vec3(0.0f, -1.0f, 0.0f)); // -1 because the model is facing -1 (Outside the screen)

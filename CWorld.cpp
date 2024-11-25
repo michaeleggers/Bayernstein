@@ -178,8 +178,8 @@ void CWorld::CollideEntitiesWithWorld() {
             EllipsoidCollider ec = pEntity->GetEllipsoidCollider();
             //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
             CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
-                                                                      static_cast<float>(dt) * pEntity->m_Velocity,
-                                                                      static_cast<float>(dt) * m_Gravity,
+                                                                      pEntity->m_Velocity,
+                                                                      m_Gravity,
                                                                       m_MapTris.data(),
                                                                       StaticGeometryCount(),
                                                                       m_pBrushMapTris);
@@ -220,7 +220,7 @@ void CWorld::CollideEntities() {
                 Door* pDoor = (Door*)pOther;
                 EllipsoidCollider ec = pEntity->GetEllipsoidCollider();
                 CollisionInfo ci = PushTouch(ec,
-                                             static_cast<float>(dt) * pEntity->m_Velocity, 
+                                             pEntity->m_Velocity, 
                                              pDoor->MapTris().data(), 
                                              pDoor->MapTris().size());
                 if (ci.didCollide) { 

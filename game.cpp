@@ -57,7 +57,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/Prototype2.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple2.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -132,6 +132,9 @@ void Game::Init() {
     
     // Disable mouse cursor in FPS mode (initial mode)
     SDL_SetRelativeMouseMode(SDL_TRUE);
+    //SDL_SetWindowMouseGrab(renderer->GetWindow(),
+    //                       SDL_TRUE);
+    SDL_SetWindowGrab(renderer->GetWindow(), SDL_TRUE);
     SDL_ShowCursor(SDL_DISABLE);
 }
 
@@ -178,16 +181,14 @@ bool Game::RunFrame(double dt) {
         renderCam = &m_pPlayerEntity->GetCamera();
         if ( entities[ receiverToggle ]->Type() == ET_FLY_CAMERA ) {
             SDL_SetRelativeMouseMode(SDL_FALSE);
-            SDL_SetWindowMouseGrab(renderer->GetWindow(),
-                                   SDL_FALSE);
+            SDL_SetWindowGrab(renderer->GetWindow(), SDL_FALSE);
             SDL_ShowCursor(SDL_ENABLE);
             CFlyCamera* flyCamEnt = (CFlyCamera*)entities[ receiverToggle ];
             renderCam = &flyCamEnt->m_Camera;
         }
         else {
             SDL_SetRelativeMouseMode(SDL_TRUE);
-            SDL_SetWindowMouseGrab(renderer->GetWindow(),
-                                   SDL_TRUE);
+            SDL_SetWindowGrab(renderer->GetWindow(), SDL_TRUE);
             SDL_ShowCursor(SDL_DISABLE);
         }
     }

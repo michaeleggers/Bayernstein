@@ -789,6 +789,10 @@ void GLRender::Render(Camera* camera,
     }    
     for (int i = 0; i < numModels; i++) {
 
+        if ( models[ i ]->renderFlags & MODEL_RENDER_FLAG_IGNORE ) {
+            continue;
+        }
+
         GLModel model = m_Models[ models[i]->gpuModelHandle ];
 
         if ( models[i]->numJoints > 0 ) {
