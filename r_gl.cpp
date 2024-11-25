@@ -147,8 +147,8 @@ bool GLRender::Init(void) {
     // Create an application window with the following settings:
     m_Window = SDL_CreateWindow(
         "HKD",
-        0,
-        0,
+        1,
+        1,
         WINDOW_WIDTH,
         WINDOW_HEIGHT,
         SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
@@ -206,7 +206,7 @@ bool GLRender::Init(void) {
     SDL_ShowWindow(m_Window);
 
     // GL Vsync on
-    if (SDL_GL_SetSwapInterval(1) != 0) {
+    if (SDL_GL_SetSwapInterval(0) != 0) {
         SDL_Log("Failed to enable vsync!\n");
     }
     else {

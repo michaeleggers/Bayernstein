@@ -70,7 +70,9 @@ private:
     AnimState           m_AnimationState;
     EllipsoidCollider   m_EllipsoidCollider;
     Camera              m_Camera;
-    float               m_LookSpeed = 0.06f;
+    float               m_Pitch = 0.0f; // The thing when the camera rotates around its side axis
+    float               m_Yaw   = 0.0f; // The thing when the camera rotates around the world up axis
+    float               m_LookSpeed = 0.1f;
     int                 m_MouseX = 0;
     int                 m_MouseY = 0;
     int                 m_MousePrevX = 0;

@@ -11,17 +11,25 @@ Camera::Camera(glm::vec3 pos)
 	m_Orientation = glm::angleAxis(glm::radians(0.0f), m_Up);
 }
 
+/*
+void Camera::SetForward(glm::vec3 forward) {
+	m_Forward = forward;
+	m_Side = glm::cross( m_Forward, DOD_WORLD_UP );
+	m_Up = glm::cross( 
+}
+*/
+
 void Camera::Pan(glm::vec3 direction)
 {
 	m_Pos += direction;
 }
 
-void Camera::Rotate(glm::quat quat)
+void Camera::Rotate(glm::quat q)
 {
-	m_Orientation *= quat;
-	m_Up = glm::rotate(m_Orientation, m_Up);
-	m_Forward = glm::rotate(m_Orientation, m_Forward);
-	m_Side = glm::rotate(m_Orientation, m_Side);
+	m_Orientation = glm::normalize(m_Orientation * q);
+	m_Up = glm::rotate(m_Orientation, DOD_WORLD_UP);
+	m_Forward = glm::rotate(m_Orientation, DOD_WORLD_FORWARD);
+	m_Side = glm::rotate(m_Orientation, DOD_WORLD_RIGHT);
 }
 
 void Camera::RotateAroundWorldUp(float angle)

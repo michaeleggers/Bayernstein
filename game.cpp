@@ -129,6 +129,10 @@ void Game::Init() {
 
     // Let the player receive input by default
     CInputDelegate::Instance()->SetReceiver(m_pPlayerEntity);
+    
+    // Disable mouse cursor in FPS mode (initial mode)
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+    SDL_ShowCursor(SDL_DISABLE);
 }
 
 static void DrawCoordinateSystem(IRender* renderer) {
@@ -152,6 +156,8 @@ bool Game::RunFrame(double dt) {
 
     m_AccumTime += dt;
 
+    IRender* renderer = GetRenderer();
+
     // Want to quit on ESCAPE
     if ( KeyPressed(SDLK_ESCAPE) ) {
         m_pInterface->QuitGame();
@@ -171,8 +177,18 @@ bool Game::RunFrame(double dt) {
         m_pFollowCameraEntity->SetTarget( entities[ receiverToggle ] );
         renderCam = &m_pPlayerEntity->GetCamera();
         if ( entities[ receiverToggle ]->Type() == ET_FLY_CAMERA ) {
+            SDL_SetRelativeMouseMode(SDL_FALSE);
+            SDL_SetWindowMouseGrab(renderer->GetWindow(),
+                                   SDL_FALSE);
+            SDL_ShowCursor(SDL_ENABLE);
             CFlyCamera* flyCamEnt = (CFlyCamera*)entities[ receiverToggle ];
             renderCam = &flyCamEnt->m_Camera;
+        }
+        else {
+            SDL_SetRelativeMouseMode(SDL_TRUE);
+            SDL_SetWindowMouseGrab(renderer->GetWindow(),
+                                   SDL_TRUE);
+            SDL_ShowCursor(SDL_DISABLE);
         }
     }
     // Handle the input
@@ -195,7 +211,6 @@ bool Game::RunFrame(double dt) {
     //m_pPlayerEntity->UpdateCamera(&m_FollowCamera);
 
     // Render stuff
-    IRender* renderer = GetRenderer();
 
     // ImGUI stuff goes into GL default FBO
 

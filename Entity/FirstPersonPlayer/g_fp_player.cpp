@@ -124,7 +124,6 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     }
 
     if ( mouseLook == ButtonState::MOVED ) {
-        printf("Mouse moved.\n");
         const MouseMotion mouseMotion = GetMouseMotion();
         m_MousePrevX = m_MouseX;
         m_MousePrevY = m_MouseY;
@@ -133,26 +132,44 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         int dX = m_MouseX - m_MousePrevX;
         int dY = m_MouseY - m_MousePrevY;
 
+        dX = mouseMotion.current.xrel;
+        dY = mouseMotion.current.yrel;
+
         // Compute rotation angles based on mouse input
-        float rotAngleUp   = -dt * m_LookSpeed * (float)dX;
+        float rotAngleUp   = dt * m_LookSpeed * (float)dX;
         float rotAngleSide = dt * m_LookSpeed * (float)dY;
 
-        // Get current pitch (x-axis angle) from camera orientation
+        m_Pitch += rotAngleSide;
+        m_Yaw += rotAngleUp;
+        
+        m_Pitch = glm::clamp( m_Pitch, -89.0f, 89.0f );
+        glm::quat qPitch = glm::angleAxis( glm::radians(-m_Pitch), DOD_WORLD_RIGHT );
+        glm::quat qYaw = glm::angleAxis( glm::radians(-m_Yaw), DOD_WORLD_UP );
+        glm::quat qTotal = qYaw * qPitch;
 
-        // Calculate the new pitch and clamp it
+        m_Camera.m_Forward = glm::rotate(qTotal, DOD_WORLD_FORWARD);
+        m_Camera.m_Up = glm::rotate(qTotal, DOD_WORLD_UP);
+        m_Camera.m_Side = glm::rotate(qTotal, DOD_WORLD_RIGHT);
+        m_Camera.m_Orientation = qTotal;
 
-        // Apply constrained rotation
-        m_Camera.RotateAroundWorldUp(rotAngleUp);     // Horizontal rotation (yaw)
-        m_Camera.RotateAroundSide(-rotAngleSide);
+
+        //m_Camera.RotateAroundSide(-rotAngleSide);
+        //
+        //glm::vec3 viewForward = glm::rotate( qPitch, m_Camera.m_Side );
+        //glm::vec3 viewUp      = glm::rotate( qPitch, m_Camera.m_Up );
+        //m_Camera.SetForward(viewForward);
+        //m_Camera.SetUp(viewUp);
     }
 
     // Model rotation
+    /*
     if ( turnLeft == ButtonState::PRESSED ) {
         m_RotationAngle += followTurnSpeed * (float)dt; // TODO: Should be a quaternion in base game entity.
     }
     if ( turnRight == ButtonState::PRESSED ) {
         m_RotationAngle -= followTurnSpeed * (float)dt;
     }
+    */
    
     // TODO: If dealing with m_Orientation quaternion, this test can be omitted.
     if (m_RotationAngle >= 360.0f) {
