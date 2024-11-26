@@ -26,7 +26,8 @@ FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(FirstPersonPlayerIdle::Instance());
     LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
-    m_Position = initialPosition;
+    m_Position = m_Model.position;
+    m_PrevPosition = m_Model.position;
     m_Camera = Camera(initialPosition);
 }
 
@@ -59,7 +60,7 @@ void FirstPersonPlayer::Update() {
     double dt = GetDeltaTime();
     UpdateModel(&m_Model, (float)dt);
 
-    m_Position = m_Model.position;
+    //m_Position = m_Model.position;
     m_Camera.m_Pos = m_Model.position;
     m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, 50.0f);
 
@@ -119,7 +120,7 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     ButtonState mouseLook = CHECK_ACTION("mlook");
     
     double dt = GetDeltaTime();
-    float followCamSpeed = 0.3f;
+    float followCamSpeed = 5.3f;
     float followTurnSpeed = 0.3f;
     if ( KeyPressed(SDLK_LSHIFT) ) {
         followCamSpeed *= 0.3f;
@@ -178,7 +179,7 @@ void FirstPersonPlayer::UpdatePlayerModel() {
 
     // Change player's velocity and animation state based on input
     m_Velocity = glm::vec3(0.0f);
-    float t = (float)dt * followCamSpeed;
+    float t = followCamSpeed;
     AnimState playerAnimState = ANIM_STATE_IDLE;
     
     if ( forward == ButtonState::PRESSED ) {

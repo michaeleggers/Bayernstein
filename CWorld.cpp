@@ -170,35 +170,36 @@ void CWorld::CollideEntitiesWithWorld() {
     std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
     double dt = GetDeltaTime();
     static double accumulator = 0.0f;
+    static double accumLeft = 16.67f;
+    static double acc = 0.0;
+    //printf("dt: %f\n", dt);
     accumulator += dt;
-    if (accumulator >= 16.67) { // Time to update
-        for (int i = 0; i < entities.size(); i++) {
-            BaseGameEntity* pEntity = entities[i];
-            pEntity->m_PrevPosition = pEntity->m_Position;
+    for (int i = 0; i < entities.size(); i++) {
+        BaseGameEntity* pEntity = entities[i];
 
-            // FIX: Higher level entity type or entity flags (eg. FLAG_COLLIDABLE).
-            if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
+        if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
 
+            if (accumulator > 16.67) { // Time to run physics
+                acc = 0.0;
+                pEntity->m_PrevPosition = pEntity->m_Position; // store pos from last physics update step.
                 EllipsoidCollider ec = pEntity->GetEllipsoidCollider();
                 
                 //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
                 CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
                                                                           pEntity->m_Velocity,
-                                                                          glm::vec3(0.0f), //m_Gravity,
+                                                                          m_Gravity,
                                                                           m_MapTris.data(),
                                                                           StaticGeometryCount(),
                                                                           m_pBrushMapTris);
 
-                //pEntity->UpdatePosition(collisionInfo.basePos);
                 pEntity->m_Position = collisionInfo.basePos;
-                //pEntity->m_Position += ec.radiusB;
-                //pEntity->m_Position.z -= ec.radiusB;
-
+                accumLeft = accumulator - 16.67;
+                accumulator = 0.0;
                 glm::vec3 perTickMotion = pEntity->m_Position - pEntity->m_PrevPosition;
                 pEntity->UpdatePosition( pEntity->m_PrevPosition + perTickMotion );
             }
         }
-    } // if time to update
+    }
 }
 
 // FIX: Slow. Can we do better? Push touch is more than an overlap check!
