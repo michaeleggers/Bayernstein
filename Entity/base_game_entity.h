@@ -113,6 +113,7 @@ class BaseGameEntity {
     };
     
     glm::vec3   m_Position = glm::vec3(0.0f);
+    glm::vec3   m_PrevPosition = glm::vec3(0.0f);
     glm::vec3   m_Velocity = glm::vec3(0.0f); // TODO: Actually make use of it and remove from subclasses!
     float       m_RotationAngle = 0.0f; // TODO: Should be a quaternion called m_Orientation.
     std::string m_Target = "";
