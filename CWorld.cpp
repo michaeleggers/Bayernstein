@@ -169,9 +169,11 @@ void CWorld::InitWorldFromMap(const Map& map) {
 void CWorld::CollideEntitiesWithWorld() {
     std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
     double dt = GetDeltaTime();
-    static double accumulator = 0.0f;
-    static double accumLeft = 16.67f;
+    static const double INTERVAL = 8.0;
+    static double accumulator = 0.0;
+    static double accumLeft = INTERVAL;
     static double acc = 0.0;
+    static double t = 0.0;
     //printf("dt: %f\n", dt);
     accumulator += dt;
     for (int i = 0; i < entities.size(); i++) {
@@ -179,7 +181,7 @@ void CWorld::CollideEntitiesWithWorld() {
 
         if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
 
-            if (accumulator > 16.67) { // Time to run physics
+            if (accumulator > INTERVAL) { // Time to run physics
                 acc = 0.0;
                 pEntity->m_PrevPosition = pEntity->m_Position; // store pos from last physics update step.
                 EllipsoidCollider ec = pEntity->GetEllipsoidCollider();
@@ -187,16 +189,24 @@ void CWorld::CollideEntitiesWithWorld() {
                 //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
                 CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
                                                                           pEntity->m_Velocity,
-                                                                          m_Gravity,
+                                                                          m_Gravity, //glm::vec3(0.0f), //m_Gravity,
                                                                           m_MapTris.data(),
                                                                           StaticGeometryCount(),
                                                                           m_pBrushMapTris);
 
                 pEntity->m_Position = collisionInfo.basePos;
-                accumLeft = accumulator - 16.67;
+                accumLeft = accumulator - INTERVAL;
                 accumulator = 0.0;
+                t = accumLeft / INTERVAL;
                 glm::vec3 perTickMotion = pEntity->m_Position - pEntity->m_PrevPosition;
                 pEntity->UpdatePosition( pEntity->m_PrevPosition + perTickMotion );
+            }
+        }
+        if (accumLeft > 0.0) {
+            if (t < 1.0) {
+                glm::vec3 perTickMotion = pEntity->m_Position - pEntity->m_PrevPosition;
+                pEntity->UpdatePosition( pEntity->m_PrevPosition + (float)t*perTickMotion );
+                t += t;
             }
         }
     }
