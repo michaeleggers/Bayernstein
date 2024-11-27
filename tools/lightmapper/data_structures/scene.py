@@ -18,6 +18,7 @@ from data_structures.patch import Patch
 from data_structures.vector3f import Vector3f as vec
 from data_structures.compiled_vertex import CompiledVertex
 from data_structures.compiled_triangle import CompiledTriangle
+from data_structures.triangle import Triangle
 
 
 from typing import List
@@ -224,8 +225,12 @@ class Scene:
 
     def create_patches(self, patches_resolution: float = 0.0625) -> 'Scene':
 
+        triangles_ds = []
+        for vertex_tuple in self.triangles:
+            vertices = tuple(vec(*v) for v in vertex_tuple)
+            triangles_ds.append(Triangle(vertices))
 
-        self.lightmap_uvs, uv_map_world_size = uv_mapper.map_triangles(self.triangles, patches_resolution, debug=True)
+        self.lightmap_uvs, uv_map_world_size = uv_mapper.map_triangles(triangles_ds, patches_resolution, debug=True)
         self.light_map_resolution = math.ceil(uv_map_world_size * patches_resolution)
 
         self.patches, self.light_map, self.illegal_pixels = self.generate_patches(self.triangles, self.lightmap_uvs, self.light_map_resolution, self.emissions)

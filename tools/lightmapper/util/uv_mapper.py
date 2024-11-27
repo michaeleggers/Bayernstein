@@ -3,6 +3,10 @@ import math
 import random
 from PIL import Image, ImageDraw
 from pathlib import Path
+from data_structures.triangle import Triangle
+from data_structures.shape import Shape
+from data_structures.vector3f import Vector3f
+from typing import List, Optional, Tuple
 
 def __project_to_2d(triangle):
     """ Projects the 3D triangle onto a 2D plane based on its normal """
@@ -34,9 +38,6 @@ def __calculate_bounding_box_2d(projected_triangle, triangle_index):
 
     width = max_x - min_x if max_x != min_x else 1.0  # Avoid division by zero
     height = max_y - min_y if max_y != min_y else 1.0 # Avoid division by zero
-    
-    #width = math.ceil(width / 16) * 16
-    #height = math.ceil(height / 16) * 16
 
     return (0, 0, width, height, triangle_index)
 
@@ -153,7 +154,115 @@ def __debug_uv_mapping(triangles, uvs, image_size=148):
     # Save the image
     image.save(debug_path / "debug_uv_maps.png")
 
-def map_triangles(triangles, patch_resolution: float, debug=False):
+
+def are_coplanar(triangle1: Triangle, triangle2: Triangle, tolerance: float = 1e-2) -> bool:
+    """Check if two triangles are coplanar."""
+    # Extract vertices as numpy arrays
+    v1, v2, v3 = (v.to_array() for v in triangle1.vertices)
+    w1, w2, w3 = (v.to_array() for v in triangle2.vertices)
+
+    # Compute normals of the triangles
+    normal1 = np.cross(v2 - v1, v3 - v1)
+    normal2 = np.cross(w2 - w1, w3 - w1)
+
+    # Check if normals are parallel (dot product close to 1 or -1)
+    if not np.isclose(np.dot(normal1, normal2) / (np.linalg.norm(normal1) * np.linalg.norm(normal2)), 1, atol=tolerance):
+        return False
+
+    # Check if all vertices of triangle2 lie in the plane of triangle1
+    plane_d = -np.dot(normal1, v1)  # Plane equation: normal1 · x + d = 0
+    for w in [w1, w2, w3]:
+        if not np.isclose(np.dot(normal1, w) + plane_d, 0, atol=tolerance):
+            return False
+
+    return True
+
+def find_shared_vertices(triangle1: Triangle, triangle2: Triangle, tolerance: float = 1e-6) -> int:
+    """Count the number of approximately shared vertices between two triangles."""
+    def are_approx_equal(v1: Vector3f, v2: Vector3f) -> bool:
+        return np.allclose(v1.to_array(), v2.to_array(), atol=tolerance)
+    
+    return sum(1 for v1 in triangle1.vertices for v2 in triangle2.vertices if are_approx_equal(v1, v2))
+
+
+
+def create_shapes(triangles: List[Triangle]) -> List[Shape]:
+    """Group triangles into shapes based on planar adjacency."""
+    used = set()
+    shapes = []
+
+    for i, triangle in enumerate(triangles):
+        if i in used:
+            continue
+
+        # Find a neighboring triangle to form a planar surface
+        for j, other_triangle in enumerate(triangles):
+            if i != j and j not in used and find_shared_vertices(triangle, other_triangle) == 2:
+                if are_coplanar(triangle, other_triangle):
+                    shapes.append(Shape(triangles=[triangle, other_triangle]))
+                    used.update([i, j])
+                    break
+        else:
+            # If no match is found, add the triangle as a single shape
+            shapes.append(Shape(triangles=[triangle]))
+            used.add(i)
+
+    return shapes
+
+def __pack_shapes(shapes: List[Shape]):
+    total_width = 0
+    total_height = 0
+    for shape in shapes:
+        shape.bounding_box = [total_width, shape.bounding_box[1], shape.bounding_box[2], shape.bounding_box[3]]
+        total_height = max(total_height, shape.bounding_box[3])
+
+    return shapes, total_width, total_height
+
+def map_triangles(triangles: List[Triangle], patch_resolution: float, debug=False):
+    # TODO for now the uvmapper expects the geometry to be made out of quads
+
+    shapes: List[Shape] = create_shapes(triangles)
+    packed_shapes, total_width, total_height = __pack_shapes(shapes)
+    map_world_size = max(total_width, total_height)
+    print(shapes)
+
+
+    # Normalize UVs to fit the final square texture size
+    uv_coordinates = []
+    for shape in packed_shapes:
+        x = shape.bounding_box[0]
+        y = shape.bounding_box[1]
+        width = shape.bounding_box[2]
+        height = shape.bounding_box[3]
+        
+        # Normalize bounding box coordinates to UV coordinates
+        min_u = x / map_world_size
+        min_v = y / map_world_size
+        max_u = (x + width) / map_world_size
+        max_v = (y + height) / map_world_size
+        
+        # Normalize each vertex of the projected triangle to the bounding box and map to UV space
+        for projected in shape.projected_triangles:
+            uvs = []
+            min_u_triangle = min(v[0] for v in projected)
+            min_v_triangle = min(v[1] for v in projected)
+            for v in projected:
+                # Normalize within the bounding box and map to UV space
+                u = (v[0] - min_u_triangle) / width  # Normalize within the bounding box width
+                v = (v[1] - min_v_triangle) / height  # Normalize within the bounding box height
+                # Map to UV space
+                uvs.append((min_u + u * (max_u - min_u), min_v + v * (max_v - min_v)))
+            
+            shape.uvs.append(uvs)
+            uv_coordinates.append(uvs) # for debuggig
+
+    if debug:
+        __debug_uv_mapping(triangles, uv_coordinates)
+
+    return uv_coordinates, map_world_size
+
+
+def map_triangles2(triangles, patch_resolution: float, debug=False):
 
     bounding_boxes = []
     projected_triangles = []
