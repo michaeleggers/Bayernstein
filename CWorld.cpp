@@ -196,7 +196,7 @@ void CWorld::CollideEntitiesWithWorld() {
                                                                           StaticGeometryCount(),
                                                                           m_pBrushMapTris);
 
-                pEntity->m_Position = collisionInfo.basePos;
+                //pEntity->m_Position = collisionInfo.basePos;
                 ec->center = collisionInfo.basePos;
                 //pEntity->UpdatePosition( pEntity->m_PrevPosition + perTickMotion );
                 accumulator -= INTERVAL;

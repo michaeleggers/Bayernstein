@@ -28,6 +28,7 @@ FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
     LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
     m_Position = m_Model.position;
     m_PrevPosition = m_Model.position;
+    m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
     m_Camera = Camera(initialPosition);
 }
 
@@ -63,6 +64,7 @@ void FirstPersonPlayer::Update() {
     //m_Position = m_Model.position;
     m_Camera.m_Pos = m_Model.position;
     m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, 50.0f);
+    m_Camera.Pan( -100.0f * m_Camera.m_Forward );
 
     // TODO: (Michael): Reenable when collision stuff is working
     //m_pStateMachine->Update();
@@ -74,7 +76,7 @@ void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition) {
 
     // Convert the model to our internal format
     m_Model = CreateModelFromIQM(&iqmModel);
-    m_Model.renderFlags |= MODEL_RENDER_FLAG_IGNORE;
+    //m_Model.renderFlags |= MODEL_RENDER_FLAG_IGNORE;
     m_Model.isRigidBody = false;
     m_Model.position = initialPosition;
     m_Model.scale = glm::vec3(22.0f);
