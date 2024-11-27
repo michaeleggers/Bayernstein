@@ -169,25 +169,27 @@ void CWorld::InitWorldFromMap(const Map& map) {
 void CWorld::CollideEntitiesWithWorld() {
     std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
     double dt = GetDeltaTime();
-    static const double INTERVAL = 8.0;
+    static const double INTERVAL = 1000.0 / 60.0;
     static double accumulator = 0.0;
-    static double accumLeft = INTERVAL;
-    static double acc = 0.0;
-    static double t = 0.0;
-    //printf("dt: %f\n", dt);
     accumulator += dt;
+    //printf("accumulator: %f\n", accumulator);
     for (int i = 0; i < entities.size(); i++) {
         BaseGameEntity* pEntity = entities[i];
 
         if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
 
-            if (accumulator > INTERVAL) { // Time to run physics
-                acc = 0.0;
-                pEntity->m_PrevPosition = pEntity->m_Position; // store pos from last physics update step.
-                EllipsoidCollider ec = pEntity->GetEllipsoidCollider();
+            EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
+            if (ec == nullptr) {
+                continue;
+            }
+
+            int numUpdateSteps = 0;
+
+            while (accumulator >= INTERVAL) {
                 
+                pEntity->m_PrevPosition = ec->center; //pEntity->m_Position;
                 //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
-                CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
+                CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(*ec,
                                                                           pEntity->m_Velocity,
                                                                           m_Gravity, //glm::vec3(0.0f), //m_Gravity,
                                                                           m_MapTris.data(),
@@ -195,20 +197,24 @@ void CWorld::CollideEntitiesWithWorld() {
                                                                           m_pBrushMapTris);
 
                 pEntity->m_Position = collisionInfo.basePos;
-                accumLeft = accumulator - INTERVAL;
-                accumulator = 0.0;
-                t = accumLeft / INTERVAL;
-                glm::vec3 perTickMotion = pEntity->m_Position - pEntity->m_PrevPosition;
-                pEntity->UpdatePosition( pEntity->m_PrevPosition + perTickMotion );
+                ec->center = collisionInfo.basePos;
+                //pEntity->UpdatePosition( pEntity->m_PrevPosition + perTickMotion );
+                accumulator -= INTERVAL;
+
+                numUpdateSteps++;
+                
+            } // End Update collider
+            //
+            
+            if (numUpdateSteps > 10) {
+                accumulator = 0;
             }
-        }
-        if (accumLeft > 0.0) {
-            if (t < 1.0) {
-                glm::vec3 perTickMotion = pEntity->m_Position - pEntity->m_PrevPosition;
-                pEntity->UpdatePosition( pEntity->m_PrevPosition + (float)t*perTickMotion );
-                t += t;
-            }
-        }
+            
+            double t = accumulator / INTERVAL;
+            glm::vec3 perTickMotion = ec->center - pEntity->m_PrevPosition;
+            pEntity->UpdatePosition( pEntity->m_PrevPosition + (float)t*perTickMotion );
+
+        } // Check if Player or Enemy
     }
 }
 

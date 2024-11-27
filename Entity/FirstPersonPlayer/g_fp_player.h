@@ -39,7 +39,7 @@ public:
         return m_pStateMachine;
     }
 
-    EllipsoidCollider GetEllipsoidCollider() const override;
+    EllipsoidCollider* GetEllipsoidColliderPtr() override;
 
     HKD_Model* GetModel();
 

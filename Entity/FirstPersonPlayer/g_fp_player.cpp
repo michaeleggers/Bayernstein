@@ -37,9 +37,9 @@ FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
 void FirstPersonPlayer::UpdatePosition(glm::vec3 newPosition) {
 
     // Update the ellipsoid colliders for all animation states based on the new collision position
-    for (int i = 0; i < m_Model.animations.size(); i++) {
-        m_Model.ellipsoidColliders[i].center = newPosition;
-    }
+    //for (int i = 0; i < m_Model.animations.size(); i++) {
+    //    m_Model.ellipsoidColliders[i].center = newPosition;
+    //}
     m_Model.position.x = newPosition.x;
     m_Model.position.y = newPosition.y;
     m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
@@ -64,7 +64,8 @@ void FirstPersonPlayer::Update() {
     m_Camera.m_Pos = m_Model.position;
     m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, 50.0f);
 
-    m_pStateMachine->Update();
+    // TODO: (Michael): Reenable when collision stuff is working
+    //m_pStateMachine->Update();
 }
 
 void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition) {
@@ -120,7 +121,7 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     ButtonState mouseLook = CHECK_ACTION("mlook");
     
     double dt = GetDeltaTime();
-    float followCamSpeed = 5.3f;
+    float followCamSpeed = 6.3f;
     float followTurnSpeed = 0.3f;
     if ( KeyPressed(SDLK_LSHIFT) ) {
         followCamSpeed *= 0.3f;
@@ -224,8 +225,9 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     // UpdateModel(&m_Model, (float)dt);
 }
 
-EllipsoidCollider FirstPersonPlayer::GetEllipsoidCollider() const {
-    return m_Model.ellipsoidColliders[ m_Model.currentAnimIdx ];
+EllipsoidCollider* FirstPersonPlayer::GetEllipsoidColliderPtr() {
+    //return m_Model.ellipsoidColliders[ m_Model.currentAnimIdx ];
+    return &m_Model.ellipsoidColliders[ 0 ];
 }
 
 HKD_Model* FirstPersonPlayer::GetModel() {

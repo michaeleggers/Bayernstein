@@ -112,6 +112,10 @@ class BaseGameEntity {
         return {};
     };
     
+    virtual EllipsoidCollider* GetEllipsoidColliderPtr() {
+        return NULL;
+    };
+    
     glm::vec3   m_Position = glm::vec3(0.0f);
     glm::vec3   m_PrevPosition = glm::vec3(0.0f);
     glm::vec3   m_Velocity = glm::vec3(0.0f); // TODO: Actually make use of it and remove from subclasses!
