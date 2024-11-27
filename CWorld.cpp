@@ -197,8 +197,21 @@ void CWorld::CollideEntitiesWithWorld() {
                                                                           m_pBrushMapTris);
 
                 //pEntity->m_Position = collisionInfo.basePos;
-                ec->center = collisionInfo.basePos;
-                //pEntity->UpdatePosition( pEntity->m_PrevPosition + perTickMotion );
+                //
+                // FIX: Again. Components could fix this.
+                HKD_Model* model = nullptr;
+                if (pEntity->Type() == ET_PLAYER) {
+                    model = ((Player*)pEntity)->GetModel();
+                }
+                else { // Enemy
+                    model = ((Enemy*)pEntity)->GetModel();
+                }
+
+                for (int i = 0; i < model->animations.size(); i++) {
+                    model->ellipsoidColliders[i].center = collisionInfo.basePos;
+                }
+                //ec->center = collisionInfo.basePos;
+
                 accumulator -= INTERVAL;
 
                 numUpdateSteps++;

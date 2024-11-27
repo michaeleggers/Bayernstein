@@ -269,7 +269,7 @@ bool Game::RunFrame(double dt) {
         renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
 #endif
 
-        //renderer->SetActiveCamera(&m_pFlyCameraEntity->m_Camera);
+        renderer->SetActiveCamera(renderCam);
         HKD_Model* playerColliderModel[] = { m_pPlayerEntity->GetModel() };
         renderer->RenderColliders(renderCam, playerColliderModel, 1);
         

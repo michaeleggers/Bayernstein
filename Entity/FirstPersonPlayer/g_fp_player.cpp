@@ -43,7 +43,7 @@ void FirstPersonPlayer::UpdatePosition(glm::vec3 newPosition) {
     //}
     m_Model.position.x = newPosition.x;
     m_Model.position.y = newPosition.y;
-    m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
+    m_Model.position.z = newPosition.z - 29.0f; //GetEllipsoidCollider().radiusB;
 }
 
 void FirstPersonPlayer::Update() {

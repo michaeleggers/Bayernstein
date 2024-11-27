@@ -206,7 +206,7 @@ bool GLRender::Init(void) {
     SDL_ShowWindow(m_Window);
 
     // GL Vsync on
-    if (SDL_GL_SetSwapInterval(0) != 0) {
+    if (SDL_GL_SetSwapInterval(1) != 0) {
         SDL_Log("Failed to enable vsync!\n");
     }
     else {
@@ -1087,10 +1087,12 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
         m_ColliderShader->SetMat4("model", M);
         std::vector<GLBatchDrawCmd> drawCmds = {m_EllipsoidColliderDrawCmd};
         //glDrawArrays(GL_TRIANGLES, m_EllipsoidColliderDrawCmd.offset, m_EllipsoidColliderDrawCmd.numVerts);
+        // FIX: Add to the list of draw commands and execute later? Not sure...
         ExecuteDrawCmds(drawCmds, GEOM_TYPE_VERTEX_ONLY);
-        // glDrawArrays(GL_LINES,
-        //     m_EllipsoidColliderDrawCmd.offset,
-        //     m_EllipsoidColliderDrawCmd.numVerts);
+        //m_PrimitiveDrawCmds.push_back(m_EllipsoidColliderDrawCmd);
+        //glDrawArrays(GL_LINES,
+        //             m_EllipsoidColliderDrawCmd.offset,
+        //             m_EllipsoidColliderDrawCmd.numVerts);
     }
 }
 
