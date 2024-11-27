@@ -206,7 +206,7 @@ bool GLRender::Init(void) {
     SDL_ShowWindow(m_Window);
 
     // GL Vsync on
-    if (SDL_GL_SetSwapInterval(1) != 0) {
+    if (SDL_GL_SetSwapInterval(0) != 0) {
         SDL_Log("Failed to enable vsync!\n");
     }
     else {
@@ -1081,7 +1081,7 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
             ec.radiusA,
             ec.radiusB);
 
-        glm::mat4 T = glm::translate(glm::mat4(1.0f), ec.center);
+        glm::mat4 T = glm::translate( glm::mat4(1.0f), model->position + glm::vec3(0.0f, 0.0f, ec.radiusB) );
         glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
         glm::mat4 M = T * S;
         m_ColliderShader->SetMat4("model", M);
