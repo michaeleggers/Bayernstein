@@ -28,7 +28,7 @@ FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
     LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
     m_Position = m_Model.position;
     m_PrevPosition = m_Model.position;
-    m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
+    //m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
     m_Camera = Camera(initialPosition);
 }
 
@@ -43,7 +43,7 @@ void FirstPersonPlayer::UpdatePosition(glm::vec3 newPosition) {
     //}
     m_Model.position.x = newPosition.x;
     m_Model.position.y = newPosition.y;
-    m_Model.position.z = newPosition.z - 29.0f; //GetEllipsoidCollider().radiusB;
+    m_Model.position.z = newPosition.z - GetEllipsoidColliderPtr()->radiusB;
 }
 
 void FirstPersonPlayer::Update() {
