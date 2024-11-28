@@ -35,7 +35,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
     IRender* renderer = GetRenderer();
    
     // TODO: Init via .MAP property.
-    m_Gravity = glm::vec3(0.0f, 0.0f, -2.0f);
+    m_Gravity = glm::vec3(0.0f, 0.0f, -5.0f);
 
     // Get static geometry from map
     std::vector<MapPolygon> polysoup = createPolysoup(map);

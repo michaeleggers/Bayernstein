@@ -375,7 +375,7 @@ CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider ec,
     ci.basePos = newPos;
     ci.nearestDistance = 0.0f;
     ci.didCollide = false;
-    newPos = CollideEllipsoidWithTrisRec(&ci, newPos, esGravity, esTris.data(), esTris.size(), 0, 2);
+    newPos = CollideEllipsoidWithTrisRec(&ci, newPos, esGravity, esTris.data(), esTris.size(), 0, 10);
 
     ci.velocity = glm::inverse( ec.toESpace ) * ci.velocity;
     ci.hitPoint = glm::inverse( ec.toESpace ) * ci.hitPoint;
