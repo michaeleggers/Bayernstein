@@ -113,7 +113,7 @@ class BaseGameEntity {
     };
     
     virtual EllipsoidCollider* GetEllipsoidColliderPtr() {
-        return NULL;
+        return nullptr;
     };
     
     glm::vec3   m_Position = glm::vec3(0.0f);

@@ -257,8 +257,13 @@ void CWorld::CollideEntities() {
    
             if ( pOther->Type() == ET_DOOR ) {
                 Door* pDoor = (Door*)pOther;
-                EllipsoidCollider ec = pEntity->GetEllipsoidCollider();
-                CollisionInfo ci = PushTouch(ec,
+                EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
+                
+                if (ec == nullptr) {
+                    continue;
+                }
+               
+                CollisionInfo ci = PushTouch(*ec,
                                              pEntity->m_Velocity, 
                                              pDoor->MapTris().data(), 
                                              pDoor->MapTris().size());
