@@ -15,6 +15,7 @@
 
 
 ConsoleVariable con_stdout = {"con_stdout", 1};
+ConsoleVariable con_scroll = {"con_scroll", 1};
 
 
 Console* Console::instance = nullptr;
@@ -32,6 +33,7 @@ Console* Console::Create(int lineBufferSize, int inputHistorySize) {
     if (instance == nullptr) {
         instance = new Console(lineBufferSize, inputHistorySize);
         VariableManager::Register(&con_stdout);
+        VariableManager::Register(&con_scroll);
     }
     return instance;
 }
@@ -47,6 +49,8 @@ int Console::ScrollPos() {
 }
 
 void Console::Scroll(int delta) {
+    if (!con_scroll.value) return;
+
     m_scrollPos += delta;
 
     if (m_scrollPos >= m_lineBuffer.Size()) {
@@ -162,6 +166,8 @@ void Console::RunFrame() {
     m_blinkTimer += msPerFrame;
     if (TextInput().length()) {
         UpdateInput(TextInput());
+    } else if (GetMouseWheel().updated) {
+        Scroll(GetMouseWheel().current.y);
     } else if (KeyWentDownUnbuffered(SDLK_UP)) { 
         SetInputFromHistory(1);
     } else if (KeyWentDownUnbuffered(SDLK_DOWN)) {

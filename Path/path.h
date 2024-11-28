@@ -54,7 +54,6 @@ public:
         m_PreviousWaypointName = "";
     }
 
-
     void SetName(std::string name) {
         m_Name = name;
     }
@@ -84,4 +83,3 @@ private:
 };
 
 #endif
-

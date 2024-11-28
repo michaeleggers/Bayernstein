@@ -4,8 +4,8 @@
 
 #include "g_enemy.h"
 
-#include <stdio.h>
 #include <SDL.h>
+#include <stdio.h>
 
 #define GLM_FORCE_RADIANS
 #include "../../dependencies/glm/ext.hpp"
@@ -14,10 +14,10 @@
 #include "../../dependencies/glm/gtx/vector_angle.hpp"
 
 #include "../../input.h"
+#include "../../input_handler.h"
 #include "../../utils/quick_math.h"
 #include "../../utils/utils.h"
 #include "g_enemy_states.h"
-#include "../../input_handler.h"
 
 Enemy::Enemy(const std::vector<Property>& properties)
     : MovingEntity(ET_ENEMY),
@@ -41,7 +41,7 @@ void Enemy::Update() {
     double dt = GetDeltaTime();
     m_pStateMachine->Update();
 
-    glm::vec3 force = m_pSteeringBehaviour->Calculate();
+    glm::vec3 force        = m_pSteeringBehaviour->Calculate();
     glm::vec3 acceleration = force / m_Mass;
     //update velocity
     // m_Velocity += acceleration / 1000.0f;
@@ -54,15 +54,16 @@ void Enemy::Update() {
         glm::vec3 newForward = glm::normalize(m_Velocity);
 
         // Calculate the rotation needed to align the current forward direction with the new forward direction
-        float rotationAngle = glm::orientedAngle(m_Forward, newForward, m_Up);
-        glm::quat rotation = glm::angleAxis(rotationAngle, m_Up);
 
         // Apply the rotation to the current orientation
-        m_Model.orientation = m_Model.orientation * rotation;
+        // TODO: the default rotation axis (0,-1,0) needs to be set globally at best. the designers need to follow this orientation
+        float     absOrientationAngle   = glm::orientedAngle(glm::vec3(0.0f, -1.0f, 0.0f), newForward, m_Up);
+        glm::quat newForwardOrientation = glm::angleAxis(absOrientationAngle, m_Up);
+        m_Model.orientation             = newForwardOrientation;
 
         // Update the forward and side vectors
         m_Forward = newForward;
-        m_Side = glm::cross(m_Forward, m_Up);
+        m_Side    = glm::cross(m_Forward, m_Up);
     }
 
     if ( Speed() >= 0.00001f ) {
@@ -81,18 +82,18 @@ void Enemy::LoadModel(const char* path, glm::vec3 initialPosition) {
     IQMModel iqmModel = LoadIQM(path);
 
     // Convert the model to our internal format
-    m_Model = CreateModelFromIQM(&iqmModel);
+    m_Model             = CreateModelFromIQM(&iqmModel);
     m_Model.isRigidBody = false;
-    m_Model.position = initialPosition;
-    m_Model.scale = glm::vec3(22.0f);
+    m_Model.position    = initialPosition;
+    m_Model.scale       = glm::vec3(22.0f);
 
     for ( int i = 0; i < m_Model.animations.size(); i++ ) {
         EllipsoidCollider* ec = &m_Model.ellipsoidColliders[ i ];
         ec->radiusA *= m_Model.scale.x;
         ec->radiusB *= m_Model.scale.z;
-        ec->center = m_Model.position + glm::vec3(0.0f, 0.0f, ec->radiusB);
+        ec->center      = m_Model.position + glm::vec3(0.0f, 0.0f, ec->radiusB);
         glm::vec3 scale = glm::vec3(1.0f / ec->radiusA, 1.0f / ec->radiusA, 1.0f / ec->radiusB);
-        ec->toESpace = glm::scale(glm::mat4(1.0f), scale);
+        ec->toESpace    = glm::scale(glm::mat4(1.0f), scale);
     }
 
     SetAnimState(&m_Model, ANIM_STATE_WALK);
@@ -115,12 +116,10 @@ void Enemy::UpdatePosition(glm::vec3 newPosition) {
     m_Model.position.x = newPosition.x;
     m_Model.position.y = newPosition.y;
     m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
-    m_Position = newPosition;
+    m_Position         = newPosition;
     //printf("Position: %f, %f, %f\n", m_Position.x, m_Position.y, m_Position.z);
 }
 
 bool Enemy::HandleMessage(const Telegram& telegram) {
     return m_pStateMachine->HandleMessage(telegram);
 }
-
-

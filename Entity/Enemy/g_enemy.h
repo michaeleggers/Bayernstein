@@ -1,4 +1,4 @@
-//
+
 // Created by benek on 10/14/24.
 //
 
@@ -7,13 +7,13 @@
 
 #include "../../FSM/state_machine.h"
 #include "../../collision.h"
+#include "../../input_receiver.h"
 #include "../../r_model.h"
+#include "../../map_parser.h"
 #include "../Path/path.h"
+#include "../base_game_entity.h"
 #include "../moving_entity.h"
 #include "../steering_behaviour.h"
-#include "../base_game_entity.h"
-#include "../../input_receiver.h"
-#include "../../map_parser.h"
 
 class Enemy : public MovingEntity {
   public:
@@ -31,10 +31,10 @@ class Enemy : public MovingEntity {
         return m_pStateMachine;
     }
 
-    bool HandleMessage(const Telegram& message) override;
-    EllipsoidCollider GetEllipsoidCollider() const override;
-    HKD_Model* GetModel();
-    void UpdatePosition(glm::vec3 newPosition) override;
+    bool              HandleMessage(const Telegram& telegram) override;
+    EllipsoidCollider GetEllipsoidCollider() const;
+    HKD_Model*        GetModel();
+    void              UpdatePosition(glm::vec3 newPosition);
 
     void SetSeekTarget(BaseGameEntity* target) {
         m_pSteeringBehaviour->SetTargetAgent(target);
@@ -54,7 +54,8 @@ class Enemy : public MovingEntity {
     void SetFollowPath(PatrolPath* path) {
         m_Path = path;
         m_pSteeringBehaviour->SetFollowPath(path);
-        m_pSteeringBehaviour->FollowPathOn();
+        // m_pSteeringBehaviour->FollowPathOn();
+        m_pSteeringBehaviour->FollowWaypointsOn();
     }
 
   public:
@@ -66,25 +67,23 @@ class Enemy : public MovingEntity {
     bool IsDead() {
         return m_Health <= 0.0;
     }
-  
-private:
+
+  private:
     StateMachine<Enemy>* m_pStateMachine;
-    SteeringBehaviour* m_pSteeringBehaviour;
-    double m_Health = 100;
+    SteeringBehaviour*   m_pSteeringBehaviour;
+    double               m_Health = 100;
 
     // FIX: Those should be components for next milestone.
     HKD_Model   m_Model;
     PatrolPath* m_Path;
     // moving members
 
-private:
-    AnimState m_AnimationState;
+  private:
+    AnimState         m_AnimationState;
     EllipsoidCollider m_EllipsoidCollider;
 
     void LoadModel(const char* path, glm::vec3 initialPosition);
     void UpdateEnemyModel();
-
 };
 
 #endif // ENEMY_H
-
