@@ -128,7 +128,7 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     ButtonState mouseLook = CHECK_ACTION("mlook");
     
     double dt = GetDeltaTime();
-    float followCamSpeed = 6.3f;
+    float followCamSpeed = 300.3f;
     float followTurnSpeed = 0.3f;
     if ( KeyPressed(SDLK_LSHIFT) ) {
         followCamSpeed *= 0.3f;

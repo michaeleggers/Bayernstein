@@ -35,7 +35,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
     IRender* renderer = GetRenderer();
    
     // TODO: Init via .MAP property.
-    m_Gravity = glm::vec3(0.0f, 0.0f, -5.0f);
+    m_Gravity = glm::vec3(0.0f, 0.0f, -200.0f);
 
     // Get static geometry from map
     std::vector<MapPolygon> polysoup = createPolysoup(map);
@@ -169,7 +169,6 @@ void CWorld::InitWorldFromMap(const Map& map) {
 void CWorld::CollideEntitiesWithWorld() {
     std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
     double dt = GetDeltaTime();
-    static const double INTERVAL = 1000.0 / 60.0;
     static double accumulator = 0.0;
     accumulator += dt;
     //printf("accumulator: %f\n", accumulator);
@@ -185,13 +184,13 @@ void CWorld::CollideEntitiesWithWorld() {
 
             int numUpdateSteps = 0;
 
-            while (accumulator >= INTERVAL) {
+            while (accumulator >= DOD_FIXED_UPDATE_TIME) {
                 
                 pEntity->m_PrevPosition = ec->center; //pEntity->m_Position;
                 //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
                 CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(*ec,
-                                                                          pEntity->m_Velocity,
-                                                                          m_Gravity, //glm::vec3(0.0f), //m_Gravity,
+                                                                          (float)DOD_FIXED_UPDATE_TIME/1000.0f*pEntity->m_Velocity,
+                                                                          (float)DOD_FIXED_UPDATE_TIME/1000.0f*m_Gravity,
                                                                           m_MapTris.data(),
                                                                           StaticGeometryCount(),
                                                                           m_pBrushMapTris);
@@ -212,7 +211,7 @@ void CWorld::CollideEntitiesWithWorld() {
                     model->ellipsoidColliders[i].center = collisionInfo.basePos;
                 }
 
-                accumulator -= INTERVAL;
+                accumulator -= DOD_FIXED_UPDATE_TIME;
 
                 numUpdateSteps++;
                 
@@ -223,7 +222,7 @@ void CWorld::CollideEntitiesWithWorld() {
                 accumulator = 0;
             }
             
-            double t = accumulator / INTERVAL;
+            double t = accumulator / DOD_FIXED_UPDATE_TIME;
             glm::vec3 perTickMotion = ec->center - pEntity->m_PrevPosition;
             pEntity->UpdatePosition( pEntity->m_PrevPosition + (float)t*perTickMotion );
 
@@ -264,7 +263,7 @@ void CWorld::CollideEntities() {
                 }
                
                 CollisionInfo ci = PushTouch(*ec,
-                                             pEntity->m_Velocity, 
+                                             (float)DOD_FIXED_UPDATE_TIME/1000.0f*pEntity->m_Velocity, 
                                              pDoor->MapTris().data(), 
                                              pDoor->MapTris().size());
                 if (ci.didCollide) { 
