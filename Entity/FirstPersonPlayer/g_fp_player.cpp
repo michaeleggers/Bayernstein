@@ -26,8 +26,8 @@ FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(FirstPersonPlayerIdle::Instance());
     LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
-    m_Position = m_Model.position;
-    m_PrevPosition = m_Model.position;
+    m_Position = initialPosition;
+    m_PrevPosition = initialPosition;
     //m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
     m_Camera = Camera(initialPosition);
 }
@@ -41,9 +41,11 @@ void FirstPersonPlayer::UpdatePosition(glm::vec3 newPosition) {
     //for (int i = 0; i < m_Model.animations.size(); i++) {
     //    m_Model.ellipsoidColliders[i].center = newPosition;
     //}
-    m_Model.position.x = newPosition.x;
-    m_Model.position.y = newPosition.y;
-    m_Model.position.z = newPosition.z - GetEllipsoidColliderPtr()->radiusB;
+
+    m_Position = newPosition;
+    //m_Model.position.x = newPosition.x;
+    //m_Model.position.y = newPosition.y;
+    //m_Model.position.z = newPosition.z - GetEllipsoidColliderPtr()->radiusB;
 }
 
 void FirstPersonPlayer::Update() {
@@ -62,12 +64,13 @@ void FirstPersonPlayer::Update() {
     UpdateModel(&m_Model, (float)dt);
 
     //m_Position = m_Model.position;
-    m_Camera.m_Pos = m_Model.position;
-    m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, 50.0f);
+    m_Camera.m_Pos = m_Position;
+    // Adjust the camera so it is roughly at the top of the model's head.
+    m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, GetEllipsoidColliderPtr()->radiusB - 20.0f);
     //m_Camera.Pan( -100.0f * m_Camera.m_Forward );
 
     // TODO: (Michael): Reenable when collision stuff is working
-    //m_pStateMachine->Update();
+    m_pStateMachine->Update();
 }
 
 void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition) {
@@ -76,16 +79,19 @@ void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition) {
 
     // Convert the model to our internal format
     m_Model = CreateModelFromIQM(&iqmModel);
+    m_Model.owner = this;
     //m_Model.renderFlags |= MODEL_RENDER_FLAG_IGNORE;
     m_Model.isRigidBody = false;
-    m_Model.position = initialPosition;
     m_Model.scale = glm::vec3(30.0f);
 
     for ( int i = 0; i < m_Model.animations.size(); i++ ) {
         EllipsoidCollider* ec = &m_Model.ellipsoidColliders[ i ];
         ec->radiusA *= m_Model.scale.x;
         ec->radiusB *= m_Model.scale.z;
-        ec->center = m_Model.position + glm::vec3(0.0f, 0.0f, ec->radiusB);
+        
+        // Add the vertical radius of the collider so we make sure we start
+        // *over* the floor.
+        ec->center = initialPosition + glm::vec3(0.0f, 0.0f, ec->radiusB);
         glm::vec3 scale = glm::vec3(1.0f / ec->radiusA, 1.0f / ec->radiusA, 1.0f / ec->radiusB);
         ec->toESpace = glm::scale(glm::mat4(1.0f), scale);
     }

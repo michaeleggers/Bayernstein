@@ -207,18 +207,18 @@ void CWorld::CollideEntitiesWithWorld() {
                     model = ((Enemy*)pEntity)->GetModel();
                 }
 
+                // Update the position of the collider.
                 for (int i = 0; i < model->animations.size(); i++) {
                     model->ellipsoidColliders[i].center = collisionInfo.basePos;
                 }
-                //ec->center = collisionInfo.basePos;
 
                 accumulator -= INTERVAL;
 
                 numUpdateSteps++;
                 
             } // End Update collider
-            //
-            
+
+            // Avoid 'spiral of hell'.
             if (numUpdateSteps > 10) {
                 accumulator = 0;
             }

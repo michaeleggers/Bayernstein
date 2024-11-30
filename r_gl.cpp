@@ -27,6 +27,7 @@
 #include "input.h" 
 #include "Console/Console.h"
 #include "Console/VariableManager.h"
+#include "Entity/base_game_entity.h"
 
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
@@ -1074,6 +1075,10 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
     m_ColliderBatch->Bind();
     for (int i = 0; i < numModels; i++) {
         HKD_Model* model = models[i];
+        glm::vec3 ownerPos = glm::vec3(0.0f);
+        if (model->owner != nullptr) {
+            ownerPos = model->owner->m_Position;
+        }
         m_ColliderShader->SetVec4("uDebugColor", model->debugColor);
         EllipsoidCollider ec = model->ellipsoidColliders[model->currentAnimIdx];
         glm::vec3 scale = glm::vec3(
@@ -1081,7 +1086,7 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
             ec.radiusA,
             ec.radiusB);
 
-        glm::mat4 T = glm::translate( glm::mat4(1.0f), model->position + glm::vec3(0.0f, 0.0f, ec.radiusB) );
+        glm::mat4 T = glm::translate( glm::mat4(1.0f), ownerPos );
         glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
         glm::mat4 M = T * S;
         m_ColliderShader->SetMat4("model", M);

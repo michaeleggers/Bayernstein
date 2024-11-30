@@ -15,6 +15,7 @@
 #include "iqm_loader.h"
 #include "r_common.h"
 #include "map_parser.h"
+#include "Entity/base_game_entity.h"
 
 enum AnimState {
     ANIM_STATE_IDLE,
@@ -43,12 +44,13 @@ enum HKD_ModelType {
 #define MODEL_RENDER_FLAG_IGNORE    (0x00000001 << 1)
 
 struct HKD_Model {
+    BaseGameEntity* owner;
     HKD_ModelType type;
     std::string filename;
     std::vector<Tri> tris;
     std::vector<HKD_Mesh> meshes;
-    glm::vec3 position;
-    glm::quat orientation;
+    glm::vec3 position;    // Relative to its entity owner.
+    glm::quat orientation; // Relative to its entity owner.
     glm::vec3 scale;
     int gpuModelHandle; // -1: Data not yet on GPU
     std::vector<Pose>
