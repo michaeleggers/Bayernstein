@@ -2,19 +2,81 @@ from dataclasses import dataclass
 from typing import List, Optional, Tuple
 from data_structures.triangle import Triangle
 import numpy as np
+from scipy.spatial import ConvexHull
 
 @dataclass
 class Shape:
     triangles: List[Triangle]
     projected_triangles: List[Tuple[Tuple[float]]]
-    bounding_box: Tuple[float, float, float, float]  # (min_x, min_y, max_x, max_y)
+    bounding_box: Tuple[float, float, float, float]  # (origin_x, origin_y, width, height)
     uvs: List[Tuple[float, float]] 
 
-    def __init__(self, triangles: List[Triangle]):
+    def __init__(
+        self,
+        triangles: List[Triangle],
+        projected_triangles: List[Tuple[Tuple[float, float]]] = None,
+        bounding_box: Tuple[float, float, float, float] = None
+    ):
         self.triangles = triangles
-        self.projected_triangles = [self.__project_to_2d(tri) for tri in triangles]
-        self.bounding_box = self._calculate_bounding_box()
+        
+        if projected_triangles is None:
+            # Generate projected triangles from 3D data
+            self.projected_triangles = self.__project_triangles_to_2d(self.triangles)
+        else:
+            # Use precomputed projections
+            self.projected_triangles = projected_triangles
+
+        if bounding_box is None:
+            # Calculate bounding box if not provided
+            self.bounding_box = self._calculate_bounding_box()
+        else:
+            # Use precomputed bounding box
+            self.bounding_box = bounding_box
+
+        # Adjust projected triangles based on bounding box origin
+        self.projected_triangles = [[[v[0] - self.bounding_box[0], v[1] - self.bounding_box[1]] for v in triangle]
+                                    for triangle in self.projected_triangles]
         self.uvs = []
+
+    
+    def __project_triangles_to_2d(self, triangles: List[Triangle]) -> List[Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]]:
+        if not triangles:
+            return []
+
+        # Use the first triangle to compute the plane basis
+        v0 = triangles[0].vertices[0].to_array()
+        v1 = triangles[0].vertices[1].to_array()
+        v2 = triangles[0].vertices[2].to_array()
+
+        # Compute two edges of the first triangle
+        edge1 = v1 - v0
+        edge2 = v2 - v0
+
+        # Compute the normal of the plane
+        normal = np.cross(edge1, edge2)
+        normal = normal / np.linalg.norm(normal)  # Normalize the normal vector
+
+        # Find two orthogonal vectors (u and v) in the plane
+        u = edge1 / np.linalg.norm(edge1)
+        v = np.cross(normal, u)
+        v = v / np.linalg.norm(v)
+
+        # Function to project a vertex to 2D
+        def project_vertex(vertex: np.ndarray) -> Tuple[float, float]:
+            relative_position = vertex - v0  # Translate to origin
+            x = np.dot(relative_position, u)  # Projection onto u
+            y = np.dot(relative_position, v)  # Projection onto v
+            return (x, y)
+
+        # Project all triangles
+        projected_triangles = []
+        for triangle in triangles:
+            projected_triangle = tuple(
+                project_vertex(vertex.to_array()) for vertex in triangle.vertices
+            )
+            projected_triangles.append(projected_triangle)
+
+        return projected_triangles
 
     def __project_to_2d(self, triangle: Triangle):
         """ Projects the 3D triangle onto a 2D plane based on its normal """
@@ -52,5 +114,8 @@ class Shape:
                 max_x = max(max_x, x)
                 max_y = max(max_y, y)
 
-        return 0, 0, max_x - min_x, max_y - min_y
+        return min_x, min_y, max_x - min_x, max_y - min_y
+
+    
+
 

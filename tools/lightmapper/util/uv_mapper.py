@@ -8,6 +8,8 @@ from data_structures.shape import Shape
 from data_structures.vector3f import Vector3f
 from typing import List, Optional, Tuple
 
+
+
 def __project_to_2d(triangle):
     """ Projects the 3D triangle onto a 2D plane based on its normal """
     v0, v1, v2 = triangle
@@ -185,11 +187,10 @@ def find_shared_vertices(triangle1: Triangle, triangle2: Triangle, tolerance: fl
     return sum(1 for v1 in triangle1.vertices for v2 in triangle2.vertices if are_approx_equal(v1, v2))
 
 
-
 def create_shapes(triangles: List[Triangle]) -> List[Shape]:
     """Group triangles into shapes based on planar adjacency."""
     used = set()
-    shapes = []
+    shapes: List[Shape] = []
 
     for i, triangle in enumerate(triangles):
         if i in used:
@@ -209,22 +210,51 @@ def create_shapes(triangles: List[Triangle]) -> List[Shape]:
 
     return shapes
 
-def __pack_shapes(shapes: List[Shape]):
-    total_width = 0
-    total_height = 0
-    for shape in shapes:
-        shape.bounding_box = [total_width, shape.bounding_box[1], shape.bounding_box[2], shape.bounding_box[3]]
-        total_height = max(total_height, shape.bounding_box[3])
+def snap_to_multiple(value, multiple):
+    return ((value + multiple - 1) // multiple) * multiple
 
-    return shapes, total_width, total_height
+def __pack_shapes(shapes: List[Shape], units_snap: float):
+
+    padding = units_snap * 2
+
+    sorted_shapes = sorted(shapes, key=lambda s: s.bounding_box[3], reverse=True)
+    total_area = sum((w + padding) * (h+ padding) for _, _, w, h in (shape.bounding_box for shape in sorted_shapes))
+    target_width = math.sqrt(total_area)
+
+    current_row_width = units_snap
+    current_row_height = units_snap
+    current_row_max_height = 0
+    max_row_width = 0
+
+    for shape in sorted_shapes:
+        shape_width =  shape.bounding_box[2]
+        shape_height = shape.bounding_box[3]
+        snapped_width = snap_to_multiple(shape_width, units_snap)
+        snapped_height = snap_to_multiple(shape_height, units_snap)
+        if current_row_width + snapped_width> target_width:
+            # create a new row, reset current_row metrics
+            max_row_width = max(max_row_width, current_row_width)
+            current_row_height = current_row_height + current_row_max_height + padding
+            current_row_max_height = 0
+            current_row_width = units_snap
+        
+        shape.bounding_box = [current_row_width, current_row_height, snapped_width, snapped_height]
+
+        current_row_max_height = max(current_row_max_height, snapped_height)
+        current_row_width = current_row_width + snapped_width + padding
+
+    final_height = current_row_height + current_row_max_height + units_snap
+    final_width = max_row_width + units_snap
+
+    return sorted_shapes, final_width, final_height
 
 def map_triangles(triangles: List[Triangle], patch_resolution: float, debug=False):
     # TODO for now the uvmapper expects the geometry to be made out of quads
 
     shapes: List[Shape] = create_shapes(triangles)
-    packed_shapes, total_width, total_height = __pack_shapes(shapes)
+    packed_shapes, total_width, total_height = __pack_shapes(shapes, 1/patch_resolution)
     map_world_size = max(total_width, total_height)
-    print(shapes)
+    lightmap_resolution = int(map_world_size / (1/patch_resolution))
 
 
     # Normalize UVs to fit the final square texture size
@@ -240,24 +270,24 @@ def map_triangles(triangles: List[Triangle], patch_resolution: float, debug=Fals
         min_v = y / map_world_size
         max_u = (x + width) / map_world_size
         max_v = (y + height) / map_world_size
+        bbox_uv_width = max_u - min_u
+        bbox_uv_height = max_v - min_v
         
         # Normalize each vertex of the projected triangle to the bounding box and map to UV space
         for projected in shape.projected_triangles:
             uvs = []
-            min_u_triangle = min(v[0] for v in projected)
-            min_v_triangle = min(v[1] for v in projected)
             for v in projected:
                 # Normalize within the bounding box and map to UV space
-                u = (v[0] - min_u_triangle) / width  # Normalize within the bounding box width
-                v = (v[1] - min_v_triangle) / height  # Normalize within the bounding box height
+                u = v[0] / width  # Normalize within the bounding box width
+                v = v[1] / height  # Normalize within the bounding box height
                 # Map to UV space
-                uvs.append((min_u + u * (max_u - min_u), min_v + v * (max_v - min_v)))
+                uvs.append((min_u + (u * bbox_uv_width), min_v + (v * bbox_uv_height)))
             
             shape.uvs.append(uvs)
             uv_coordinates.append(uvs) # for debuggig
 
     if debug:
-        __debug_uv_mapping(triangles, uv_coordinates)
+        __debug_uv_mapping(triangles, uv_coordinates, image_size=lightmap_resolution)
 
     return uv_coordinates, map_world_size
 
