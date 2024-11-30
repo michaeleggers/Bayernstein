@@ -95,8 +95,14 @@ void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition) {
         glm::vec3 scale = glm::vec3(1.0f / ec->radiusA, 1.0f / ec->radiusA, 1.0f / ec->radiusB);
         ec->toESpace = glm::scale(glm::mat4(1.0f), scale);
     }
+    
     // Model is defined with origin at its feet. Move it down to be at the ground.
     m_Model.position.z -= GetEllipsoidColliderPtr()->radiusB;
+
+    // The model was modeled with -y = forward, but we use +y = forward. 
+    // So, we rotate the model initially by 180 degrees.
+    glm::quat modelForwardFix = glm::angleAxis( glm::radians(180.0f), DOD_WORLD_UP );
+    m_Model.orientation = modelForwardFix;
 
     SetAnimState(&m_Model, ANIM_STATE_WALK);
     m_EllipsoidCollider = GetEllipsoidCollider();
@@ -160,6 +166,7 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         m_Camera.m_Up = glm::rotate(qTotal, DOD_WORLD_UP);
         m_Camera.m_Side = glm::rotate(qTotal, DOD_WORLD_RIGHT);
         m_Camera.m_Orientation = qTotal;
+        m_Orientation = qYaw;
     }
 
     // Model rotation
@@ -180,12 +187,12 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         m_RotationAngle = 360.0f;
     }
 
-    glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
-    glm::quat modelForwardFix = glm::angleAxis( glm::radians(180.0f), DOD_WORLD_UP );
-    m_Model.orientation = modelForwardFix * qYaw;
+    //glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
+    //glm::quat modelForwardFix = glm::angleAxis( glm::radians(180.0f), DOD_WORLD_UP );
+    //m_Model.orientation = modelForwardFix * qYaw;
 
-    m_Forward = glm::rotate(m_Model.orientation,
-                            glm::vec3(0.0f, -1.0f, 0.0f)); // -1 because the model is facing -1 (Outside the screen)
+    m_Forward = glm::rotate(m_Orientation,
+                            DOD_WORLD_FORWARD);
     m_Side = glm::cross(m_Forward, m_Up);
 
     // Change player's velocity and animation state based on input

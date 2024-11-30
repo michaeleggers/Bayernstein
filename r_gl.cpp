@@ -28,6 +28,7 @@
 #include "Console/Console.h"
 #include "Console/VariableManager.h"
 #include "Entity/base_game_entity.h"
+#include "globals.h"
 
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
@@ -806,11 +807,13 @@ void GLRender::Render(Camera* camera,
        
         BaseGameEntity* owner = models[i]->owner;
         glm::vec3 ownerPos = glm::vec3(0.0f);
+        glm::quat ownerOrientation = glm::angleAxis(0.0f, DOD_WORLD_FORWARD);
         if (owner != nullptr) {
             ownerPos = owner->m_Position;
+            ownerOrientation = owner->m_Orientation;
         }
         glm::vec3 position = ownerPos + models[i]->position;
-        glm::quat orientation = models[i]->orientation;
+        glm::quat orientation = ownerOrientation * models[i]->orientation;
         glm::vec3 scale = models[i]->scale;
         glm::mat4 modelMatrix = CreateModelMatrix( position, orientation, scale ); 
         m_ModelShader->SetMat4("model", modelMatrix);
