@@ -43,7 +43,11 @@ Door::Door(const std::vector<Property>& properties,
 
     // Get the brush (geometry) that defines this door
     // Assume just one brush for now... // TODO: Could be more brushes!
-    std::vector<MapPolygon> mapPolys = createPolysoup( brushes[ 0 ] );
+    std::vector<MapPolygon> mapPolys{};
+    for (int i = 0; i < brushes.size(); i++) {
+        std::vector<MapPolygon> polys = createPolysoup( brushes[ i ] );
+        std::copy( polys.begin(), polys.end(), std::back_inserter(mapPolys) );
+    }
     std::vector<MapPolygon> mapTris = triangulate(mapPolys);
    
     // NOTE: Just make doors golden for now. Obviously we texture them later.

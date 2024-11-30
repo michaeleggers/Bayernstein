@@ -61,7 +61,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     Door* door = new Door(e.properties, e.brushes); 
                     m_pEntityManager->RegisterEntity(door); 
                     HKD_Model* model = door->GetModel();
-                    m_BrushModels.push_back( model );
+                    m_pBrushModels.push_back( model );
                     std::vector<MapTri>& mapTris = door->MapTris();
                     m_pBrushMapTris.push_back( &mapTris );
                 } else if ( prop.value == "info_player_start" ) {
@@ -71,14 +71,14 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     m_pEntityManager->RegisterEntity(m_pPlayerEntity);
                     // Upload this model to the GPU. Not using the handle atm.
                     int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
-                    m_Models.push_back(m_pPlayerEntity->GetModel());
+                    m_pModels.push_back(m_pPlayerEntity->GetModel());
                 } else if ( prop.value == "monster_soldier" ) {
                     // just a placeholder entity from trenchbroom/quake
                     glm::vec3 enemyStartPosition = CWorld::GetOrigin(&e);
                     Enemy* enemy = new Enemy(e.properties);
                     m_pEntityManager->RegisterEntity(enemy);
                     int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
-                    m_Models.push_back(enemy->GetModel());
+                    m_pModels.push_back(enemy->GetModel());
                 } else if ( prop.value == "path_corner" ) { // FIX: Should be an entity type as well.
                     Waypoint point = CWorld::GetWaypoint(&e);
                     m_NameToWaypoint.insert({ point.targetname, point });
