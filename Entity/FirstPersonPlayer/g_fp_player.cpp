@@ -36,16 +36,7 @@ FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
 // Must be called before entity system updates entities.
 // (Calls ::Update() on Entities).
 void FirstPersonPlayer::UpdatePosition(glm::vec3 newPosition) {
-
-    // Update the ellipsoid colliders for all animation states based on the new collision position
-    //for (int i = 0; i < m_Model.animations.size(); i++) {
-    //    m_Model.ellipsoidColliders[i].center = newPosition;
-    //}
-
     m_Position = newPosition;
-    //m_Model.position.x = newPosition.x;
-    //m_Model.position.y = newPosition.y;
-    //m_Model.position.z = newPosition.z - GetEllipsoidColliderPtr()->radiusB;
 }
 
 void FirstPersonPlayer::Update() {
@@ -166,30 +157,10 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         m_Camera.m_Up = glm::rotate(qTotal, DOD_WORLD_UP);
         m_Camera.m_Side = glm::rotate(qTotal, DOD_WORLD_RIGHT);
         m_Camera.m_Orientation = qTotal;
+
+        // Don't forget the entity's own rotation.
         m_Orientation = qYaw;
     }
-
-    // Model rotation
-    /*
-    if ( turnLeft == ButtonState::PRESSED ) {
-        m_RotationAngle += followTurnSpeed * (float)dt; // TODO: Should be a quaternion in base game entity.
-    }
-    if ( turnRight == ButtonState::PRESSED ) {
-        m_RotationAngle -= followTurnSpeed * (float)dt;
-    }
-    */
-   
-    // TODO: If dealing with m_Orientation quaternion, this test can be omitted.
-    if (m_RotationAngle >= 360.0f) {
-        m_RotationAngle = 0.0f;
-    }
-    else if (m_RotationAngle < 0.0f) {
-        m_RotationAngle = 360.0f;
-    }
-
-    //glm::quat rot = glm::angleAxis(glm::radians(m_RotationAngle), glm::vec3(0.0f, 0.0f, 1.0f));
-    //glm::quat modelForwardFix = glm::angleAxis( glm::radians(180.0f), DOD_WORLD_UP );
-    //m_Model.orientation = modelForwardFix * qYaw;
 
     m_Forward = glm::rotate(m_Orientation,
                             DOD_WORLD_FORWARD);
