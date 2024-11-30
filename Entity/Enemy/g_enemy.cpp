@@ -19,16 +19,20 @@
 #include "../../utils/utils.h"
 #include "g_enemy_states.h"
 
-Enemy::Enemy(const int id, glm::vec3 initialPosition)
-    : MovingEntity(id, ET_ENEMY),
+Enemy::Enemy(const std::vector<Property>& properties)
+    : MovingEntity(ET_ENEMY),
       m_AnimationState(ANIM_STATE_IDLE),
       m_EllipsoidCollider() {
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(EnemyIdle::Instance());
+   
+    // We want position and, if applicable, a target.
+    BaseGameEntity::GetProperty<glm::vec3>(properties, "origin", &m_Position);
+    // FIX: Mem Leak on exit if target is not being set.
+    BaseGameEntity::GetProperty<std::string>(properties, "target", &m_Target);
 
-    LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
-    m_Position           = initialPosition;
-    m_Velocity           = glm::vec3(0.0f, 0.0f, 0.0f);
+    LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
+    m_Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
     m_pSteeringBehaviour = new SteeringBehaviour(this);
     // m_pSteeringBehaviour->WanderOn();
 }

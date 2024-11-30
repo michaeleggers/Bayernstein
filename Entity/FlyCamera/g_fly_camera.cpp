@@ -9,8 +9,8 @@
 #include "../../input.h"
 #include "../../utils/utils.h"
 
-CFlyCamera::CFlyCamera(const int id, glm::vec3 pos)
-	: BaseGameEntity(id, ET_FLY_CAMERA) {
+CFlyCamera::CFlyCamera(glm::vec3 pos)
+	: BaseGameEntity(ET_FLY_CAMERA) {
 
 	m_Camera = Camera(pos);
 	m_Position = pos;

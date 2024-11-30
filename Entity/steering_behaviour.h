@@ -4,10 +4,12 @@
 
 #ifndef STEERING_BEHAVIOUR_H
 #define STEERING_BEHAVIOUR_H
+
+#include <vector>
+
 #include "../Path/path.h"
 #include "./base_game_entity.h"
 #include "moving_entity.h"
-#include <vector>
 
 class SteeringBehaviour {
   public:
@@ -24,6 +26,10 @@ class SteeringBehaviour {
         m_pTargetAgent = pAgent;
     }
     void SetFollowPath(PatrolPath* pPath) {
+        if ( pPath == nullptr ) {
+            printf("SetFollowPath: pPath is nullptr! Ignore.\n");
+            return;
+        }
         m_pPath = pPath;
         // FollowWaypointsOn();
         // FollowPathOn();

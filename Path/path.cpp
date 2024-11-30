@@ -1,16 +1,30 @@
+#include <assert.h>
+
+#include <vector>
+#include <unordered_map>
 
 #include "./path.h"
 #include "../dependencies/glm/glm.hpp"
 #include "../r_common.h"
-#include <vector>
 
 void PatrolPath::AddPoint(Waypoint point) {
+    point.pPatrolPath = this;
     m_Points.push_back(point);
+    m_TargetnameToWaypoint.insert({ point.targetname, point });
+    // TODO: Not sure if the path name should be the first waypoint added.
+    // TODO: m_CurrentWaypointName probably should be whatever is
+    // specified for the entity targeting this path waypoint?
+    if ( m_CurrentWaypointName.empty() ) {
+        m_Name = point.targetname;
+        m_CurrentWaypointName = point.targetname;
+        m_NextWaypointName = point.target;
+    }
 }
 
 std::vector<Waypoint> PatrolPath::GetPoints() {
     return m_Points;
 }
+
 float PatrolPath::GetRadius() {
     return m_Radius;
 }
@@ -28,24 +42,36 @@ std::vector<Vertex> PatrolPath::GetPointsAsVertices() {
 }
 
 bool PatrolPath::IsCurrentWaypointReached(glm::vec3 position) {
-    glm::vec3 currentWaypointPosition = m_Points[ m_CurrentWaypointIndex ].position;
-    float     distance                = glm::distance(position, currentWaypointPosition);
+    const auto& currentWaypointEntry = m_TargetnameToWaypoint.find( m_CurrentWaypointName );
+    if ( currentWaypointEntry == m_TargetnameToWaypoint.end() ) {
+        return false;
+    }
+    const Waypoint& waypoint = currentWaypointEntry->second;
+    glm::vec3 currentWaypointPosition = waypoint.position;
+    float distance = glm::distance(position, currentWaypointPosition);
     //printf("Distance to waypoint: %f\n", distance);
+    
     return distance < m_Radius;
 }
 
 void PatrolPath::TargetNextWaypoint() {
-    m_PreviousWaypointIndex = m_CurrentWaypointIndex;
-    m_CurrentWaypointIndex  = m_NextWaypointIndex;
-    m_NextWaypointIndex += m_direction;
-    if ( m_NextWaypointIndex >= m_Points.size() ) {
-        m_NextWaypointIndex = 0;
-    }
-    if ( m_NextWaypointIndex < 0 ) {
-        m_NextWaypointIndex = m_Points.size() - 1;
-    }
+    Waypoint currentWaypoint = GetCurrentWaypoint();
+    m_PreviousWaypointName = m_CurrentWaypointName;
+    m_CurrentWaypointName = currentWaypoint.target;
+    printf("Setting waypoint to: %s\n", m_CurrentWaypointName.c_str());
 }
 
 Waypoint PatrolPath::GetCurrentWaypoint() {
-    return m_Points[ m_CurrentWaypointIndex ];
+    const auto& currentWaypointEntry = m_TargetnameToWaypoint.find( m_CurrentWaypointName );
+    assert ( currentWaypointEntry != m_TargetnameToWaypoint.end() );
+
+    return currentWaypointEntry->second;
+}
+
+void PatrolPath::SetCurrentWaypoint(std::string targetname) {
+    m_CurrentWaypointName = targetname;
+}
+
+void PatrolPath::SetNextWaypoint(std::string targetname) {
+    m_NextWaypointName = targetname;
 }

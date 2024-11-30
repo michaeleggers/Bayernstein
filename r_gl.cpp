@@ -114,6 +114,12 @@ void GLRender::Shutdown(void) {
     m_ShapesBatch->Kill();
     delete m_ShapesBatch;
 
+    m_WorldBatch->Kill();
+    delete m_WorldBatch;
+
+    m_BrushBatch->Kill();
+    delete m_BrushBatch;
+
     m_FontShader->Unload();
     
     m_ModelShader->Unload();
@@ -243,7 +249,7 @@ bool GLRender::Init(void) {
     // With sizeof(Vertex) = 92bytes => sizeof(Tri) = 276bytes we need ~ 263MB for Models.
     // A lot for a game in the 2000s! Our models have a tri count of maybe 3000 Tris (without weapon), which
     // is not even close to 1Mio tris.
-    m_ModelBatch = new GLBatch(100 * 1000);
+    m_ModelBatch = new GLBatch(500 * 1000);
 
     // Batches but for different purposes
     m_ImPrimitiveBatch = new GLBatch(1000);
@@ -251,7 +257,8 @@ bool GLRender::Init(void) {
     m_ColliderBatch = new GLBatch(1000);
     m_FontBatch = new GLBatch(1000, 1000);
     m_ShapesBatch = new GLBatch(1000, 1000);
-    m_WorldBatch = new GLBatch(5000);
+    m_WorldBatch = new GLBatch(100000);
+    m_BrushBatch = new GLBatch(50000);
 
     // Initialize shaders
 
@@ -304,28 +311,58 @@ int GLRender::RegisterModel(HKD_Model* model)
     return gpuModelHandle;
 }
 
+// FIX: Same as RegisterModel just with a different batch!
+int GLRender::RegisterBrush(HKD_Model* model) {
+    GLModel gl_model = {};
+    int offset = m_BrushBatch->Add(&model->tris[0], model->tris.size());
+
+    for (int i = 0; i < model->meshes.size(); i++) {
+        HKD_Mesh* mesh = &model->meshes[i];
+        GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(mesh->textureFileName);        
+        GLMesh gl_mesh = {
+            .triOffset = offset/3 + (int)mesh->firstTri,
+            .triCount = (int)mesh->numTris,
+            .texture = texture
+        };
+        gl_model.meshes.push_back(gl_mesh);
+    }
+
+    m_Models.push_back(gl_model);
+
+    int gpuModelHandle = m_Models.size() - 1;
+    model->gpuModelHandle = gpuModelHandle;
+
+    return gpuModelHandle;
+}
+
 void GLRender::RegisterFont(CFont* font) {
     GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(font);
 }
 
-void GLRender::RegisterWorldTris(std::vector<MapTri>& tris) {
-    // Sort Tris by texture
-    std::unordered_map<uint64_t, std::vector<MapTri*> > texHandle2Tris{};
-    for (int i = 0; i < tris.size(); i++) {
-        MapTri* pTri = &tris[ i ];
-        if ( texHandle2Tris.contains(pTri->hTexture) ) {
-            std::vector<MapTri*>* triList = &texHandle2Tris.at(pTri->hTexture);
-            triList->push_back(pTri);
+void GLRender::RegisterWorld(CWorld* world) {
+    std::vector<MapTri>& tris = world->GetMapTris();
+    uint64_t numStaticTris = world->StaticGeometryCount();
+
+    // Sort static Tris by texture
+    std::unordered_map<uint64_t, std::vector<MapTri> > texHandle2Tris{};
+
+    for (int i = 0; i < numStaticTris; i++) {
+        MapTri pTri = tris[ i ];
+        if ( texHandle2Tris.contains(pTri.hTexture) ) {
+            std::vector<MapTri>& triList = texHandle2Tris.at(pTri.hTexture);
+            triList.push_back(pTri);
         } else {
-            std::vector<MapTri*> newTriList{ pTri };
-            texHandle2Tris.insert({ pTri->hTexture, newTriList });
+            std::vector<MapTri> newTriList{ pTri };
+            texHandle2Tris.insert({ pTri.hTexture, newTriList });
         }
     }
 
     // Upload tris to GPU and generate draw cmds.
+    
+    // FIX: ALL tris are registered here. Brush entities should go into a dedicated dynamic batch.
     for (auto& [ texHandle, triList ] : texHandle2Tris) {
-        MapTri** pTris = triList.data();
-        int vertexOffset = m_WorldBatch->Add( (MapTri*)*pTris, triList.size(), true, DRAW_MODE_SOLID );
+        std::vector<MapTri> pTris = triList;
+        int vertexOffset = m_WorldBatch->AddMapTris( pTris.data(), triList.size(), true, DRAW_MODE_SOLID );
         assert( vertexOffset >= 0 && "Tried to add Tris to World Batch but it returned a negative offset!" );
         GLBatchDrawCmd drawCmd = {
             vertexOffset, // Vertex Buffer offset is the current vert count of the batch
@@ -654,7 +691,9 @@ void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryTy
     }
 }
 
-void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
+void GLRender::Render(Camera* camera, 
+                      HKD_Model** models, uint32_t numModels,
+                      HKD_Model** brushModels, uint32_t numBrushModels)
 {    
     // Camera and render settings
 
@@ -720,6 +759,23 @@ void GLRender::Render(Camera* camera, HKD_Model** models, uint32_t numModels)
     /*    glDrawArrays( GL_TRIANGLES, 0, batch->VertCount() );*/
     /*}*/
 
+    // Draw Brush Models
+
+    m_BrushBatch->Bind();
+    m_BrushShader->Activate();
+    m_BrushShader->SetViewProjMatrices(view, proj);
+    for (int i = 0; i < numBrushModels; i++) {
+        GLModel model = m_Models[ brushModels[i]->gpuModelHandle ];
+        glm::mat4 modelMatrix = CreateModelMatrix( brushModels[i] );
+        m_BrushShader->SetVec3( "position", brushModels[i]->position );
+
+        for (int j = 0; j < model.meshes.size(); j++) {
+            GLMesh* mesh = &model.meshes[j];
+            glBindTexture(GL_TEXTURE_2D, mesh->texture->m_gl_Handle);
+            glDrawArrays(GL_TRIANGLES, 3*mesh->triOffset, 3 * mesh->triCount);
+        }
+    }
+    
     // Draw Models
     
     m_ModelBatch->Bind();
@@ -1278,7 +1334,15 @@ void GLRender::InitShaders()
         "shaders/world.vert",
         "shaders/world.frag"
     )) {
-        printf("Problems initializing composite shader!\n");
+        printf("Problems initializing world shader!\n");
+    }
+    
+    m_BrushShader = new Shader();
+    if ( !m_BrushShader->Load(
+        "shaders/brush.vert",
+        "shaders/brush.frag"
+    )) {
+        printf("Problems initializing brush shader!\n");
     }
 }
 

@@ -27,7 +27,6 @@ class Game {
     hkdInterface*               m_pInterface;
     std::string                 m_ExePath;
 
-    PatrolPath*                 m_pPath;
     Player*                     m_pPlayerEntity;
     Player*                     m_pDebugPlayerEntity; // Entity we can fly around with
     Enemy*                      m_pEnemyEntity;
@@ -44,7 +43,7 @@ class Game {
 
     double                      m_AccumTime;
 
-    CWorld                      m_World;
+    CWorld*                     m_World;
 };
 
 #endif

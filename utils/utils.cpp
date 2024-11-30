@@ -1,7 +1,6 @@
 #include "utils.h"
 
 #include <glm/glm.hpp>
-#include <sstream>
 #include <stdlib.h>
 
 float RandBetween(float min, float max) {
@@ -71,27 +70,19 @@ std::vector<std::string> SplitString(const std::string& input, char delimiter) {
     return tokens;
 }
 
-std::vector<float> ParseFloatValues(const std::string& input) {
-    std::vector<float> values;
-    const char* str = input.c_str();
-    float value = 0.0;
-    bool parsingNumber = false;
 
-    while ( *str != '\0' ) {
-        if ( std::isdigit(*str) || *str == '-' || *str == '.' ) {
-            parsingNumber = true;
-            char* end;
-            value = std::strtof(str, &end);
-            values.push_back(value);
-            str = end;
-        } else if ( parsingNumber && *str == ' ' ) {
-            parsingNumber = false;
-            str++;
-        } else {
-            str++;
-        }
-    }
+template <>
+float StringToFloat<float>(const char* str, char** end) {
+    return std::strtof(str, end);
+}
+    
+template <>
+double StringToFloat<double>(const char* str, char** end) {
+    return std::strtod(str, end);
+}
 
-    return values;
+template <>
+int StringToFloat<int>(const char* str, char** end) {
+    return strtol(str, end, 10);
 }
 

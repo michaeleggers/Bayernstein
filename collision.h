@@ -29,7 +29,11 @@ struct CollisionInfo {
 EllipsoidCollider CreateEllipsoidColliderFromAABB(glm::vec3 mins, glm::vec3 maxs);
 void CollideUnitSphereWithPlane(CollisionInfo* ci, glm::vec3 pos, Plane p, Tri tri);
 glm::vec3 CollideEllipsoidWithTrisRec(CollisionInfo* ci, glm::vec3 esBasePos, glm::vec3 velocity, Tri* tris, int triCount, int depth, int maxDepth);
-CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider ec, glm::vec3 velocity, glm::vec3 gravity, MapTri* tris, int triCount);
+CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider ec, 
+                                          glm::vec3 velocity, 
+                                          glm::vec3 gravity, 
+                                          MapTri* tris, int triCount,
+                                          std::vector< std::vector<MapTri>* > brushMapTris);
 Tri  TriToEllipsoidSpace(Tri tri, glm::mat3 toESPace);
 Plane CreatePlaneFromTri(Tri tri);
 bool IsPointInTriangle(glm::vec3 point, Tri tri, glm::vec3 triNormal);

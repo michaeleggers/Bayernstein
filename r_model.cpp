@@ -1,5 +1,7 @@
 #include "r_model.h"
 
+#include <unordered_map>
+
 
 #define GLM_FORCE_RADIANS
 #include "dependencies/glm/glm.hpp"
@@ -8,6 +10,8 @@
 
 #include "r_common.h"
 #include "collision.h"
+#include "map_parser.h"
+#include "polysoup.h"
 
 //glm::vec3 pos;
 //glm::vec3 uv;
@@ -115,6 +119,79 @@ HKD_Model CreateModelFromIQM(IQMModel* model)
     result.gpuModelHandle = -1;    
 
     return result;
+}
+
+// Assume only triangles for each MapPoly.
+std::vector<Tri> CreateTrisFromMapPolys(std::vector<MapPolygon>& mapPolys) {
+    std::vector<Tri> tris{};
+    for (int i = 0; i < mapPolys.size(); i++) {
+        MapPolygon& mapPoly = mapPolys[i];
+        assert( mapPoly.vertices.size() == 3 );
+        Vertex A = { glm::vec3(mapPoly.vertices[ 0 ].pos.x, 
+                               mapPoly.vertices[ 0 ].pos.y, 
+                               mapPoly.vertices[ 0 ].pos.z),
+                    mapPoly.vertices[ 0 ].uv };
+        Vertex B = { glm::vec3(mapPoly.vertices[ 1 ].pos.x, 
+                               mapPoly.vertices[ 1 ].pos.y, 
+                               mapPoly.vertices[ 1 ].pos.z),
+                     mapPoly.vertices[ 1 ].uv };
+        Vertex C = { glm::vec3(mapPoly.vertices[ 2 ].pos.x, 
+                               mapPoly.vertices[ 2 ].pos.y, 
+                               mapPoly.vertices[ 2 ].pos.z),
+                     mapPoly.vertices[ 2 ].uv };
+
+        Tri tri = { A, B, C };
+        tris.push_back(tri);
+    }
+
+    return tris;
+}
+
+HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes) {
+    // Convert brushes to tris and sort them according to their texture name.
+    std::unordered_map<std::string, std::vector<MapPolygon> > texName2polygons{};
+    size_t totalTris = 0;
+    for (int i = 0; i < brushes.size(); i++) {
+        const Brush& brush = brushes[i];
+        std::vector<MapPolygon> polys = createPolysoup(brush);
+        std::vector<MapPolygon> mapTris = triangulate(polys);
+        totalTris += mapTris.size();
+        for (int j = 0; j < mapTris.size(); j++) {
+            MapPolygon& mapTri = mapTris[j];
+            const auto& entry = texName2polygons.find(mapTri.textureName);
+            if ( entry == texName2polygons.end() ) {
+                texName2polygons.insert({ mapTri.textureName, {mapTri} });
+            }
+            else {
+                entry->second.push_back(mapTri);
+            }
+        }
+    }
+
+    // Assign sorted MapPolygons to model as meshes.
+    HKD_Model model{};
+    model.type = HKD_MODEL_TYPE_STATIC;
+    model.tris.resize(totalTris);
+    size_t triOffset = 0;
+    for (auto & [ textureName, mapPolys ] : texName2polygons) {
+        HKD_Mesh mesh{};
+        mesh.isTextured = true;
+        mesh.textureFileName = textureName + ".tga"; // FIX: Check for all formats.
+        mesh.firstTri = triOffset;
+        size_t numTris = mapPolys.size();
+        mesh.numTris = numTris;
+        std::vector<Tri> tris = CreateTrisFromMapPolys( mapPolys );
+        memcpy( model.tris.data() + triOffset, tris.data(), numTris * sizeof(Tri) );
+        triOffset += numTris;
+        model.meshes.push_back(mesh);
+    }
+
+    // Brush entities start at their world pos defined in TrenchBroom.
+    model.position     = glm::vec3(0.0f); 
+    model.orientation  = glm::angleAxis(glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model.scale        = glm::vec3(1.0f);
+
+    return model;
 }
 
 static glm::mat4 PoseToMatrix(Pose pose) 

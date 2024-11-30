@@ -2,10 +2,14 @@
 // Created by me on 9/2/24.
 //
 
+
+#include <vector>
+#include <stdio.h>
+
+#include <glm/gtx/norm.hpp>
+
 #include "r_common.h"
 #include "collision.h"
-#include <stdio.h>
-#include <glm/gtx/norm.hpp>
 
 // NOTE: This distance depends very much on the size of the level geometry!
 #define VERY_CLOSE_DIST 0.01f
@@ -328,7 +332,11 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri)
 
 }
 
-CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider ec, glm::vec3 velocity, glm::vec3 gravity, MapTri* tris, int triCount)
+CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider ec, 
+                                          glm::vec3 velocity, 
+                                          glm::vec3 gravity, 
+                                          MapTri* tris, int triCount,
+                                          std::vector< std::vector<MapTri>* > brushMapTris)
 {
     // Convert to ellipsoid space
     std::vector<Tri> esTris;
@@ -336,7 +344,16 @@ CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider ec, glm::vec3 veloci
         Tri tri = tris[ i ].tri;
         Tri esTri = TriToEllipsoidSpace(tri, ec.toESpace);
         esTris.push_back(esTri);
-    }  
+    }
+    // Also do this for the brush tris
+    for (int i = 0; i < brushMapTris.size(); i++) {
+        std::vector<MapTri>* pMapTris = brushMapTris[i];
+        for (int j = 0; j < pMapTris->size(); j++) {
+            Tri tri = pMapTris->at(j).tri;
+            Tri esTri = TriToEllipsoidSpace(tri, ec.toESpace);
+            esTris.push_back(esTri);
+        }
+    }
     
     glm::vec3 esVelocity = ec.toESpace * velocity;
     glm::vec3 esBasePos = ec.toESpace * ec.center;

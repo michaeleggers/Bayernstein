@@ -39,6 +39,7 @@ GLBatch::GLBatch(uint32_t maxVerts)
 
     glGenBuffers(1, &m_VBO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+    // FIX: Make configurable if data is dynamic or static.
     glBufferData(GL_ARRAY_BUFFER, m_MaxVerts * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 
     // Input assembly for vertex shader
@@ -151,7 +152,7 @@ int GLBatch::Add(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
     return offset;
 }
 
-int GLBatch::Add(MapTri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
+int GLBatch::AddMapTris(MapTri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
     std::vector<Tri> rawTris{};
     rawTris.resize( numTris );
     for (int i = 0; i < numTris; i++) {

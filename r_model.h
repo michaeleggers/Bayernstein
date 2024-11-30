@@ -14,6 +14,7 @@
 #include "collision.h"
 #include "iqm_loader.h"
 #include "r_common.h"
+#include "map_parser.h"
 
 enum AnimState {
     ANIM_STATE_IDLE,
@@ -72,6 +73,7 @@ struct HKD_Model {
 };
 
 HKD_Model CreateModelFromIQM(IQMModel* model);
+HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes);
 void UpdateModel(HKD_Model* model, float dt);
 void ApplyPhysicsToModel(HKD_Model* model);
 void UpdateRigidBodyTransform(HKD_Model* model);

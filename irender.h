@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <string>
+#include <stdint.h>
 
 #include "irender.h"
 #include "r_itexture.h"
@@ -13,6 +14,7 @@
 #include "camera.h"
 #include "r_common.h"
 #include "r_font.h"
+#include "CWorld.h"
 #include "Console/Console.h"
 
 enum DrawMode {
@@ -22,21 +24,22 @@ enum DrawMode {
 };
 
 struct GLBatchDrawCmd { // TODO: Rename
-	int				offset;		// offset into vertex buffer (VBO)
-	int				indexOffset;	// offset into index buffer (iVBO)
-	uint32_t		numVerts;
-	uint32_t		numIndices;
-	bool			cullFace;
-	DrawMode		drawMode;
+	int		offset;		// offset into vertex buffer (VBO)
+	int		indexOffset;	// offset into index buffer (iVBO)
+	uint32_t	numVerts;
+	uint32_t	numIndices;
+	bool		cullFace;
+	DrawMode	drawMode;
 };
 
 class IRender {
 public:
 	virtual bool Init(void)			= 0;
 	virtual void Shutdown(void)		= 0;
-	virtual int  RegisterModel(HKD_Model* model)	= 0;
+	virtual int  RegisterModel(HKD_Model* model) = 0;
+	virtual int  RegisterBrush(HKD_Model* model) = 0;
 	virtual void RegisterFont(CFont* font) = 0;
-	virtual void RegisterWorldTris(std::vector<MapTri>& tris) = 0;
+	virtual void RegisterWorld(CWorld* world) = 0;
 	virtual uint64_t RegisterTextureGetHandle(std::string name) = 0;
 	virtual void SetActiveCamera(Camera* camera) = 0;
 	virtual std::vector<ITexture*> ModelTextures(int gpuModelHandle) = 0;
@@ -60,7 +63,9 @@ public:
 	virtual void R_DrawText(const std::string& text, float x, float y, ScreenSpaceCoordMode = COORD_MODE_REL) = 0; 
 	virtual void DrawBox(float x, float y, float width, float height,
 					  ScreenSpaceCoordMode coordMode = COORD_MODE_REL) = 0;
-	virtual void Render(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
+	virtual void Render(Camera* camera, 
+					 HKD_Model** models, uint32_t numModels,
+                     HKD_Model** brushModels, uint32_t numBrushModels) = 0;
 	virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
 	virtual void RenderConsole(Console* console, CFont* font) = 0;
 	virtual void RenderEnd(void) = 0;

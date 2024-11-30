@@ -33,8 +33,9 @@ public:
 	virtual bool Init(void)								override;
 	virtual void Shutdown(void)							override;
 	virtual int  RegisterModel(HKD_Model* model)		override;
+	virtual int  RegisterBrush(HKD_Model* model)        override;
 	virtual void RegisterFont(CFont* font) override;
-	virtual void RegisterWorldTris(std::vector<MapTri>& tris) override;
+	virtual void RegisterWorld(CWorld* world) override;
 	virtual uint64_t RegisterTextureGetHandle(std::string name) override;
 	virtual void SetActiveCamera(Camera* camera) override;
 	virtual std::vector<ITexture*> ModelTextures(int gpuModelHandle)	override;
@@ -46,7 +47,9 @@ public:
 	virtual void ImDrawLines(Vertex* verts, uint32_t numVerts, bool close = false) override;
 	virtual void ImDrawSphere(glm::vec3 pos, float radius, glm::vec4 color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)) override;
 	virtual void RenderBegin(void)						override;
-	virtual void Render(Camera* camera, HKD_Model** models, uint32_t numModels) override;
+	virtual void Render(Camera* camera, 
+					 HKD_Model** models, uint32_t numModels,
+                     HKD_Model** brushModels, uint32_t numBrushModels) override;
 	virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) override;
 	virtual void RenderConsole(Console* console, CFont* font) override;
 	virtual void Begin3D() override;
@@ -83,6 +86,7 @@ private:
 	// Draw world polygons based on their texture handle.
 	std::unordered_map<uint64_t, GLBatchDrawCmd> m_TexHandleToWorldDrawCmd;
 	GLBatch*					m_WorldBatch;
+	GLBatch*					m_BrushBatch; // World geometry from brush entities.
 
 	GLBatch*					m_ModelBatch;
 	std::vector<GLBatchDrawCmd> m_ModelDrawCmds;
@@ -100,6 +104,7 @@ private:
 	std::vector<GLModel>		m_Models;
 
 	Shader*                     m_WorldShader;
+	Shader*						m_BrushShader;
 
 	Shader*						m_ImPrimitivesShader;
 

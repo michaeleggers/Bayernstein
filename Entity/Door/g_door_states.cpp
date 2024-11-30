@@ -5,6 +5,8 @@
 #include "g_door_states.h"
 
 #include "../../utils/utils.h"
+#include "../../r_model.h"
+#include "../../CWorld.h"
 #include "../Message/message_type.h"
 #include <stdio.h>
 
@@ -66,25 +68,31 @@ void DoorOpening::Execute(Door* pDoor) {
     // to variations of the deltaTime and floating
     // point rounding errors.
 
-    // Check if door has reached its opened state.
-    // If so switch to the opened state.
-    //printf("dt: %f\n", GetDeltaTime());
-    pDoor->m_CurrentDistance += pDoor->m_Speed * GetDeltaTime() / 1000.0;
-    /*printf("current distance: %f\n", pDoor->m_CurrentDistance);*/
-    if ( pDoor->m_CurrentDistance >= pDoor->m_Distance ) {
-        pDoor->GetFSM()->ChangeState(DoorOpened::Instance());
-
-        return;
-    }
+    double distance = glm::clamp(pDoor->m_Speed * GetDeltaTime() / 1000.0,
+                                0.0, pDoor->m_Distance);
 
     // Open the door.
+    
+    // Move the render representation.
+    HKD_Model* doorModel = pDoor->GetModel();
+    glm::vec3 travel =  (float)distance * pDoor->m_Direction;
+    doorModel->position += travel;
+  
+    // Move the CPU side representation for collision.
     std::vector<MapTri>& mapTris = pDoor->MapTris();
     for ( int i = 0; i < mapTris.size(); i++ ) {
         MapTri& mapTri = mapTris[ i ];
         for ( int j = 0; j < 3; j++ ) {
             Vertex& v = mapTri.tri.vertices[ j ];
-            v.pos.z += pDoor->m_Speed * GetDeltaTime() / 1000.0;
+            v.pos += travel;
         }
+    }
+    
+    // Check if door has reached its opened state.
+    // If so switch to the opened state.
+    pDoor->m_CurrentDistance += distance;
+    if ( pDoor->m_CurrentDistance >= pDoor->m_Distance ) {
+        pDoor->GetFSM()->ChangeState(DoorOpened::Instance());
     }
 }
 
@@ -118,6 +126,7 @@ void DoorOpened::Exit(Door* pDoor) {
 }
 
 bool DoorOpened::OnMessage(Door* agent, const Telegram& telegram) {
+    printf("Door received telegram: %s\n", MessageToString(telegram.Message).c_str());
 
     return false;
 }
