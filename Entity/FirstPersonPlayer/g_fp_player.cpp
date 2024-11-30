@@ -66,7 +66,7 @@ void FirstPersonPlayer::Update() {
     //m_Position = m_Model.position;
     m_Camera.m_Pos = m_Position;
     // Adjust the camera so it is roughly at the top of the model's head.
-    m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, GetEllipsoidColliderPtr()->radiusB - 20.0f);
+    m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, GetEllipsoidColliderPtr()->radiusB - 24.0f);
     //m_Camera.Pan( -100.0f * m_Camera.m_Forward );
 
     // TODO: (Michael): Reenable when collision stuff is working
@@ -95,6 +95,8 @@ void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition) {
         glm::vec3 scale = glm::vec3(1.0f / ec->radiusA, 1.0f / ec->radiusA, 1.0f / ec->radiusB);
         ec->toESpace = glm::scale(glm::mat4(1.0f), scale);
     }
+    // Model is defined with origin at its feet. Move it down to be at the ground.
+    m_Model.position.z -= GetEllipsoidColliderPtr()->radiusB;
 
     SetAnimState(&m_Model, ANIM_STATE_WALK);
     m_EllipsoidCollider = GetEllipsoidCollider();

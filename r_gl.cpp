@@ -803,8 +803,16 @@ void GLRender::Render(Camera* camera,
         else {
             m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
         }
-        
-        glm::mat4 modelMatrix = CreateModelMatrix( models[i] );
+       
+        BaseGameEntity* owner = models[i]->owner;
+        glm::vec3 ownerPos = glm::vec3(0.0f);
+        if (owner != nullptr) {
+            ownerPos = owner->m_Position;
+        }
+        glm::vec3 position = ownerPos + models[i]->position;
+        glm::quat orientation = models[i]->orientation;
+        glm::vec3 scale = models[i]->scale;
+        glm::mat4 modelMatrix = CreateModelMatrix( position, orientation, scale ); 
         m_ModelShader->SetMat4("model", modelMatrix);
 
         for (int j = 0; j < model.meshes.size(); j++) {
