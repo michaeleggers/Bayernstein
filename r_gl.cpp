@@ -791,30 +791,32 @@ void GLRender::Render(Camera* camera,
     }    
     for (int i = 0; i < numModels; i++) {
 
-        if ( models[ i ]->renderFlags & MODEL_RENDER_FLAG_IGNORE ) {
+        HKD_Model* hkdModel = models[ i ];
+
+        if ( hkdModel->renderFlags & MODEL_RENDER_FLAG_IGNORE ) {
             continue;
         }
 
-        GLModel model = m_Models[ models[i]->gpuModelHandle ];
+        GLModel model = m_Models[ hkdModel->gpuModelHandle ];
 
-        if ( models[i]->numJoints > 0 ) {
+        if ( hkdModel->numJoints > 0 ) {
             m_ModelShader->SetShaderSettingBits(SHADER_ANIMATED);
-            m_ModelShader->SetMatrixPalette( &models[i]->palette[0], models[i]->numJoints );
+            m_ModelShader->SetMatrixPalette( &hkdModel->palette[0], hkdModel->numJoints );
         }
         else {
             m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
         }
        
-        BaseGameEntity* owner = models[i]->owner;
+        BaseGameEntity* owner = hkdModel->owner;
         glm::vec3 ownerPos = glm::vec3(0.0f);
         glm::quat ownerOrientation = glm::angleAxis(0.0f, DOD_WORLD_FORWARD);
         if (owner != nullptr) {
             ownerPos = owner->m_Position;
             ownerOrientation = owner->m_Orientation;
         }
-        glm::vec3 position = ownerPos + models[i]->position;
-        glm::quat orientation = ownerOrientation * models[i]->orientation;
-        glm::vec3 scale = models[i]->scale;
+        glm::vec3 position = ownerPos + hkdModel->position;
+        glm::quat orientation = ownerOrientation * hkdModel->orientation;
+        glm::vec3 scale = hkdModel->scale;
         glm::mat4 modelMatrix = CreateModelMatrix( position, orientation, scale ); 
         m_ModelShader->SetMat4("model", modelMatrix);
 
