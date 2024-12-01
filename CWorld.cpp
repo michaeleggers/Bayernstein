@@ -171,21 +171,20 @@ void CWorld::CollideEntitiesWithWorld() {
     double dt = GetDeltaTime();
     static double accumulator = 0.0;
     accumulator += dt;
-    //printf("accumulator: %f\n", accumulator);
-    for (int i = 0; i < entities.size(); i++) {
-        BaseGameEntity* pEntity = entities[i];
+    int numUpdateSteps = 0;
 
-        if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
+    while (accumulator >= DOD_FIXED_UPDATE_TIME) {
+        for (int i = 0; i < entities.size(); i++) {
+            BaseGameEntity* pEntity = entities[i];
 
-            EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
-            if (ec == nullptr) {
-                continue;
-            }
+            if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
 
-            int numUpdateSteps = 0;
+                EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
+                if (ec == nullptr) {
+                    continue;
+                }
 
-            while (accumulator >= DOD_FIXED_UPDATE_TIME) {
-                
+                    
                 pEntity->m_PrevPosition = ec->center; //pEntity->m_Position;
                 //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
                 CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(*ec,
@@ -202,7 +201,8 @@ void CWorld::CollideEntitiesWithWorld() {
                 if (pEntity->Type() == ET_PLAYER) {
                     model = ((Player*)pEntity)->GetModel();
                 }
-                else { // Enemy
+                else if (pEntity->Type() == ET_ENEMY) {
+                    printf("Got the enemy!!!\n");
                     model = ((Enemy*)pEntity)->GetModel();
                 }
 
@@ -211,23 +211,34 @@ void CWorld::CollideEntitiesWithWorld() {
                     model->ellipsoidColliders[i].center = collisionInfo.basePos;
                 }
 
-                accumulator -= DOD_FIXED_UPDATE_TIME;
+            } // Check if player or enemy 
+        } // Check all entities
+        accumulator -= DOD_FIXED_UPDATE_TIME;
+        numUpdateSteps++;
+    } // while (accumulator >= DOD_FIXED_UPDATE_TIME) {
 
-                numUpdateSteps++;
-                
-            } // End Update collider
-
-            // Avoid 'spiral of hell'.
-            if (numUpdateSteps > 10) {
-                accumulator = 0;
+    // Avoid 'spiral of hell'.
+    if (numUpdateSteps > 10) {
+        accumulator = 0;
+    }
+   
+    // Now, update all the entities positions. But only if they are of
+    // a certain type.
+    // FIX: Dumb! We should loop over the collider components and 
+    // then update their owners. Again: We need the actor-component model ;)
+    for (int i = 0; i < entities.size(); i++) {
+        BaseGameEntity* pEntity = entities[i];
+        if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
+            EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
+            if (ec == nullptr) {
+                continue;
             }
-            
             double t = accumulator / DOD_FIXED_UPDATE_TIME;
             glm::vec3 perTickMotion = ec->center - pEntity->m_PrevPosition;
             pEntity->UpdatePosition( pEntity->m_PrevPosition + (float)t*perTickMotion );
-
-        } // Check if Player or Enemy
+        }
     }
+
 }
 
 // FIX: Slow. Can we do better? Push touch is more than an overlap check!

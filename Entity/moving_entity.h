@@ -19,8 +19,8 @@ class MovingEntity : public BaseGameEntity {
           m_Side(1.0f, 0.0f, 0.0f),
           m_Up(0.0f, 0.0f, 1.0f),
           m_Mass(1.0f),
-          m_MaxSpeed(0.1f),
-          m_MaxForce(50.5f),
+          m_MaxSpeed(100.0f),
+          m_MaxForce(400.5f),
           m_MaxTurnRate(1.0f) {};
 
     virtual ~MovingEntity() = default;

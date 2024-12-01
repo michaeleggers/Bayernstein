@@ -32,6 +32,7 @@ public:
     void RemoveEntity(const BaseGameEntity* pEntity);
 
     void UpdateEntities();
+    void UpdateEntitiesPreCollision();
 
     // FIX: Slow!
     std::vector<BaseGameEntity*> Entities();

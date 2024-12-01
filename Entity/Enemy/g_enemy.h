@@ -32,9 +32,11 @@ class Enemy : public MovingEntity {
     }
 
     bool HandleMessage(const Telegram& message) override;
-    EllipsoidCollider GetEllipsoidCollider() const override;
-    HKD_Model* GetModel();
+    EllipsoidCollider* GetEllipsoidColliderPtr() override; 
+    void PreCollisionUpdate() override;
     void UpdatePosition(glm::vec3 newPosition) override;
+    
+    HKD_Model* GetModel();
 
     void SetSeekTarget(BaseGameEntity* target) {
         m_pSteeringBehaviour->SetTargetAgent(target);

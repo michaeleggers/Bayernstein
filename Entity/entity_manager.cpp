@@ -61,6 +61,12 @@ void EntityManager::UpdateEntities() {
     }
 }
 
+void EntityManager::UpdateEntitiesPreCollision() {
+    for ( auto [ id, entity ] : m_EntityMap ) {
+        entity->PreCollisionUpdate();
+    }
+}
+
 std::vector<BaseGameEntity*> EntityManager::Entities() {
     std::vector<BaseGameEntity*> entities{};
     for ( auto [ id, entity ] : m_EntityMap ) {

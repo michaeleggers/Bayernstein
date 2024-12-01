@@ -85,9 +85,14 @@ class BaseGameEntity {
     
     virtual ~BaseGameEntity() = default;
 
-    // all entities must implement an update function
+    // Call this *before* collision system.
+    virtual void PreCollisionUpdate() {
+    };
+
+    // Call this *after* the collision system has run.
     virtual void Update() = 0;
-    // FIX: At the moment needed by collision system.
+    
+    // Call this *after* the collision system has run.
     virtual void UpdatePosition(glm::vec3 newPosition) {};
 
     // all entities can communicate using messages. They are sent

@@ -57,7 +57,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/Prototype2.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/door_test.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -196,11 +196,13 @@ bool Game::RunFrame(double dt) {
     // Handle the input
     CInputDelegate::Instance()->HandleInput();
 
+    m_pEntityManager->UpdateEntitiesPreCollision();
+
     // Collide entities with the world geometry and bounce off of it.
     m_World->CollideEntitiesWithWorld();
 
     // Check if player has contacts with other entities (including brush entities such as doors).
-    m_World->CollideEntities();
+    //m_World->CollideEntities();
 
     // Run the message system
     m_pEntityManager->UpdateEntities(); // Calls Update() Method on entities
@@ -269,9 +271,21 @@ bool Game::RunFrame(double dt) {
         renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
 #endif
 
+        // FIX: Remove later. Ugly.
         renderer->SetActiveCamera(renderCam);
         HKD_Model* playerColliderModel[] = { m_pPlayerEntity->GetModel() };
-        renderer->RenderColliders(renderCam, playerColliderModel, 1);
+        std::vector<BaseGameEntity*> pAllEntities = m_pEntityManager->Entities();
+        for (int i = 0; i < pAllEntities.size(); i++) {
+            BaseGameEntity* pEntity = pAllEntities[i];
+            if (pEntity->Type() == ET_ENEMY) {
+                Enemy* pEnemy = (Enemy*)pEntity;
+                HKD_Model* pModel = pEnemy->GetModel();
+                if (pModel == nullptr) {
+                    continue;
+                }
+                renderer->RenderColliders(renderCam, &pModel, 1);
+            }
+        }
         
         renderer->End3D();
     } // End3D scope

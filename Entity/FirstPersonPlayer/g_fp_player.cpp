@@ -60,7 +60,6 @@ void FirstPersonPlayer::Update() {
     m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, GetEllipsoidColliderPtr()->radiusB - 24.0f);
     //m_Camera.Pan( -100.0f * m_Camera.m_Forward );
 
-    // TODO: (Michael): Reenable when collision stuff is working
     m_pStateMachine->Update();
 }
 
