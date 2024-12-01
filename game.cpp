@@ -57,7 +57,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple4.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/Prototype2.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -85,8 +85,9 @@ void Game::Init() {
 #endif 
 
     m_pFlyCameraEntity = new CFlyCamera( glm::vec3(-912, -586, 609) );
-    m_pFlyCameraEntity->m_Camera.RotateAroundSide(-45.0f);
-    m_pFlyCameraEntity->m_Camera.RotateAroundWorldUp(180.0f);
+    
+    // Init fly camera to look at the player.
+    m_pFlyCameraEntity->m_Camera.LookAt(m_pPlayerEntity->m_Position);
   
     // FIX: If the follow camera is registered *before* one of the entities
     // the follow camera will lag behind one frame because it won't
@@ -200,7 +201,6 @@ bool Game::RunFrame(double dt) {
 
     // Check if player has contacts with other entities (including brush entities such as doors).
     m_World->CollideEntities();
-
 
     // Run the message system
     m_pEntityManager->UpdateEntities(); // Calls Update() Method on entities

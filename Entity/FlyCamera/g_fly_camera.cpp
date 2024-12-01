@@ -14,6 +14,7 @@ CFlyCamera::CFlyCamera(glm::vec3 pos)
 
     m_Camera = Camera(pos);
     m_Position = pos;
+    m_Camera.LookAt( glm::vec3(0.0f) );
 }
 
 CFlyCamera::~CFlyCamera() {

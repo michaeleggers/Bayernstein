@@ -172,6 +172,7 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     AnimState playerAnimState = ANIM_STATE_IDLE;
     
     if ( forward == ButtonState::PRESSED ) {
+        printf("Forward pressed\n");
         m_Velocity += t * m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
