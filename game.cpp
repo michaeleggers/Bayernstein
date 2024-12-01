@@ -57,7 +57,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/door_test.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple5.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -202,7 +202,7 @@ bool Game::RunFrame(double dt) {
     m_World->CollideEntitiesWithWorld();
 
     // Check if player has contacts with other entities (including brush entities such as doors).
-    //m_World->CollideEntities();
+    m_World->CollideEntities();
 
     // Run the message system
     m_pEntityManager->UpdateEntities(); // Calls Update() Method on entities

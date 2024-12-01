@@ -194,15 +194,12 @@ void CWorld::CollideEntitiesWithWorld() {
                                                                           StaticGeometryCount(),
                                                                           m_pBrushMapTris);
 
-                //pEntity->m_Position = collisionInfo.basePos;
-                //
                 // FIX: Again. Components could fix this.
                 HKD_Model* model = nullptr;
                 if (pEntity->Type() == ET_PLAYER) {
                     model = ((Player*)pEntity)->GetModel();
                 }
                 else if (pEntity->Type() == ET_ENEMY) {
-                    printf("Got the enemy!!!\n");
                     model = ((Enemy*)pEntity)->GetModel();
                 }
 
@@ -218,7 +215,8 @@ void CWorld::CollideEntitiesWithWorld() {
     } // while (accumulator >= DOD_FIXED_UPDATE_TIME) {
 
     // Avoid 'spiral of hell'.
-    if (numUpdateSteps > 10) {
+    if (numUpdateSteps > 5) {
+        printf("WARNING: SPIRAL OF HELL!!!\n");
         accumulator = 0;
     }
    
@@ -226,6 +224,7 @@ void CWorld::CollideEntitiesWithWorld() {
     // a certain type.
     // FIX: Dumb! We should loop over the collider components and 
     // then update their owners. Again: We need the actor-component model ;)
+#if 1 
     for (int i = 0; i < entities.size(); i++) {
         BaseGameEntity* pEntity = entities[i];
         if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
@@ -238,6 +237,7 @@ void CWorld::CollideEntitiesWithWorld() {
             pEntity->UpdatePosition( pEntity->m_PrevPosition + (float)t*perTickMotion );
         }
     }
+#endif
 
 }
 

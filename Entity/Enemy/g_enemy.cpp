@@ -1,4 +1,4 @@
-// benek
+// 
 // Created by benek on 10/14/24.
 //
 
@@ -42,13 +42,13 @@ Enemy::Enemy(const std::vector<Property>& properties)
 
 void Enemy::PreCollisionUpdate() {
 
+    float dt = (float)GetDeltaTime();
     glm::vec3 force = m_pSteeringBehaviour->Calculate();
     glm::vec3 acceleration = force / m_Mass;
     //update velocity
-    // m_Velocity += acceleration / 1000.0f;
-    m_Velocity += acceleration;
-    //m_Velocity = math::TruncateVec3(m_Velocity, m_MaxSpeed);
-    #if 0
+    //m_Velocity += acceleration * 1000.0f;
+    m_Velocity += acceleration * dt / 1000.0f;
+    m_Velocity = math::TruncateVec3(m_Velocity, m_MaxSpeed);
     if ( Speed() > 0.001 ) {
 
         // Calculate the new forward direction
@@ -74,7 +74,6 @@ void Enemy::PreCollisionUpdate() {
     } else {
         m_AnimationState = ANIM_STATE_IDLE;
     }
-#endif 
 }
 
 void Enemy::Update() {
