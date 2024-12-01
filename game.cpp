@@ -1,4 +1,7 @@
 // NOTE: Header only libs *have* to be defined on top before everything else.
+#include "Console/VariableManager.h"
+#include "collision.h"
+#include "globals.h"
 #define MAP_PARSER_IMPLEMENTATION
 #include "map_parser.h"
 
@@ -11,20 +14,24 @@
 
 #include "./Message/message_type.h"
 #include "CWorld.h"
+#include "Console/VariableManager.h"
 #include "Path/path.h"
 #include "Shape.h"
 #include "ShapeSphere.h"
 #include "camera.h"
 #include "hkd_interface.h"
 #include "input.h"
+#include "input_delegate.h"
+#include "input_handler.h"
+#include "input_receiver.h"
 #include "physics.h"
 #include "polysoup.h"
 #include "r_font.h"
 #include "r_itexture.h"
 #include "utils/utils.h"
-#include "input_handler.h"
-#include "input_delegate.h"
-#include "input_receiver.h"
+
+ConsoleVariable dbg_show_wander         = { "dbg_show_wander", 0 };
+ConsoleVariable dbg_show_enemy_velocity = { "dbg_show_enemy_velocity", 0 };
 
 static int hkd_Clamp(int val, int clamp) {
     if ( val > clamp || val < clamp ) return clamp;
@@ -32,16 +39,19 @@ static int hkd_Clamp(int val, int clamp) {
 }
 
 Game::Game(std::string exePath, hkdInterface* pInterface) {
-    m_pInterface = pInterface;
-    m_ExePath = exePath;
+    m_pInterface     = pInterface;
+    m_ExePath        = exePath;
     m_pEntityManager = EntityManager::Instance();
 }
 
 void Game::Init() {
     m_AccumTime = 0.0f;
 
+    VariableManager::Register(&dbg_show_wander);
+    VariableManager::Register(&dbg_show_enemy_velocity);
+
     // Load a font file from disk
-    m_ConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 72);
+    m_ConsoleFont   = new CFont("fonts/HackNerdFont-Bold.ttf", 72);
     m_ConsoleFont30 = new CFont("fonts/HackNerdFont-Bold.ttf", 150); // Same font at different size
 
     IRender* renderer = GetRenderer();
@@ -57,11 +67,11 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple4.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/enemy_test.map");
 #endif
 
     size_t inputLength = mapData.length();
-    Map map = getMap(&mapData[ 0 ], inputLength, mapVersion);
+    Map    map         = getMap(&mapData[ 0 ], inputLength, mapVersion);
 
     m_World = CWorld::Instance();
     m_World->InitWorldFromMap(map);
@@ -71,43 +81,43 @@ void Game::Init() {
     // Creates batches for each texture-name. That way we can
     // reduce draw-calls and texture-binds when rendering world geometry.
 
-    renderer->RegisterWorld( m_World);
+    renderer->RegisterWorld(m_World);
 
     //m_pPlayerEntity = new Player(idCounter++, m_pPlayerEntity->m_Position);
     //m_pEntityManager->RegisterEntity(m_pPlayerEntity);
- 
+
 #if 0 // Enable second debug player
     glm::vec3 dbgPlayerStartPos = m_pPlayerEntity->m_Position + glm::vec3(20.0f, -100.0f, 10.0f);
     m_pDebugPlayerEntity = new Player(dbgPlayerStartPos);
     printf("Debug Player Start Pos: %f, %f, %f\n", dbgPlayerStartPos.x, dbgPlayerStartPos.y, dbgPlayerStartPos.z);
     m_pEntityManager->RegisterEntity(m_pDebugPlayerEntity);
     int hDebugPlayerModel = renderer->RegisterModel(m_pDebugPlayerEntity->GetModel());
-#endif 
+#endif
 
-    m_pFlyCameraEntity = new CFlyCamera( glm::vec3(-912, -586, 609) );
+    m_pFlyCameraEntity = new CFlyCamera(glm::vec3(-912, -586, 609));
     m_pFlyCameraEntity->m_Camera.RotateAroundSide(-45.0f);
     m_pFlyCameraEntity->m_Camera.RotateAroundUp(180.0f);
-  
+
     // FIX: If the follow camera is registered *before* one of the entities
     // the follow camera will lag behind one frame because it won't
     // get the most up to date position of its target!
     // We can choose to have a dedicated array for all of the
     // camera entity types and let the entity manager take care
     // of correct update order.
-    m_pFollowCameraEntity = new CFollowCamera(m_pPlayerEntity);
+    m_pFollowCameraEntity           = new CFollowCamera(m_pPlayerEntity);
     m_pFollowCameraEntity->m_Camera = Camera(m_pPlayerEntity->m_Position);
     m_pFollowCameraEntity->m_Camera.m_Pos.y -= 200.0f;
     m_pFollowCameraEntity->m_Camera.m_Pos.z += 100.0f;
     m_pFollowCameraEntity->m_Camera.RotateAroundSide(0.0f);
     //m_pFollowCameraEntity->m_Camera.RotateAroundUp(180.0f);
     m_pEntityManager->RegisterEntity(m_pFollowCameraEntity);
-   
+
     // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
     // in the batch?
 
     //int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
     //
-   
+
     // Test Input Binding
 
     // Keyboard buttons
@@ -123,8 +133,8 @@ void Game::Init() {
     inputHandler->BindInputToActionName(SDLK_LEFT, "turn_left");
     inputHandler->BindInputToActionName(SDLK_RIGHT, "turn_right");
     // Mouse buttons
-    inputHandler->BindInputToActionName(SDL_BUTTON_LEFT, "fire"); 
-    inputHandler->BindInputToActionName(SDL_BUTTON_RIGHT, "look"); 
+    inputHandler->BindInputToActionName(SDL_BUTTON_LEFT, "fire");
+    inputHandler->BindInputToActionName(SDL_BUTTON_RIGHT, "look");
 
     // Let the player receive input by default
     CInputDelegate::Instance()->SetReceiver(m_pPlayerEntity);
@@ -132,16 +142,16 @@ void Game::Init() {
 
 static void DrawCoordinateSystem(IRender* renderer) {
     Vertex origin = { glm::vec3(0.0f) };
-    origin.color = glm::vec4(1.0f);
-    Vertex X = { glm::vec3(100.0f, 0.0f, 0.0f) };
-    X.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-    Vertex Y = { glm::vec3(0.0f, 100.0f, 0.0f) };
-    Y.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-    Vertex Z = { glm::vec3(0.0f, 0.0f, 100.0f) };
-    Z.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-    Vertex OX[] = { origin, X };
-    Vertex OY[] = { origin, Y };
-    Vertex OZ[] = { origin, Z };
+    origin.color  = glm::vec4(1.0f);
+    Vertex X      = { glm::vec3(100.0f, 0.0f, 0.0f) };
+    X.color       = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    Vertex Y      = { glm::vec3(0.0f, 100.0f, 0.0f) };
+    Y.color       = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    Vertex Z      = { glm::vec3(0.0f, 0.0f, 100.0f) };
+    Z.color       = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+    Vertex OX[]   = { origin, X };
+    Vertex OY[]   = { origin, Y };
+    Vertex OZ[]   = { origin, Z };
     renderer->ImDrawLines(OX, 2);
     renderer->ImDrawLines(OY, 2);
     renderer->ImDrawLines(OZ, 2);
@@ -156,22 +166,22 @@ bool Game::RunFrame(double dt) {
         m_pInterface->QuitGame();
     }
 
-    // Toggle who should be controlled by the input system 
-    static IInputReceiver* receivers[2] = { m_pPlayerEntity, m_pFlyCameraEntity };
-    static BaseGameEntity* entities[2] = { m_pPlayerEntity, m_pFlyCameraEntity };
-    static Camera* renderCam = &m_pFollowCameraEntity->m_Camera;
+    // Toggle who should be controlled by the input system
+    static IInputReceiver* receivers[ 2 ] = { m_pPlayerEntity, m_pFlyCameraEntity };
+    static BaseGameEntity* entities[ 2 ]  = { m_pPlayerEntity, m_pFlyCameraEntity };
+    static Camera*         renderCam      = &m_pFollowCameraEntity->m_Camera;
 
     // Toggle receivers
     static int receiverToggle = 0;
     if ( KeyWentDown(SDLK_u) ) {
         printf("Switching to receiver num: %d\n", receiverToggle);
         receiverToggle = ++receiverToggle % 2;
-        CInputDelegate::Instance()->SetReceiver( receivers[ receiverToggle ] ); 
-        m_pFollowCameraEntity->SetTarget( entities[ receiverToggle ] );
+        CInputDelegate::Instance()->SetReceiver(receivers[ receiverToggle ]);
+        m_pFollowCameraEntity->SetTarget(entities[ receiverToggle ]);
         renderCam = &m_pFollowCameraEntity->m_Camera;
         if ( entities[ receiverToggle ]->Type() == ET_FLY_CAMERA ) {
             CFlyCamera* flyCamEnt = (CFlyCamera*)entities[ receiverToggle ];
-            renderCam = &flyCamEnt->m_Camera;
+            renderCam             = &flyCamEnt->m_Camera;
         }
     }
     // Handle the input
@@ -183,55 +193,70 @@ bool Game::RunFrame(double dt) {
     // Check if player has contacts with other entities (including brush entities such as doors).
     m_World->CollideEntities();
 
-
     // Run the message system
     m_pEntityManager->UpdateEntities();
     Dispatcher->DispatchDelayedMessages();
-
-
-    // Fix camera position
-
-    //m_pPlayerEntity->UpdateCamera(&m_FollowCamera);
 
     // Render stuff
     IRender* renderer = GetRenderer();
 
     // ImGUI stuff goes into GL default FBO
 
-    ImGui::ShowDemoWindow();
+    // ImGui::ShowDemoWindow();
+    ImGui::Begin("DebugSettings");
+    static int steering = 0;
+    ImGui::RadioButton("enemy::patrol", &steering, 0);
+    ImGui::RadioButton("enemy::wander", &steering, 1);
+    GetDebugSettings()->patrol = steering == 0;
+    GetDebugSettings()->wander = steering == 1;
 
+    ImGui::End();
     // Main 3D: This is where all the 3D rendering happens (in its own FBO)
     {
         renderer->Begin3D();
 
-#if 0 // FIX: How to easily enable debug-line drawing?
-        
-        // Draw Debug Line for player veloctiy vector
-        Line velocityDebugLine = { Vertex(ecEnemy.center), Vertex(ecEnemy.center + 150.0f * enemy->m_Velocity) };
-        velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-        velocityDebugLine.b.color = velocityDebugLine.a.color;
-        renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
-#endif
+        if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 ) {
+
+            Enemy*            enemy   = m_pEntityManager->GetFirstEnemy();
+            EllipsoidCollider ecEnemy = enemy->GetEllipsoidCollider();
+            // Draw Debug Circle for enemy
+            glm::vec3 center = enemy->m_Position + enemy->m_Forward * enemy->m_pSteeringBehaviour->m_WanderDistance;
+            renderer->ImDrawCircle(center, enemy->m_pSteeringBehaviour->m_WanderRadius, DOD_WORLD_UP);
+
+            // Draw Debug Line for player veloctiy vector
+            Line velocityDebugLine = {
+                Vertex(center),
+                Vertex(enemy->m_pSteeringBehaviour->m_WanderTarget) //* enemy->m_pSteeringBehaviour->m_WanderRadius
+            };
+            velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+            velocityDebugLine.b.color = velocityDebugLine.a.color;
+            renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
+        }
         // Render World Geometry (Batched triangles)
         //renderer->SetActiveCamera(&m_FollowCamera);
         //renderer->DrawWorldTris();
 
-
         DrawCoordinateSystem(renderer);
 
-#if 0 // debug path
-        std::vector<Vertex> vertices = m_pPath->GetPointsAsVertices();
-        renderer->ImDrawLines(vertices.data(), vertices.size(), true);
+#if 1 // debug paths
+        for ( int i = 0; i < m_World->m_Paths.size(); i++ ) {
+
+            PatrolPath path = m_World->m_Paths[ i ];
+
+            std::vector<Vertex> vertices = path.GetPointsAsVertices();
+            renderer->ImDrawLines(vertices.data(), vertices.size(), path.IsClosed());
+        }
 #endif
 
 #if 1 // Toggle moving entity rendering. Also renders world.
-        renderer->Render(renderCam, 
-                         m_World->GetModelPtrs().data(), m_World->GetModelPtrs().size(),
-                         m_World->GetBrushModelPtrs().data(), m_World->GetBrushModelPtrs().size());
+        renderer->Render(renderCam,
+                         m_World->GetModelPtrs().data(),
+                         m_World->GetModelPtrs().size(),
+                         m_World->GetBrushModelPtrs().data(),
+                         m_World->GetBrushModelPtrs().size());
 #endif
 
         // auto type = enemy->m_Type;
-
 
 #if 0
         if ( collisionInfo.didCollide ) {
@@ -249,7 +274,7 @@ bool Game::RunFrame(double dt) {
         //renderer->SetActiveCamera(&m_pFlyCameraEntity->m_Camera);
         HKD_Model* playerColliderModel[] = { m_pPlayerEntity->GetModel() };
         renderer->RenderColliders(renderCam, playerColliderModel, 1);
-        
+
         renderer->End3D();
     } // End3D scope
 
@@ -259,18 +284,18 @@ bool Game::RunFrame(double dt) {
     // 2D stuff also has its own, dedicated FBO!
     {
         renderer->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
-       
+
         //renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
         renderer->SetFont( m_ConsoleFont, glm::vec4(0.0f, 0.0f, 0.0f, 0.75f) );
         renderer->R_DrawText("Welcome to the texture test.", 0.0f, 0.0f, COORD_MODE_ABS);
-        
+
         renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) );
         renderer->R_DrawText("Welcome to the texture test.", 10.0f, 10.0f, COORD_MODE_ABS);
-        
+
         // If you want to draw in absolute coordinates then you have to specify it.
-        // Depends on the resolution of the render window! 
+        // Depends on the resolution of the render window!
         renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) );
-        renderer->R_DrawText("Some more text in yellow :)", 0.0f, 200.0f, COORD_MODE_ABS); 
+        renderer->R_DrawText("Some more text in yellow :)", 0.0f, 200.0f, COORD_MODE_ABS);
         renderer->R_DrawText("And blended with box on top", 100.0f, 300.0f, COORD_MODE_ABS);
 
         renderer->SetShapeColor( glm::vec4(0.7f, 0.3f, 0.7f, 0.7) );
@@ -283,21 +308,20 @@ bool Game::RunFrame(double dt) {
 
         // Use Relative coords (the default). Independent from screen resolution.
         // Goes from 0 (top/left) to 1 (bottom/right).
-        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)", 0.5f, 0.5f); 
+        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)", 0.5f, 0.5f);
 
         renderer->SetShapeColor( glm::vec4(0.3f, 0.3f, 0.7f, 1.0) );
         renderer->DrawBox( 600, 600, 200, 100, COORD_MODE_ABS );
         renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
-        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)", 
+        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)",
                              600.0f, 600.0f, COORD_MODE_ABS);
         renderer->SetFont( m_ConsoleFont30, glm::vec4(0.0f, 0.0f, 1.0f, 0.5f) );
-        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)", 
+        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)",
                              605.0f, 605.0f, COORD_MODE_ABS);
 
         renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
     } // End2D Scope
 #endif
-
 
     return true;
 }
@@ -310,4 +334,3 @@ void Game::Shutdown() {
     // delete m_pEntityManager;
     m_pEntityManager->KillEntities();
 }
-

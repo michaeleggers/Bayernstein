@@ -1,5 +1,7 @@
 #include "quick_math.h"
+
 #include <glm/glm.hpp>
+#include <stdio.h>
 
 namespace math {
 
@@ -10,38 +12,50 @@ glm::vec3 TruncateVec3(const glm::vec3& vector, float max) {
     return vector;
 }
 
-glm::vec3
-ChangeOfBasis(const glm::vec3& point, const glm::vec3& xAxis, const glm::vec3& yAxis, const glm::vec3& zAxis) {
-    // Normalize the vectors to ensure no scaling is included
-    glm::vec3 normXAxis = glm::normalize(xAxis);
-    glm::vec3 normYAxis = glm::normalize(yAxis);
-    glm::vec3 normZAxis = glm::normalize(zAxis);
+glm::vec3 ChangeOfBasis(const glm::vec3& point,
+                        const glm::vec3& xAxis,
+                        const glm::vec3& yAxis,
+                        const glm::vec3& zAxis,
+                        const glm::vec3& position) {
 
-    glm::mat3 rotation  = glm::mat3(normXAxis, normYAxis, normZAxis);
+    glm::mat3 rotation  = glm::mat3(xAxis, yAxis, zAxis);
     glm::mat3 transform = glm::inverse(rotation);
 
     glm::vec3 transformedPoint = transform * point;
+    transformedPoint += position;
 
     return transformedPoint;
 }
 
-glm::vec3 GetNormalPoint(glm::vec3 p, glm::vec3 a, glm::vec3 b) {
-    glm::vec3 ap = p - a;
-    glm::vec3 ab = b - a;
-
-    float nominator   = glm::dot(ap, ab);
-    float denominator = glm::dot(ab, ab);
-
-    float result = (nominator / denominator);
-    return a + result * ab;
+bool CloseToZero(float value) {
+    return (value < 0.0001f) && (value > -0.0001f);
 }
 
-bool InSegmentRange(glm::vec3 start, glm::vec3 end, glm::vec3 point) {
+glm::vec3 GetProjectedPoint(glm::vec3 point, glm::vec3 start, glm::vec3 end) {
     glm::vec3 ap = point - start;
     glm::vec3 ab = end - start;
 
     float nominator   = glm::dot(ap, ab);
     float denominator = glm::dot(ab, ab);
+
+    if ( CloseToZero(nominator) || CloseToZero(denominator) ) {
+        return end;
+    }
+
+    float result = (nominator / denominator);
+    return start + result * ab;
+}
+
+bool InSegmentRange(glm::vec3 point, glm::vec3 start, glm::vec3 end) {
+    glm::vec3 ap = point - start;
+    glm::vec3 ab = end - start;
+
+    float nominator   = glm::dot(ap, ab);
+    float denominator = glm::dot(ab, ab);
+
+    if ( CloseToZero(nominator) || CloseToZero(denominator) ) {
+        return false;
+    }
 
     float result = (nominator / denominator);
     return (0.0f <= result) && (result <= 1.0f);

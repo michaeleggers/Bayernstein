@@ -25,14 +25,14 @@ Enemy::Enemy(const std::vector<Property>& properties)
       m_EllipsoidCollider() {
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(EnemyIdle::Instance());
-   
+
     // We want position and, if applicable, a target.
     BaseGameEntity::GetProperty<glm::vec3>(properties, "origin", &m_Position);
     // FIX: Mem Leak on exit if target is not being set.
     BaseGameEntity::GetProperty<std::string>(properties, "target", &m_Target);
 
     LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
-    m_Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_Velocity           = glm::vec3(0.0f, 0.0f, 0.0f);
     m_pSteeringBehaviour = new SteeringBehaviour(this);
     // m_pSteeringBehaviour->WanderOn();
 }
@@ -53,11 +53,8 @@ void Enemy::Update() {
         // Calculate the new forward direction
         glm::vec3 newForward = glm::normalize(m_Velocity);
 
-        // Calculate the rotation needed to align the current forward direction with the new forward direction
-
         // Apply the rotation to the current orientation
-        // TODO: the default rotation axis (0,-1,0) needs to be set globally at best. the designers need to follow this orientation
-        float     absOrientationAngle   = glm::orientedAngle(glm::vec3(0.0f, -1.0f, 0.0f), newForward, m_Up);
+        float     absOrientationAngle   = glm::orientedAngle(glm::vec3(0, -1, 0), newForward, m_Up);
         glm::quat newForwardOrientation = glm::angleAxis(absOrientationAngle, m_Up);
         m_Model.orientation             = newForwardOrientation;
 
@@ -75,6 +72,14 @@ void Enemy::Update() {
     }
     SetAnimState(&m_Model, m_AnimationState);
     UpdateModel(&m_Model, (float)dt);
+
+    if ( GetDebugSettings()->patrol ) {
+        this->Patrol();
+    } else if ( GetDebugSettings()->wander ) {
+        this->Wander();
+    } else {
+        this->Idle();
+    }
 }
 
 void Enemy::LoadModel(const char* path, glm::vec3 initialPosition) {
@@ -113,10 +118,9 @@ void Enemy::UpdatePosition(glm::vec3 newPosition) {
     for ( int i = 0; i < m_Model.animations.size(); i++ ) {
         m_Model.ellipsoidColliders[ i ].center = newPosition;
     }
-    m_Model.position.x = newPosition.x;
-    m_Model.position.y = newPosition.y;
-    m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
-    m_Position         = newPosition;
+    newPosition.z -= GetEllipsoidCollider().radiusB;
+    m_Model.position = newPosition;
+    m_Position       = newPosition;
     //printf("Position: %f, %f, %f\n", m_Position.x, m_Position.y, m_Position.z);
 }
 

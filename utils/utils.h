@@ -5,29 +5,31 @@
 #include <string>
 #include <vector>
 
-double                      GetDeltaTime();
-float                       RandBetween(float min, float max);
-bool                        IsStringFloat(const std::string& string);
-std::vector<std::string>    SplitString(const std::string& input, char delimiter);
+struct DebugSettings {
+    bool patrol;
+    bool wander;
+};
 
-template<typename T>
-T StringToFloat(const char* str, char** end);
+DebugSettings* GetDebugSettings();
 
-template<>
-float StringToFloat<float>(const char* str, char** end);
+double                   GetDeltaTime();
+float                    RandBetween(float min, float max);
+bool                     IsStringFloat(const std::string& string);
+std::vector<std::string> SplitString(const std::string& input, char delimiter);
 
-template<>
-double StringToFloat<double>(const char* str, char** end);
+template <typename T> T StringToFloat(const char* str, char** end);
 
-template<>
-int StringToFloat<int>(const char* str, char** end);
+template <> float StringToFloat<float>(const char* str, char** end);
 
-template<typename T>
-std::vector<T> ParseValues(const std::string& input) {
+template <> double StringToFloat<double>(const char* str, char** end);
+
+template <> int StringToFloat<int>(const char* str, char** end);
+
+template <typename T> std::vector<T> ParseValues(const std::string& input) {
     std::vector<T> values;
-    const char* str = input.c_str();
-    T value = 0.0;
-    bool parsingNumber = false;
+    const char*    str           = input.c_str();
+    T              value         = 0.0;
+    bool           parsingNumber = false;
 
     while ( *str != '\0' ) {
         if ( std::isdigit(*str) || *str == '-' || *str == '.' ) {
@@ -47,6 +49,4 @@ std::vector<T> ParseValues(const std::string& input) {
     return values;
 }
 
-
 #endif
-
