@@ -38,9 +38,6 @@ class MovingEntity : public BaseGameEntity {
         return glm::pow(glm::length(m_Velocity), 2);
     }
 
-    // all entities must implement an update function
-    virtual void PostCollisionUpdate() = 0;
-
     // all entities can communicate using messages. They are sent
     // using the MessageDispatcher singleton class
     virtual bool HandleMessage(const Telegram& telegram) = 0;
