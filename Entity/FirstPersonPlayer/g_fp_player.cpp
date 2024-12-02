@@ -95,7 +95,6 @@ void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition) {
     m_Model.orientation = modelForwardFix;
 
     SetAnimState(&m_Model, ANIM_STATE_WALK);
-    m_EllipsoidCollider = GetEllipsoidCollider();
 }
 
 // NOTE: This is not being used now as the entity should not own

@@ -112,13 +112,7 @@ class BaseGameEntity {
     // FIX: Should make pure virtual. Not all entities
     // have this of course, but we want to make things
     // simple for now so we just say every entity has it.
-    // Same with position and velocity...
-    // We should think about an Actor-Component model. Maybe
-    // overkill, but at least discuss it.
-    virtual EllipsoidCollider GetEllipsoidCollider() const {
-        return {};
-    };
-    
+    // Ok for now until we use a component for this. 
     virtual EllipsoidCollider* GetEllipsoidColliderPtr() {
         return nullptr;
     };

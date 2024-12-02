@@ -38,7 +38,7 @@ class Player : public MovingEntity, public IInputReceiver {
         return m_pStateMachine;
     }
 
-    EllipsoidCollider GetEllipsoidCollider() const override;
+    EllipsoidCollider* GetEllipsoidColliderPtr() override;
 
     HKD_Model* GetModel();
 

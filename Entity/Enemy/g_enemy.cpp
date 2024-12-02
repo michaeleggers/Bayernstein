@@ -108,7 +108,6 @@ void Enemy::LoadModel(const char* path, glm::vec3 initialPosition) {
     m_Model.orientation = modelForwardFix;
 
     SetAnimState(&m_Model, ANIM_STATE_WALK);
-    m_EllipsoidCollider = GetEllipsoidCollider();
 }
 
 EllipsoidCollider* Enemy::GetEllipsoidColliderPtr() {

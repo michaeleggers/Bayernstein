@@ -81,7 +81,6 @@ private:
 
 private:
     AnimState m_AnimationState;
-    EllipsoidCollider m_EllipsoidCollider;
 
     void LoadModel(const char* path, glm::vec3 initialPosition);
     void UpdateEnemyModel();
