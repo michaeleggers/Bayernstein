@@ -64,13 +64,13 @@ def generate_lightmaps(
         map_name: str, 
         output_path: Path, 
         iterations: int,
-        patches_resolution: int, 
+        patch_resolution: int, 
         atmospheric_color: Color
         ):
  
     # Create the scene
     scene = Scene(temp_map_path, assets_path)
-    scene.create_patches(patches_resolution=patches_resolution)
+    scene.create_frames(patch_resolution=patch_resolution)
     scene.generate_vertex_array()
     #scene.save_to_json(assets_path / f'compiled/{map_name}/{map_name}.json', assets_path)
     scene.save_to_json(output_path / f'{map_name}/{map_name}.json', assets_path)
@@ -90,7 +90,7 @@ def generate_lightmaps(
 
     # Generate the lightmaps
     lightmap_path = output_path / f'{map_name}/{map_name}.hdr'
-    lightmapper.generate_lightmap(lightmap_path=lightmap_path, iterations=iterations)
+    lightmapper.generate_lightmap(lightmap_path=lightmap_path, iterations=iterations, patch_resolution=patch_resolution)
 
     # Clean up
     #lightmap_renderer.destroy()

@@ -19,6 +19,7 @@ from data_structures.vector3f import Vector3f as vec
 from data_structures.compiled_vertex import CompiledVertex
 from data_structures.compiled_triangle import CompiledTriangle
 from data_structures.triangle import Triangle
+from data_structures.shape import Shape
 
 
 from typing import List
@@ -37,6 +38,7 @@ class Scene:
             self.load_lightmap(lightmap_path)
         
         self.patches: List[Patch] = []
+        self.frames: List[Shape] = []
 
     def load_from_json(self, json_path: Path, assets_path: Path):
         triangles = []
@@ -108,7 +110,8 @@ class Scene:
         emission = np.array(emission, dtype=np.float32)
 
         return triangles, texture_uvs, lightmap_uvs, textures, emission
-    
+
+
     def save_to_json(self, json_path: Path, assets_path: Path) -> 'Scene':
         """
         Save the triangle data to a JSON file.
@@ -221,6 +224,19 @@ class Scene:
         with open(binary_path, 'wb') as f:
             for triangle in compiled_triangles:
                 f.write(triangle.to_binary())
+
+    def create_frames(self, patch_resolution: float = 0.0625) -> 'Scene':
+        
+        # Step 1: Create Triangles Data Structure
+        triangles_ds = []
+        for vertex_tuple in self.triangles:
+            vertices = tuple(vec(*v) for v in vertex_tuple)
+            triangles_ds.append(Triangle(vertices))
+
+        # Step 2: Create Frames
+        self.frames, self.lightmap_uvs, uv_map_ws_size = uv_mapper.create_frames(triangles_ds, patch_resolution, debug=True)
+        self.light_map_resolution = math.ceil(uv_map_ws_size * patch_resolution)
+        self.light_map = np.zeros((self.light_map_resolution, self.light_map_resolution, 3), dtype=np.float32)
 
 
     def create_patches(self, patches_resolution: float = 0.0625) -> 'Scene':

@@ -187,7 +187,7 @@ def find_shared_vertices(triangle1: Triangle, triangle2: Triangle, tolerance: fl
     return sum(1 for v1 in triangle1.vertices for v2 in triangle2.vertices if are_approx_equal(v1, v2))
 
 
-def create_shapes(triangles: List[Triangle]) -> List[Shape]:
+def __build_frames(triangles: List[Triangle], padding: float) -> List[Shape]:
     """Group triangles into shapes based on planar adjacency."""
     used = set()
     shapes: List[Shape] = []
@@ -200,12 +200,12 @@ def create_shapes(triangles: List[Triangle]) -> List[Shape]:
         for j, other_triangle in enumerate(triangles):
             if i != j and j not in used and find_shared_vertices(triangle, other_triangle) == 2:
                 if are_coplanar(triangle, other_triangle):
-                    shapes.append(Shape(triangles=[triangle, other_triangle]))
+                    shapes.append(Shape(triangles=[triangle, other_triangle], triangles_indices=[i, j], patch_ws_size=padding))
                     used.update([i, j])
                     break
         else:
             # If no match is found, add the triangle as a single shape
-            shapes.append(Shape(triangles=[triangle]))
+            shapes.append(Shape(triangles=[triangle], triangles_indices=[i, j], patch_ws_size=padding))
             used.add(i)
 
     return shapes
@@ -213,52 +213,56 @@ def create_shapes(triangles: List[Triangle]) -> List[Shape]:
 def snap_to_multiple(value, multiple):
     return ((value + multiple - 1) // multiple) * multiple
 
-def __pack_shapes(shapes: List[Shape], units_snap: float):
+def __pack_shapes(shapes: List[Shape], patch_size: float):
 
-    padding = units_snap * 2
-
+    # Sort shapes by height (descending order)
     sorted_shapes = sorted(shapes, key=lambda s: s.bounding_box[3], reverse=True)
-    total_area = sum((w + padding) * (h+ padding) for _, _, w, h in (shape.bounding_box for shape in sorted_shapes))
+
+    # Calculate the total area of all shapes
+    total_area = sum(w * h for _, _, w, h in (shape.bounding_box for shape in sorted_shapes))
+
+    # Calculate the target width based on total area
     target_width = math.sqrt(total_area)
 
-    current_row_width = units_snap
-    current_row_height = units_snap
+
+    current_row_width = 0
+    current_row_height = 0
     current_row_max_height = 0
     max_row_width = 0
 
     for shape in sorted_shapes:
         shape_width =  shape.bounding_box[2]
         shape_height = shape.bounding_box[3]
-        snapped_width = snap_to_multiple(shape_width, units_snap)
-        snapped_height = snap_to_multiple(shape_height, units_snap)
+        snapped_width = snap_to_multiple(shape_width, patch_size)
+        snapped_height = snap_to_multiple(shape_height, patch_size)
         if current_row_width + snapped_width> target_width:
             # create a new row, reset current_row metrics
             max_row_width = max(max_row_width, current_row_width)
-            current_row_height = current_row_height + current_row_max_height + padding
+            current_row_height = current_row_height + current_row_max_height
             current_row_max_height = 0
-            current_row_width = units_snap
+            current_row_width = 0
         
         shape.bounding_box = [current_row_width, current_row_height, snapped_width, snapped_height]
 
         current_row_max_height = max(current_row_max_height, snapped_height)
-        current_row_width = current_row_width + snapped_width + padding
+        current_row_width = current_row_width + snapped_width
 
-    final_height = current_row_height + current_row_max_height + units_snap
-    final_width = max_row_width + units_snap
+    final_height = current_row_height + current_row_max_height
+    final_width = max_row_width
 
     return sorted_shapes, final_width, final_height
 
-def map_triangles(triangles: List[Triangle], patch_resolution: float, debug=False):
+def create_frames(triangles: List[Triangle], patch_resolution: float, debug=False):
     # TODO for now the uvmapper expects the geometry to be made out of quads
 
-    shapes: List[Shape] = create_shapes(triangles)
-    packed_shapes, total_width, total_height = __pack_shapes(shapes, 1/patch_resolution)
+    shapes: List[Shape] = __build_frames(triangles, 1/patch_resolution)
+    packed_shapes, total_width, total_height = __pack_shapes(shapes,  1/patch_resolution)
     map_world_size = max(total_width, total_height)
     lightmap_resolution = int(map_world_size / (1/patch_resolution))
 
 
     # Normalize UVs to fit the final square texture size
-    uv_coordinates = []
+    uv_coordinates = [None] * len(triangles)
     for shape in packed_shapes:
         x = shape.bounding_box[0]
         y = shape.bounding_box[1]
@@ -274,22 +278,25 @@ def map_triangles(triangles: List[Triangle], patch_resolution: float, debug=Fals
         bbox_uv_height = max_v - min_v
         
         # Normalize each vertex of the projected triangle to the bounding box and map to UV space
-        for projected in shape.projected_triangles:
+        for i, projected in enumerate(shape.projected_triangles):
             uvs = []
+            lm_uvs_bbox_space = []
             for v in projected:
                 # Normalize within the bounding box and map to UV space
                 u = v[0] / width  # Normalize within the bounding box width
                 v = v[1] / height  # Normalize within the bounding box height
                 # Map to UV space
                 uvs.append((min_u + (u * bbox_uv_width), min_v + (v * bbox_uv_height)))
+                lm_uvs_bbox_space.append((u, v))
             
-            shape.uvs.append(uvs)
-            uv_coordinates.append(uvs) # for debuggig
+            shape.lm_uvs_bbox_space.append(lm_uvs_bbox_space)
+            shape.lm_uvs.append(uvs)
+            uv_coordinates[shape.triangles_indices[i]] = uvs
 
     if debug:
         __debug_uv_mapping(triangles, uv_coordinates, image_size=lightmap_resolution)
 
-    return uv_coordinates, map_world_size
+    return packed_shapes, uv_coordinates, map_world_size
 
 
 def map_triangles2(triangles, patch_resolution: float, debug=False):
