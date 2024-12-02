@@ -19,7 +19,7 @@ from data_structures.vector3f import Vector3f as vec
 from data_structures.compiled_vertex import CompiledVertex
 from data_structures.compiled_triangle import CompiledTriangle
 from data_structures.triangle import Triangle
-from data_structures.shape import Shape
+from data_structures.frame import Frame
 
 
 from typing import List
@@ -38,7 +38,7 @@ class Scene:
             self.load_lightmap(lightmap_path)
         
         self.patches: List[Patch] = []
-        self.frames: List[Shape] = []
+        self.frames: List[Frame] = []
 
     def load_from_json(self, json_path: Path, assets_path: Path):
         triangles = []

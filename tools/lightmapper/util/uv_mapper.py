@@ -4,7 +4,7 @@ import random
 from PIL import Image, ImageDraw
 from pathlib import Path
 from data_structures.triangle import Triangle
-from data_structures.shape import Shape
+from data_structures.frame import Frame
 from data_structures.vector3f import Vector3f
 from typing import List, Optional, Tuple
 
@@ -187,10 +187,10 @@ def find_shared_vertices(triangle1: Triangle, triangle2: Triangle, tolerance: fl
     return sum(1 for v1 in triangle1.vertices for v2 in triangle2.vertices if are_approx_equal(v1, v2))
 
 
-def __build_frames(triangles: List[Triangle], padding: float) -> List[Shape]:
+def __build_frames(triangles: List[Triangle], padding: float) -> List[Frame]:
     """Group triangles into shapes based on planar adjacency."""
     used = set()
-    shapes: List[Shape] = []
+    shapes: List[Frame] = []
 
     for i, triangle in enumerate(triangles):
         if i in used:
@@ -200,12 +200,12 @@ def __build_frames(triangles: List[Triangle], padding: float) -> List[Shape]:
         for j, other_triangle in enumerate(triangles):
             if i != j and j not in used and find_shared_vertices(triangle, other_triangle) == 2:
                 if are_coplanar(triangle, other_triangle):
-                    shapes.append(Shape(triangles=[triangle, other_triangle], triangles_indices=[i, j], patch_ws_size=padding))
+                    shapes.append(Frame(triangles=[triangle, other_triangle], triangles_indices=[i, j], patch_ws_size=padding))
                     used.update([i, j])
                     break
         else:
             # If no match is found, add the triangle as a single shape
-            shapes.append(Shape(triangles=[triangle], triangles_indices=[i, j], patch_ws_size=padding))
+            shapes.append(Frame(triangles=[triangle], triangles_indices=[i, j], patch_ws_size=padding))
             used.add(i)
 
     return shapes
@@ -213,7 +213,7 @@ def __build_frames(triangles: List[Triangle], padding: float) -> List[Shape]:
 def snap_to_multiple(value, multiple):
     return ((value + multiple - 1) // multiple) * multiple
 
-def __pack_shapes(shapes: List[Shape], patch_size: float):
+def __pack_shapes(shapes: List[Frame], patch_size: float):
 
     # Sort shapes by height (descending order)
     sorted_shapes = sorted(shapes, key=lambda s: s.bounding_box[3], reverse=True)
@@ -255,7 +255,7 @@ def __pack_shapes(shapes: List[Shape], patch_size: float):
 def create_frames(triangles: List[Triangle], patch_resolution: float, debug=False):
     # TODO for now the uvmapper expects the geometry to be made out of quads
 
-    shapes: List[Shape] = __build_frames(triangles, 1/patch_resolution)
+    shapes: List[Frame] = __build_frames(triangles, 1/patch_resolution)
     packed_shapes, total_width, total_height = __pack_shapes(shapes,  1/patch_resolution)
     map_world_size = max(total_width, total_height)
     lightmap_resolution = int(map_world_size / (1/patch_resolution))

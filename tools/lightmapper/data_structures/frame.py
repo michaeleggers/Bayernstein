@@ -6,7 +6,7 @@ from scipy.spatial import ConvexHull
 from data_structures.vector3f import Vector3f
 
 @dataclass
-class Shape:
+class Frame:
     triangles: List[Triangle]
     triangles_indices: List[int]
     patch_ws_size = 0
