@@ -4,8 +4,8 @@
 
 #include "g_enemy.h"
 
-#include <stdio.h>
 #include <SDL.h>
+#include <stdio.h>
 
 #define GLM_FORCE_RADIANS
 #include "../../dependencies/glm/ext.hpp"
@@ -14,10 +14,10 @@
 #include "../../dependencies/glm/gtx/vector_angle.hpp"
 
 #include "../../input.h"
+#include "../../input_handler.h"
 #include "../../utils/quick_math.h"
 #include "../../utils/utils.h"
 #include "g_enemy_states.h"
-#include "../../input_handler.h"
 
 Enemy::Enemy(const std::vector<Property>& properties)
     : MovingEntity(ET_ENEMY),
@@ -55,16 +55,16 @@ void Enemy::PreCollisionUpdate() {
         glm::vec3 newForward = glm::normalize(m_Velocity);
 
         // Calculate the rotation needed to align the current forward direction with the new forward direction
-        float rotationAngle = glm::orientedAngle(m_Forward, newForward, m_Up);
-        glm::quat rotation = glm::angleAxis(rotationAngle, m_Up);
 
         // Apply the rotation to the current orientation
-        //m_Model.orientation = m_Model.orientation * rotation;
-        m_Orientation = m_Orientation * rotation;
+        // TODO: the default rotation axis (0,1,0) needs to be set globally at best. the designers need to follow this orientation
+        float     absOrientationAngle   = glm::orientedAngle(DOD_WORLD_FORWARD, newForward, m_Up);
+        glm::quat newForwardOrientation = glm::angleAxis(absOrientationAngle, m_Up);
+        m_Orientation                   = newForwardOrientation;
 
         // Update the forward and side vectorsenem
         m_Forward = newForward;
-        m_Side = glm::cross(m_Forward, m_Up);
+        m_Side    = glm::cross(m_Forward, m_Up);
     }
 
     if ( Speed() >= 0.00001f ) {
@@ -88,7 +88,7 @@ void Enemy::LoadModel(const char* path, glm::vec3 initialPosition) {
     IQMModel iqmModel = LoadIQM(path);
 
     // Convert the model to our internal format
-    m_Model = CreateModelFromIQM(&iqmModel);
+    m_Model             = CreateModelFromIQM(&iqmModel);
     m_Model.isRigidBody = false;
     m_Model.renderFlags = MODEL_RENDER_FLAG_NONE;
     m_Model.scale = glm::vec3(22.0f);
@@ -99,7 +99,7 @@ void Enemy::LoadModel(const char* path, glm::vec3 initialPosition) {
         ec->radiusB *= m_Model.scale.z;
         ec->center = initialPosition + glm::vec3(0.0f, 0.0f, ec->radiusB);
         glm::vec3 scale = glm::vec3(1.0f / ec->radiusA, 1.0f / ec->radiusA, 1.0f / ec->radiusB);
-        ec->toESpace = glm::scale(glm::mat4(1.0f), scale);
+        ec->toESpace    = glm::scale(glm::mat4(1.0f), scale);
     }
   
     m_Model.position.z -= GetEllipsoidColliderPtr()->radiusB;
@@ -125,5 +125,3 @@ void Enemy::UpdatePosition(glm::vec3 newPosition) {
 bool Enemy::HandleMessage(const Telegram& telegram) {
     return m_pStateMachine->HandleMessage(telegram);
 }
-
-

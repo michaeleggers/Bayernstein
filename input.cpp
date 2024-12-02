@@ -16,6 +16,7 @@ static Uint8        g_MouseButtons;
 static Uint8        g_PrevMouseButtons;
 static MouseMotion  g_MouseMotionState;
 static bool         g_MouseMoved;
+static MouseWheel   g_MouseWheelState;
 
 static std::string g_EventText;
 
@@ -28,6 +29,7 @@ void HandleInput(void)
 
     g_Events = 0;
     g_EventText = "";
+    g_MouseWheelState.updated = false;
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -60,6 +62,11 @@ void HandleInput(void)
             g_MouseMoved = true;
             g_MouseMotionState.prev = g_MouseMotionState.current;
             g_MouseMotionState.current = event.motion;
+        }
+        if (event.type == SDL_MOUSEWHEEL) {
+            g_MouseWheelState.prev = g_MouseWheelState.current;
+            g_MouseWheelState.current = event.wheel;
+            g_MouseWheelState.updated = true;
         }
         
         if (event.type == SDL_TEXTINPUT) {
@@ -136,6 +143,10 @@ bool MouseMoved(int event) {
     // be able to ask for this in the input handler.
     // That is why we check for SDL_MOUSEMOTION.
     return (event == SDL_MOUSEMOTION) && g_MouseMoved;
+}
+
+const MouseWheel GetMouseWheel(void) {
+    return g_MouseWheelState;
 }
 
 bool ShouldClose(void)
