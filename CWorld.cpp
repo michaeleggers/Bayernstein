@@ -43,10 +43,6 @@ void CWorld::InitWorldFromMap(const Map& map) {
 
     m_StaticGeometryCount = m_MapTris.size();
 
-    // Everything *after* the static geometry is dynamic (brush entities).
-    // Remember where they start:
-    m_OffsetDynamicGeometry = m_MapTris.size();
-
     // Now initialize all the entities. Those also include brush
     // entities. Those entities store their own geometry as MapTris.
     // We keep pointers to those triangles as the brush entities (eg. doors)
@@ -55,8 +51,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
 
     // Load and create all the entities
     for ( int i = 0; i < map.entities.size(); i++ ) {
-        const Entity&   e          = map.entities[ i ];
-        BaseGameEntity* baseEntity = NULL;
+        const Entity& e = map.entities[ i ];
         // Check the classname
         for ( int j = 0; j < e.properties.size(); j++ ) {
             const Property& prop = e.properties[ j ];
@@ -101,19 +96,19 @@ void CWorld::InitWorldFromMap(const Map& map) {
     // Create paths from waypoints
     std::unordered_set<std::string> visited; // waypoints that are already part of any path
 
-    for (const auto& [targetname, waypoint] : m_NameToWaypoint) {
+    for ( const auto& [ targetname, waypoint ] : m_NameToWaypoint ) {
         // Skip waypoints already in a patrol path
-        if (visited.count(targetname)) {
+        if ( visited.count(targetname) ) {
             continue;
         }
 
         // Start a new patrol path
-        PatrolPath currentPath;
-        Waypoint current = waypoint;
+        PatrolPath                      currentPath;
+        Waypoint                        current = waypoint;
         std::unordered_set<std::string> pathVisited; // Track for cycles
 
         while ( !current.target.empty() ) { // Does the waypoint point to another?
-            if (pathVisited.count(current.targetname)) {
+            if ( pathVisited.count(current.targetname) ) {
                 // Cycle detected, break the path
                 break;
             }
@@ -124,7 +119,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
 
             // Move to the next waypoint if it exists
             auto it = m_NameToWaypoint.find(current.target);
-            if (it != m_NameToWaypoint.end()) {
+            if ( it != m_NameToWaypoint.end() ) {
                 current = it->second;
             } else {
                 break; // End of the chain
