@@ -65,7 +65,7 @@ void Game::Init() {
 
     m_World = CWorld::Instance();
     m_World->InitWorldFromMap(map);
-    m_pPlayerEntity = m_World->PlayerEntity();
+     m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.
     // Creates batches for each texture-name. That way we can
@@ -196,6 +196,8 @@ bool Game::RunFrame(double dt) {
     // Handle the input
     CInputDelegate::Instance()->HandleInput();
 
+    // Apply inputs. That does not mean the entity will end up there
+    // that is determined by the collision system.
     m_pEntityManager->UpdateEntitiesPreCollision();
 
     // Collide entities with the world geometry and bounce off of it.
@@ -205,7 +207,8 @@ bool Game::RunFrame(double dt) {
     m_World->CollideEntities();
 
     // Run the message system
-    m_pEntityManager->UpdateEntities(); // Calls Update() Method on entities
+    m_pEntityManager->UpdateEntitiesPostCollision();
+
     Dispatcher->DispatchDelayedMessages();
 
 

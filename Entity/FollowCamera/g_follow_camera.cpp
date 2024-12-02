@@ -22,7 +22,7 @@ CFollowCamera::CFollowCamera(BaseGameEntity* target)
 CFollowCamera::~CFollowCamera() {
 }
 
-void CFollowCamera::Update() {
+void CFollowCamera::PostCollisionUpdate() {
     glm::vec3 targetPos = m_Target->m_Position;
     float rotationAngle = m_Target->m_RotationAngle;
 

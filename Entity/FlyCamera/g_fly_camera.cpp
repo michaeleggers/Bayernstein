@@ -20,7 +20,7 @@ CFlyCamera::CFlyCamera(glm::vec3 pos)
 CFlyCamera::~CFlyCamera() {
 }
 
-void CFlyCamera::Update() {
+void CFlyCamera::PostCollisionUpdate() {
     
 }
 

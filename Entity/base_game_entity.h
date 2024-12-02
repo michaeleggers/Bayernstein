@@ -90,7 +90,7 @@ class BaseGameEntity {
     };
 
     // Call this *after* the collision system has run.
-    virtual void Update() = 0;
+    virtual void PostCollisionUpdate() = 0;
     
     // Call this *after* the collision system has run.
     virtual void UpdatePosition(glm::vec3 newPosition) {};

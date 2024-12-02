@@ -36,7 +36,7 @@ void Player::UpdatePosition(glm::vec3 newPosition) {
     m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
 }
 
-void Player::Update() {
+void Player::PostCollisionUpdate() {
 
     if ( KeyPressed(SDLK_w) ) {
         m_pStateMachine->ChangeState(PlayerRunning::Instance());

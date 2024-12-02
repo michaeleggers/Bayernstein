@@ -55,15 +55,15 @@ void EntityManager::RemoveEntity(const BaseGameEntity* pEntity) {
     m_EntityMap.erase(m_EntityMap.find(pEntity->ID()));
 }
 
-void EntityManager::UpdateEntities() {
-    for ( auto [ id, entity ] : m_EntityMap ) {
-        entity->Update();
-    }
-}
-
 void EntityManager::UpdateEntitiesPreCollision() {
     for ( auto [ id, entity ] : m_EntityMap ) {
         entity->PreCollisionUpdate();
+    }
+}
+
+void EntityManager::UpdateEntitiesPostCollision() {
+    for ( auto [ id, entity ] : m_EntityMap ) {
+        entity->PostCollisionUpdate();
     }
 }
 

@@ -39,7 +39,7 @@ void FirstPersonPlayer::UpdatePosition(glm::vec3 newPosition) {
     m_Position = newPosition;
 }
 
-void FirstPersonPlayer::Update() {
+void FirstPersonPlayer::PostCollisionUpdate() {
 
     if ( KeyPressed(SDLK_w) ) {
         m_pStateMachine->ChangeState(FirstPersonPlayerRunning::Instance());

@@ -19,7 +19,7 @@
 #include "../../r_model.h"
 #include "../../globals.h"
 
-void Door::Update() {
+void Door::PostCollisionUpdate() {
     m_pStateMachine->Update();
 }
 

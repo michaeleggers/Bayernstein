@@ -62,7 +62,7 @@ void Enemy::PreCollisionUpdate() {
         //m_Model.orientation = m_Model.orientation * rotation;
         m_Orientation = m_Orientation * rotation;
 
-        // Update the forward and side vectors
+        // Update the forward and side vectorsenem
         m_Forward = newForward;
         m_Side = glm::cross(m_Forward, m_Up);
     }
@@ -76,7 +76,7 @@ void Enemy::PreCollisionUpdate() {
     }
 }
 
-void Enemy::Update() {
+void Enemy::PostCollisionUpdate() {
     double dt = GetDeltaTime();
     m_pStateMachine->Update();
     SetAnimState(&m_Model, m_AnimationState);

@@ -17,7 +17,6 @@
 
 class Enemy : public MovingEntity {
   public:
-    void Update() override;
 
     explicit Enemy(const std::vector<Property>& properties);
 
@@ -34,6 +33,7 @@ class Enemy : public MovingEntity {
     bool HandleMessage(const Telegram& message) override;
     EllipsoidCollider* GetEllipsoidColliderPtr() override; 
     void PreCollisionUpdate() override;
+    void PostCollisionUpdate() override;
     void UpdatePosition(glm::vec3 newPosition) override;
     
     HKD_Model* GetModel();

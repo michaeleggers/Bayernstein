@@ -39,7 +39,7 @@ class MovingEntity : public BaseGameEntity {
     }
 
     // all entities must implement an update function
-    virtual void Update() = 0;
+    virtual void PostCollisionUpdate() = 0;
 
     // all entities can communicate using messages. They are sent
     // using the MessageDispatcher singleton class

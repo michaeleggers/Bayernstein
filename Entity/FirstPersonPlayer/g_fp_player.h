@@ -28,7 +28,7 @@ public:
         delete m_pStateMachine;
     }
 
-    void Update() override;
+    void PostCollisionUpdate() override;
     bool HandleMessage(const Telegram& telegram) override;
     void HandleInput() override;
     

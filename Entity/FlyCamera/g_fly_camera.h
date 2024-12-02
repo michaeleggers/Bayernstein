@@ -30,7 +30,7 @@ public:
     CFlyCamera(glm::vec3 pos = glm::vec3(0.0f)); 
     ~CFlyCamera();
 
-    void Update() override;
+    void PostCollisionUpdate() override;
     bool HandleMessage(const Telegram& telegram) override;
     void HandleInput() override;
     
