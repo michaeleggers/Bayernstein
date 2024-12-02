@@ -41,6 +41,7 @@ class Renderer:
         self._initialize_glfw(width=width, height=height, lightmap_mode=lightmap_mode)
         self._initialize_opengl(clear_color=atmosphere_color)
         self._initialize_assets(scene=scene, light_map_path=light_map_path)
+        self._initialize_fbo(width=width, height=height)
         self._initialize_uniforms(fov)
         self._initialize_camera()
 
@@ -123,7 +124,7 @@ class Renderer:
         self.texture_array_id = glGenTextures(1)
         glActiveTexture(GL_TEXTURE0)  # Ensure GL_TEXTURE0 is active for the texture array
         glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_array_id)
-        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, max_width, max_height, num_layers, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_array)
+        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, max_width, max_height, num_layers, 0, GL_RGBA, GL_FLOAT, texture_array)
 
         # Set texture parameters for the texture array
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT)
@@ -175,6 +176,27 @@ class Renderer:
 
         glEnableVertexAttribArray(3)  # Texture index
         glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(28))
+
+    def _initialize_fbo(self, width: int, height: int) -> None:
+        """Initialize FBO and texture for rendering."""
+        # Create high-precision texture for FBO
+        self.fbo_texture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, self.fbo_texture)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, None)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+
+        # Create and bind the framebuffer
+        self.fbo = glGenFramebuffers(1)
+        glBindFramebuffer(GL_FRAMEBUFFER, self.fbo)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self.fbo_texture, 0)
+
+        # Ensure the framebuffer is complete
+        if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE:
+            raise Exception("Framebuffer not complete")
+
+        # Unbind the framebuffer to avoid interference
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
 
     def _initialize_uniforms(self, fov=90) -> None:
         """Initialize uniforms for the shader program."""
@@ -234,20 +256,32 @@ class Renderer:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
-    def render_single_image(self, position: Vector3f, direction: np.ndarray, camera_up: np.ndarray) -> None:
+    def render_single_image(self, position: Vector3f, direction: np.ndarray, camera_up: np.ndarray) -> np.ndarray:
+        """Render a single image using the pre-initialized FBO."""
+        # Update the view matrix
         self.update_view_matrix(position.to_array(), direction, camera_up)
+
+        # Bind the FBO and render the scene
+        glBindFramebuffer(GL_FRAMEBUFFER, self.fbo)
         self.render_scene()
-        
+
         glFlush()
         glFinish()
 
+        # Dimensions of the framebuffer
         width, height = glfw.get_window_size(self.window)
+
+        # Read pixels from the FBO
         glPixelStorei(GL_PACK_ALIGNMENT, 1)
         image_data = glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT)
         image_array = np.frombuffer(image_data, dtype=np.float32).reshape(height, width, 3)
         image_array = np.flipud(image_array)
 
+        # Unbind the framebuffer
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+
         return image_array
+
     
     def update_view_matrix(self, camera_pos, camera_direction, camera_up) -> None:
         view_matrix = self._get_view_matrix(camera_pos, camera_direction, camera_up)
@@ -343,10 +377,12 @@ class Renderer:
         # Delete Vertex Array Object and Vertex Buffer Object
         glDeleteVertexArrays(1, (self.vao,))
         glDeleteBuffers(1, (self.vbo,))
+        glDeleteFramebuffers(1, [self.fbo])
 
         # Delete textures for the texture atlas and lightmap
         glDeleteTextures(1, (self.texture_array_id,))
         glDeleteTextures(1, (self.lightmap_texture_id,))
+        glDeleteTextures(1, (self.fbo_texture))
 
         # Delete shader program
         glDeleteProgram(self.shader)
