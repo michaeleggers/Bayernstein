@@ -44,7 +44,7 @@ enum HKD_ModelType {
 #define MODEL_RENDER_FLAG_IGNORE    (0x00000001 << 1)
 
 struct HKD_Model {
-    BaseGameEntity* owner;
+    BaseGameEntity* pOwner;
     HKD_ModelType type;
     std::string filename;
     std::vector<Tri> tris;

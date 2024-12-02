@@ -32,7 +32,7 @@ Enemy::Enemy(const std::vector<Property>& properties)
     BaseGameEntity::GetProperty<std::string>(properties, "target", &m_Target);
 
     LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
-    m_Model.owner = this;
+    m_Model.pOwner = this;
     m_Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
     m_PrevPosition = GetEllipsoidColliderPtr()->center;
     m_Position = m_PrevPosition;

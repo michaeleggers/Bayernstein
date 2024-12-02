@@ -807,12 +807,12 @@ void GLRender::Render(Camera* camera,
             m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
         }
        
-        BaseGameEntity* owner = hkdModel->owner;
+        BaseGameEntity* pOwner = hkdModel->pOwner;
         glm::vec3 ownerPos = glm::vec3(0.0f);
         glm::quat ownerOrientation = glm::angleAxis(0.0f, DOD_WORLD_FORWARD);
-        if (owner != nullptr) {
-            ownerPos = owner->m_Position;
-            ownerOrientation = owner->m_Orientation;
+        if (pOwner != nullptr) {
+            ownerPos = pOwner->m_Position;
+            ownerOrientation = pOwner->m_Orientation;
         }
         glm::vec3 position = ownerPos + hkdModel->position;
         glm::quat orientation = ownerOrientation * hkdModel->orientation;
@@ -1087,13 +1087,13 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
 
     m_ColliderBatch->Bind();
     for (int i = 0; i < numModels; i++) {
-        HKD_Model* model = models[i];
+        HKD_Model* pModel = models[i];
         glm::vec3 ownerPos = glm::vec3(0.0f);
-        if (model->owner != nullptr) {
-            ownerPos = model->owner->m_Position;
+        if (pModel->pOwner != nullptr) {
+            ownerPos = pModel->pOwner->m_Position;
         }
-        m_ColliderShader->SetVec4("uDebugColor", model->debugColor);
-        EllipsoidCollider ec = model->ellipsoidColliders[model->currentAnimIdx];
+        m_ColliderShader->SetVec4("uDebugColor", pModel->debugColor);
+        EllipsoidCollider ec = pModel->ellipsoidColliders[pModel->currentAnimIdx];
         glm::vec3 scale = glm::vec3(
             ec.radiusA,
             ec.radiusA,
