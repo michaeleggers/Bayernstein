@@ -470,4 +470,3 @@ CollisionInfo PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapTri* tris, 
     return ci;
 }
 
-

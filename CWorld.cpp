@@ -230,19 +230,25 @@ void CWorld::CollideEntitiesWithWorld() {
         BaseGameEntity* pEntity = entities[i];
         if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
             EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
+            
             if (ec == nullptr) {
                 continue;
             }
+
             double t = accumulator / DOD_FIXED_UPDATE_TIME;
             glm::vec3 perTickMotion = ec->center - pEntity->m_PrevPosition;
             pEntity->UpdatePosition( pEntity->m_PrevPosition + (float)t*perTickMotion );
             
-            // Update the entity's collision state
-            if ( glm::abs(perTickMotion.z) > (DOD_VERY_CLOSE_DIST + 3.0f) ) {
-                pEntity->m_CollisionState = ES_IN_AIR;
+            // Check if entity is in air.
+            CollisionInfo ci = PushTouch(*ec,
+                                         -DOD_WORLD_UP*20.0f, 
+                                          m_MapTris.data(),
+                                          StaticGeometryCount() );
+            if ( ci.didCollide ) {
+                pEntity->m_CollisionState = ES_ON_GROUND;
             }
             else {
-                pEntity->m_CollisionState = ES_ON_GROUND;
+                pEntity->m_CollisionState = ES_IN_AIR;
             }
         }
     }

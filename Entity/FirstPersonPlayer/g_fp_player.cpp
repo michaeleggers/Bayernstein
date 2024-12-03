@@ -51,8 +51,10 @@ void FirstPersonPlayer::PostCollisionUpdate() {
     else {
         ImGui::Text("on ground!\n");
     }
+    ImGui::Text("m_Velocity.z: %f", m_Velocity.z);
     ImGui::End();
 
+#if 1 
     // If in air, apply some downward gravity acceleration.
     if (m_CollisionState == ES_IN_AIR) {
         m_Velocity.x = 0.0f;
@@ -62,11 +64,10 @@ void FirstPersonPlayer::PostCollisionUpdate() {
     else {
         m_Velocity = glm::vec3(0.0f);
     }
+#endif
     
     if ( KeyPressed(SDLK_w) ) {
         m_pStateMachine->ChangeState(FirstPersonPlayerRunning::Instance());
-    } else if ( KeyPressed(SDLK_SPACE) ) {
-        m_pStateMachine->ChangeState(FirstPersonPlayerAttacking::Instance());
     } else {
         m_pStateMachine->ChangeState(FirstPersonPlayerIdle::Instance());
     }
@@ -142,6 +143,7 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     ButtonState left = CHECK_ACTION("left");
     ButtonState right = CHECK_ACTION("right");
     ButtonState speed = CHECK_ACTION("speed");
+    ButtonState jump = CHECK_ACTION("jump");
     ButtonState turnLeft = CHECK_ACTION("turn_left");
     ButtonState turnRight = CHECK_ACTION("turn_right");
     ButtonState mouseLook = CHECK_ACTION("mlook");
@@ -186,6 +188,7 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     m_Side = glm::cross(m_Forward, m_Up);
 
     // Change player's velocity and animation state based on input
+    //m_Velocity = glm::vec3(0.0f);
     float t = followCamSpeed;
     AnimState playerAnimState = ANIM_STATE_IDLE;
     
@@ -213,10 +216,21 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     }
 
     // Test the input handler here.
+    /*
     ButtonState jumpState = CHECK_ACTION("jump");
     if (jumpState == ButtonState::PRESSED) {
-        printf("I am jumping!\n");
+        printf("Jumping....\n");
+        if (m_CollisionState == ES_ON_GROUND) {
+            m_JumpTimer = 100.0f;
+        }
     }
+
+    if (m_JumpTimer >= 0.0f) {
+        m_Velocity.z += 300.0f;
+        m_JumpTimer -= (float)dt;
+    }
+    */
+
     ButtonState fireState = CHECK_ACTION("fire");
     if (fireState == ButtonState::PRESSED) {
         printf("FIRE!\n");

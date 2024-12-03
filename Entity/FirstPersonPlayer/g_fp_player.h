@@ -76,6 +76,7 @@ private:
     int                 m_MouseY = 0;
     int                 m_MousePrevX = 0;
     int                 m_MousePrevY = 0;
+    float               m_JumpTimer = 0.0f;
 
     void LoadModel(const char* path, glm::vec3 initialPosition);
     void UpdatePlayerModel();
