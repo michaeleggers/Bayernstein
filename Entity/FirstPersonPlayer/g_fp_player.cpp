@@ -59,7 +59,7 @@ void FirstPersonPlayer::PostCollisionUpdate() {
     if (m_CollisionState == ES_IN_AIR) {
         m_Velocity.x = 0.0f;
         m_Velocity.y = 0.0f;
-        m_Velocity.z += (float)dt * (-3.0f);
+        m_Velocity.z += (float)dt * (-2.0f);
     }
     else {
         m_Velocity = glm::vec3(0.0f);
@@ -216,20 +216,23 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     }
 
     // Test the input handler here.
-    /*
     ButtonState jumpState = CHECK_ACTION("jump");
-    if (jumpState == ButtonState::PRESSED) {
-        printf("Jumping....\n");
-        if (m_CollisionState == ES_ON_GROUND) {
+    if (jumpState == ButtonState::WENT_DOWN) {
+        if (m_CollisionState == ES_ON_GROUND && !m_IsJumping) {
+            printf("Jumping....\n");
             m_JumpTimer = 100.0f;
+            m_IsJumping = true;
         }
     }
 
-    if (m_JumpTimer >= 0.0f) {
-        m_Velocity.z += 300.0f;
+    if ( m_JumpTimer > 0.0f ) {  
+        m_Velocity.z = 600.0f;
         m_JumpTimer -= (float)dt;
     }
-    */
+    else {
+        m_IsJumping = false;
+        m_JumpTimer = 0.0f;
+    }
 
     ButtonState fireState = CHECK_ACTION("fire");
     if (fireState == ButtonState::PRESSED) {

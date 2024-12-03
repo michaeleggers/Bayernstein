@@ -241,7 +241,7 @@ void CWorld::CollideEntitiesWithWorld() {
             
             // Check if entity is in air.
             CollisionInfo ci = PushTouch(*ec,
-                                         -DOD_WORLD_UP*20.0f, 
+                                         -DOD_WORLD_UP*2.0f, 
                                           m_MapTris.data(),
                                           StaticGeometryCount() );
             if ( ci.didCollide ) {
