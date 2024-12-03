@@ -208,6 +208,7 @@ void CWorld::CollideEntitiesWithWorld() {
                     model->ellipsoidColliders[i].center = collisionInfo.basePos;
                 }
 
+
             } // Check if player or enemy 
         } // Check all entities
         accumulator -= DOD_FIXED_UPDATE_TIME;
@@ -235,6 +236,14 @@ void CWorld::CollideEntitiesWithWorld() {
             double t = accumulator / DOD_FIXED_UPDATE_TIME;
             glm::vec3 perTickMotion = ec->center - pEntity->m_PrevPosition;
             pEntity->UpdatePosition( pEntity->m_PrevPosition + (float)t*perTickMotion );
+            
+            // Update the entity's collision state
+            if ( glm::abs(perTickMotion.z) > (DOD_VERY_CLOSE_DIST + 3.0f) ) {
+                pEntity->m_CollisionState = ES_IN_AIR;
+            }
+            else {
+                pEntity->m_CollisionState = ES_ON_GROUND;
+            }
         }
     }
 #endif

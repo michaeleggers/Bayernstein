@@ -16,6 +16,7 @@
 #include "../../input_handler.h"
 #include "../../input_receiver.h"
 #include "../../globals.h"
+#include "imgui.h"
 #include "g_fp_player_states.h"
 
 
@@ -41,6 +42,27 @@ void FirstPersonPlayer::UpdatePosition(glm::vec3 newPosition) {
 
 void FirstPersonPlayer::PostCollisionUpdate() {
 
+    double dt = GetDeltaTime();
+    
+    ImGui::Begin("FPS Player Info");
+    if (m_CollisionState == ES_IN_AIR) {
+        ImGui::Text("flying!\n");
+    }
+    else {
+        ImGui::Text("on ground!\n");
+    }
+    ImGui::End();
+
+    // If in air, apply some downward gravity acceleration.
+    if (m_CollisionState == ES_IN_AIR) {
+        m_Velocity.x = 0.0f;
+        m_Velocity.y = 0.0f;
+        m_Velocity.z += (float)dt * (-3.0f);
+    }
+    else {
+        m_Velocity = glm::vec3(0.0f);
+    }
+    
     if ( KeyPressed(SDLK_w) ) {
         m_pStateMachine->ChangeState(FirstPersonPlayerRunning::Instance());
     } else if ( KeyPressed(SDLK_SPACE) ) {
@@ -51,7 +73,6 @@ void FirstPersonPlayer::PostCollisionUpdate() {
 
     //UpdatePlayerModel();
 
-    double dt = GetDeltaTime();
     UpdateModel(&m_Model, (float)dt);
 
     //m_Position = m_Model.position;
@@ -165,7 +186,6 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     m_Side = glm::cross(m_Forward, m_Up);
 
     // Change player's velocity and animation state based on input
-    m_Velocity = glm::vec3(0.0f);
     float t = followCamSpeed;
     AnimState playerAnimState = ANIM_STATE_IDLE;
     

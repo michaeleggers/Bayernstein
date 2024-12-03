@@ -10,9 +10,9 @@
 
 #include "r_common.h"
 #include "collision.h"
+#include "globals.h"
 
 // NOTE: This distance depends very much on the size of the level geometry!
-#define VERY_CLOSE_DIST 0.01f
 
 EllipsoidCollider CreateEllipsoidColliderFromAABB(glm::vec3 mins, glm::vec3 maxs)
 {
@@ -324,8 +324,8 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri)
             ci->nearestDistance = distanceToHitpoint;
             ci->hitPoint = hitPoint;
             if (embeddedInPlane) {
-                //ci->nearestDistance = -VERY_CLOSE_DIST;
-                //ci->hitPoint -= VERY_CLOSE_DIST*p.normal;
+                //ci->nearestDistance = -DOD_VERY_CLOSE_DIST;
+                //ci->hitPoint -= DOD_VERY_CLOSE_DIST*p.normal;
             }
         }
     }
@@ -407,12 +407,12 @@ glm::vec3 CollideEllipsoidWithTrisRec(CollisionInfo* ci, glm::vec3 esBasePos, gl
     glm::vec3 destinationPos = esBasePos + velocity;
     glm::vec3 newBasePos = esBasePos;
 
-    if ( ci->nearestDistance >= VERY_CLOSE_DIST ) {
+    if ( ci->nearestDistance >= DOD_VERY_CLOSE_DIST ) {
         glm::vec3 v = velocity;
         glm::vec3 vNorm = glm::normalize( v );
-        float length = glm::abs(ci->nearestDistance - VERY_CLOSE_DIST); // abs should not be neccessary
+        float length = glm::abs(ci->nearestDistance - DOD_VERY_CLOSE_DIST); // abs should not be neccessary
         newBasePos = ci->basePos + length * vNorm; 
-        ci->hitPoint -= VERY_CLOSE_DIST * vNorm;
+        ci->hitPoint -= DOD_VERY_CLOSE_DIST * vNorm;
     }
 
     Plane slidingPlane{};
@@ -423,7 +423,7 @@ glm::vec3 CollideEllipsoidWithTrisRec(CollisionInfo* ci, glm::vec3 esBasePos, gl
 
     glm::vec3 newVelocity = newDestinationPos - ci->hitPoint;
 
-    if ( glm::length(newVelocity) < VERY_CLOSE_DIST ) {
+    if ( glm::length(newVelocity) < DOD_VERY_CLOSE_DIST ) {
         return newBasePos;
     }
 

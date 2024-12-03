@@ -28,6 +28,12 @@ enum EntityType {
     ET_FLY_CAMERA
 };
 
+enum EntityCollisionState {
+    ES_UNDEFINED,
+    ES_ON_GROUND,
+    ES_IN_AIR
+};
+
 class BaseGameEntity {
   private:
     int m_ID{}; // Set by entity manager.
@@ -36,6 +42,7 @@ class BaseGameEntity {
   public:
     explicit BaseGameEntity(EntityType type) {
         m_Type = type;
+        m_CollisionState = ES_UNDEFINED;
         m_Orientation = glm::angleAxis(0.0f, DOD_WORLD_FORWARD);
     }
 
@@ -117,12 +124,13 @@ class BaseGameEntity {
         return nullptr;
     };
     
-    glm::vec3   m_Position = glm::vec3(0.0f);
-    glm::vec3   m_PrevPosition = glm::vec3(0.0f);
-    glm::vec3   m_Velocity = glm::vec3(0.0f); // TODO: Actually make use of it and remove from subclasses!
-    glm::quat   m_Orientation;
-    float       m_RotationAngle = 0.0f; // TODO: Should be a quaternion called m_Orientation.
-    std::string m_Target = "";
+    glm::vec3               m_Position = glm::vec3(0.0f);
+    glm::vec3               m_PrevPosition = glm::vec3(0.0f);
+    glm::vec3               m_Velocity = glm::vec3(0.0f); // TODO: Actually make use of it and remove from subclasses!
+    glm::quat               m_Orientation;
+    float                   m_RotationAngle = 0.0f; // TODO: Should be a quaternion called m_Orientation.
+    std::string             m_Target = "";
+    EntityCollisionState    m_CollisionState;
 };
 
 #endif // BASEGAMEENTITY_H
