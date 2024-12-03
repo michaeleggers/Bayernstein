@@ -76,7 +76,7 @@ void Game::Init() {
     //m_pPlayerEntity = new Player(idCounter++, m_pPlayerEntity->m_Position);
     //m_pEntityManager->RegisterEntity(m_pPlayerEntity);
  
-#if 0 // Enable second debug player
+#if 0 // Enable second debug playerz
     glm::vec3 dbgPlayerStartPos = m_pPlayerEntity->m_Position + glm::vec3(20.0f, -100.0f, 10.0f);
     m_pDebugPlayerEntity = new Player(dbgPlayerStartPos);
     printf("Debug Player Start Pos: %f, %f, %f\n", dbgPlayerStartPos.x, dbgPlayerStartPos.y, dbgPlayerStartPos.z);

@@ -78,6 +78,7 @@ private:
     int                 m_MousePrevY = 0;
     float               m_JumpTimer = 0.0f;
     bool                m_IsJumping = false;
+    glm::vec3           m_Momentum = glm::vec3(0.0f);
 
     void LoadModel(const char* path, glm::vec3 initialPosition);
     void UpdatePlayerModel();

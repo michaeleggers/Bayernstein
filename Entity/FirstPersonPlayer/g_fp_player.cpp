@@ -52,19 +52,14 @@ void FirstPersonPlayer::PostCollisionUpdate() {
         ImGui::Text("on ground!\n");
     }
     ImGui::Text("m_Velocity.z: %f", m_Velocity.z);
+    ImGui::Text("m_Momentum.xyz: %f, %f, %f",
+                m_Momentum.x, m_Momentum.y, m_Momentum.z);
     ImGui::End();
 
-#if 1 
-    // If in air, apply some downward gravity acceleration.
-    if (m_CollisionState == ES_IN_AIR) {
-        m_Velocity.x = 0.0f;
-        m_Velocity.y = 0.0f;
-        m_Velocity.z += (float)dt * (-2.0f);
+    if (m_CollisionState == ES_ON_GROUND) {
+        m_Velocity.z = 0.0f;
     }
-    else {
-        m_Velocity = glm::vec3(0.0f);
-    }
-#endif
+
     
     if ( KeyPressed(SDLK_w) ) {
         m_pStateMachine->ChangeState(FirstPersonPlayerRunning::Instance());
@@ -186,9 +181,10 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     m_Forward = glm::rotate(m_Orientation,
                             DOD_WORLD_FORWARD);
     m_Side = glm::cross(m_Forward, m_Up);
-
+    
     // Change player's velocity and animation state based on input
-    //m_Velocity = glm::vec3(0.0f);
+    m_Velocity.x = 0.0f;
+    m_Velocity.y = 0.0f;
     float t = followCamSpeed;
     AnimState playerAnimState = ANIM_STATE_IDLE;
     
@@ -220,18 +216,30 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     if (jumpState == ButtonState::WENT_DOWN) {
         if (m_CollisionState == ES_ON_GROUND && !m_IsJumping) {
             printf("Jumping....\n");
+            m_Momentum = m_Velocity;
             m_JumpTimer = 100.0f;
             m_IsJumping = true;
         }
     }
 
     if ( m_JumpTimer > 0.0f ) {  
-        m_Velocity.z = 600.0f;
+        m_Velocity.z = 650.0f;
         m_JumpTimer -= (float)dt;
     }
     else {
         m_IsJumping = false;
         m_JumpTimer = 0.0f;
+    }
+
+    // If in air, apply some downward gravity acceleration.
+    if (m_CollisionState == ES_IN_AIR) {
+        m_Velocity.z += (float)dt * (-2.5f);
+    }
+
+    // Overwrite velocity with last momentum if we are in air.
+    if (m_CollisionState == ES_IN_AIR) {
+        m_Velocity.x = glm::clamp(m_Momentum.x + 0.8f * m_Velocity.x, -400.0f, 400.0f);
+        m_Velocity.y = glm::clamp(m_Momentum.y + 0.8f * m_Velocity.y, -400.0f, 400.0f);
     }
 
     ButtonState fireState = CHECK_ACTION("fire");
