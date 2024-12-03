@@ -1,11 +1,11 @@
 #include <assert.h>
 
-#include <unordered_map>
 #include <vector>
+#include <unordered_map>
 
+#include "./path.h"
 #include "../dependencies/glm/glm.hpp"
 #include "../r_common.h"
-#include "./path.h"
 
 void PatrolPath::AddPoint(Waypoint point) {
     point.pPatrolPath = this;
@@ -15,9 +15,9 @@ void PatrolPath::AddPoint(Waypoint point) {
     // TODO: m_CurrentWaypointName probably should be whatever is
     // specified for the entity targeting this path waypoint?
     if ( m_CurrentWaypointName.empty() ) {
-        m_Name                = point.targetname;
+        m_Name = point.targetname;
         m_CurrentWaypointName = point.targetname;
-        m_NextWaypointName    = point.target;
+        m_NextWaypointName = point.target;
     }
 }
 

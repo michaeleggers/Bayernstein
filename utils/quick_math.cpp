@@ -1,7 +1,5 @@
 #include "quick_math.h"
-
 #include <glm/glm.hpp>
-#include <stdio.h>
 
 namespace math {
 

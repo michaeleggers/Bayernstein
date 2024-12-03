@@ -8,13 +8,12 @@
 #include "../../FSM/state_machine.h"
 #include "../../collision.h"
 #include "../../input_receiver.h"
-#include "../../map_parser.h"
 #include "../../r_model.h"
+#include "../../map_parser.h"
 #include "../Path/path.h"
 #include "../base_game_entity.h"
 #include "../moving_entity.h"
 #include "../steering_behaviour.h"
-#include "g_enemy_states.h"
 
 class Enemy : public MovingEntity {
   public:
@@ -25,9 +24,9 @@ class Enemy : public MovingEntity {
     ~Enemy() override {
         delete m_pStateMachine;
         delete m_pSteeringBehaviour;
-        delete m_Path;
+        delete m_Path; 
     }
-
+   
     [[nodiscard]] StateMachine<Enemy>* GetFSM() const {
         return m_pStateMachine;
     }

@@ -25,14 +25,14 @@ Enemy::Enemy(const std::vector<Property>& properties)
       m_EllipsoidCollider() {
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(EnemyIdle::Instance());
-
+   
     // We want position and, if applicable, a target.
     BaseGameEntity::GetProperty<glm::vec3>(properties, "origin", &m_Position);
     // FIX: Mem Leak on exit if target is not being set.
     BaseGameEntity::GetProperty<std::string>(properties, "target", &m_Target);
 
     LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
-    m_Velocity           = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
     m_pSteeringBehaviour = new SteeringBehaviour(this);
     // m_pSteeringBehaviour->WanderOn();
 }

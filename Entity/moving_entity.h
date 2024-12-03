@@ -42,7 +42,7 @@ class MovingEntity : public BaseGameEntity {
     // all entities can communicate using messages. They are sent
     // using the MessageDispatcher singleton class
     virtual bool HandleMessage(const Telegram& telegram) = 0;
-
+    
     //a normalized vector pointing in the direction the entity is heading.
     glm::vec3 m_Forward;
 
@@ -64,3 +64,4 @@ class MovingEntity : public BaseGameEntity {
 };
 
 #endif // MOVINGENTITY_H
+

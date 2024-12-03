@@ -30,11 +30,6 @@ SteeringBehaviour::SteeringBehaviour(MovingEntity* pEntity)
       m_WanderTarget(0.0)
 
 {
-    //stuff for the wander behavior
-    // float theta = RandBetween(-1, 1) * glm::two_pi<float>();
-
-    //create a vector to a target position on the wander circle
-    // m_WanderTarget = glm::vec3(m_WanderRadius * glm::cos(theta), m_WanderRadius * glm::sin(theta), 0.0f);
 }
 
 glm::vec3 SteeringBehaviour::CalculateWeightedSum() {
@@ -53,14 +48,14 @@ glm::vec3 SteeringBehaviour::CalculateWeightedSum() {
 
     if ( On(follow_waypoints) ) {
         if ( m_pPath != nullptr ) {
-            m_SteeringForce += FollowWaypoints(m_pPath) * m_WeightFollowWaypoints;
+        m_SteeringForce += FollowWaypoints(m_pPath) * m_WeightFollowWaypoints;
         } else {
             printf("SteeringBehaviour::FollowWaypoints: m_pPath is nullptr! Ignore.\n");
         }
     }
     if ( On(follow_path) ) {
         if ( m_pPath != nullptr ) {
-            m_SteeringForce += FollowPath(m_pPath) * m_WeightFollowPath;
+        m_SteeringForce += FollowPath(m_pPath) * m_WeightFollowPath;
         } else {
             printf("SteeringBehaviour::FollowPath: m_pPath is nullptr! Ignore.\n");
         }
@@ -163,22 +158,22 @@ glm::vec3 SteeringBehaviour::FollowPath(PatrolPath* path) {
     glm::vec3 segmentStart = path->GetCurrentWaypoint().position;
     glm::vec3 segmentEnd   = path->GetNextWaypoint().position;
 
-    // project the future position back onto the line to find a potential target
+        // project the future position back onto the line to find a potential target
     glm::vec3 normalPoint = math::GetProjectedPoint(futurePosition, segmentStart, segmentEnd);
     // check if the projected point is actually on the line segment, otherwise use the segment end for now.
     if ( !math::InSegmentRange(normalPoint, segmentStart, segmentEnd) ) {
-        normalPoint = segmentEnd;
-    }
-    // calculate the distance of the future position to the projected point to find the closest segment of the path
-    float distanceFromPath = glm::distance(futurePosition, normalPoint);
-    if ( path->GetRadius() <= distanceFromPath ) {
+            normalPoint = segmentEnd;
+        }
+        // calculate the distance of the future position to the projected point to find the closest segment of the path
+        float distanceFromPath = glm::distance(futurePosition, normalPoint);
+            if ( path->GetRadius() <= distanceFromPath ) {
         // the target is the normal point on the path plus a little offset in the direction of the path
-        target = normalPoint + glm::normalize(normalPoint - segmentStart) * 12.5f;
-    } else {
-        // NOTE: i don't know why this needs to be done ???
-        // if we are inside the radius of the path, we are on the path and need to target the next point
+                target = normalPoint + glm::normalize(normalPoint - segmentStart) * 12.5f;
+            } else {
+                // NOTE: i don't know why this needs to be done ???
+                // if we are inside the radius of the path, we are on the path and need to target the next point
         // just keeping the current velocity would probably be better
-        target = segmentEnd;
+                target = segmentEnd;
     }
 
     glm::vec3 force = Seek(target);
