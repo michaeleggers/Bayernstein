@@ -40,6 +40,7 @@
 #include "game.h"
 #include "TestClass.h"
 #include "utils/utils.h"
+#include "Audio/Audio.h"
 #include "Console/VariableManager.h"
 
 static bool         g_GameWantsToQuit;
@@ -93,6 +94,11 @@ int main(int argc, char** argv)
 
     VariableManager::Init();
     Console* console = Console::Create(100, 32);
+
+    if (!Audio::Init()) {
+        SDL_Log("Could not initialize audio engine.\n");
+        return -1;
+    }
 
     // Init the game
 
@@ -157,6 +163,8 @@ int main(int argc, char** argv)
 
         endCounter = SDL_GetPerformanceCounter();
     }
+
+    Audio::Deinit();
 
     game.Shutdown();
 

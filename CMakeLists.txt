@@ -114,6 +114,8 @@ add_executable(Game
     Body.h
     Intersections.cpp
     Intersections.h
+    Audio/Audio.cpp
+    Audio/Audio.h
     CircularBuffer.cpp
     CircularBuffer.h
     Console/Console.cpp
