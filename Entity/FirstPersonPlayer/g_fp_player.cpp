@@ -229,6 +229,9 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     else {
         m_IsJumping = false;
         m_JumpTimer = 0.0f;
+        if (m_CollisionState == ES_ON_GROUND) {
+            m_Momentum = glm::vec3(0.0f);
+        }
     }
 
     // If in air, apply some downward gravity acceleration.
