@@ -8,12 +8,13 @@
 #include "../../FSM/state_machine.h"
 #include "../../collision.h"
 #include "../../input_receiver.h"
-#include "../../r_model.h"
 #include "../../map_parser.h"
+#include "../../r_model.h"
 #include "../Path/path.h"
 #include "../base_game_entity.h"
 #include "../moving_entity.h"
 #include "../steering_behaviour.h"
+#include "g_enemy_states.h"
 
 class Enemy : public MovingEntity {
   public:

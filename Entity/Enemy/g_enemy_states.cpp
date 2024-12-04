@@ -3,8 +3,9 @@
 //
 
 #include "g_enemy_states.h"
-#include <stdio.h>
 #include "../../Message/message_type.h"
+#include "g_enemy.h"
+#include <stdio.h>
 
 EnemyIdle *EnemyIdle::Instance() {
     static EnemyIdle instance;
@@ -43,28 +44,6 @@ bool EnemyIdle::OnMessage(Enemy *agent, const Telegram &telegram) {
             return false;
         }
     }
-}
-
-EnemyRunning *EnemyRunning::Instance() {
-    static EnemyRunning instance;
-
-    return &instance;
-}
-
-void EnemyRunning::Enter(Enemy *pEnemy) { 
-    //printf("Enemy entered Running State\n"); 
-}
-
-void EnemyRunning::Execute(Enemy *pEnemy) { 
-    //printf("Enemy is executing Running State\n"); 
-}
-
-void EnemyRunning::Exit(Enemy *pEnemy) { 
-    //printf("Player is exiting Running State\n"); 
-}
-
-bool EnemyRunning::OnMessage(Enemy *agent, const Telegram &telegram) { 
-    return false; 
 }
 
 EnemyAttacking *EnemyAttacking::Instance() {

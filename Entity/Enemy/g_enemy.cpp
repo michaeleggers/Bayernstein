@@ -54,7 +54,8 @@ void Enemy::Update() {
         glm::vec3 newForward = glm::normalize(m_Velocity);
 
         // Apply the rotation to the current orientation
-        float     absOrientationAngle   = glm::orientedAngle(glm::vec3(0, -1, 0), newForward, m_Up);
+        // TODO: the default rotation axis (0,-1,0) needs to be set globally at best. the designers need to follow this orientation
+        float     absOrientationAngle   = glm::orientedAngle(glm::vec3(0.0, -1.0, 0.0), newForward, m_Up);
         glm::quat newForwardOrientation = glm::angleAxis(absOrientationAngle, m_Up);
         m_Model.orientation             = newForwardOrientation;
 

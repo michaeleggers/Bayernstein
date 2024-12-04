@@ -12,13 +12,15 @@
 #include "./Message/message_type.h"
 #include "CWorld.h"
 #include "Console/VariableManager.h"
-#include "globals.h"
 #include "Path/path.h"
 #include "Shape.h"
 #include "ShapeSphere.h"
 #include "camera.h"
+#include "globals.h"
 #include "hkd_interface.h"
 #include "input.h"
+#include "input_delegate.h"
+#include "input_handler.h"
 #include "physics.h"
 #include "polysoup.h"
 #include "r_font.h"
@@ -62,7 +64,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple4.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/enemy_test.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -234,7 +236,7 @@ bool Game::RunFrame(double dt) {
 
         DrawCoordinateSystem(renderer);
 
-#if 0 // debug paths
+#if 1 // debug paths
         for ( int i = 0; i < m_World->m_Paths.size(); i++ ) {
 
             PatrolPath path = m_World->m_Paths[ i ];
