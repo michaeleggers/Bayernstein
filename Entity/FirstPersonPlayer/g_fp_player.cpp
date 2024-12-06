@@ -30,6 +30,7 @@ FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
     m_PrevPosition = initialPosition;
     //m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
     m_Camera = Camera(initialPosition);
+    m_PrevCollisionState = ES_UNDEFINED;
 }
 
 // FIX: At the moment called by the game itself.
@@ -55,10 +56,16 @@ void FirstPersonPlayer::PostCollisionUpdate() {
                 m_Momentum.x, m_Momentum.y, m_Momentum.z);
     ImGui::End();
 
-    if (m_CollisionState == ES_ON_GROUND) {
-        m_Velocity.z = 0.0f;
+    if (m_PrevCollisionState == ES_ON_GROUND && m_CollisionState == ES_IN_AIR) {
+        printf("switched from on ground to in air.\n");
     }
-
+    else if (m_PrevCollisionState == ES_IN_AIR && m_CollisionState == ES_ON_GROUND) {
+        printf("switched from in air to on ground.\n");
+        m_FlyMomentum = glm::vec3(0.0f);
+    }
+    
+    m_PrevCollisionState = m_CollisionState;
+    
     
     if ( KeyPressed(SDLK_w) ) {
         m_pStateMachine->ChangeState(FirstPersonPlayerRunning::Instance());
@@ -178,24 +185,25 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     m_Side = glm::cross(m_Forward, m_Up);
     
     // Change player's velocity and animation state based on input
-    m_Velocity.x = 0.0f;
-    m_Velocity.y = 0.0f;
+    m_Momentum.x = 0.0f;
+    m_Momentum.y = 0.0f;
+    m_Momentum.z = 0.0f;
     AnimState playerAnimState = ANIM_STATE_IDLE;
     
     if ( forward == ButtonState::PRESSED ) {
-        m_Velocity += movementSpeed * m_Forward;
+        m_Momentum += movementSpeed * m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
     if ( back == ButtonState::PRESSED ) {
-        m_Velocity -= movementSpeed * m_Forward;
+        m_Momentum -= movementSpeed * m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
     if ( right == ButtonState::PRESSED ) {
-        m_Velocity += movementSpeed * m_Side;
+        m_Momentum += movementSpeed * m_Side;
         playerAnimState = ANIM_STATE_RUN;
     }
     if ( left == ButtonState::PRESSED ) {
-        m_Velocity -= movementSpeed * m_Side;
+        m_Momentum -= movementSpeed * m_Side;
         playerAnimState = ANIM_STATE_RUN;
     }
 
@@ -204,36 +212,27 @@ void FirstPersonPlayer::UpdatePlayerModel() {
             playerAnimState = ANIM_STATE_WALK;
         }
     }
+    
 
-    ButtonState jumpState = CHECK_ACTION("jump");
-    if (jumpState == ButtonState::WENT_DOWN) {
-        if (m_CollisionState == ES_ON_GROUND && !m_IsJumping) {
+    if (m_PrevCollisionState == ES_ON_GROUND) {
+        if ( jump == ButtonState::WENT_DOWN ) {
             printf("Jumping....\n");
-            m_Momentum = m_Velocity;
-            m_JumpTimer = 100.0f;
-            m_IsJumping = true;
+            m_Momentum.z = JUMPING_MOMENTUM;
+            m_FlyMomentum = m_Momentum;
         }
     }
-
-    if ( m_JumpTimer > 0.0f ) {  
-        m_Velocity.z = 650.0f;
-        m_JumpTimer -= (float)dt;
-    }
-    else {
-        m_IsJumping = false;
-        m_JumpTimer = 0.0f;
-        if (m_CollisionState == ES_ON_GROUND) {
-            m_Momentum = glm::vec3(0.0f);
-        }
-    }
-
-    if (m_CollisionState == ES_IN_AIR) {
+    else if (m_PrevCollisionState == ES_IN_AIR) {
         // If in air, apply some downward gravity acceleration.
-        m_Velocity.z += (float)dt * (-2.5f);
-        // Overwrite velocity with last momentum if we are in air.
-        m_Velocity.x = glm::clamp(m_Momentum.x + 0.8f * m_Velocity.x, -MAX_VELOCITY, MAX_VELOCITY);
-        m_Velocity.y = glm::clamp(m_Momentum.y + 0.8f * m_Velocity.y, -MAX_VELOCITY, MAX_VELOCITY);
+        m_FlyMomentum.z += (float)dt * (-GRAVITY_ACCELERATION);
+        m_Momentum.x *= IN_AIR_FRICTION;
+        m_Momentum.y *= IN_AIR_FRICTION;
     }
+
+    m_Momentum +=  m_FlyMomentum;
+
+
+    m_Velocity = m_Momentum;
+    // printf("m_Velocity.z: %f\n", m_Velocity.z);
 
     ButtonState fireState = CHECK_ACTION("fire");
     if (fireState == ButtonState::PRESSED) {
