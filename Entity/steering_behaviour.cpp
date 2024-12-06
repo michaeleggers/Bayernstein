@@ -1,10 +1,7 @@
 #include "steering_behaviour.h"
 #include "../utils/quick_math.h"
 #include "../utils/utils.h"
-#include "glm/fwd.hpp"
-#include "glm/geometric.hpp"
-#include "glm/gtc/constants.hpp"
-#include <cstdio>
+#include <stdio.h>
 
 //------------------------- ctor -----------------------------------------
 //
