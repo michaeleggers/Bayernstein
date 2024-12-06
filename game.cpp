@@ -27,6 +27,7 @@
 #include "r_itexture.h"
 #include "utils/utils.h"
 
+// TODO: Maybe put them into a game-independent file later.
 ConsoleVariable dbg_show_wander         = { "dbg_show_wander", 0 };
 ConsoleVariable dbg_show_enemy_velocity = { "dbg_show_enemy_velocity", 0 };
 
