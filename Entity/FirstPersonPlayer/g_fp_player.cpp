@@ -241,8 +241,8 @@ void FirstPersonPlayer::UpdatePlayerModel() {
 
     // Overwrite velocity with last momentum if we are in air.
     if (m_CollisionState == ES_IN_AIR) {
-        m_Velocity.x = glm::clamp(m_Momentum.x + 0.8f * m_Velocity.x, -400.0f, 400.0f);
-        m_Velocity.y = glm::clamp(m_Momentum.y + 0.8f * m_Velocity.y, -400.0f, 400.0f);
+        m_Velocity.x = glm::clamp(m_Momentum.x + 0.8f * m_Velocity.x, -350.0f, 350.0f);
+        m_Velocity.y = glm::clamp(m_Momentum.y + 0.8f * m_Velocity.y, -350.0f, 350.0f);
     }
 
     ButtonState fireState = CHECK_ACTION("fire");
