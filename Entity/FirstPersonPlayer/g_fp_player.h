@@ -22,9 +22,11 @@
 class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
 
 public:
-    static constexpr float MAX_VELOCITY = 350.0f;
-    static constexpr float RUN_VELOCITY = 300.0f;
-    static constexpr float WALK_FACTOR  = 0.3f;
+    // Movement related values
+    static constexpr float MAX_VELOCITY             = 350.0f;
+    static constexpr float RUN_VELOCITY             = 300.0f;
+    static constexpr float WALK_FACTOR              = 0.3f;
+    static constexpr float MAX_MOUSE_LOOK_DEGREES   = 89.0f;
 
     explicit FirstPersonPlayer(glm::vec3 initialPosition);
     

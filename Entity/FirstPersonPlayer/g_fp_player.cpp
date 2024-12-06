@@ -159,7 +159,7 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         m_Pitch += rotAngleSide;
         m_Yaw   += rotAngleUp;
         
-        m_Pitch = glm::clamp( m_Pitch, -89.0f, 89.0f );
+        m_Pitch = glm::clamp( m_Pitch, -MAX_MOUSE_LOOK_DEGREES, MAX_MOUSE_LOOK_DEGREES );
         glm::quat qPitch = glm::angleAxis( glm::radians(-m_Pitch), DOD_WORLD_RIGHT );
         qYaw = glm::angleAxis( glm::radians(-m_Yaw), DOD_WORLD_UP );
         glm::quat qTotal = qYaw * qPitch;
