@@ -19,7 +19,6 @@
 #include "imgui.h"
 #include "g_fp_player_states.h"
 
-
 FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
     : MovingEntity(ET_PLAYER),
       m_pStateMachine(nullptr),
@@ -66,8 +65,6 @@ void FirstPersonPlayer::PostCollisionUpdate() {
     } else {
         m_pStateMachine->ChangeState(FirstPersonPlayerIdle::Instance());
     }
-
-    //UpdatePlayerModel();
 
     UpdateModel(&m_Model, (float)dt);
 
@@ -144,11 +141,9 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     ButtonState mouseLook = CHECK_ACTION("mlook");
     
     double dt = GetDeltaTime();
-    float followCamSpeed = 300.3f;
-    float followTurnSpeed = 0.3f;
+    float movementSpeed = RUN_VELOCITY;
     if ( KeyPressed(SDLK_LSHIFT) ) {
-        followCamSpeed *= 0.3f;
-        followTurnSpeed *= 0.3f;
+        movementSpeed *= WALK_FACTOR;
     }
 
     glm::quat qYaw = glm::angleAxis( glm::radians(-m_Yaw), DOD_WORLD_UP );
@@ -185,23 +180,22 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     // Change player's velocity and animation state based on input
     m_Velocity.x = 0.0f;
     m_Velocity.y = 0.0f;
-    float t = followCamSpeed;
     AnimState playerAnimState = ANIM_STATE_IDLE;
     
     if ( forward == ButtonState::PRESSED ) {
-        m_Velocity += t * m_Forward;
+        m_Velocity += movementSpeed * m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
     if ( back == ButtonState::PRESSED ) {
-        m_Velocity -= t * m_Forward;
+        m_Velocity -= movementSpeed * m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
     if ( right == ButtonState::PRESSED ) {
-        m_Velocity += t * m_Side;
+        m_Velocity += movementSpeed * m_Side;
         playerAnimState = ANIM_STATE_RUN;
     }
     if ( left == ButtonState::PRESSED ) {
-        m_Velocity -= t * m_Side;
+        m_Velocity -= movementSpeed * m_Side;
         playerAnimState = ANIM_STATE_RUN;
     }
 
@@ -211,7 +205,6 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         }
     }
 
-    // Test the input handler here.
     ButtonState jumpState = CHECK_ACTION("jump");
     if (jumpState == ButtonState::WENT_DOWN) {
         if (m_CollisionState == ES_ON_GROUND && !m_IsJumping) {
@@ -234,29 +227,20 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         }
     }
 
-    // If in air, apply some downward gravity acceleration.
     if (m_CollisionState == ES_IN_AIR) {
+        // If in air, apply some downward gravity acceleration.
         m_Velocity.z += (float)dt * (-2.5f);
-    }
-
-    // Overwrite velocity with last momentum if we are in air.
-    if (m_CollisionState == ES_IN_AIR) {
-        m_Velocity.x = glm::clamp(m_Momentum.x + 0.8f * m_Velocity.x, -350.0f, 350.0f);
-        m_Velocity.y = glm::clamp(m_Momentum.y + 0.8f * m_Velocity.y, -350.0f, 350.0f);
+        // Overwrite velocity with last momentum if we are in air.
+        m_Velocity.x = glm::clamp(m_Momentum.x + 0.8f * m_Velocity.x, -MAX_VELOCITY, MAX_VELOCITY);
+        m_Velocity.y = glm::clamp(m_Momentum.y + 0.8f * m_Velocity.y, -MAX_VELOCITY, MAX_VELOCITY);
     }
 
     ButtonState fireState = CHECK_ACTION("fire");
     if (fireState == ButtonState::PRESSED) {
         printf("FIRE!\n");
     }
-    ButtonState prevWeapon = CHECK_ACTION("switch_to_prev_weapon");
-    if (prevWeapon == ButtonState::WENT_DOWN) {
-        printf("Switching to previous weapon!\n");
-    }
     
     SetAnimState(&m_Model, playerAnimState);
-
-    // UpdateModel(&m_Model, (float)dt);
 }
 
 EllipsoidCollider* FirstPersonPlayer::GetEllipsoidColliderPtr() {
