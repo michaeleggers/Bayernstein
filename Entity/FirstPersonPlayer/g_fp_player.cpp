@@ -189,7 +189,7 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     m_Momentum.y = 0.0f;
     m_Momentum.z = 0.0f;
     AnimState playerAnimState = ANIM_STATE_IDLE;
-    
+    bool buildUpMomentum = false;    
     if ( forward == ButtonState::PRESSED ) {
         m_Momentum += movementSpeed * m_Forward;
         playerAnimState = ANIM_STATE_RUN;
@@ -208,12 +208,12 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     }
 
     if (playerAnimState == ANIM_STATE_RUN) {
+        buildUpMomentum = true;
         if ( speed == ButtonState::PRESSED ) {
             playerAnimState = ANIM_STATE_WALK;
         }
     }
     
-
     if (m_PrevCollisionState == ES_ON_GROUND) {
         if ( jump == ButtonState::WENT_DOWN ) {
             printf("Jumping....\n");
@@ -228,6 +228,17 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         m_Momentum.y *= IN_AIR_FRICTION;
     }
 
+    static float buildUpMomentumTime = 0.0f;
+    if (buildUpMomentum) {
+        buildUpMomentumTime += (float)dt;
+    }
+    else {
+        buildUpMomentumTime = 0.0f;
+    }
+
+    static float MOMENTUM_BUILD_UP = 400.0f;
+    buildUpMomentumTime = glm::clamp(buildUpMomentumTime, 0.0f, MOMENTUM_BUILD_UP);
+    m_Momentum = (buildUpMomentumTime/MOMENTUM_BUILD_UP) * m_Momentum;
     m_Momentum +=  m_FlyMomentum;
 
 
