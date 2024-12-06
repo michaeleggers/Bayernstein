@@ -67,7 +67,6 @@ void FirstPersonPlayer::PostCollisionUpdate() {
     
     m_PrevCollisionState = m_CollisionState;
     
-    
     if ( KeyPressed(SDLK_w) ) {
         m_pStateMachine->ChangeState(FirstPersonPlayerRunning::Instance());
     } else {
@@ -149,10 +148,6 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     ButtonState mouseLook = CHECK_ACTION("mlook");
     
     double dt = GetDeltaTime();
-    float movementSpeed = RUN_VELOCITY;
-    if ( KeyPressed(SDLK_LSHIFT) ) {
-        movementSpeed *= WALK_FACTOR;
-    }
 
     glm::quat qYaw = glm::angleAxis( glm::radians(-m_Yaw), DOD_WORLD_UP );
     if ( mouseLook == ButtonState::MOVED ) {
@@ -184,35 +179,48 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     m_Forward = glm::rotate(m_Orientation,
                             DOD_WORLD_FORWARD);
     m_Side = glm::cross(m_Forward, m_Up);
-    
+   
+
+
+    float movementSpeed = RUN_VELOCITY;
+    if ( KeyPressed(SDLK_LSHIFT) ) {
+        movementSpeed *= WALK_FACTOR;
+    }
     // Change player's velocity and animation state based on input
     //m_Momentum.x = 0.0f;
     //m_Momentum.y = 0.0f;
     //m_Momentum.z = 0.0f;
     AnimState playerAnimState = ANIM_STATE_IDLE;
     bool buildUpMomentum = false;    
+    m_Dir = glm::vec3(0.0f);
     if ( forward == ButtonState::PRESSED ) {
-        m_Momentum += movementSpeed * m_Forward;
+        //m_Momentum += movementSpeed * m_Forward;
+        m_Dir += m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
     if ( back == ButtonState::PRESSED ) {
-        m_Momentum -= movementSpeed * m_Forward;
+        //m_Momentum -= movementSpeed * m_Forward;
+        m_Dir -= m_Forward;
         playerAnimState = ANIM_STATE_RUN;
     }
     if ( right == ButtonState::PRESSED ) {
-        m_Momentum += movementSpeed * m_Side;
+        //m_Momentum += movementSpeed * m_Side;
+        m_Dir += m_Side;
         playerAnimState = ANIM_STATE_RUN;
     }
     if ( left == ButtonState::PRESSED ) {
-        m_Momentum -= movementSpeed * m_Side;
+        //m_Momentum -= movementSpeed * m_Side;
+        m_Dir -= m_Side;
         playerAnimState = ANIM_STATE_RUN;
     }
 
-    float momentumMag = glm::length(m_Momentum);
-    if (momentumMag > 0.0f) { // This is neccessary to not divide by 0 in glm::normalize
-        momentumMag = glm::clamp(momentumMag, 0.0f, movementSpeed);
-        m_Momentum = momentumMag * glm::normalize(m_Momentum);
+    // Make sure we don't get faster when going both
+    // forward and to the side for example.
+    if ( glm::length(m_Dir) > 0.0f ) { // This is neccessary to not divide by 0 in glm::normalize
+        m_Dir = glm::normalize(m_Dir);
     }
+
+    m_Momentum = m_Dir * movementSpeed;
 
     if (playerAnimState == ANIM_STATE_RUN) {
         buildUpMomentum = true;
@@ -236,18 +244,20 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     }
 
     static float buildUpMomentumTime = 0.0f;
+    static float MOMENTUM_BUILD_UP = 4000.0f;
     if (buildUpMomentum) {
         buildUpMomentumTime += (float)dt;
     }
     else {
-        buildUpMomentumTime = 0.0f;
+        buildUpMomentumTime -= (float)dt;
     }
 
-    static float MOMENTUM_BUILD_UP = 400.0f;
     buildUpMomentumTime = glm::clamp(buildUpMomentumTime, 0.0f, MOMENTUM_BUILD_UP);
-    m_Momentum = (buildUpMomentumTime/MOMENTUM_BUILD_UP) * m_Momentum;
+    //printf("%f\n", buildUpMomentumTime);
+    float smooth = glm::smoothstep(0.0f, MOMENTUM_BUILD_UP, buildUpMomentumTime);
+    printf("%f\n", smooth);
+    //m_Momentum = smooth * m_PrevMomentum;
     m_Momentum +=  m_FlyMomentum;
-
 
     m_Velocity = m_Momentum;
     // printf("m_Velocity.z: %f\n", m_Velocity.z);
