@@ -31,6 +31,7 @@ FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
     //m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
     m_Camera = Camera(initialPosition);
     m_PrevCollisionState = ES_UNDEFINED;
+    m_Momentum = glm::vec3(0.0f);
 }
 
 // FIX: At the moment called by the game itself.
@@ -185,9 +186,9 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     m_Side = glm::cross(m_Forward, m_Up);
     
     // Change player's velocity and animation state based on input
-    m_Momentum.x = 0.0f;
-    m_Momentum.y = 0.0f;
-    m_Momentum.z = 0.0f;
+    //m_Momentum.x = 0.0f;
+    //m_Momentum.y = 0.0f;
+    //m_Momentum.z = 0.0f;
     AnimState playerAnimState = ANIM_STATE_IDLE;
     bool buildUpMomentum = false;    
     if ( forward == ButtonState::PRESSED ) {
@@ -205,6 +206,12 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     if ( left == ButtonState::PRESSED ) {
         m_Momentum -= movementSpeed * m_Side;
         playerAnimState = ANIM_STATE_RUN;
+    }
+
+    float momentumMag = glm::length(m_Momentum);
+    if (momentumMag > 0.0f) { // This is neccessary to not divide by 0 in glm::normalize
+        momentumMag = glm::clamp(momentumMag, 0.0f, movementSpeed);
+        m_Momentum = momentumMag * glm::normalize(m_Momentum);
     }
 
     if (playerAnimState == ANIM_STATE_RUN) {
