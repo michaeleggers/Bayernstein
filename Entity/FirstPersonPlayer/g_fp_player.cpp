@@ -224,34 +224,35 @@ void FirstPersonPlayer::UpdatePlayerModel() {
             playerAnimState = ANIM_STATE_WALK;
         }
     }
-
-    glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
-    if (isMoving) {
-        m_Momentum += m_Dir * 3.0f;
-        if (glm::length(horizontalMomentum) > movementSpeed) {
-            m_Momentum = movementSpeed * glm::normalize(m_Momentum);
-        } 
-    }
-    else {
-        if ( glm::length(horizontalMomentum) > 0.0f ) {
-            glm::vec3 frictionForce = -glm::normalize(horizontalMomentum) * 0.9f;
-            if (glm::length(frictionForce) > glm::length(horizontalMomentum)) {
-                m_Momentum.x = 0.0f;
-                m_Momentum.y = 0.0f;
-            }
-            else {
-                printf("HERE\n");
-                m_Momentum.x += frictionForce.x;
-                m_Momentum.y += frictionForce.y;
-            }
-        }
-    }
     
     if (m_PrevCollisionState == ES_ON_GROUND) {
+        glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
+        if (isMoving) {
+            m_Momentum += m_Dir * 3.0f;
+            if (glm::length(horizontalMomentum) > movementSpeed) {
+                m_Momentum = movementSpeed * glm::normalize(m_Momentum);
+            } 
+        }
+        else {
+            if ( glm::length(horizontalMomentum) > 0.0f ) {
+                glm::vec3 frictionForce = -glm::normalize(horizontalMomentum) * 0.9f;
+                if (glm::length(frictionForce) > glm::length(horizontalMomentum)) {
+                    m_Momentum.x = 0.0f;
+                    m_Momentum.y = 0.0f;
+                }
+                else {
+                    printf("HERE\n");
+                    m_Momentum.x += frictionForce.x;
+                    m_Momentum.y += frictionForce.y;
+                }
+            }
+        }
+    
         if ( jump == ButtonState::WENT_DOWN ) {
             printf("Jumping....\n");
-            m_Momentum.z = JUMPING_MOMENTUM;
+            //m_Momentum.z = JUMPING_MOMENTUM;
             m_FlyMomentum = m_Momentum;
+            m_FlyMomentum.z = JUMPING_MOMENTUM;
         }
     }
     else if (m_PrevCollisionState == ES_IN_AIR) {
@@ -262,8 +263,8 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         } 
         // If in air, apply some downward gravity acceleration.
         m_FlyMomentum.z += (float)dt * (-GRAVITY_ACCELERATION);
-        m_Momentum.x *= (1.0f - IN_AIR_FRICTION);
-        m_Momentum.y *= (1.0f - IN_AIR_FRICTION);
+        //m_Momentum.x *= (1.0f - IN_AIR_FRICTION);
+        //m_Momentum.y *= (1.0f - IN_AIR_FRICTION);
     }
 
     static float buildUpMomentumTime = 0.0f;
@@ -282,12 +283,11 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         m_FlyMomentum = JUMPING_MOMENTUM * glm::normalize(m_FlyMomentum);
     } 
     
-    m_Momentum +=  m_FlyMomentum;
     if (m_Momentum.z > JUMPING_MOMENTUM) {
         m_Momentum.z = JUMPING_MOMENTUM;
     }
 
-    m_Velocity = m_Momentum;
+    m_Velocity = m_Momentum + m_FlyMomentum;
 
     ButtonState fireState = CHECK_ACTION("fire");
     if (fireState == ButtonState::PRESSED) {
