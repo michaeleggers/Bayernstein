@@ -58,7 +58,7 @@ void PatrolPath::TargetNextWaypoint() {
     Waypoint currentWaypoint = GetCurrentWaypoint();
     m_PreviousWaypointName = m_CurrentWaypointName;
     m_CurrentWaypointName = currentWaypoint.target;
-    printf("Setting waypoint to: %s\n", m_CurrentWaypointName.c_str());
+    //printf("Setting waypoint to: %s\n", m_CurrentWaypointName.c_str());
 }
 
 Waypoint PatrolPath::GetCurrentWaypoint() {

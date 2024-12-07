@@ -27,7 +27,7 @@ public:
     CFollowCamera(BaseGameEntity* target = nullptr);
     ~CFollowCamera();
 
-    void Update() override;
+    void PostCollisionUpdate() override;
     bool HandleMessage(const Telegram& telegram) override;
 
     void SetTarget(BaseGameEntity* target);

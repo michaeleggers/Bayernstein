@@ -68,6 +68,9 @@ public:
 					  ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
 	virtual void RenderEnd(void)						override;
 	virtual void SetWindowTitle(char* windowTitle) override;
+	virtual SDL_Window* GetWindow() override {
+		return m_Window;
+	};
 
 	void ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType);
 	void InitShaders();

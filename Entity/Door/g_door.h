@@ -36,7 +36,7 @@ public:
 
     explicit Door(const std::vector<Property>& properties, const std::vector<Brush>& brushes);
     
-    void Update() override;
+    void PostCollisionUpdate() override;
 
     ~Door() override {
         delete m_pStateMachine;

@@ -45,6 +45,10 @@ ButtonState CInputHandler::GetMappedButtonState(const std::string& actionName) {
         return ButtonState::PRESSED;
     }
 
+    if ( MouseMoved(key) ) {
+        return ButtonState::MOVED;
+    }
+
     // Action exists but no button is active in any way.
     return ButtonState::NONE;
 }
