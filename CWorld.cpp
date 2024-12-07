@@ -292,7 +292,9 @@ void CWorld::CollideEntities() {
                                              (float)DOD_FIXED_UPDATE_TIME/1000.0f*pEntity->m_Velocity, 
                                              pDoor->MapTris().data(), 
                                              pDoor->MapTris().size());
+
                 if (ci.didCollide) { 
+                    pEntity->m_CollisionState = ES_ON_GROUND;
                     printf("COLLIDED!\n");
                     Dispatcher->DispatchMessage(
                         SEND_MSG_IMMEDIATELY, pEntity->ID(), pDoor->ID(), message_type::Collision, 0);

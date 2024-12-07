@@ -237,7 +237,6 @@ void FirstPersonPlayer::UpdatePlayerModel() {
                     m_Momentum.y = 0.0f;
                 }
                 else {
-                    printf("HERE\n");
                     m_Momentum.x += frictionForce.x;
                     m_Momentum.y += frictionForce.y;
                 }
