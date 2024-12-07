@@ -239,8 +239,8 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     else if (m_PrevCollisionState == ES_IN_AIR) {
         // If in air, apply some downward gravity acceleration.
         m_FlyMomentum.z += (float)dt * (-GRAVITY_ACCELERATION);
-        m_Momentum.x *= IN_AIR_FRICTION;
-        m_Momentum.y *= IN_AIR_FRICTION;
+        m_Momentum.x *= (1.0f - IN_AIR_FRICTION);
+        m_Momentum.y *= (1.0f - IN_AIR_FRICTION);
     }
 
     static float buildUpMomentumTime = 0.0f;

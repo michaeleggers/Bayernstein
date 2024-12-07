@@ -29,7 +29,7 @@ public:
     static constexpr float MAX_MOUSE_LOOK_DEGREES   = 89.0f;
     static constexpr float GRAVITY_ACCELERATION     = 2.5f;
     static constexpr float JUMPING_MOMENTUM         = 1000.0f;
-    static constexpr float IN_AIR_FRICTION          = 0.8f;
+    static constexpr float IN_AIR_FRICTION          = 0.1f;
 
     explicit FirstPersonPlayer(glm::vec3 initialPosition);
     
