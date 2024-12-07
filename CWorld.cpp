@@ -225,7 +225,6 @@ void CWorld::CollideEntitiesWithWorld() {
     // a certain type.
     // FIX: Dumb! We should loop over the collider components and 
     // then update their owners. Again: We need the actor-component model ;)
-#if 1 
     for (int i = 0; i < entities.size(); i++) {
         BaseGameEntity* pEntity = entities[i];
         if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
@@ -244,15 +243,32 @@ void CWorld::CollideEntitiesWithWorld() {
                                          -DOD_WORLD_UP*7.0f, 
                                           m_MapTris.data(),
                                           StaticGeometryCount() );
+            
             if ( ci.didCollide ) {
                 pEntity->m_CollisionState = ES_ON_GROUND;
             }
             else {
                 pEntity->m_CollisionState = ES_IN_AIR;
             }
+   
+            // Also check for brush entities such as doors
+            // (we could stand on top of them).
+            for (int i = 0; i < m_pBrushMapTris.size(); i++) {
+                std::vector<MapTri>* brushMapTris = m_pBrushMapTris[i];
+
+                CollisionInfo brushCi = PushTouch(*ec,
+                                                 -DOD_WORLD_UP*7.0f, 
+                                                  brushMapTris->data(),
+                                                  brushMapTris->size() );
+                if ( brushCi.didCollide ) {
+                    pEntity->m_CollisionState = ES_ON_GROUND;
+                    break;
+                }
+            }
+
         }
     }
-#endif
+
 
 }
 
@@ -294,7 +310,6 @@ void CWorld::CollideEntities() {
                                              pDoor->MapTris().size());
 
                 if (ci.didCollide) { 
-                    pEntity->m_CollisionState = ES_ON_GROUND;
                     printf("COLLIDED!\n");
                     Dispatcher->DispatchMessage(
                         SEND_MSG_IMMEDIATELY, pEntity->ID(), pDoor->ID(), message_type::Collision, 0);
