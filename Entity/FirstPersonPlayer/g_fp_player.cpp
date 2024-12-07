@@ -179,17 +179,12 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     m_Forward = glm::rotate(m_Orientation,
                             DOD_WORLD_FORWARD);
     m_Side = glm::cross(m_Forward, m_Up);
-   
 
 
     float movementSpeed = RUN_VELOCITY;
     if ( KeyPressed(SDLK_LSHIFT) ) {
         movementSpeed *= WALK_FACTOR;
     }
-    // Change player's velocity and animation state based on input
-    //m_Momentum.x = 0.0f;
-    //m_Momentum.y = 0.0f;
-    //m_Momentum.z = 0.0f;
     AnimState playerAnimState = ANIM_STATE_IDLE;
     bool buildUpMomentum = false;    
     m_Dir = glm::vec3(0.0f);
@@ -216,16 +211,35 @@ void FirstPersonPlayer::UpdatePlayerModel() {
 
     // Make sure we don't get faster when going both
     // forward and to the side for example.
-    if ( glm::length(m_Dir) > 0.0f ) { // This is neccessary to not divide by 0 in glm::normalize
+    float inputLength = glm::length(m_Dir);
+    if ( inputLength > 0.0f ) { // This is neccessary to not divide by 0 in glm::normalize
         m_Dir = glm::normalize(m_Dir);
     }
 
-    m_Momentum = m_Dir * movementSpeed;
+    bool isMoving = inputLength > 0.0f;
 
     if (playerAnimState == ANIM_STATE_RUN) {
         buildUpMomentum = true;
         if ( speed == ButtonState::PRESSED ) {
             playerAnimState = ANIM_STATE_WALK;
+        }
+    }
+
+    if (isMoving) {
+        m_Momentum += m_Dir * 3.0f;
+        if (glm::length(m_Momentum) > movementSpeed) {
+            m_Momentum = movementSpeed * glm::normalize(m_Momentum);
+        } 
+    }
+    else {
+        if (glm::length(m_Momentum) > 0.0f) {
+            glm::vec3 frictionForce = -glm::normalize(m_Momentum) * 0.9f;
+            if (glm::length(frictionForce) > glm::length(m_Momentum)) {
+                m_Momentum = glm::vec3(0.0f);
+            }
+            else {
+                m_Momentum += frictionForce;
+            }
         }
     }
     
@@ -251,16 +265,13 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     else {
         buildUpMomentumTime -= (float)dt;
     }
-
     buildUpMomentumTime = glm::clamp(buildUpMomentumTime, 0.0f, MOMENTUM_BUILD_UP);
-    //printf("%f\n", buildUpMomentumTime);
     float smooth = glm::smoothstep(0.0f, MOMENTUM_BUILD_UP, buildUpMomentumTime);
     printf("%f\n", smooth);
-    //m_Momentum = smooth * m_PrevMomentum;
+   
     m_Momentum +=  m_FlyMomentum;
 
     m_Velocity = m_Momentum;
-    // printf("m_Velocity.z: %f\n", m_Velocity.z);
 
     ButtonState fireState = CHECK_ACTION("fire");
     if (fireState == ButtonState::PRESSED) {
