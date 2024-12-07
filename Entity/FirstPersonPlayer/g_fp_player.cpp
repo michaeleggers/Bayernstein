@@ -251,20 +251,18 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         if ( jump == ButtonState::WENT_DOWN ) {
             printf("Jumping....\n");
             //m_Momentum.z = JUMPING_MOMENTUM;
-            m_FlyMomentum = m_Momentum;
+            m_FlyMomentum   = m_Momentum;
             m_FlyMomentum.z = JUMPING_MOMENTUM;
         }
     }
     else if (m_PrevCollisionState == ES_IN_AIR) {
         glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
-        m_Momentum += m_Dir * 3.0f;
+        m_Momentum += (1.0f - IN_AIR_FRICTION)*m_Dir * 3.0f;
         if (glm::length(horizontalMomentum) > movementSpeed) {
             m_Momentum = movementSpeed * glm::normalize(m_Momentum);
         } 
         // If in air, apply some downward gravity acceleration.
         m_FlyMomentum.z += (float)dt * (-GRAVITY_ACCELERATION);
-        //m_Momentum.x *= (1.0f - IN_AIR_FRICTION);
-        //m_Momentum.y *= (1.0f - IN_AIR_FRICTION);
     }
 
     static float buildUpMomentumTime = 0.0f;

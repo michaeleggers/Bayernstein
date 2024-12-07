@@ -27,8 +27,18 @@ public:
     static constexpr float RUN_VELOCITY             = 300.0f;
     static constexpr float WALK_FACTOR              = 0.3f;
     static constexpr float MAX_MOUSE_LOOK_DEGREES   = 89.0f;
+
+    // TODO: What are the correct units to use?
+    // NOTE: Use this (for now) to control the gravity
+    // and *not* m_Gravity inside CWorld! m_Gravity of
+    // CWorld is only really used for stair climbing 
+    // at this moment.
     static constexpr float GRAVITY_ACCELERATION     = 2.5f;
     static constexpr float JUMPING_MOMENTUM         = 1000.0f;
+
+    // How much can you move when in air?
+    // 1.0: maximum friction => Not able to change direction in air.
+    // 0.0: no friction => Fully able to change direction in air.
     static constexpr float IN_AIR_FRICTION          = 0.1f;
 
     explicit FirstPersonPlayer(glm::vec3 initialPosition);
