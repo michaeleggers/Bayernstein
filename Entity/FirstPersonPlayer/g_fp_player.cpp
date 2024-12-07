@@ -225,20 +225,24 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         }
     }
 
+    glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
     if (isMoving) {
         m_Momentum += m_Dir * 3.0f;
-        if (glm::length(m_Momentum) > movementSpeed) {
+        if (glm::length(horizontalMomentum) > movementSpeed) {
             m_Momentum = movementSpeed * glm::normalize(m_Momentum);
         } 
     }
     else {
-        if (glm::length(m_Momentum) > 0.0f) {
-            glm::vec3 frictionForce = -glm::normalize(m_Momentum) * 0.9f;
-            if (glm::length(frictionForce) > glm::length(m_Momentum)) {
-                m_Momentum = glm::vec3(0.0f);
+        if ( glm::length(horizontalMomentum) > 0.0f ) {
+            glm::vec3 frictionForce = -glm::normalize(horizontalMomentum) * 0.9f;
+            if (glm::length(frictionForce) > glm::length(horizontalMomentum)) {
+                m_Momentum.x = 0.0f;
+                m_Momentum.y = 0.0f;
             }
             else {
-                m_Momentum += frictionForce;
+                printf("HERE\n");
+                m_Momentum.x += frictionForce.x;
+                m_Momentum.y += frictionForce.y;
             }
         }
     }
@@ -251,6 +255,11 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         }
     }
     else if (m_PrevCollisionState == ES_IN_AIR) {
+        glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
+        m_Momentum += m_Dir * 3.0f;
+        if (glm::length(horizontalMomentum) > movementSpeed) {
+            m_Momentum = movementSpeed * glm::normalize(m_Momentum);
+        } 
         // If in air, apply some downward gravity acceleration.
         m_FlyMomentum.z += (float)dt * (-GRAVITY_ACCELERATION);
         m_Momentum.x *= (1.0f - IN_AIR_FRICTION);
@@ -269,7 +278,14 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     float smooth = glm::smoothstep(0.0f, MOMENTUM_BUILD_UP, buildUpMomentumTime);
     printf("%f\n", smooth);
    
+    if (glm::length(m_FlyMomentum) > JUMPING_MOMENTUM) {
+        m_FlyMomentum = JUMPING_MOMENTUM * glm::normalize(m_FlyMomentum);
+    } 
+    
     m_Momentum +=  m_FlyMomentum;
+    if (m_Momentum.z > JUMPING_MOMENTUM) {
+        m_Momentum.z = JUMPING_MOMENTUM;
+    }
 
     m_Velocity = m_Momentum;
 
