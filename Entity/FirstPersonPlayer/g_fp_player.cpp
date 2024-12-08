@@ -30,6 +30,7 @@ FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
     m_PrevPosition = initialPosition;
     //m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
     m_Camera = Camera(initialPosition);
+    //m_Camera.RotateAroundSide(-60.0f);
     m_PrevCollisionState = ES_UNDEFINED;
     m_Momentum = glm::vec3(0.0f);
 }
@@ -83,7 +84,7 @@ void FirstPersonPlayer::PreCollisionUpdate() {
         }
         else if (m_PrevCollisionState == ES_IN_AIR) {
             glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
-            m_Momentum += float(dt) * (1.0f - IN_AIR_FRICTION)*m_Dir * GROUND_RESISTANCE;
+            m_Momentum += (float)DOD_FIXED_UPDATE_TIME * (1.0f - IN_AIR_FRICTION)*m_Dir * GROUND_RESISTANCE;
             if (glm::length(horizontalMomentum) > m_MovementSpeed) {
                 m_Momentum = m_MovementSpeed * glm::normalize(m_Momentum);
             } 

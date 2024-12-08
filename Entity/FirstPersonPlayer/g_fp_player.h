@@ -39,7 +39,7 @@ public:
     // How much can you move when in air?
     // 1.0: maximum friction => Not able to change direction in air.
     // 0.0: no friction => Fully able to change direction in air.
-    static constexpr float IN_AIR_FRICTION          = 0.1f;
+    static constexpr float IN_AIR_FRICTION          = 0.7f;
     static constexpr float GROUND_RESISTANCE        = 3.0f;
     static constexpr float GROUND_FRICTION          = 0.9f;
 
