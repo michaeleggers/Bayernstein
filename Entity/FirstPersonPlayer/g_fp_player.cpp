@@ -47,6 +47,14 @@ void FirstPersonPlayer::PreCollisionUpdate() {
     static double accumulator = 0.0;
     accumulator += dt;
 
+    if (m_PrevCollisionState == ES_ON_GROUND) {
+        if ( m_WantsToJump ) {
+            printf("Jumping....\n");
+            m_FlyMomentum   = m_Momentum;
+            m_FlyMomentum.z = JUMPING_MOMENTUM;
+        }
+    }
+
     while (accumulator >= DOD_FIXED_UPDATE_TIME) {
 
         if (m_PrevCollisionState == ES_ON_GROUND) {
@@ -71,13 +79,6 @@ void FirstPersonPlayer::PreCollisionUpdate() {
                         m_Momentum.y += frictionForce.y;
                     }
                 }
-            }
-        
-            if ( m_WantsToJump ) {
-                printf("Jumping....\n");
-                m_FlyMomentum   = m_Momentum;
-                m_FlyMomentum.z = JUMPING_MOMENTUM;
-                m_WantsToJump = false;
             }
         }
         else if (m_PrevCollisionState == ES_IN_AIR) {
