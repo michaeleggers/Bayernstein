@@ -44,54 +44,61 @@ void FirstPersonPlayer::UpdatePosition(glm::vec3 newPosition) {
 void FirstPersonPlayer::PreCollisionUpdate() {
     
     double dt = GetDeltaTime();
+    static double accumulator = 0.0;
+    accumulator += dt;
 
-    if (m_PrevCollisionState == ES_ON_GROUND) {
+    while (accumulator >= DOD_FIXED_UPDATE_TIME) {
+
+        if (m_PrevCollisionState == ES_ON_GROUND) {
+            
+            glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
+
+            if (m_IsMoving) {
+                m_Momentum += (float)DOD_FIXED_UPDATE_TIME * m_Dir * GROUND_RESISTANCE;
+                if (glm::length(horizontalMomentum) > m_MovementSpeed) {
+                    m_Momentum = m_MovementSpeed * glm::normalize(m_Momentum);
+                } 
+            }
+            else {
+                if ( glm::length(horizontalMomentum) > 0.0f ) {
+                    glm::vec3 frictionForce = (float)DOD_FIXED_UPDATE_TIME * -glm::normalize(horizontalMomentum) * GROUND_FRICTION;
+                    if (glm::length(frictionForce) > glm::length(horizontalMomentum)) {
+                        m_Momentum.x = 0.0f;
+                        m_Momentum.y = 0.0f;
+                    }
+                    else {
+                        m_Momentum.x += frictionForce.x;
+                        m_Momentum.y += frictionForce.y;
+                    }
+                }
+            }
         
-        glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
-
-        if (m_IsMoving) {
-            m_Momentum += (float)dt * m_Dir * GROUND_RESISTANCE;
+            if ( m_WantsToJump ) {
+                printf("Jumping....\n");
+                m_FlyMomentum   = m_Momentum;
+                m_FlyMomentum.z = JUMPING_MOMENTUM;
+                m_WantsToJump = false;
+            }
+        }
+        else if (m_PrevCollisionState == ES_IN_AIR) {
+            glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
+            m_Momentum += float(dt) * (1.0f - IN_AIR_FRICTION)*m_Dir * GROUND_RESISTANCE;
             if (glm::length(horizontalMomentum) > m_MovementSpeed) {
                 m_Momentum = m_MovementSpeed * glm::normalize(m_Momentum);
             } 
+            // If in air, apply some downward gravity acceleration.
+            m_FlyMomentum.z += (float)DOD_FIXED_UPDATE_TIME * (-GRAVITY_ACCELERATION);
         }
-        else {
-            if ( glm::length(horizontalMomentum) > 0.0f ) {
-                glm::vec3 frictionForce = (float)dt * -glm::normalize(horizontalMomentum) * GROUND_FRICTION;
-                if (glm::length(frictionForce) > glm::length(horizontalMomentum)) {
-                    m_Momentum.x = 0.0f;
-                    m_Momentum.y = 0.0f;
-                }
-                else {
-                    m_Momentum.x += frictionForce.x;
-                    m_Momentum.y += frictionForce.y;
-                }
-            }
-        }
-    
-        if ( m_WantsToJump ) {
-            printf("Jumping....\n");
-            m_FlyMomentum   = m_Momentum;
-            m_FlyMomentum.z = JUMPING_MOMENTUM;
-            m_WantsToJump = false;
-        }
-    }
-    else if (m_PrevCollisionState == ES_IN_AIR) {
-        glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
-        m_Momentum += float(dt) * (1.0f - IN_AIR_FRICTION)*m_Dir * GROUND_RESISTANCE;
-        if (glm::length(horizontalMomentum) > m_MovementSpeed) {
-            m_Momentum = m_MovementSpeed * glm::normalize(m_Momentum);
+
+        if (glm::length(m_FlyMomentum) > JUMPING_MOMENTUM) {
+            m_FlyMomentum = JUMPING_MOMENTUM * glm::normalize(m_FlyMomentum);
         } 
-        // If in air, apply some downward gravity acceleration.
-        m_FlyMomentum.z += (float)dt * (-GRAVITY_ACCELERATION);
-    }
+       
+        m_Momentum.z = glm::clamp( m_Momentum.z, 0.0f, JUMPING_MOMENTUM );
 
-    if (glm::length(m_FlyMomentum) > JUMPING_MOMENTUM) {
-        m_FlyMomentum = JUMPING_MOMENTUM * glm::normalize(m_FlyMomentum);
-    } 
-   
-    m_Momentum.z = glm::clamp( m_Momentum.z, 0.0f, JUMPING_MOMENTUM );
 
+        accumulator -= DOD_FIXED_UPDATE_TIME;
+    } // while accumulator > DOD_FIXED_UPDATE_TIME
     m_Velocity = m_Momentum + m_FlyMomentum;
 }
 
