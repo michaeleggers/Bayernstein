@@ -60,8 +60,13 @@ IRender* GetRenderer() {
     return g_Renderer;
 }
 
-int main(int argc, char** argv)
-{
+static DebugSettings g_debugSettings;
+
+DebugSettings* GetDebugSettings() {
+    return &g_debugSettings;
+}
+
+int main(int argc, char** argv) {
 
 #if WIN32
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);

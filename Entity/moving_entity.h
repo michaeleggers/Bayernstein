@@ -9,18 +9,19 @@
 #define GLM_FORCE_RADIANS
 #include "../../dependencies/glm/ext.hpp"
 #include "../../dependencies/glm/glm.hpp"
+#include "../../globals.h"
 
 class MovingEntity : public BaseGameEntity {
 
   public:
     MovingEntity(EntityType type)
         : BaseGameEntity(type),
-          m_Forward(0.0f, -1.0f, 0.0f),
-          m_Side(1.0f, 0.0f, 0.0f),
-          m_Up(0.0f, 0.0f, 1.0f),
+          m_Forward(DOD_WORLD_FORWARD),
+          m_Side(DOD_WORLD_RIGHT),
+          m_Up(DOD_WORLD_UP),
           m_Mass(1.0f),
           m_MaxSpeed(0.1f),
-          m_MaxForce(50.5f),
+          m_MaxForce(150.5f),
           m_MaxTurnRate(1.0f) {};
 
     virtual ~MovingEntity() = default;

@@ -45,6 +45,7 @@ public:
 	virtual void ImDrawIndexed(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, bool cullFace = true, DrawMode drawMode = DRAW_MODE_SOLID) override;
 	virtual void ImDrawVerts(Vertex* verts, uint32_t numVerts) override;
 	virtual void ImDrawLines(Vertex* verts, uint32_t numVerts, bool close = false) override;
+	virtual void ImDrawCircle(glm::vec3 center,float radius, glm::vec3 normal) override;
 	virtual void ImDrawSphere(glm::vec3 pos, float radius, glm::vec4 color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)) override;
 	virtual void RenderBegin(void)						override;
 	virtual void Render(Camera* camera, 

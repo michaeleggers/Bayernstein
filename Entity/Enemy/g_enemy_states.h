@@ -5,7 +5,9 @@
 #ifndef ENEMYSTATES_H
 #define ENEMYSTATES_H
 #include "../FSM/istate.h"
-#include "g_enemy.h"
+
+class Enemy;
+class Telegram;
 
 class EnemyIdle : public State<Enemy> {
   private:
@@ -17,26 +19,6 @@ class EnemyIdle : public State<Enemy> {
   public:
 	// this is a singleton
 	static EnemyIdle* Instance();
-
-	void Enter(Enemy* pEnemy) override;
-
-	void Execute(Enemy* pEnemy) override;
-
-	void Exit(Enemy* pEnemy) override;
-
-	bool OnMessage(Enemy* agent, const Telegram& telegram) override;
-};
-
-class EnemyRunning : public State<Enemy> {
-  private:
-	EnemyRunning() = default;
-	// copy ctor and assignment should be private
-	EnemyRunning(const EnemyRunning&);
-	EnemyRunning& operator=(const EnemyRunning&);
-
-  public:
-	// this is a singleton
-	static EnemyRunning* Instance();
 
 	void Enter(Enemy* pEnemy) override;
 
@@ -87,6 +69,50 @@ class EnemyDead : public State<Enemy> {
 	void Exit(Enemy* pEnemy) override;
 
 	bool OnMessage(Enemy* agent, const Telegram& telegram) override;
+};
+
+class EnemyWander : public State<Enemy> {
+  private:
+    EnemyWander() = default;
+
+    // copy ctor and assignment should be private
+    EnemyWander(const EnemyWander&);
+    EnemyWander& operator=(const EnemyWander&);
+
+  public:
+    // copy ctor and assignment should be private
+    // this is a singleton
+    static EnemyWander* Instance();
+
+    void Enter(Enemy* pEnemy) override;
+
+    void Execute(Enemy* pEnemy) override;
+
+    void Exit(Enemy* pEnemy) override;
+
+    bool OnMessage(Enemy* agent, const Telegram& telegram) override;
+};
+
+class EnemyPatrol : public State<Enemy> {
+  private:
+    EnemyPatrol() = default;
+
+    // copy ctor and assignment should be private
+    EnemyPatrol(const EnemyPatrol&);
+    EnemyPatrol& operator=(const EnemyPatrol&);
+
+  public:
+    // copy ctor and assignment should be private
+    // this is a singleton
+    static EnemyPatrol* Instance();
+
+    void Enter(Enemy* pEnemy) override;
+
+    void Execute(Enemy* pEnemy) override;
+
+    void Exit(Enemy* pEnemy) override;
+
+    bool OnMessage(Enemy* agent, const Telegram& telegram) override;
 };
 
 #endif // ENEMYSTATES_H
