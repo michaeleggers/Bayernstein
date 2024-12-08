@@ -49,6 +49,7 @@ public:
         delete m_pStateMachine;
     }
 
+    void PreCollisionUpdate() override;
     void PostCollisionUpdate() override;
     bool HandleMessage(const Telegram& telegram) override;
     void HandleInput() override;
@@ -97,7 +98,9 @@ private:
     int                 m_MouseY = 0;
     int                 m_MousePrevX = 0;
     int                 m_MousePrevY = 0;
-    bool                m_IsJumping = false;
+    bool                m_WantsToJump = false;
+    bool                m_IsMoving = false;
+    float               m_MovementSpeed = 0.0f;
     glm::vec3           m_Momentum = glm::vec3(0.0f);
     glm::vec3           m_Dir = glm::vec3(0.0f);
     glm::vec3           m_FlyMomentum = glm::vec3(0.0f);

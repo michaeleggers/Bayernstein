@@ -41,6 +41,60 @@ void FirstPersonPlayer::UpdatePosition(glm::vec3 newPosition) {
     m_Position = newPosition;
 }
 
+void FirstPersonPlayer::PreCollisionUpdate() {
+    
+    double dt = GetDeltaTime();
+
+    if (m_PrevCollisionState == ES_ON_GROUND) {
+        
+        glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
+
+        if (m_IsMoving) {
+            m_Momentum += (float)dt * m_Dir * GROUND_RESISTANCE;
+            if (glm::length(horizontalMomentum) > m_MovementSpeed) {
+                m_Momentum = m_MovementSpeed * glm::normalize(m_Momentum);
+            } 
+        }
+        else {
+            if ( glm::length(horizontalMomentum) > 0.0f ) {
+                glm::vec3 frictionForce = (float)dt * -glm::normalize(horizontalMomentum) * GROUND_FRICTION;
+                if (glm::length(frictionForce) > glm::length(horizontalMomentum)) {
+                    m_Momentum.x = 0.0f;
+                    m_Momentum.y = 0.0f;
+                }
+                else {
+                    m_Momentum.x += frictionForce.x;
+                    m_Momentum.y += frictionForce.y;
+                }
+            }
+        }
+    
+        if ( m_WantsToJump ) {
+            printf("Jumping....\n");
+            m_FlyMomentum   = m_Momentum;
+            m_FlyMomentum.z = JUMPING_MOMENTUM;
+            m_WantsToJump = false;
+        }
+    }
+    else if (m_PrevCollisionState == ES_IN_AIR) {
+        glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
+        m_Momentum += float(dt) * (1.0f - IN_AIR_FRICTION)*m_Dir * GROUND_RESISTANCE;
+        if (glm::length(horizontalMomentum) > m_MovementSpeed) {
+            m_Momentum = m_MovementSpeed * glm::normalize(m_Momentum);
+        } 
+        // If in air, apply some downward gravity acceleration.
+        m_FlyMomentum.z += (float)dt * (-GRAVITY_ACCELERATION);
+    }
+
+    if (glm::length(m_FlyMomentum) > JUMPING_MOMENTUM) {
+        m_FlyMomentum = JUMPING_MOMENTUM * glm::normalize(m_FlyMomentum);
+    } 
+   
+    m_Momentum.z = glm::clamp( m_Momentum.z, 0.0f, JUMPING_MOMENTUM );
+
+    m_Velocity = m_Momentum + m_FlyMomentum;
+}
+
 void FirstPersonPlayer::PostCollisionUpdate() {
 
     double dt = GetDeltaTime();
@@ -181,9 +235,9 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     m_Side = glm::cross(m_Forward, m_Up);
 
 
-    float movementSpeed = RUN_VELOCITY;
+    m_MovementSpeed = RUN_VELOCITY;
     if ( KeyPressed(SDLK_LSHIFT) ) {
-        movementSpeed *= WALK_FACTOR;
+        m_MovementSpeed *= WALK_FACTOR;
     }
     AnimState playerAnimState = ANIM_STATE_IDLE;
     m_Dir = glm::vec3(0.0f);
@@ -211,7 +265,8 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         m_Dir = glm::normalize(m_Dir);
     }
 
-    bool isMoving = inputLength > 0.0f;
+    m_IsMoving    = inputLength > 0.0f;
+    m_WantsToJump = jump == ButtonState::WENT_DOWN;
 
     if (playerAnimState == ANIM_STATE_RUN) {
         if ( speed == ButtonState::PRESSED ) {
@@ -219,53 +274,6 @@ void FirstPersonPlayer::UpdatePlayerModel() {
         }
     }
     
-    if (m_PrevCollisionState == ES_ON_GROUND) {
-        
-        glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
-
-        if (isMoving) {
-            m_Momentum += (float)dt * m_Dir * GROUND_RESISTANCE;
-            if (glm::length(horizontalMomentum) > movementSpeed) {
-                m_Momentum = movementSpeed * glm::normalize(m_Momentum);
-            } 
-        }
-        else {
-            if ( glm::length(horizontalMomentum) > 0.0f ) {
-                glm::vec3 frictionForce = (float)dt * -glm::normalize(horizontalMomentum) * GROUND_FRICTION;
-                if (glm::length(frictionForce) > glm::length(horizontalMomentum)) {
-                    m_Momentum.x = 0.0f;
-                    m_Momentum.y = 0.0f;
-                }
-                else {
-                    m_Momentum.x += frictionForce.x;
-                    m_Momentum.y += frictionForce.y;
-                }
-            }
-        }
-    
-        if ( jump == ButtonState::WENT_DOWN ) {
-            printf("Jumping....\n");
-            m_FlyMomentum   = m_Momentum;
-            m_FlyMomentum.z = JUMPING_MOMENTUM;
-        }
-    }
-    else if (m_PrevCollisionState == ES_IN_AIR) {
-        glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
-        m_Momentum += float(dt) * (1.0f - IN_AIR_FRICTION)*m_Dir * GROUND_RESISTANCE;
-        if (glm::length(horizontalMomentum) > movementSpeed) {
-            m_Momentum = movementSpeed * glm::normalize(m_Momentum);
-        } 
-        // If in air, apply some downward gravity acceleration.
-        m_FlyMomentum.z += (float)dt * (-GRAVITY_ACCELERATION);
-    }
-
-    if (glm::length(m_FlyMomentum) > JUMPING_MOMENTUM) {
-        m_FlyMomentum = JUMPING_MOMENTUM * glm::normalize(m_FlyMomentum);
-    } 
-   
-    m_Momentum.z = glm::clamp( m_Momentum.z, 0.0f, JUMPING_MOMENTUM );
-
-    m_Velocity = m_Momentum + m_FlyMomentum;
 
     ButtonState fireState = CHECK_ACTION("fire");
     if (fireState == ButtonState::PRESSED) {
