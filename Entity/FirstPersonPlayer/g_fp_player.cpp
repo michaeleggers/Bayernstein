@@ -92,9 +92,18 @@ void FirstPersonPlayer::PreCollisionUpdate() {
             m_FlyMomentum.z += (float)DOD_FIXED_UPDATE_TIME * (-GRAVITY_ACCELERATION);
         }
 
+        // NOTE: It *can* make sense to restrict further
+        // downward gravity in certain cases, eg. when
+        // the gravity is set to something pretty extrem
+        // and it would cause the player to fall so quickly
+        // that after a few frames the numeric precision gets
+        // exhausted (yes, this can happen ;) ). Usually  this
+        // is not needed, though.
+        /*
         if (glm::length(m_FlyMomentum) > JUMPING_MOMENTUM) {
             m_FlyMomentum = JUMPING_MOMENTUM * glm::normalize(m_FlyMomentum);
         } 
+        */
        
         m_Momentum.z = glm::clamp( m_Momentum.z, 0.0f, JUMPING_MOMENTUM );
 

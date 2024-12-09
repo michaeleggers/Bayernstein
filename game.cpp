@@ -65,7 +65,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/enemy_test.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple6.map");
 #endif
 
     size_t inputLength = mapData.length();
