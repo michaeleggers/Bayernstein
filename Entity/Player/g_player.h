@@ -27,7 +27,7 @@ class Player : public MovingEntity, public IInputReceiver {
         delete m_pStateMachine;
     }
 
-    void Update() override;
+    void PostCollisionUpdate() override;
     bool HandleMessage(const Telegram& telegram) override;
     void HandleInput() override;
     
@@ -38,7 +38,7 @@ class Player : public MovingEntity, public IInputReceiver {
         return m_pStateMachine;
     }
 
-    EllipsoidCollider GetEllipsoidCollider() const override;
+    EllipsoidCollider* GetEllipsoidColliderPtr() override;
 
     HKD_Model* GetModel();
 

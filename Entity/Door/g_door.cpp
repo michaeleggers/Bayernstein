@@ -19,7 +19,7 @@
 #include "../../r_model.h"
 #include "../../globals.h"
 
-void Door::Update() {
+void Door::PostCollisionUpdate() {
     m_pStateMachine->Update();
 }
 
@@ -41,12 +41,16 @@ Door::Door(const std::vector<Property>& properties,
     IRender* renderer = GetRenderer();
     renderer->RegisterBrush(&m_Model);
 
+
     // Get the brush (geometry) that defines this door
-    // Assume just one brush for now... // TODO: Could be more brushes!
-    std::vector<MapPolygon> mapPolys = createPolysoup( brushes[ 0 ] );
+
+    std::vector<MapPolygon> mapPolys{};
+    for (int i = 0; i < brushes.size(); i++) {
+        std::vector<MapPolygon> polys = createPolysoup( brushes[ i ] );
+        std::copy( polys.begin(), polys.end(), std::back_inserter(mapPolys) );
+    }
     std::vector<MapPolygon> mapTris = triangulate(mapPolys);
    
-    // NOTE: Just make doors golden for now. Obviously we texture them later.
     // TODO: This stuff happens quite common. Also: Maybe tris are sufficient?
     glm::vec4 triColor = glm::vec4(1.0f, 0.9f, 0.0f, 1.0f); 
     glm::vec3 mins = glm::vec3(99999.0f);

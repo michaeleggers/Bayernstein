@@ -10,7 +10,8 @@ enum class ButtonState {
     NONE,
     WENT_DOWN,
     WENT_UP,
-    PRESSED
+    PRESSED,
+    MOVED
 };
 
 class CInputHandler {

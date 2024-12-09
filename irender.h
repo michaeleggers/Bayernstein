@@ -8,6 +8,9 @@
 #include <string>
 #include <stdint.h>
 
+#include <SDL.h>
+
+#include "irender.h"
 #include "r_itexture.h"
 #include "r_model.h"
 #include "camera.h"
@@ -69,7 +72,8 @@ public:
 	virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
 	virtual void RenderConsole(Console* console, CFont* font) = 0;
 	virtual void RenderEnd(void) = 0;
-    virtual void SetWindowTitle(char* windowTitle)                                                              = 0;
+	virtual void SetWindowTitle(char* windowTitle) = 0;
+	virtual SDL_Window* GetWindow() = 0;
 
   private:
 
