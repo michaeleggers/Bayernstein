@@ -62,7 +62,7 @@ void Enemy::PreCollisionUpdate() {
         glm::quat newForwardOrientation = glm::angleAxis(absOrientationAngle, m_Up);
         m_Orientation                   = newForwardOrientation;
 
-        // Update the forward and side vectorsenem
+        // Update the forward and side vectors
         m_Forward = newForward;
         m_Side    = glm::cross(m_Forward, m_Up);
     }

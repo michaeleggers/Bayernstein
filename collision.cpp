@@ -12,7 +12,6 @@
 #include "collision.h"
 #include "globals.h"
 
-// NOTE: This distance depends very much on the size of the level geometry!
 
 EllipsoidCollider CreateEllipsoidColliderFromAABB(glm::vec3 mins, glm::vec3 maxs)
 {
@@ -323,10 +322,17 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri)
             ci->didCollide = true;
             ci->nearestDistance = distanceToHitpoint;
             ci->hitPoint = hitPoint;
+            
+            // NOTE: This could help to counter 'false positives'
+            // but as not proven to be numerically stable yet.
+            // This code is just there as a reminder that
+            // *maybe* something could be done here.
+            /*
             if (embeddedInPlane) {
-                //ci->nearestDistance = -DOD_VERY_CLOSE_DIST;
-                //ci->hitPoint -= DOD_VERY_CLOSE_DIST*p.normal;
+                ci->nearestDistance = -DOD_VERY_CLOSE_DIST;
+                ci->hitPoint -= DOD_VERY_CLOSE_DIST*p.normal;
             }
+            */
         }
     }
 

@@ -57,7 +57,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple5.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple6.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -193,6 +193,7 @@ bool Game::RunFrame(double dt) {
             SDL_ShowCursor(SDL_DISABLE);
         }
     }
+    
     // Handle the input
     CInputDelegate::Instance()->HandleInput();
 
@@ -283,9 +284,7 @@ bool Game::RunFrame(double dt) {
             if (pEntity->Type() == ET_ENEMY) {
                 Enemy* pEnemy = (Enemy*)pEntity;
                 HKD_Model* pModel = pEnemy->GetModel();
-                if (pModel == nullptr) {
-                    continue;
-                }
+                assert( pModel != nullptr && "Enemy entity must have a model" );
                 renderer->RenderColliders(renderCam, &pModel, 1);
             }
         }

@@ -58,15 +58,15 @@ void Camera::SetOrientationFromAngle(float angle, glm::vec3 axis) {
 void Camera::LookAt(glm::vec3 target) {
     // Create new camera frame (Gram-Schmidt orthogonalization).
     glm::vec3 newForward = glm::normalize(target - m_Pos);
-    glm::vec3 newSide = glm::cross( newForward, DOD_WORLD_UP );
-    glm::vec3 newUp = glm::cross( newSide, newForward );
+    glm::vec3 newSide = glm::normalize( glm::cross(newForward, DOD_WORLD_UP) );
+    glm::vec3 newUp = glm::normalize( glm::cross(newSide, newForward) );
     glm::mat3 newFrame = glm::mat3(newForward,
                                    newSide,
                                    newUp);
     m_Forward = newForward;
     m_Side = newSide;
     m_Up = newUp;
-    glm::quat m_Orientation = glm::quat_cast(newFrame);
+    m_Orientation = glm::quat_cast(newFrame);
 }
 
 glm::mat4 Camera::ViewMatrix(void)
