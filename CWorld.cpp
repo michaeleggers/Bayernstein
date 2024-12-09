@@ -82,7 +82,6 @@ void CWorld::InitWorldFromMap(const Map& map) {
                 } else if ( prop.value == "path_corner" ) { // FIX: Should be an entity type as well.
                     Waypoint point = CWorld::GetWaypoint(&e);
                     m_NameToWaypoint.insert({ point.targetname, point });
-                    glm::vec3 pathCornerPosition = CWorld::GetOrigin(&e);
                 } else {
                     printf("Unknown entity type: %s\n", prop.value.c_str());
                 }
@@ -157,7 +156,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                             PatrolPath* pPathCopy = new PatrolPath(&path);
                             pPathCopy->SetCurrentWaypoint(enemy->m_Target);
                             pPathCopy->SetNextWaypoint(point.target);
-                            enemy->SetFollowPath(pPathCopy);
+                            enemy->SetPatrolPath(pPathCopy);
                         }
                     }
                 }

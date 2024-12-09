@@ -10,6 +10,7 @@
 #define GLM_FORCE_RADIANS
 #include "../../dependencies/glm/ext.hpp"
 #include "../../dependencies/glm/glm.hpp"
+#include "../../globals.h"
 
 #include "../globals.h"
 

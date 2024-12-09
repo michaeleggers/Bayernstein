@@ -42,30 +42,51 @@ std::vector<Vertex> PatrolPath::GetPointsAsVertices() {
 }
 
 bool PatrolPath::IsCurrentWaypointReached(glm::vec3 position) {
-    const auto& currentWaypointEntry = m_TargetnameToWaypoint.find( m_CurrentWaypointName );
+    const auto& currentWaypointEntry = m_TargetnameToWaypoint.find(m_CurrentWaypointName);
     if ( currentWaypointEntry == m_TargetnameToWaypoint.end() ) {
         return false;
     }
-    const Waypoint& waypoint = currentWaypointEntry->second;
-    glm::vec3 currentWaypointPosition = waypoint.position;
-    float distance = glm::distance(position, currentWaypointPosition);
-    //printf("Distance to waypoint: %f\n", distance);
-    
-    return distance < m_Radius;
+    const Waypoint& waypoint                = currentWaypointEntry->second;
+    glm::vec3       currentWaypointPosition = waypoint.position;
+    float           distance                = glm::distance(position, currentWaypointPosition);
+
+    return distance - m_OffsetToEntity < m_Radius;
+}
+
+bool PatrolPath::IsEndOfSegmentReached(glm::vec3 position) {
+    const auto& nextWaypointEntry = m_TargetnameToWaypoint.find(m_NextWaypointName);
+    if ( nextWaypointEntry == m_TargetnameToWaypoint.end() ) {
+        return false;
+    }
+    const Waypoint& waypoint             = nextWaypointEntry->second;
+    glm::vec3       nextWaypointPosition = waypoint.position;
+    float           distance             = glm::distance(position, nextWaypointPosition);
+
+    // printf("distance to segment end: %f, %f\n", distance, m_OffsetToEntity);
+    return distance - m_OffsetToEntity < m_Radius;
 }
 
 void PatrolPath::TargetNextWaypoint() {
-    Waypoint currentWaypoint = GetCurrentWaypoint();
+    Waypoint nextWaypoint = GetNextWaypoint();
+
     m_PreviousWaypointName = m_CurrentWaypointName;
-    m_CurrentWaypointName = currentWaypoint.target;
-    //printf("Setting waypoint to: %s\n", m_CurrentWaypointName.c_str());
+    m_CurrentWaypointName  = nextWaypoint.targetname;
+    m_NextWaypointName     = nextWaypoint.target;
+    printf("Setting waypoint to: %s\n", m_CurrentWaypointName.c_str());
 }
 
 Waypoint PatrolPath::GetCurrentWaypoint() {
-    const auto& currentWaypointEntry = m_TargetnameToWaypoint.find( m_CurrentWaypointName );
-    assert ( currentWaypointEntry != m_TargetnameToWaypoint.end() );
+    const auto& currentWaypointEntry = m_TargetnameToWaypoint.find(m_CurrentWaypointName);
+    assert(currentWaypointEntry != m_TargetnameToWaypoint.end());
 
     return currentWaypointEntry->second;
+}
+
+Waypoint PatrolPath::GetNextWaypoint() {
+    const auto& nextWaypointEntry = m_TargetnameToWaypoint.find(m_NextWaypointName);
+    assert(nextWaypointEntry != m_TargetnameToWaypoint.end());
+
+    return nextWaypointEntry->second;
 }
 
 void PatrolPath::SetCurrentWaypoint(std::string targetname) {

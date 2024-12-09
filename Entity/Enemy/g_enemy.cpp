@@ -17,6 +17,7 @@
 #include "../../input_handler.h"
 #include "../../utils/quick_math.h"
 #include "../../utils/utils.h"
+#include "../../globals.h"
 #include "g_enemy_states.h"
 
 Enemy::Enemy(const std::vector<Property>& properties)
@@ -54,10 +55,9 @@ void Enemy::PreCollisionUpdate() {
         // Calculate the new forward direction
         glm::vec3 newForward = glm::normalize(m_Velocity);
 
-        // Calculate the rotation needed to align the current forward direction with the new forward direction
-
         // Apply the rotation to the current orientation
-        // TODO: the default rotation axis (0,1,0) needs to be set globally at best. the designers need to follow this orientation
+        // NOTE: We set the orientation to -DOD_WORLD_FORWARD because the model is looking to negativ y in
+        // model space.
         float     absOrientationAngle   = glm::orientedAngle(DOD_WORLD_FORWARD, newForward, m_Up);
         glm::quat newForwardOrientation = glm::angleAxis(absOrientationAngle, m_Up);
         m_Orientation                   = newForwardOrientation;
@@ -81,6 +81,14 @@ void Enemy::PostCollisionUpdate() {
     m_pStateMachine->Update();
     SetAnimState(&m_Model, m_AnimationState);
     UpdateModel(&m_Model, (float)dt);
+
+    if ( GetDebugSettings()->patrol ) {
+        this->Patrol();
+    } else if ( GetDebugSettings()->wander ) {
+        this->Wander();
+    } else {
+        this->Idle();
+    }
 }
 
 void Enemy::LoadModel(const char* path, glm::vec3 initialPosition) {

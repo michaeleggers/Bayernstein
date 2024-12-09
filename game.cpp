@@ -11,20 +11,25 @@
 
 #include "./Message/message_type.h"
 #include "CWorld.h"
+#include "Console/VariableManager.h"
 #include "Path/path.h"
 #include "Shape.h"
 #include "ShapeSphere.h"
 #include "camera.h"
+#include "globals.h"
 #include "hkd_interface.h"
 #include "input.h"
+#include "input_delegate.h"
+#include "input_handler.h"
 #include "physics.h"
 #include "polysoup.h"
 #include "r_font.h"
 #include "r_itexture.h"
 #include "utils/utils.h"
-#include "input_handler.h"
-#include "input_delegate.h"
-#include "input_receiver.h"
+
+// TODO: Maybe put them into a game-independent file later.
+ConsoleVariable dbg_show_wander         = { "dbg_show_wander", 0 };
+ConsoleVariable dbg_show_enemy_velocity = { "dbg_show_enemy_velocity", 0 };
 
 static int hkd_Clamp(int val, int clamp) {
     if ( val > clamp || val < clamp ) return clamp;
@@ -39,6 +44,9 @@ Game::Game(std::string exePath, hkdInterface* pInterface) {
 
 void Game::Init() {
     m_AccumTime = 0.0f;
+
+    VariableManager::Register(&dbg_show_wander);
+    VariableManager::Register(&dbg_show_enemy_velocity);
 
     // Load a font file from disk
     m_ConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 72);
@@ -57,7 +65,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple6.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/enemy_test.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -212,16 +220,18 @@ bool Game::RunFrame(double dt) {
 
     Dispatcher->DispatchDelayedMessages();
 
-
-    // Fix camera position
-
-    //m_pPlayerEntity->UpdateCamera(&m_FollowCamera);
-
     // Render stuff
 
     // ImGUI stuff goes into GL default FBO
 
-    ImGui::ShowDemoWindow();
+    // ImGui::ShowDemoWindow();
+    ImGui::Begin("DebugSettings");
+    static int steering = 0;
+    ImGui::RadioButton("enemy::patrol", &steering, 0);
+    ImGui::RadioButton("enemy::wander", &steering, 1);
+    GetDebugSettings()->patrol = steering == 0;
+    GetDebugSettings()->wander = steering == 1;
+    ImGui::End();
 
     ImGui::Begin("Statistics");
     ImGui::Text( "World Tri count: %d", m_World->StaticGeometryCount() );
@@ -233,24 +243,37 @@ bool Game::RunFrame(double dt) {
     {
         renderer->Begin3D();
 
-#if 0 // FIX: How to easily enable debug-line drawing?
+        if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 ) {
+
+            Enemy*            enemy   = m_pEntityManager->GetFirstEnemy();
+            EllipsoidCollider ecEnemy = *(enemy->GetEllipsoidColliderPtr());
+            // Draw Debug Circle for enemy
+            glm::vec3 center = enemy->m_Position + enemy->m_Forward * enemy->m_pSteeringBehaviour->m_WanderDistance;
+            renderer->ImDrawCircle(center, enemy->m_pSteeringBehaviour->m_WanderRadius, DOD_WORLD_UP);
         
-        // Draw Debug Line for player veloctiy vector
-        Line velocityDebugLine = { Vertex(ecEnemy.center), Vertex(ecEnemy.center + 150.0f * enemy->m_Velocity) };
-        velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-        velocityDebugLine.b.color = velocityDebugLine.a.color;
-        renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
-#endif
+            // Draw Debug Line for player veloctiy vector
+            Line velocityDebugLine = {
+                Vertex(center),
+                Vertex(enemy->m_pSteeringBehaviour->m_WanderTarget) //* enemy->m_pSteeringBehaviour->m_WanderRadius
+            };
+            velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+            velocityDebugLine.b.color = velocityDebugLine.a.color;
+            renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
+        }
         // Render World Geometry (Batched triangles)
         //renderer->SetActiveCamera(&m_FollowCamera);
         //renderer->DrawWorldTris();
 
-
         DrawCoordinateSystem(renderer);
 
-#if 0 // debug path
-        std::vector<Vertex> vertices = m_pPath->GetPointsAsVertices();
-        renderer->ImDrawLines(vertices.data(), vertices.size(), true);
+#if 1 // debug paths
+        for ( int i = 0; i < m_World->m_Paths.size(); i++ ) {
+
+            PatrolPath path = m_World->m_Paths[ i ];
+
+            std::vector<Vertex> vertices = path.GetPointsAsVertices();
+            renderer->ImDrawLines(vertices.data(), vertices.size(), path.IsClosed());
+        }
 #endif
 
 #if 1 // Toggle moving entity rendering. Also renders world.

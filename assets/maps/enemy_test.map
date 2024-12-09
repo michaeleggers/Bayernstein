@@ -58,13 +58,16 @@
 }
 // entity 2
 {
-"classname" "monster_demon1"
-"origin" "0 0 20"
+"classname" "path_corner"
+"origin" "-88 264 4"
+"property 1" ""
+"targetname" "path1_5"
+"target" "path1_1"
 }
 // entity 3
 {
 "classname" "path_corner"
-"origin" "-136 24 4"
+"origin" "-88 -40 4"
 "targetname" "path1_1"
 "target" "path1_2"
 "property 1" ""
@@ -90,6 +93,12 @@
 "classname" "path_corner"
 "origin" "-40 200 4"
 "targetname" "path1_4"
-"target" "path1_1"
+"target" "path1_5"
 "property 1" ""
+}
+// entity 7
+{
+"classname" "monster_soldier"
+"origin" "0 0 16"
+"target" "path1_1"
 }

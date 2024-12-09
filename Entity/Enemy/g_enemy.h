@@ -8,12 +8,13 @@
 #include "../../FSM/state_machine.h"
 #include "../../collision.h"
 #include "../../input_receiver.h"
-#include "../../r_model.h"
 #include "../../map_parser.h"
+#include "../../r_model.h"
 #include "../Path/path.h"
 #include "../base_game_entity.h"
 #include "../moving_entity.h"
 #include "../steering_behaviour.h"
+#include "g_enemy_states.h"
 
 class Enemy : public MovingEntity {
   public:
@@ -38,26 +39,24 @@ class Enemy : public MovingEntity {
     
     HKD_Model*          GetModel();
 
-    void SetSeekTarget(BaseGameEntity* target) {
-        m_pSteeringBehaviour->SetTargetAgent(target);
-        m_pSteeringBehaviour->SeekOn();
+    void Wander() {
+        m_pStateMachine->ChangeState(EnemyWander::Instance());
     }
 
-    void SetFleeTarget(BaseGameEntity* target) {
-        m_pSteeringBehaviour->SetTargetAgent(target);
-        m_pSteeringBehaviour->FleeOn();
+    void Idle() {
+        m_pStateMachine->ChangeState(EnemyIdle::Instance());
     }
 
-    void SetArriveTarget(BaseGameEntity* target) {
-        m_pSteeringBehaviour->SetTargetAgent(target);
-        m_pSteeringBehaviour->ArriveOn();
+    void Patrol() {
+        assert(m_Path != nullptr && !m_Target.empty() && "Enemy has no path or target!");
+        m_pStateMachine->ChangeState(EnemyPatrol::Instance());
     }
 
-    void SetFollowPath(PatrolPath* path) {
+    void SetPatrolPath(PatrolPath* path) {
         m_Path = path;
-        m_pSteeringBehaviour->SetFollowPath(path);
-        // m_pSteeringBehaviour->FollowPathOn();
-        m_pSteeringBehaviour->FollowWaypointsOn();
+        printf("z of entity: %f, z of points %f\n", m_Position.z, path->GetPoints()[ 0 ].position.z);
+        m_Path->m_OffsetToEntity = m_Position.z - path->GetPoints()[ 0 ].position.z;
+        m_pSteeringBehaviour->SetFollowPath(m_Path);
     }
 
   public:
@@ -69,10 +68,10 @@ class Enemy : public MovingEntity {
     bool IsDead() {
         return m_Health <= 0.0;
     }
+    SteeringBehaviour* m_pSteeringBehaviour;
 
   private:
     StateMachine<Enemy>* m_pStateMachine;
-    SteeringBehaviour*   m_pSteeringBehaviour;
     double               m_Health = 100;
 
     // FIX: Those should be components for next milestone.
