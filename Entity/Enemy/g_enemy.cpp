@@ -56,8 +56,6 @@ void Enemy::PreCollisionUpdate() {
         glm::vec3 newForward = glm::normalize(m_Velocity);
 
         // Apply the rotation to the current orientation
-        // NOTE: We set the orientation to -DOD_WORLD_FORWARD because the model is looking to negativ y in
-        // model space.
         float     absOrientationAngle   = glm::orientedAngle(DOD_WORLD_FORWARD, newForward, m_Up);
         glm::quat newForwardOrientation = glm::angleAxis(absOrientationAngle, m_Up);
         m_Orientation                   = newForwardOrientation;
