@@ -157,7 +157,7 @@ def __debug_uv_mapping(triangles, uvs, image_size=148):
     image.save(debug_path / "debug_uv_maps.png")
 
 
-def are_coplanar(triangle1: Triangle, triangle2: Triangle, tolerance: float = 1e-2) -> bool:
+def are_coplanar(triangle1: Triangle, triangle2: Triangle, tolerance: float = 1e-1) -> bool:
     """Check if two triangles are coplanar."""
     # Extract vertices as numpy arrays
     v1, v2, v3 = (v.to_array() for v in triangle1.vertices)

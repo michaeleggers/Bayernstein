@@ -14,7 +14,8 @@ from data_structures.color import Color
 from data_structures.vector3f import Vector3f
 from data_structures.triangle import Triangle
 import util.hemicube as hemicube
-
+import util.geometry as geometry
+from scipy.spatial import KDTree
 
 class Lightmapper:
 
@@ -36,6 +37,13 @@ class Lightmapper:
             new_lightmap = light_map.copy()
 
             for frame_index, frame in enumerate(tqdm(self.scene.frames, desc="Processing frames")):
+                
+                external_triangles = [tri for tri in self.scene.triangles_ds if tri not in frame.triangles]
+
+                legal_pixels = []
+                illegal_pixels = []
+
+
 
                 frame_width_ws = frame.bounding_box[2]
                 frame_height_ws = frame.bounding_box[3]
@@ -44,20 +52,64 @@ class Lightmapper:
                 frame_width_pixels = math.ceil(frame_width_ws * patch_resolution)
                 frame_height_pixels = math.ceil(frame_height_ws * patch_resolution)
 
+                frame_width_uvs = frame_width_pixels / lightmap_size_pixels
+                frame_height_uvs = frame_height_pixels / lightmap_size_pixels
+
+                pixel_size_u = 1 / (frame_width_pixels -1)
+                pixel_size_v = 1 / (frame_height_pixels -1)
+                half_pixel_size_u = pixel_size_u / 2
+                half_pixel_size_v = pixel_size_v / 2
+
                 frame_light_map = np.zeros((frame_height_pixels, frame_width_pixels, 3), dtype=np.float32)
+                triangles = [triangle for triangle in frame.lm_uvs_bbox_space]
 
                 total_iterations = frame_width_pixels * frame_height_pixels
                 for v_pixel in range(frame_height_pixels):
+                    v = v_pixel / (frame_height_pixels -1)
                     for u_pixel in range(frame_width_pixels):
                         u = u_pixel / (frame_width_pixels -1)
-                        if u_pixel != 0 and v_pixel != 0 and u_pixel != frame_height_pixels-1 and v_pixel != frame_height_pixels -1:
-                            v = v_pixel / (frame_height_pixels -1)
-                            views = hemicube.generate_hemicube_views(frame.frame_normal)
+
+                        pixel_corner_uvs = [
+                            (u - half_pixel_size_u, v - half_pixel_size_v),
+                            (u - half_pixel_size_u, v + half_pixel_size_v),
+                            (u + half_pixel_size_u, v + half_pixel_size_v),
+                            (u + half_pixel_size_u, v - half_pixel_size_v)
+                        ]
+                        
+
+                        if geometry.square_triangles_overlap(pixel_corner_uvs, triangles):
+                            
+                            #u_ws = u * frame_width_ws
+                            #v_ws = v * frame_height_ws
+                            #distance = geometry.point_to_line_distance_right_of_segment((u_ws, v_ws), frame.intersections)
+                            #if distance and distance < 1/patch_resolution:
+                                #print(distance, frame_width_uvs, frame_height_uvs)
+                                #illegal_pixels.append((u_pixel, v_pixel))
+                                #continue
+                                #pass
+
                             worldspace_position = self.interpolate_uv_to_world(
                                 frame.triangles[0],
                                 frame.lm_uvs_bbox_space[0],
                                 (u, v)
                             )
+                            
+                            # Check if patch is covered by triangle on the same plane
+                            if geometry.point_is_covered_by_triangle(worldspace_position, frame.frame_normal, frame.close_triangles):
+                                illegal_pixels.append((u_pixel, v_pixel))
+                                continue
+
+
+                            distance = geometry.distance_to_closest_triangle_facing_away(worldspace_position, frame.frame_normal, frame.intersection_segments, frame.intersection_normals)
+                            #distance_to_closest_triangle = geometry.closest_plane_intersection(worldspace_position, frame.frame_normal, external_triangles)
+                            #print(distance_to_closest_triangle)
+                            #print(distance_to_closest_triangle, 1/patch_resolution *  5)
+                            if distance < 1/patch_resolution *  2:
+                                illegal_pixels.append((u_pixel, v_pixel))
+                                continue
+
+                            views = hemicube.generate_hemicube_views(frame.frame_normal)
+
 
                             images = []
                             for view in views:
@@ -76,7 +128,21 @@ class Lightmapper:
                             frame_light_map[v_pixel, u_pixel, 1] = sum_g
                             frame_light_map[v_pixel, u_pixel, 2] = sum_b
 
-                
+                            legal_pixels.append((u_pixel, v_pixel))
+                        else:
+                            illegal_pixels.append((u_pixel, v_pixel))
+
+
+                if len(legal_pixels) > 0:
+                    # Set illegal pixels to the color of the neares legal neighbour
+                    frame_light_map_copy = frame_light_map.copy()
+                    kdtree = KDTree(legal_pixels)
+                    valid_colors = np.array([frame_light_map_copy[v, u] for u, v in legal_pixels])
+                    for u_pixel, v_pixel in illegal_pixels:
+                        _, idx = kdtree.query((u_pixel, v_pixel))
+                        frame_light_map[v_pixel, u_pixel, :] = valid_colors[idx]
+
+
                 frame_u_start = int(frame_origin_u_pixels)
                 frame_v_start = int(frame_origin_v_pixels)
 
@@ -142,61 +208,6 @@ class Lightmapper:
 
         return Vector3f(world_position[0], world_position[1], world_position[2])
 
-    def generate_lightmap2(self,  lightmap_path: Path, iterations=5):
-
-        
-
-        for iteration in range(iterations):
-            a = 0
-            correction_map = hemicube.generate_correction_map(self.renderer.viewport_size)
-
-            new_lightmap = self.scene.light_map.copy()
-            for i, patch in tqdm(enumerate(self.scene.patches), total=len(self.scene.patches), desc=f'Iteration {iteration + 1}/{iterations}'):
-                
-                if patch.is_emissive == False:
-
-                    position = patch.worldspace_coord
-                    normal = patch.normal
-                    views = hemicube.generate_hemicube_views(normal)
-
-                    images = []
-                    for view in views:
-                        
-                        image_array = self.renderer.render_single_image(position, view['direction'], view['up_vector'])
-                        cut_image = hemicube.cut_image_with_frustum(image_array, view['frustum'])
-                        images.append(cut_image)
-                    hc = hemicube.merge_views_hemicube(images[0], images[1], images[2], images[3], images[4])
-                    hc_corrected = hc * correction_map
-
-                    sum_r = np.sum(hc_corrected[:, :, 0])  # Sum of the Red channel
-                    sum_g = np.sum(hc_corrected[:, :, 1])  # Sum of the Green channel
-                    sum_b = np.sum(hc_corrected[:, :, 2])  # Sum of the Blue channel
-                    
-                    new_lightmap[patch.x_tex_coord, patch.y_tex_coord, 0] = sum_r
-                    new_lightmap[patch.x_tex_coord, patch.y_tex_coord, 1] = sum_g
-                    new_lightmap[patch.x_tex_coord, patch.y_tex_coord, 2] = sum_b
-
-
-                    #if a < 300 and views[0]['direction'][2] == 1.0 and position.z == 0.0:
-                    #    a = a+1
-
-                    #    print(i, position, views)
-                    #    # Save hemicube hc as an image
-                    #    hemicube_image = (hc * 255).astype(np.uint8)  # Convert to 8-bit per channel
-                    #    hemicube_image_pil = Image.fromarray(hemicube_image)
-                    #    hemicube_image_pil.save(f'hemicube_{i}.png')  # Save the hemicube image
-
-            new_lightmap = self.fill_in_illegal_pixels(new_lightmap)
-            self.scene.light_map = new_lightmap
-            #temporary_lightmap_path = Path(self.base_path / 'temp' / 'lightmap.hdr')
-            #self.scene.generate_light_map(temporary_lightmap_path)
-            self.renderer.update_light_map()
-            
-
-        self.scene.generate_light_map(lightmap_path)
-        #self.print_and_convert_hdr_image(lightmap_path, "debug_lightmap.png")
-        self.save_lightmap_as_png(lightmap_path)
-
     def save_lightmap_as_png(self, lightmap_path: Path):
         # Load the HDR image with floating-point precision
         hdr_image = cv2.imread(str(lightmap_path), cv2.IMREAD_UNCHANGED)
@@ -221,50 +232,6 @@ class Lightmapper:
         lightmap_filename = lightmap_path.stem
         output_path = lightmap_path.parent / f'{lightmap_filename}.png'
         cv2.imwrite(str(output_path), png_image_bgr)
-
-    def fill_in_illegal_pixels(self, lightmap):
-        for illegal_pixel in self.scene.illegal_pixels:
-            lightmap[illegal_pixel[0], illegal_pixel[1]] = lightmap[illegal_pixel[2], illegal_pixel[3]]
-        return lightmap
-
-    def print_and_convert_hdr_image(self, filepath: Path, output_png: str, sample_size: int = 5) -> None:
-        # Load the HDR image with floating-point precision
-        hdr_image = cv2.imread(str(filepath), cv2.IMREAD_UNCHANGED)
-        
-        if hdr_image is None:
-            print(f"Failed to load image from {str(filepath)}")
-            return
-
-        # Check if it's loaded in BGR format and convert to RGB
-        if hdr_image.shape[2] == 3:  # Only convert if it's a 3-channel image
-            hdr_image = cv2.cvtColor(hdr_image, cv2.COLOR_BGR2RGB)
-        
-        # Print image dimensions and data type
-        print(f"Image dimensions: {hdr_image.shape}")
-        print(f"Image data type: {hdr_image.dtype}")
-        
-        # Print a sample of the pixel values for inspection
-        #print(f"Sample pixel values (first {sample_size} rows and columns):")
-        #print(hdr_image[:sample_size, :sample_size])
-
-        # Optional: Print the min and max values to see the value range
-        print(f"Min pixel value: {np.min(hdr_image)}")
-        print(f"Max pixel value: {np.max(hdr_image)}")
-
-        # Convert HDR image (float32) back to 8-bit image for PNG saving
-        # We scale the float values back into the 0-255 range
-        normalized_image = cv2.normalize(hdr_image, None, 0, 255, cv2.NORM_MINMAX)
-        png_image = np.clip(normalized_image, 0, 255).astype(np.uint8)
-
-        # Convert back to BGR format for saving as PNG
-        png_image_bgr = cv2.cvtColor(png_image, cv2.COLOR_RGB2BGR)
-
-        # Save the PNG image
-        cv2.imwrite(output_png, png_image_bgr)
-        print(f"Saved image as {output_png}")
-        plt.imshow(hdr_image)
-        plt.axis('off') 
-        plt.show()
 
     def quit(self):
         self.renderer.destroy()

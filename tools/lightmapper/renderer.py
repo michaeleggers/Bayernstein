@@ -31,17 +31,19 @@ class Renderer:
             self.base_path = Path(__file__).resolve().parent
         self.viewport_size = width
         self.scene = scene
+        self.lightmap_mode = lightmap_mode
 
         fov = 90 # FOV must be 90 for the lightmap generation in order for the hemisphere to be projected correctly onto the hemicubes
 
         # This will be the factor by which the lightmaps energy will be multiplied to achieve the final emissive color
-        self.emission_strength = 0 if lightmap_mode else 1000
+        self.emission_strength = 0 if self.lightmap_mode else 1000
 
         # Initialize GLFW, OpenGL, and assets
         self._initialize_glfw(width=width, height=height, lightmap_mode=lightmap_mode)
         self._initialize_opengl(clear_color=atmosphere_color)
         self._initialize_assets(scene=scene, light_map_path=light_map_path)
-        self._initialize_fbo(width=width, height=height)
+        if self.lightmap_mode:
+            self._initialize_fbo(width=width, height=height)
         self._initialize_uniforms(fov)
         self._initialize_camera()
 
@@ -146,8 +148,8 @@ class Renderer:
         # Texture parameters for lightmap
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
         # Compile and link shaders
         self.shader = shader.create_shader(
@@ -305,6 +307,7 @@ class Renderer:
 
         # Set shader uniforms
         glUniform1f(self.exposureLocation, self.emission_strength)
+        # TODO: caan be removed as model_transform is identity
         glUniformMatrix4fv(self.modelMatrixLocation, 1, GL_FALSE, self.scene.get_model_transform())
 
         # Bind textures once for the atlas and lightmap
@@ -377,12 +380,14 @@ class Renderer:
         # Delete Vertex Array Object and Vertex Buffer Object
         glDeleteVertexArrays(1, (self.vao,))
         glDeleteBuffers(1, (self.vbo,))
-        glDeleteFramebuffers(1, [self.fbo])
+        if self.lightmap_mode:
+            glDeleteFramebuffers(1, [self.fbo])
 
         # Delete textures for the texture atlas and lightmap
         glDeleteTextures(1, (self.texture_array_id,))
         glDeleteTextures(1, (self.lightmap_texture_id,))
-        glDeleteTextures(1, (self.fbo_texture))
+        if self.lightmap_mode:
+            glDeleteTextures(1, (self.fbo_texture))
 
         # Delete shader program
         glDeleteProgram(self.shader)

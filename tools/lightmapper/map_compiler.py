@@ -46,9 +46,7 @@ def soup_map(assets_path: Path, map_path: Path) -> Path:
         souper_path = base_path / 'souper/bin/Debug/souper.exe'
     else:  # macOS / Linux
         souper_path = base_path / 'souper/bin/souper'
-    
-    #souper_path = Path('/Users/fabiandepaoli/Library/Mobile Documents/com~apple~CloudDocs/SharedData/HM/GamesEngineering/Bayernstein/tools/lightmapper/souper/bin/souper-macos')
-    
+        
     temp_output_file = assets_path / 'temp/temp.json'
     # Ensure the temporary directory exists
     temp_output_file.parent.mkdir(parents=True, exist_ok=True)
@@ -56,7 +54,6 @@ def soup_map(assets_path: Path, map_path: Path) -> Path:
     subprocess.run(command, check=True)
 
     return temp_output_file
-
 
 def generate_lightmaps(
         temp_map_path: Path, 
@@ -72,7 +69,6 @@ def generate_lightmaps(
     scene = Scene(temp_map_path, assets_path)
     scene.create_frames(patch_resolution=patch_resolution)
     scene.generate_vertex_array()
-    #scene.save_to_json(assets_path / f'compiled/{map_name}/{map_name}.json', assets_path)
     scene.save_to_json(output_path / f'{map_name}/{map_name}.json', assets_path)
     scene.save_to_binary(output_path / f'{map_name}/{map_name}.ply')
 
