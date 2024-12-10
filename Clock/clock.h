@@ -9,14 +9,14 @@
 
 class CrudeTimer {
   private:
-	CrudeTimer() = default;
+    CrudeTimer() = default;
 
   public:
-	// copy ctor and assignment should be deleted
-	CrudeTimer(const CrudeTimer &) = delete;
-	CrudeTimer &operator=(const CrudeTimer &) = delete;
-	static CrudeTimer *Instance();
-	[[nodiscard]] double GetTime();
+    // copy ctor and assignment should be deleted
+    CrudeTimer(const CrudeTimer&)                     = delete;
+    CrudeTimer&          operator=(const CrudeTimer&) = delete;
+    static CrudeTimer*   Instance();
+    [[nodiscard]] double GetTime();
 };
 
 #endif // CLOCK_H

@@ -71,7 +71,7 @@ std::vector<std::string> SplitString(const std::string& input, char delimiter) {
 template <> float StringToFloat<float>(const char* str, char** end) {
     return std::strtof(str, end);
 }
-    
+
 template <> double StringToFloat<double>(const char* str, char** end) {
     return std::strtod(str, end);
 }

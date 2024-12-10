@@ -10,6 +10,5 @@
 // Called by entity manager who is responsible to assign IDs.
 //-----------------------------------------------------------------------------
 void BaseGameEntity::SetID(int value) {
-	m_ID = value;
+    m_ID = value;
 }
-

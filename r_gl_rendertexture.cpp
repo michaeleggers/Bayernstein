@@ -4,41 +4,36 @@
 
 #include <glad/glad.h>
 
-
-CglRenderTexture::CglRenderTexture() 
-{
-    m_Width = 0;
-    m_Height = 0;
+CglRenderTexture::CglRenderTexture() {
+    m_Width     = 0;
+    m_Height    = 0;
     m_gl_Handle = 0;
 }
 
-CglRenderTexture::CglRenderTexture(int width, int height, GLenum format)
-{
-    m_Width = width;
+CglRenderTexture::CglRenderTexture(int width, int height, GLenum format) {
+    m_Width  = width;
     m_Height = height;
 
     glGenTextures(1, &m_gl_Handle);
     glBindTexture(GL_TEXTURE_2D, m_gl_Handle);
-    
-    if (format == GL_RGBA8) {
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    if ( format == GL_RGBA8 ) {
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    } 
-    else if (format == GL_DEPTH_COMPONENT32F) {
-	glTexStorage2D(GL_TEXTURE_2D, 1, format, width, height);
-    }
-    else {
-	assert(false && "CglRenderTexture: Unsupported format.");
+    } else if ( format == GL_DEPTH_COMPONENT32F ) {
+        glTexStorage2D(GL_TEXTURE_2D, 1, format, width, height);
+    } else {
+        assert(false && "CglRenderTexture: Unsupported format.");
     }
 
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 CglRenderTexture::~CglRenderTexture() {
-    // TODO: (Michael): Nuke from GPU texture memory. 
+    // TODO: (Michael): Nuke from GPU texture memory.
 }
 
 void CglRenderTexture::Bind() {
@@ -48,4 +43,3 @@ void CglRenderTexture::Bind() {
 void CglRenderTexture::Unbind() {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
-

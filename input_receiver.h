@@ -6,15 +6,11 @@
 */
 class IInputReceiver {
 
-public:
+  public:
     IInputReceiver()  = default;
     ~IInputReceiver() = default;
 
     virtual void HandleInput() = 0;
-
 };
 
-
 #endif
-
-

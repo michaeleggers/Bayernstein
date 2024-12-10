@@ -27,6 +27,3 @@ void CInputDelegate::Enable() {
 void CInputDelegate::Disable() {
     m_Enabled = false;
 }
-
-
-

@@ -5,13 +5,15 @@
 #include <string>
 #include <vector>
 
-typedef void (*CommandHandler) (std::vector<std::string> args);
+typedef void (*CommandHandler)(std::vector<std::string> args);
 
 struct ConsoleCommand {
     const std::string name;
-    CommandHandler function;
+    CommandHandler    function;
     // TODO: consider adding description / help text and help command
-    ConsoleCommand(std::string n, CommandHandler f) : name(n), function(f) {}
+    ConsoleCommand(std::string n, CommandHandler f)
+        : name(n),
+          function(f) {}
 };
 
 /**
@@ -19,15 +21,15 @@ struct ConsoleCommand {
  * Loosely based on Quake's (QSS-M) `cmd` implementation.
  */
 class CommandManager {
-private:
+  private:
     /** List of registered commands, mapped by their (unique) name. */
     static std::map<std::string, ConsoleCommand*> commands;
 
-private:
+  private:
     /** Splits the given string into space delimited tokens. */
     static std::vector<std::string> TokenizeString(const std::string& input);
 
-public:
+  public:
     /** Adds a command with the given name and the given callback to be available in the console. */
     static ConsoleCommand* Add(std::string name, CommandHandler function);
     // static void Remove(ConsoleCommand* cmd);

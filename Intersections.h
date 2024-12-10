@@ -15,15 +15,14 @@ struct Contact {
     glm::vec3 ptOnA_LocalSpace;
     glm::vec3 ptOnB_LocalSpace;
 
-    glm::vec3 normal; // WorldSpace
+    glm::vec3 normal;             // WorldSpace
     float     separationDistance; // + when non-penetrating, - otherwise
     float     timeOfImpact;
 
-    Body*     bodyA;
-    Body*     bodyB;
+    Body* bodyA;
+    Body* bodyB;
 };
 
 bool Intersect(Body* bodyA, Body* bodyB, Contact& contact);
 
 #endif
-

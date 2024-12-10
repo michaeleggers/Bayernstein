@@ -13,7 +13,7 @@
  * Implemented as a singleton for printing support, use `Console::Create` instead of the constructor.
  */
 class Console {
-private:
+  private:
     /** The current (editable) input string. */
     std::string m_currentInput = "";
     /** Current position in the history to use for replacing the current input. `-1` indicates current/empty input. */
@@ -25,13 +25,13 @@ private:
     /** Font to draw characters with. Must be initialized in Create() */
     CFont* m_pConsoleFont = nullptr;
 
-private:
+  private:
     /** The singleton instance of the console. */
     static Console* instance;
     /** Create/initialize the console and its buffers, etc. */
     Console(int lineBufferSize, int inputHistorySize);
 
-public:
+  public:
     /** Buffer for storing the lines written to the console. */
     CircularBuffer m_lineBuffer;
     /** Buffer for storing the executed command/input history. */
@@ -41,8 +41,8 @@ public:
     /** Milliseconds since last cursor blink cycle. */
     double m_blinkTimer = 0;
 
-public:
-    Console(const Console &obj) = delete; // delete copy constructor
+  public:
+    Console(const Console& obj) = delete; // delete copy constructor
 
     /** Create the console (singleton) instance and initialize it and its buffers, etc. */
     static Console* Create(int lineBufferSize, int inputHistorySize);
@@ -72,24 +72,27 @@ public:
     /** Activate Console, receive input and render. */
     void RunFrame();
 
-
-public:
+  public:
     /** Prints the given string to the console as a line. */
     static void Print(std::string str);
     /** Formats and prints the given string to the console as a line. */
-    template<typename... Args>
-    static void Printf(std::string fmt, Args const&... args) { // implementation must be in header due to variadic template
+    template <typename... Args>
+    static void Printf(std::string fmt,
+                       Args const&... args) { // implementation must be in header due to variadic template
         PrintfImpl(fmt.c_str(), convertArg(args)...);
     }
 
-private:
+  private:
     /** C-style implementation for formatting the given string and printing it to the console. */
     static void PrintfImpl(const char* fmt, ...);
     /** Helper function to convert the variadic argument list to be printf compatible. */
-    template<typename T>
-    static decltype(auto) convertArg(T const& arg) { return arg; }
+    template <typename T> static decltype(auto) convertArg(T const& arg) {
+        return arg;
+    }
     /** Helper function to convert the variadic argument list to be printf compatible. `std::string` is converted to c strings. */
-    static const char* convertArg(std::string const& arg) { return arg.c_str(); }
+    static const char* convertArg(std::string const& arg) {
+        return arg.c_str();
+    }
 };
 
 #endif // CONSOLE_H

@@ -12,11 +12,11 @@ CInputHandler* CInputHandler::Instance() {
 }
 
 void CInputHandler::BindInputToActionName(int key, const std::string& actionName) {
-    m_ActionNameToInput.insert({ actionName, key }); 
+    m_ActionNameToInput.insert({ actionName, key });
 }
 
 ButtonState CInputHandler::GetMappedButtonState(const std::string& actionName) {
-    // Check if a mapping exists for this action 
+    // Check if a mapping exists for this action
     const auto& actionToInput = m_ActionNameToInput.find(actionName);
     if ( actionToInput == m_ActionNameToInput.end() ) {
         return ButtonState::NONE;
@@ -45,7 +45,10 @@ ButtonState CInputHandler::GetMappedButtonState(const std::string& actionName) {
         return ButtonState::PRESSED;
     }
 
+    if ( MouseMoved(key) ) {
+        return ButtonState::MOVED;
+    }
+
     // Action exists but no button is active in any way.
     return ButtonState::NONE;
 }
-

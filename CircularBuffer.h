@@ -7,16 +7,15 @@
 
 #include <stdint.h>
 
-
 /** Circular string buffer. */
 class CircularBuffer {
-private:
+  private:
     std::vector<std::string> m_buffer;
-    int m_maxSize;
-    int m_pos;
-    bool m_isFull;
+    int                      m_maxSize;
+    int                      m_pos;
+    bool                     m_isFull;
 
-public:
+  public:
     CircularBuffer(uint32_t maxSize);
 
     /** Add the given string to the buffer. */
@@ -27,9 +26,8 @@ public:
      */
     bool Get(uint32_t offset, std::string* str);
     bool Empty();
-    int Size();
-    int MaxSize();
+    int  Size();
+    int  MaxSize();
 };
 
 #endif // CIRCULARBUFFER_H
-

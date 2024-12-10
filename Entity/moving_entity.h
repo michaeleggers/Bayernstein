@@ -4,12 +4,15 @@
 
 #ifndef MOVINGENTITY_H
 #define MOVINGENTITY_H
+
 #include "./base_game_entity.h"
 
 #define GLM_FORCE_RADIANS
 #include "../../dependencies/glm/ext.hpp"
 #include "../../dependencies/glm/glm.hpp"
 #include "../../globals.h"
+
+#include "../globals.h"
 
 class MovingEntity : public BaseGameEntity {
 
@@ -20,8 +23,8 @@ class MovingEntity : public BaseGameEntity {
           m_Side(DOD_WORLD_RIGHT),
           m_Up(DOD_WORLD_UP),
           m_Mass(1.0f),
-          m_MaxSpeed(0.1f),
-          m_MaxForce(150.5f),
+          m_MaxSpeed(100.0f),
+          m_MaxForce(200.5f),
           m_MaxTurnRate(1.0f) {};
 
     virtual ~MovingEntity() = default;
@@ -36,13 +39,10 @@ class MovingEntity : public BaseGameEntity {
         return glm::pow(glm::length(m_Velocity), 2);
     }
 
-    // all entities must implement an update function
-    virtual void Update() = 0;
-
     // all entities can communicate using messages. They are sent
     // using the MessageDispatcher singleton class
     virtual bool HandleMessage(const Telegram& telegram) = 0;
-    
+
     //a normalized vector pointing in the direction the entity is heading.
     glm::vec3 m_Forward;
 
@@ -64,4 +64,3 @@ class MovingEntity : public BaseGameEntity {
 };
 
 #endif // MOVINGENTITY_H
-
