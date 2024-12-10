@@ -13,7 +13,7 @@ class CompiledTriangle:
 
     def to_binary(self) -> bytes:
         # Ensure texture name is exactly 256 bytes, padded with null bytes if necessary
-        texture_name_bytes = self.textureName.encode('utf-8')
+        texture_name_bytes = self.textureName.encode('ascii')
         texture_name_bytes = texture_name_bytes[:255]  # Trim if too long
         texture_name_bytes = texture_name_bytes.ljust(256, b'\0')  # Pad with null bytes
 

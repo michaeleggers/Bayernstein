@@ -229,6 +229,7 @@ class Scene:
                 f.write(triangle.to_binary())
 
     def create_frames(self, patch_resolution: float = 0.0625) -> 'Scene':
+
         
         # Step 1: Create Triangle Data Structure
         triangles_ds = []
@@ -236,6 +237,7 @@ class Scene:
             vertices = tuple(vec(*v) for v in vertex_tuple)
             triangles_ds.append(Triangle(vertices))
         self.triangles_ds = triangles_ds
+        print(len(self.triangles_ds))
 
         # Step 2: Create Frames
         self.frames, self.lightmap_uvs, uv_map_ws_size = uv_mapper.create_frames(triangles_ds, patch_resolution, debug=True)

@@ -45,7 +45,7 @@ def soup_map(assets_path: Path, map_path: Path) -> Path:
     if os.name == 'nt':  # Windows
         souper_path = base_path / 'souper/bin/Debug/souper.exe'
     else:  # macOS / Linux
-        souper_path = base_path / 'souper/bin/souper'
+        souper_path = base_path / 'souper/bin/souper-macos'
         
     temp_output_file = assets_path / 'temp/temp.json'
     # Ensure the temporary directory exists
