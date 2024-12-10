@@ -98,6 +98,13 @@ struct MapTri {
     uint64_t    hTexture; // GPU handle set by renderer.
 };
 
+struct MapTriLightmapper {
+    StaticVertex[ 3 ] vertices;
+    std::string textureName;
+    uint64_t    surfaceFlags;
+    uint64_t    contentFlags;
+};
+
 struct Line {
     union {
         struct {
