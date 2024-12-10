@@ -24,6 +24,7 @@
 #include "Entity/entity_manager.h"
 #include "Path/path.h"
 #include "map_parser.h"
+#include "platform.h"
 #include "polysoup.h"
 #include "r_common.h"
 #include "r_model.h"
@@ -31,7 +32,7 @@
 class CWorld {
   public:
     static CWorld* Instance();
-    void           InitWorldFromMap(const Map& map);
+    void           InitWorldFromMap(const Map& map, HKD_File lightmapTrisFile);
     void           CollideEntitiesWithWorld();
     void           CollideEntities();
 
@@ -62,6 +63,7 @@ class CWorld {
     static glm::vec3           GetOrigin(const Entity* entity);
     static Waypoint            GetWaypoint(const Entity* entity);
     static std::vector<MapTri> CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys);
+    static std::vector<MapTri> CreateMapFromLightmapTrisFile(HKD_File lightmapTrisFile);
 
     std::vector<MapTri> m_MapTris;
     glm::vec3           m_Gravity;

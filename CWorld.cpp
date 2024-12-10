@@ -20,6 +20,7 @@
 #include "hkd_interface.h"
 #include "irender.h"
 #include "map_parser.h"
+#include "platform.h"
 #include "utils/utils.h"
 
 CWorld* CWorld::Instance() {
@@ -28,7 +29,7 @@ CWorld* CWorld::Instance() {
     return &m_World;
 }
 
-void CWorld::InitWorldFromMap(const Map& map) {
+void CWorld::InitWorldFromMap(const Map& map, HKD_File lightmapTrisFile) {
     // Get some subsystems
     EntityManager* m_pEntityManager = EntityManager::Instance();
     IRender*       renderer         = GetRenderer();
@@ -39,7 +40,8 @@ void CWorld::InitWorldFromMap(const Map& map) {
     // Get static geometry from map
     std::vector<MapPolygon> polysoup = createPolysoup(map);
     // Convert to tris
-    m_MapTris = CWorld::CreateMapTrisFromMapPolys(polysoup);
+    // m_MapTris = CWorld::CreateMapTrisFromMapPolys(polysoup);
+    m_MapTris = CWorld::CreateMapFromLightmapTrisFile(lightmapTrisFile);
 
     m_StaticGeometryCount = m_MapTris.size();
 
@@ -367,3 +369,5 @@ Waypoint CWorld::GetWaypoint(const Entity* entity) {
 
     return waypoint;
 }
+
+std::vector<MapTri> CWorld::CreateMapFromLightmapTrisFile(lightmapTrisFile) {}

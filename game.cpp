@@ -22,6 +22,7 @@
 #include "input_delegate.h"
 #include "input_handler.h"
 #include "physics.h"
+#include "platform.h"
 #include "polysoup.h"
 #include "r_font.h"
 #include "r_itexture.h"
@@ -65,14 +66,20 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple6.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/room.map");
 #endif
 
     size_t inputLength = mapData.length();
     Map    map         = getMap(&mapData[ 0 ], inputLength, mapVersion);
 
     m_World = CWorld::Instance();
-    m_World->InitWorldFromMap(map);
+
+    // Load lightmap triangles and lightmap texture
+    HKD_File plyFile;
+    assert(hkd_read_file(m_ExePath + "../assets/maps/room.ply", &plyFile) == HKD_FILE_SUCCESS);
+    uint64_t hLightmapTexture = renderer->RegisterTextureGetHandle("room.png");
+
+    m_World->InitWorldFromMap(map, plyFile);
     m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.
