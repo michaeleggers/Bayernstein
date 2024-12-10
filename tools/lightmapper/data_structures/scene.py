@@ -33,6 +33,7 @@ class Scene:
 
         textures_directory = Path(assets_path) / 'textures'
         self.triangles, self.texture_uvs, self.lightmap_uvs, self.textures, self.emissions = self.load_from_json(map_path, assets_path)
+        print(self.texture_uvs)
         self.texture_array, self.texture_array_uvs, self.texture_index_mapping = self.create_texture_array(self.textures, self.texture_uvs, textures_directory)
         if lightmap_path:
             self.load_lightmap(lightmap_path)
@@ -52,6 +53,7 @@ class Scene:
         texture_dimensions_cache = {}
 
         # Load JSON data
+        print(json_path)
         with open(json_path, 'r') as file:
             data = json.load(file)
 
@@ -104,9 +106,10 @@ class Scene:
                     normalized_triangle_uvs.append((u_normalized, v_normalized))
                 normalized_texture_uvs.append(normalized_triangle_uvs)
 
+
         # Convert lists to numpy arrays
         triangles = np.array(triangles, dtype=np.float64)
-        texture_uvs = np.array(normalized_texture_uvs, dtype=np.float32)
+        texture_uvs = np.array(texture_uvs, dtype=np.float32)
         lightmap_uvs = np.array(lightmap_uvs, dtype=np.float32)
         emission = np.array(emission, dtype=np.float32)
 

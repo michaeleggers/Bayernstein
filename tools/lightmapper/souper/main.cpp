@@ -86,6 +86,15 @@ int main(int argc, char** argv) {
     Map map = getMap(&mapData[0], inputLength, VALVE_220); 
     std::vector<MapPolygon> polysoup = createPolysoup(map);
     std::vector<MapPolygon> tris = triangulate(polysoup);
+
+    // Print UV coordinates for debugging
+    for (const auto& poly : tris) {
+        std::cout << "Polygon with texture: " << poly.textureName << "\n";
+        for (const auto& vertex : poly.vertices) {
+            std::cout << "UV: (" << (float)vertex.uv.x << ", " << (float)vertex.uv.y << ")\n";
+        }
+        std::cout << "------\n";
+    }
     
     //writePolySoupBinary(outFile, tris);
     try {
