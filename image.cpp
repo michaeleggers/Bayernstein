@@ -13,7 +13,7 @@ extern std::string g_GameDir;
 CImage::CImage(std::string filename) {
 
     std::string filePath = g_GameDir + filename; // TODO: File system functions.
-    int x, y, n;
+    int         x, y, n;
     m_Pixeldata = stbi_load(filePath.c_str(), &x, &y, &n, 4);
 
     // TODO: We probably should load a checkerboard texture or a
@@ -22,22 +22,22 @@ CImage::CImage(std::string filename) {
     if ( !m_Pixeldata ) {
         printf("WARNING (CImage): Failed to load image: %s\n", filename.c_str());
 
-	return;
+        return;
     }
 
-    m_Width = x;
-    m_Height = y;
+    m_Width    = x;
+    m_Height   = y;
     m_Channels = n;
-    m_Valid = true;
+    m_Valid    = true;
     m_Filename = filename;
 }
 
 void CImage::FreePixeldata() {
     if ( !m_Pixeldata ) {
-	return;
+        return;
     }
-    
-    stbi_image_free( m_Pixeldata );
+
+    stbi_image_free(m_Pixeldata);
 }
 
 // Ugh...
@@ -60,4 +60,3 @@ int CImage::Channels() {
 bool CImage::Valid() {
     return m_Valid;
 }
-

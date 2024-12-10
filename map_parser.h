@@ -57,11 +57,11 @@ struct MapVertex {
 };
 
 struct Face {
-    MapVertex vertices[ 3 ]; // Define the plane.
+    MapVertex   vertices[ 3 ]; // Define the plane.
     std::string textureName;
-    double xOffset, yOffset;
-    double rotation;
-    double xScale, yScale;
+    double      xOffset, yOffset;
+    double      rotation;
+    double      xScale, yScale;
 
     // Valve 220 texture format
     double tx1, ty1, tz1, tOffset1;
@@ -79,7 +79,7 @@ struct Property {
 
 struct Entity {
     std::vector<Property> properties;
-    std::vector<Brush> brushes;
+    std::vector<Brush>    brushes;
 };
 
 struct Map {
@@ -96,8 +96,8 @@ Map getMap(char* mapData, size_t mapDataLength, MapVersion mapVersion = QUAKE);
 
 #ifdef MAP_PARSER_IMPLEMENTATION
 
-static int g_InputLength;
-static int g_LineNo;
+static int        g_InputLength;
+static int        g_LineNo;
 static MapVersion g_MapVersion;
 
 static int advanceCursor(int* pos, int steps) {
@@ -260,7 +260,7 @@ static bool check(TokenType got, TokenType expected) {
 }
 
 static double parseNumber(char* c, int* pos) {
-    char* cur = c + *pos;
+    char*       cur    = c + *pos;
     std::string number = "";
     while ( *cur == '-' || *cur >= '0' && *cur <= '9' || *cur == '.' ) {
         number += *cur;
@@ -271,7 +271,7 @@ static double parseNumber(char* c, int* pos) {
 }
 
 static MapVertex getVertex(char* c, int* pos) {
-    MapVertex v = {};
+    MapVertex           v = {};
     std::vector<double> values;
     for ( int i = 0; i < 3; i++ ) { // A face is defined by 3 vertices.
         advanceToNextNonWhitespace(c, pos);
@@ -287,7 +287,7 @@ static MapVertex getVertex(char* c, int* pos) {
 }
 
 static double getNumber(char* c, int* pos) {
-    char* cur = c + *pos;
+    char*       cur    = c + *pos;
     std::string number = "";
     while ( *cur == '-' || *cur >= '0' && *cur <= '9' || *cur == '.' || *cur == 'e' ) {
         number += *cur;
@@ -301,7 +301,7 @@ static std::string getTextureName(char* c, int* pos) {
     char* cur = c + *pos;
 
     std::string textureName = "";
-    char* end = cur;
+    char*       end         = cur;
     advanceToNextWhitespaceOrLinebreak(&end, pos);
     while ( cur != end ) {
         textureName += *cur;
@@ -482,9 +482,9 @@ Map getMap(char* mapData, size_t mapDataLength, MapVersion mapVersion) {
     Map map = {};
 
     g_InputLength = mapDataLength;
-    g_LineNo = 1; // Editors often start at line 1
-    g_MapVersion = mapVersion;
-    int pos = 0;
+    g_LineNo      = 1; // Editors often start at line 1
+    g_MapVersion  = mapVersion;
+    int pos       = 0;
     check(getToken(&mapData[ 0 ], &pos), LBRACE); // Map file must start with an entity!
     while ( getToken(&mapData[ 0 ], &pos) == LBRACE ) {
         pos++;
@@ -493,8 +493,6 @@ Map getMap(char* mapData, size_t mapDataLength, MapVersion mapVersion) {
 
     return map;
 }
-
-
 
 #endif
 

@@ -10,13 +10,13 @@
 #include "stb_truetype.h"
 
 #include "imgui.h"
-#include <imgui/backends/imgui_impl_sdl2.h>
-#include <imgui/backends/imgui_impl_opengl3.h>
 #include <SDL2/SDL_egl.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
+#include <imgui/backends/imgui_impl_sdl2.h>
 
 #define GLM_FORCE_RADIANS
-#include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/ext.hpp"
+#include "dependencies/glm/glm.hpp"
 
 #include "Console/Console.h"
 #include "Console/VariableManager.h"
@@ -29,52 +29,93 @@
 #include "r_gl_texture_mgr.h"
 #include "r_itexture.h"
 
-const int WINDOW_WIDTH = 1920;
+const int WINDOW_WIDTH  = 1920;
 const int WINDOW_HEIGHT = 1080;
 
-ConsoleVariable scr_consize = {"scr_consize", 0.45f};
-ConsoleVariable scr_conopacity = {"scr_conopacity", 0.95f};
-ConsoleVariable scr_conwraplines = {"scr_conwraplines", 1};
+ConsoleVariable scr_consize      = { "scr_consize", 0.45f };
+ConsoleVariable scr_conopacity   = { "scr_conopacity", 0.95f };
+ConsoleVariable scr_conwraplines = { "scr_conwraplines", 1 };
 
-
-void GLAPIENTRY OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
-                                    GLsizei length, const GLchar* message, const void* userParam) {
+void GLAPIENTRY OpenGLDebugCallback(GLenum        source,
+                                    GLenum        type,
+                                    GLuint        id,
+                                    GLenum        severity,
+                                    GLsizei       length,
+                                    const GLchar* message,
+                                    const void*   userParam) {
     // Ignore non-significant error/warning codes (e.g., vendor-specific warnings)
-    if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
-        return;
+    if ( id == 131169 || id == 131185 || id == 131218 || id == 131204 ) return;
 
     printf("--------------------- OpenGL Debug Output ---------------------\n");
     printf("Message: %s\n", message);
 
     printf("Source: ");
-    switch (source) {
-        case GL_DEBUG_SOURCE_API:             printf("API\n"); break;
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   printf("Window System\n"); break;
-        case GL_DEBUG_SOURCE_SHADER_COMPILER: printf("Shader Compiler\n"); break;
-        case GL_DEBUG_SOURCE_THIRD_PARTY:     printf("Third Party\n"); break;
-        case GL_DEBUG_SOURCE_APPLICATION:     printf("Application\n"); break;
-        case GL_DEBUG_SOURCE_OTHER:           printf("Other\n"); break;
+    switch ( source ) {
+    case GL_DEBUG_SOURCE_API:
+        printf("API\n");
+        break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+        printf("Window System\n");
+        break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER:
+        printf("Shader Compiler\n");
+        break;
+    case GL_DEBUG_SOURCE_THIRD_PARTY:
+        printf("Third Party\n");
+        break;
+    case GL_DEBUG_SOURCE_APPLICATION:
+        printf("Application\n");
+        break;
+    case GL_DEBUG_SOURCE_OTHER:
+        printf("Other\n");
+        break;
     }
 
     printf("Type: ");
-    switch (type) {
-        case GL_DEBUG_TYPE_ERROR:               printf("Error\n"); break;
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: printf("Deprecated Behaviour\n"); break;
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  printf("Undefined Behaviour\n"); break;
-        case GL_DEBUG_TYPE_PORTABILITY:         printf("Portability\n"); break;
-        case GL_DEBUG_TYPE_PERFORMANCE:         printf("Performance\n"); break;
-        case GL_DEBUG_TYPE_MARKER:              printf("Marker\n"); break;
-        case GL_DEBUG_TYPE_PUSH_GROUP:          printf("Push Group\n"); break;
-        case GL_DEBUG_TYPE_POP_GROUP:           printf("Pop Group\n"); break;
-        case GL_DEBUG_TYPE_OTHER:               printf("Other\n"); break;
+    switch ( type ) {
+    case GL_DEBUG_TYPE_ERROR:
+        printf("Error\n");
+        break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        printf("Deprecated Behaviour\n");
+        break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        printf("Undefined Behaviour\n");
+        break;
+    case GL_DEBUG_TYPE_PORTABILITY:
+        printf("Portability\n");
+        break;
+    case GL_DEBUG_TYPE_PERFORMANCE:
+        printf("Performance\n");
+        break;
+    case GL_DEBUG_TYPE_MARKER:
+        printf("Marker\n");
+        break;
+    case GL_DEBUG_TYPE_PUSH_GROUP:
+        printf("Push Group\n");
+        break;
+    case GL_DEBUG_TYPE_POP_GROUP:
+        printf("Pop Group\n");
+        break;
+    case GL_DEBUG_TYPE_OTHER:
+        printf("Other\n");
+        break;
     }
 
     printf("Severity: ");
-    switch (severity) {
-        case GL_DEBUG_SEVERITY_HIGH:         printf("High\n"); break;
-        case GL_DEBUG_SEVERITY_MEDIUM:       printf("Medium\n"); break;
-        case GL_DEBUG_SEVERITY_LOW:          printf("Low\n"); break;
-        case GL_DEBUG_SEVERITY_NOTIFICATION: printf("Notification\n"); break;
+    switch ( severity ) {
+    case GL_DEBUG_SEVERITY_HIGH:
+        printf("High\n");
+        break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        printf("Medium\n");
+        break;
+    case GL_DEBUG_SEVERITY_LOW:
+        printf("Low\n");
+        break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        printf("Notification\n");
+        break;
     }
     printf("---------------------------------------------------------------\n");
 }
@@ -139,21 +180,19 @@ bool GLRender::Init(void) {
     SDL_Init(SDL_INIT_EVERYTHING);
 
     // From 2.0.18: Enable native IME.
-/*
+    /*
 #ifdef SDL_HINT_IME_SHOW_UI
     SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 #endif
 */
 
     // Create an application window with the following settings:
-    m_Window = SDL_CreateWindow(
-        "HKD",
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
-        WINDOW_WIDTH,
-        WINDOW_HEIGHT,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
-    );
+    m_Window = SDL_CreateWindow("HKD",
+                                SDL_WINDOWPOS_UNDEFINED,
+                                SDL_WINDOWPOS_UNDEFINED,
+                                WINDOW_WIDTH,
+                                WINDOW_HEIGHT,
+                                SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
 
     // BEWARE! These flags must be set AFTER SDL_CreateWindow. Otherwise SDL
     // just doesn't cate about them (at least on Linux)!
@@ -172,7 +211,7 @@ bool GLRender::Init(void) {
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     m_SDL_GL_Conext = SDL_GL_CreateContext(m_Window);
-    if (!m_SDL_GL_Conext) {
+    if ( !m_SDL_GL_Conext ) {
         SDL_Log("Unable to create GL context! SDL-Error: %s\n", SDL_GetError());
         return false;
     }
@@ -185,7 +224,7 @@ bool GLRender::Init(void) {
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minorVersion);
     printf("OpenGL Version active: %d.%d\n", majorVersion, minorVersion);
 
-    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+    if ( !gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress) ) {
         SDL_Log("Failed to get OpenGL function pointers via GLAD: %s\n", SDL_GetError());
         return false;
     }
@@ -195,10 +234,9 @@ bool GLRender::Init(void) {
     // Allow OpenGL to send us debug information.
     EnableOpenGLDebugCallback();
 
-
     // Check that the window was successfully created
 
-    if (m_Window == NULL) {
+    if ( m_Window == NULL ) {
         // In the case that the window could not be made...
         SDL_Log("Could not create window: %s\n", SDL_GetError());
         return false;
@@ -207,10 +245,9 @@ bool GLRender::Init(void) {
     SDL_ShowWindow(m_Window);
 
     // GL Vsync on
-    if (SDL_GL_SetSwapInterval(1) != 0) {
+    if ( SDL_GL_SetSwapInterval(1) != 0 ) {
         SDL_Log("Failed to enable vsync!\n");
-    }
-    else {
+    } else {
         SDL_Log("vsync enabled\n");
     }
 
@@ -238,7 +275,7 @@ bool GLRender::Init(void) {
 
     // Some OpenGL Info
 
-    const GLubyte* vendor = glGetString(GL_VENDOR);
+    const GLubyte* vendor   = glGetString(GL_VENDOR);
     const GLubyte* renderer = glGetString(GL_RENDERER);
     SDL_Log("%s, %s\n", vendor, renderer);
 
@@ -253,13 +290,13 @@ bool GLRender::Init(void) {
     m_ModelBatch = new GLBatch(500 * 1000);
 
     // Batches but for different purposes
-    m_ImPrimitiveBatch = new GLBatch(1000);
+    m_ImPrimitiveBatch        = new GLBatch(1000);
     m_ImPrimitiveBatchIndexed = new GLBatch(1000, 1000);
-    m_ColliderBatch = new GLBatch(1000);
-    m_FontBatch = new GLBatch(1000, 1000);
-    m_ShapesBatch = new GLBatch(1000, 1000);
-    m_WorldBatch = new GLBatch(100000);
-    m_BrushBatch = new GLBatch(50000);
+    m_ColliderBatch           = new GLBatch(1000);
+    m_FontBatch               = new GLBatch(1000, 1000);
+    m_ShapesBatch             = new GLBatch(1000, 1000);
+    m_WorldBatch              = new GLBatch(100000);
+    m_BrushBatch              = new GLBatch(50000);
 
     // Initialize shaders
 
@@ -288,25 +325,21 @@ bool GLRender::Init(void) {
 
 // At the moment we don't generate a drawCmd for a model. We just but all of
 // the meshes into a GPU buffer and draw all of them exactly the same way.
-int GLRender::RegisterModel(HKD_Model* model)
-{
+int GLRender::RegisterModel(HKD_Model* model) {
     GLModel gl_model = {};
-    int offset = m_ModelBatch->Add(&model->tris[0], model->tris.size());
+    int     offset   = m_ModelBatch->Add(&model->tris[ 0 ], model->tris.size());
 
-    for (int i = 0; i < model->meshes.size(); i++) {
-        HKD_Mesh* mesh = &model->meshes[i];
+    for ( int i = 0; i < model->meshes.size(); i++ ) {
+        HKD_Mesh*  mesh    = &model->meshes[ i ];
         GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(mesh->textureFileName);
-        GLMesh gl_mesh = {
-            .triOffset = offset/3 + (int)mesh->firstTri,
-            .triCount = (int)mesh->numTris,
-            .texture = texture
-        };
+        GLMesh     gl_mesh
+            = { .triOffset = offset / 3 + (int)mesh->firstTri, .triCount = (int)mesh->numTris, .texture = texture };
         gl_model.meshes.push_back(gl_mesh);
     }
 
     m_Models.push_back(gl_model);
 
-    int gpuModelHandle = m_Models.size() - 1;
+    int gpuModelHandle    = m_Models.size() - 1;
     model->gpuModelHandle = gpuModelHandle;
 
     return gpuModelHandle;
@@ -315,22 +348,19 @@ int GLRender::RegisterModel(HKD_Model* model)
 // FIX: Same as RegisterModel just with a different batch!
 int GLRender::RegisterBrush(HKD_Model* model) {
     GLModel gl_model = {};
-    int offset = m_BrushBatch->Add(&model->tris[0], model->tris.size());
+    int     offset   = m_BrushBatch->Add(&model->tris[ 0 ], model->tris.size());
 
-    for (int i = 0; i < model->meshes.size(); i++) {
-        HKD_Mesh* mesh = &model->meshes[i];
+    for ( int i = 0; i < model->meshes.size(); i++ ) {
+        HKD_Mesh*  mesh    = &model->meshes[ i ];
         GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(mesh->textureFileName);
-        GLMesh gl_mesh = {
-            .triOffset = offset/3 + (int)mesh->firstTri,
-            .triCount = (int)mesh->numTris,
-            .texture = texture
-        };
+        GLMesh     gl_mesh
+            = { .triOffset = offset / 3 + (int)mesh->firstTri, .triCount = (int)mesh->numTris, .texture = texture };
         gl_model.meshes.push_back(gl_mesh);
     }
 
     m_Models.push_back(gl_model);
 
-    int gpuModelHandle = m_Models.size() - 1;
+    int gpuModelHandle    = m_Models.size() - 1;
     model->gpuModelHandle = gpuModelHandle;
 
     return gpuModelHandle;
@@ -341,13 +371,13 @@ void GLRender::RegisterFont(CFont* font) {
 }
 
 void GLRender::RegisterWorld(CWorld* world) {
-    std::vector<MapTri>& tris = world->GetMapTris();
-    uint64_t numStaticTris = world->StaticGeometryCount();
+    std::vector<MapTri>& tris          = world->GetMapTris();
+    uint64_t             numStaticTris = world->StaticGeometryCount();
 
     // Sort static Tris by texture
-    std::unordered_map<uint64_t, std::vector<MapTri> > texHandle2Tris{};
+    std::unordered_map<uint64_t, std::vector<MapTri>> texHandle2Tris{};
 
-    for (int i = 0; i < numStaticTris; i++) {
+    for ( int i = 0; i < numStaticTris; i++ ) {
         MapTri pTri = tris[ i ];
         if ( texHandle2Tris.contains(pTri.hTexture) ) {
             std::vector<MapTri>& triList = texHandle2Tris.at(pTri.hTexture);
@@ -361,18 +391,16 @@ void GLRender::RegisterWorld(CWorld* world) {
     // Upload tris to GPU and generate draw cmds.
 
     // FIX: ALL tris are registered here. Brush entities should go into a dedicated dynamic batch.
-    for (auto& [ texHandle, triList ] : texHandle2Tris) {
+    for ( auto& [ texHandle, triList ] : texHandle2Tris ) {
         std::vector<MapTri> pTris = triList;
-        int vertexOffset = m_WorldBatch->AddMapTris( pTris.data(), triList.size(), true, DRAW_MODE_SOLID );
-        assert( vertexOffset >= 0 && "Tried to add Tris to World Batch but it returned a negative offset!" );
-        GLBatchDrawCmd drawCmd = {
-            vertexOffset, // Vertex Buffer offset is the current vert count of the batch
-            0, // Index buffer offset.  Ignored: World is drawn without indices
-            triList.size() * 3, // Num vertices (3 per tri)
-            0, // Num indices: irgnored
-            true, // Cull back faces
-            DRAW_MODE_SOLID
-        };
+        int vertexOffset          = m_WorldBatch->AddMapTris(pTris.data(), triList.size(), true, DRAW_MODE_SOLID);
+        assert(vertexOffset >= 0 && "Tried to add Tris to World Batch but it returned a negative offset!");
+        GLBatchDrawCmd drawCmd = { vertexOffset,       // Vertex Buffer offset is the current vert count of the batch
+                                   0,                  // Index buffer offset.  Ignored: World is drawn without indices
+                                   triList.size() * 3, // Num vertices (3 per tri)
+                                   0,                  // Num indices: irgnored
+                                   true,               // Cull back faces
+                                   DRAW_MODE_SOLID };
         m_TexHandleToWorldDrawCmd.insert({ texHandle, drawCmd });
     }
 }
@@ -382,70 +410,59 @@ uint64_t GLRender::RegisterTextureGetHandle(std::string name) {
     return m_TextureManager->CreateTextureGetHandle(name);
 }
 
-void GLRender::SetActiveCamera(Camera* camera)
-{
+void GLRender::SetActiveCamera(Camera* camera) {
     m_ActiveCamera = camera;
 }
 
-void GLRender::RegisterColliderModels()
-{
+void GLRender::RegisterColliderModels() {
     // Generate vertices for a circle. Used for ellipsoid colliders.
 
     MeshEllipsoid unitEllipsoid = CreateUnitEllipsoid(2);
 
     m_EllipsoidColliderDrawCmd = AddTrisToBatch(
-        m_ColliderBatch,
-        unitEllipsoid.tris.data(), unitEllipsoid.tris.size(),
-        false, DRAW_MODE_WIREFRAME);
+        m_ColliderBatch, unitEllipsoid.tris.data(), unitEllipsoid.tris.size(), false, DRAW_MODE_WIREFRAME);
 }
 
 // Maybe return a void* as GPU handle, because usually APIs that use the handle of
 // a specific graphics API don't expect it to be in int or whatever.
-std::vector<ITexture*> GLRender::ModelTextures(int gpuModelHandle)
-{
+std::vector<ITexture*> GLRender::ModelTextures(int gpuModelHandle) {
     std::vector<ITexture*> results;
 
-    if (gpuModelHandle >= m_Models.size()) return results;
-    else if (gpuModelHandle < 0)           return results;
+    if ( gpuModelHandle >= m_Models.size() )
+        return results;
+    else if ( gpuModelHandle < 0 )
+        return results;
 
-    GLModel* model = &m_Models[gpuModelHandle];
-    for (auto& mesh : model->meshes) {
-        results.push_back( mesh.texture );
+    GLModel* model = &m_Models[ gpuModelHandle ];
+    for ( auto& mesh : model->meshes ) {
+        results.push_back(mesh.texture);
     }
 
     return results;
 }
 
-std::vector<ITexture*> GLRender::Textures(void)
-{
+std::vector<ITexture*> GLRender::Textures(void) {
     std::vector<ITexture*> result;
-    for (auto& elem: m_TextureManager->m_NameToTexture) {
+    for ( auto& elem : m_TextureManager->m_NameToTexture ) {
         result.push_back(elem.second);
     }
 
     return result;
 }
 
-void GLRender::ImDrawTris(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
-{
+void GLRender::ImDrawTris(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
     int offset = m_ImPrimitiveBatch->Add(tris, numTris, cullFace, drawMode);
 
-    GLBatchDrawCmd drawCmd = {
-        .offset = offset,
-        .numVerts = 3 * numTris,
-        .cullFace = cullFace,
-        .drawMode = drawMode
-    };
+    GLBatchDrawCmd drawCmd = { .offset = offset, .numVerts = 3 * numTris, .cullFace = cullFace, .drawMode = drawMode };
 
     m_PrimitiveDrawCmds.push_back(drawCmd);
 }
 
-void GLRender::ImDrawTriPlanes(TriPlane* triPlanes, uint32_t numTriPlanes, bool cullFace, DrawMode drawMode)
-{
+void GLRender::ImDrawTriPlanes(TriPlane* triPlanes, uint32_t numTriPlanes, bool cullFace, DrawMode drawMode) {
     std::vector<Tri> tris;
     tris.resize(numTriPlanes);
-    for (int i = 0; i < numTriPlanes; i++) {
-        tris[i] = triPlanes[i].tri;
+    for ( int i = 0; i < numTriPlanes; i++ ) {
+        tris[ i ] = triPlanes[ i ].tri;
     }
     ImDrawTris(tris.data(), numTriPlanes, cullFace, drawMode);
 }
@@ -453,54 +470,42 @@ void GLRender::ImDrawTriPlanes(TriPlane* triPlanes, uint32_t numTriPlanes, bool 
 GLBatchDrawCmd GLRender::AddTrisToBatch(GLBatch* batch, Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
     int offset = batch->Add(tris, numTris, cullFace, drawMode);
 
-    GLBatchDrawCmd drawCmd = {
-        .offset = offset,
-        .numVerts = 3 * numTris,
-        .cullFace = cullFace,
-        .drawMode = drawMode
-    };
+    GLBatchDrawCmd drawCmd = { .offset = offset, .numVerts = 3 * numTris, .cullFace = cullFace, .drawMode = drawMode };
 
     return drawCmd;
 }
 
 // Draw triangles with indexed geometry :)
-void GLRender::ImDrawIndexed(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, bool cullFace, DrawMode drawMode)
-{
-    int offset = 0;
+void GLRender::ImDrawIndexed(
+    Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, bool cullFace, DrawMode drawMode) {
+    int offset        = 0;
     int offsetIndices = 0;
-    if (!m_ImPrimitiveBatchIndexed->Add(verts, numVerts, indices, numIndices, &offset, &offsetIndices, cullFace, drawMode)) {
+    if ( !m_ImPrimitiveBatchIndexed->Add(
+             verts, numVerts, indices, numIndices, &offset, &offsetIndices, cullFace, drawMode) ) {
         return;
     }
 
-    GLBatchDrawCmd drawCmd = {
-        .offset = offset,
-        .indexOffset = offsetIndices,
-        .numVerts = numVerts,
-        .numIndices = numIndices,
-        .cullFace = cullFace,
-        .drawMode = drawMode
-    };
+    GLBatchDrawCmd drawCmd = { .offset      = offset,
+                               .indexOffset = offsetIndices,
+                               .numVerts    = numVerts,
+                               .numIndices  = numIndices,
+                               .cullFace    = cullFace,
+                               .drawMode    = drawMode };
 
     m_PrimitiveIndexdDrawCmds.push_back(drawCmd);
 }
 
 // TODO: not done
-void GLRender::ImDrawVerts(Vertex* verts, uint32_t numVerts)
-{
+void GLRender::ImDrawVerts(Vertex* verts, uint32_t numVerts) {
     int offset = m_ImPrimitiveBatch->Add(verts, numVerts);
 
-    GLBatchDrawCmd drawCmd = {
-        .offset = offset,
-        .numVerts = numVerts,
-        .cullFace = false,
-        .drawMode = DRAW_MODE_SOLID
-    };
+    GLBatchDrawCmd drawCmd = { .offset = offset, .numVerts = numVerts, .cullFace = false, .drawMode = DRAW_MODE_SOLID };
 }
 
 void GLRender::ImDrawCircle(glm::vec3 center, float radius, glm::vec3 normal) {
     int                 segments = 32;
     std::vector<Vertex> circleVerts;
-    float               step = glm::two_pi<float>() / (float)segments;
+    float               step        = glm::two_pi<float>() / (float)segments;
     glm::mat3           rotationMat = glm::mat3(1.0);
     if ( normal != DOD_WORLD_UP ) {
         glm::vec3 axis = glm::cross(DOD_WORLD_UP, glm::normalize(normal));
@@ -535,54 +540,46 @@ void GLRender::ImDrawLines(Vertex* verts, uint32_t numVerts, bool close) {
     int offset = m_ImPrimitiveBatch->Add(v, 2, false, DRAW_MODE_LINES);
     v += 1;
     int moreVerts = 0;
-    for (int i = 2; i < numVerts; i++) {
+    for ( int i = 2; i < numVerts; i++ ) {
         m_ImPrimitiveBatch->Add(v, 2, false, DRAW_MODE_LINES);
         v++;
         moreVerts += 1;
     }
 
-    if (close) {
-        Vertex endAndStart[] = { *v, verts[0] };
+    if ( close ) {
+        Vertex endAndStart[] = { *v, verts[ 0 ] };
         m_ImPrimitiveBatch->Add(endAndStart, 2, false, DRAW_MODE_LINES);
         moreVerts += 2;
     }
 
-    GLBatchDrawCmd drawCmd = {
-        .offset = offset,
-        .numVerts = numVerts + moreVerts,
-        .cullFace = false,
-        .drawMode = DRAW_MODE_LINES
-    };
+    GLBatchDrawCmd drawCmd
+        = { .offset = offset, .numVerts = numVerts + moreVerts, .cullFace = false, .drawMode = DRAW_MODE_LINES };
 
     m_PrimitiveDrawCmds.push_back(drawCmd);
 }
 
-void GLRender::ImDrawSphere(glm::vec3 pos, float radius, glm::vec4 color)
-{
+void GLRender::ImDrawSphere(glm::vec3 pos, float radius, glm::vec4 color) {
     glm::mat4 view = m_ActiveCamera->ViewMatrix();
     // TODO: Global Setting for perspective values
-    glm::mat4 proj = glm::perspective(
-        glm::radians(45.0f),
-        (float)m_WindowWidth / (float)m_WindowHeight,
-        0.1f, 10000.0f);
+    glm::mat4 proj
+        = glm::perspective(glm::radians(45.0f), (float)m_WindowWidth / (float)m_WindowHeight, 0.1f, 10000.0f);
 
     m_ColliderShader->Activate();
     m_ColliderShader->SetViewProjMatrices(view, proj);
 
     m_ColliderBatch->Bind();
-        m_ColliderShader->SetVec4("uDebugColor", color);
-        glm::vec3 scale = glm::vec3(radius);
-        glm::mat4 T = glm::translate(glm::mat4(1.0f), pos);
-        glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
-        glm::mat4 M = T * S;
-        m_ColliderShader->SetMat4("model", M);
+    m_ColliderShader->SetVec4("uDebugColor", color);
+    glm::vec3 scale = glm::vec3(radius);
+    glm::mat4 T     = glm::translate(glm::mat4(1.0f), pos);
+    glm::mat4 S     = glm::scale(glm::mat4(1.0f), scale);
+    glm::mat4 M     = T * S;
+    m_ColliderShader->SetMat4("model", M);
 
-        glDrawArrays(GL_TRIANGLES, m_EllipsoidColliderDrawCmd.offset, m_EllipsoidColliderDrawCmd.numVerts);
+    glDrawArrays(GL_TRIANGLES, m_EllipsoidColliderDrawCmd.offset, m_EllipsoidColliderDrawCmd.numVerts);
 }
 
-GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t numVerts, bool close)
-{
-    if (numVerts < 2) { // This won't work, man.
+GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t numVerts, bool close) {
+    if ( numVerts < 2 ) { // This won't work, man.
         return { -1 };
     }
 
@@ -591,30 +588,25 @@ GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t 
     int offset = batch->Add(v, 2, false, DRAW_MODE_LINES);
     v += 1;
     int moreVerts = 0;
-    for (int i = 2; i < numVerts; i++) {
+    for ( int i = 2; i < numVerts; i++ ) {
         batch->Add(v, 2, false, DRAW_MODE_LINES);
         v++;
         moreVerts += 1;
     }
 
-    if (close) {
-        Vertex endAndStart[] = { *v, verts[0] };
+    if ( close ) {
+        Vertex endAndStart[] = { *v, verts[ 0 ] };
         batch->Add(endAndStart, 2, false, DRAW_MODE_LINES);
         moreVerts += 2;
     }
 
-    GLBatchDrawCmd drawCmd = {
-        .offset = offset,
-        .numVerts = numVerts + moreVerts,
-        .cullFace = false,
-        .drawMode = DRAW_MODE_LINES
-    };
+    GLBatchDrawCmd drawCmd
+        = { .offset = offset, .numVerts = numVerts + moreVerts, .cullFace = false, .drawMode = DRAW_MODE_LINES };
 
     return drawCmd;
 }
 
-void GLRender::RenderBegin(void)
-{
+void GLRender::RenderBegin(void) {
     // Make sure the screenspace 2d FBO is being cleared.
     m_2dFBO->Bind();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -667,65 +659,61 @@ void GLRender::End3D(void) {
     m_3dFBO->Unbind(); // Set state back to GL default FBO.
 }
 
-void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType)
-{
-    uint32_t prevDrawMode = GL_FILL;
+void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType) {
+    uint32_t prevDrawMode  = GL_FILL;
     uint32_t primitiveType = GL_TRIANGLES;
-    for (int i = 0; i < drawCmds.size(); i++) {
+    for ( int i = 0; i < drawCmds.size(); i++ ) {
 
-        GLBatchDrawCmd drawCmd = drawCmds[i];
+        GLBatchDrawCmd drawCmd = drawCmds[ i ];
 
-        if (!drawCmd.cullFace) {
+        if ( !drawCmd.cullFace ) {
             glDisable(GL_CULL_FACE);
-        }
-        else {
+        } else {
             glEnable(GL_CULL_FACE);
         }
 
-        if (prevDrawMode != drawCmd.drawMode) {
-            if (drawCmd.drawMode == DRAW_MODE_WIREFRAME) {
+        if ( prevDrawMode != drawCmd.drawMode ) {
+            if ( drawCmd.drawMode == DRAW_MODE_WIREFRAME ) {
                 glLineWidth(1.0f);
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                 m_ImPrimitivesShader->SetShaderSettingBits(SHADER_LINEMODE);
-                prevDrawMode = GL_LINE;
+                prevDrawMode  = GL_LINE;
                 primitiveType = GL_TRIANGLES;
-            }
-            else if (drawCmd.drawMode == DRAW_MODE_LINES) {
+            } else if ( drawCmd.drawMode == DRAW_MODE_LINES ) {
                 glLineWidth(5.0f);
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 m_ImPrimitivesShader->SetShaderSettingBits(SHADER_LINEMODE);
-                prevDrawMode = GL_FILL;
+                prevDrawMode  = GL_FILL;
                 primitiveType = GL_LINES;
-            }
-            else { // DRAW_MODE_SOLID
+            } else { // DRAW_MODE_SOLID
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                prevDrawMode = GL_FILL;
+                prevDrawMode  = GL_FILL;
                 primitiveType = GL_TRIANGLES;
             }
         }
 
-        if (geomType == GEOM_TYPE_VERTEX_ONLY) {
+        if ( geomType == GEOM_TYPE_VERTEX_ONLY ) {
             glDrawArrays(primitiveType, drawCmd.offset, drawCmd.numVerts);
-        }
-        else if (geomType == GEOM_TYPE_INDEXED) {
+        } else if ( geomType == GEOM_TYPE_INDEXED ) {
             uint32_t indexBufferUSOffset = drawCmd.indexOffset * sizeof(uint16_t);
-            glDrawElementsBaseVertex(primitiveType, drawCmd.numIndices, GL_UNSIGNED_SHORT,
-                (GLvoid*)(drawCmd.indexOffset * sizeof(uint16_t)), drawCmd.offset);
+            glDrawElementsBaseVertex(primitiveType,
+                                     drawCmd.numIndices,
+                                     GL_UNSIGNED_SHORT,
+                                     (GLvoid*)(drawCmd.indexOffset * sizeof(uint16_t)),
+                                     drawCmd.offset);
         }
 
         m_ImPrimitivesShader->ResetShaderSettingBits(SHADER_LINEMODE);
     }
 }
 
-void GLRender::Render(Camera* camera,
-                      HKD_Model** models, uint32_t numModels,
-                      HKD_Model** brushModels, uint32_t numBrushModels)
-{
+void GLRender::Render(
+    Camera* camera, HKD_Model** models, uint32_t numModels, HKD_Model** brushModels, uint32_t numBrushModels) {
     // Camera and render settings
 
     static uint32_t drawWireframe = 0;
 
-    if (KeyWentDown(SDLK_r)) { // WARNING: TAB key also triggers slider-values in ImGui Window.
+    if ( KeyWentDown(SDLK_r) ) { // WARNING: TAB key also triggers slider-values in ImGui Window.
         drawWireframe ^= 1;
     }
 
@@ -740,7 +728,8 @@ void GLRender::Render(Camera* camera,
 
     glm::mat4 view = camera->ViewMatrix();
     // TODO: Global Setting for perspective values
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)m_WindowWidth / (float)m_WindowHeight, 0.1f, 10000.0f);
+    glm::mat4 proj
+        = glm::perspective(glm::radians(45.0f), (float)m_WindowWidth / (float)m_WindowHeight, 0.1f, 10000.0f);
 
     // Draw immediate mode primitives
 
@@ -773,10 +762,10 @@ void GLRender::Render(Camera* camera,
     m_WorldShader->Activate();
     m_WorldShader->SetViewProjMatrices(view, proj);
 
-    for (auto const& [ texHandle, drawCmd ] : m_TexHandleToWorldDrawCmd) {
+    for ( auto const& [ texHandle, drawCmd ] : m_TexHandleToWorldDrawCmd ) {
         std::vector<GLBatchDrawCmd> drawCmds{ drawCmd };
-        glBindTexture( GL_TEXTURE_2D, texHandle );
-        ExecuteDrawCmds( drawCmds, GEOM_TYPE_VERTEX_ONLY );
+        glBindTexture(GL_TEXTURE_2D, texHandle);
+        ExecuteDrawCmds(drawCmds, GEOM_TYPE_VERTEX_ONLY);
     }
 
     /*for (auto const& [ texHandle, batch ] : m_TexHandleToWorldBatch) {*/
@@ -790,15 +779,15 @@ void GLRender::Render(Camera* camera,
     m_BrushBatch->Bind();
     m_BrushShader->Activate();
     m_BrushShader->SetViewProjMatrices(view, proj);
-    for (int i = 0; i < numBrushModels; i++) {
-        GLModel model = m_Models[ brushModels[i]->gpuModelHandle ];
-        glm::mat4 modelMatrix = CreateModelMatrix( brushModels[i] );
-        m_BrushShader->SetVec3( "position", brushModels[i]->position );
+    for ( int i = 0; i < numBrushModels; i++ ) {
+        GLModel   model       = m_Models[ brushModels[ i ]->gpuModelHandle ];
+        glm::mat4 modelMatrix = CreateModelMatrix(brushModels[ i ]);
+        m_BrushShader->SetVec3("position", brushModels[ i ]->position);
 
-        for (int j = 0; j < model.meshes.size(); j++) {
-            GLMesh* mesh = &model.meshes[j];
+        for ( int j = 0; j < model.meshes.size(); j++ ) {
+            GLMesh* mesh = &model.meshes[ j ];
             glBindTexture(GL_TEXTURE_2D, mesh->texture->m_gl_Handle);
-            glDrawArrays(GL_TRIANGLES, 3*mesh->triOffset, 3 * mesh->triCount);
+            glDrawArrays(GL_TRIANGLES, 3 * mesh->triOffset, 3 * mesh->triCount);
         }
     }
 
@@ -807,37 +796,34 @@ void GLRender::Render(Camera* camera,
     m_ModelBatch->Bind();
     m_ModelShader->Activate();
     m_ModelShader->SetViewProjMatrices(view, proj);
-    if (drawWireframe) {
+    if ( drawWireframe ) {
         m_ModelShader->SetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
-    }
-    else {
+    } else {
         m_ModelShader->ResetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
     }
-    for (int i = 0; i < numModels; i++) {
+    for ( int i = 0; i < numModels; i++ ) {
 
-        GLModel model = m_Models[ models[i]->gpuModelHandle ];
+        GLModel model = m_Models[ models[ i ]->gpuModelHandle ];
 
-        if ( models[i]->numJoints > 0 ) {
+        if ( models[ i ]->numJoints > 0 ) {
             m_ModelShader->SetShaderSettingBits(SHADER_ANIMATED);
-            m_ModelShader->SetMatrixPalette( &models[i]->palette[0], models[i]->numJoints );
-        }
-        else {
+            m_ModelShader->SetMatrixPalette(&models[ i ]->palette[ 0 ], models[ i ]->numJoints);
+        } else {
             m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
         }
 
-        glm::mat4 modelMatrix = CreateModelMatrix( models[i] );
+        glm::mat4 modelMatrix = CreateModelMatrix(models[ i ]);
         m_ModelShader->SetMat4("model", modelMatrix);
 
-        for (int j = 0; j < model.meshes.size(); j++) {
-            GLMesh* mesh = &model.meshes[j];
-            if (!mesh->texture->m_Filename.empty()) { // TODO: Checking string of empty is not great.
+        for ( int j = 0; j < model.meshes.size(); j++ ) {
+            GLMesh* mesh = &model.meshes[ j ];
+            if ( !mesh->texture->m_Filename.empty() ) { // TODO: Checking string of empty is not great.
                 m_ModelShader->SetShaderSettingBits(SHADER_IS_TEXTURED);
                 glBindTexture(GL_TEXTURE_2D, mesh->texture->m_gl_Handle);
-            }
-            else {
+            } else {
                 m_ModelShader->ResetShaderSettingBits(SHADER_IS_TEXTURED);
             }
-            glDrawArrays(GL_TRIANGLES, 3*mesh->triOffset, 3 * mesh->triCount);
+            glDrawArrays(GL_TRIANGLES, 3 * mesh->triOffset, 3 * mesh->triCount);
         }
     }
     m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
@@ -869,18 +855,14 @@ void GLRender::Begin2D() {
 
     glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
 
-
-    glm::mat4 ortho = glm::ortho(0.0f, (float)m_2dFBO->m_Width,
-                                 (float)m_2dFBO->m_Height, 0.0f,
-                                 -1.0f, 1.0f);
+    glm::mat4 ortho = glm::ortho(0.0f, (float)m_2dFBO->m_Width, (float)m_2dFBO->m_Height, 0.0f, -1.0f, 1.0f);
     m_FontShader->Activate();
-    m_FontShader->SetViewProjMatrices( glm::mat4(1.0f), ortho );
+    m_FontShader->SetViewProjMatrices(glm::mat4(1.0f), ortho);
     m_ShapesShader->Activate();
-    m_ShapesShader->SetViewProjMatrices( glm::mat4(1.0f), ortho );
+    m_ShapesShader->SetViewProjMatrices(glm::mat4(1.0f), ortho);
 }
 
 void GLRender::End2D() {
-
 
     m_2dFBO->Unbind();
     //m_FontBatch->Unbind();
@@ -903,8 +885,8 @@ void GLRender::SetFont(CFont* font, glm::vec4 color) {
         glm::vec4(0.0f) // NOTE: unused at the moment.
     };
 
-    glBindBuffer( GL_UNIFORM_BUFFER, m_FontShader->m_FontUBO );
-    glBufferSubData( GL_UNIFORM_BUFFER, 0, sizeof(FontUB), (void*)&fontShaderData );
+    glBindBuffer(GL_UNIFORM_BUFFER, m_FontShader->m_FontUBO);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(FontUB), (void*)&fontShaderData);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     m_CurrentFont = font;
@@ -918,8 +900,8 @@ void GLRender::SetShapeColor(glm::vec4 color) {
         glm::vec4(0.0f) // NOTE: unused at the moment.
     };
 
-    glBindBuffer( GL_UNIFORM_BUFFER, m_ShapesShader->m_ShapesUBO );
-    glBufferSubData( GL_UNIFORM_BUFFER, 0, sizeof(ShapesUB), (void*)&shapesShaderData );
+    glBindBuffer(GL_UNIFORM_BUFFER, m_ShapesShader->m_ShapesUBO);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(ShapesUB), (void*)&shapesShaderData);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
@@ -927,10 +909,7 @@ void GLRender::FlushFonts() {
     m_FontBatch->Bind();
     m_FontShader->Activate();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDrawElementsBaseVertex(GL_TRIANGLES,
-                             m_FontBatch->IndexCount(),
-                             GL_UNSIGNED_SHORT,
-                             (GLvoid*)0, 0);
+    glDrawElementsBaseVertex(GL_TRIANGLES, m_FontBatch->IndexCount(), GL_UNSIGNED_SHORT, (GLvoid*)0, 0);
 
     m_FontBatch->Reset();
 }
@@ -938,24 +917,18 @@ void GLRender::FlushFonts() {
 void GLRender::FlushShapes() {
     m_ShapesBatch->Bind();
     m_ShapesShader->Activate();
-    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    glDrawElementsBaseVertex(GL_TRIANGLES,
-                             m_ShapesBatch->IndexCount(),
-                             GL_UNSIGNED_SHORT,
-                             (GLvoid*)0, 0);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDrawElementsBaseVertex(GL_TRIANGLES, m_ShapesBatch->IndexCount(), GL_UNSIGNED_SHORT, (GLvoid*)0, 0);
 
     m_ShapesBatch->Reset();
 }
 
-void GLRender::R_DrawText(const std::string& text,
-                        float x, float y,
-                        ScreenSpaceCoordMode coordMode) {
+void GLRender::R_DrawText(const std::string& text, float x, float y, ScreenSpaceCoordMode coordMode) {
 
     // TODO: (Michael): Make sure that the correct shader is active.
 
-
     float xOffset = WINDOW_WIDTH * x;
-    float yOffset = WINDOW_HEIGHT* y;
+    float yOffset = WINDOW_HEIGHT * y;
 
     if ( coordMode == COORD_MODE_ABS ) {
         xOffset = x;
@@ -965,24 +938,22 @@ void GLRender::R_DrawText(const std::string& text,
     FaceQuad fq{}; // = CreateFaceQuadFromVerts(vertices);
 
     // go through each character in text and lookup the correct UV.
-    int out_OffsetIndices = 0; // TODO: Not needed here!
+    int out_OffsetIndices  = 0; // TODO: Not needed here!
     int out_OffsetVertices = 0; // TODO: Not needed here!
 
     // TODO: (Michael): Make indices uint32_t.
-    uint16_t iOffset = (uint16_t)m_FontBatch->m_LastIndex;
+    uint16_t iOffset   = (uint16_t)m_FontBatch->m_LastIndex;
     uint16_t lastIndex = iOffset;
 
-    const char* c = text.c_str();
-    int i = 0;
-    float ascender = (float)m_CurrentFont->m_Ascender;
-    float tallestGlyph = ascender;
+    const char* c            = text.c_str();
+    int         i            = 0;
+    float       ascender     = (float)m_CurrentFont->m_Ascender;
+    float       tallestGlyph = ascender;
     while ( *c != '\0' ) {
         if ( *c >= FIRST_CODE_POINT && *c < LAST_CODE_POINT ) {
 
-            uint16_t indices[6] = {
-                iOffset + 0 + i*4, iOffset + 1 + i*4, iOffset + 2 + i*4,
-                iOffset + 2 + i*4, iOffset + 3 + i*4, iOffset + 0 + i*4
-            };
+            uint16_t           indices[ 6 ] = { iOffset + 0 + i * 4, iOffset + 1 + i * 4, iOffset + 2 + i * 4,
+                                                iOffset + 2 + i * 4, iOffset + 3 + i * 4, iOffset + 0 + i * 4 };
             stbtt_aligned_quad q;
 
             // Newbe API
@@ -990,11 +961,13 @@ void GLRender::R_DrawText(const std::string& text,
 
             // More advanced API
             stbtt_GetPackedQuad(m_CurrentFont->m_PackedCharData,
-                                FONT_TEX_SIZE, FONT_TEX_SIZE,
-                                *c - FIRST_CODE_POINT,             // character to display
-                                &xOffset, &yOffset,
+                                FONT_TEX_SIZE,
+                                FONT_TEX_SIZE,
+                                *c - FIRST_CODE_POINT, // character to display
+                                &xOffset,
+                                &yOffset,
                                 // pointers to current position in screen pixel space
-                                &q,      // output: quad to draw
+                                &q, // output: quad to draw
                                 1);
 
             float x0 = q.x0;
@@ -1008,16 +981,14 @@ void GLRender::R_DrawText(const std::string& text,
             fq.d.pos = { x1, y0 + tallestGlyph, 0.0f };
             fq.a.pos = { x1, y1 + tallestGlyph, 0.0f };
             fq.b.pos = { x0, y1 + tallestGlyph, 0.0f };
-            fq.a.uv = { q.s1, q.t1 };
-            fq.b.uv = { q.s0, q.t1 };
-            fq.c.uv = { q.s0, q.t0 };
-            fq.d.uv = { q.s1, q.t0 };
-            m_FontBatch->Add(fq.vertices, 4,
-                                      indices, 6,
-                                      &out_OffsetVertices, &out_OffsetIndices,
-                                      false, DRAW_MODE_SOLID);
+            fq.a.uv  = { q.s1, q.t1 };
+            fq.b.uv  = { q.s0, q.t1 };
+            fq.c.uv  = { q.s0, q.t0 };
+            fq.d.uv  = { q.s1, q.t0 };
+            m_FontBatch->Add(
+                fq.vertices, 4, indices, 6, &out_OffsetVertices, &out_OffsetIndices, false, DRAW_MODE_SOLID);
 
-            lastIndex = iOffset + 3 + i*4;
+            lastIndex = iOffset + 3 + i * 4;
 
             i++;
         }
@@ -1034,7 +1005,7 @@ void GLRender::R_DrawText(const std::string& text,
 void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode) {
 
     float x0 = WINDOW_WIDTH * x;
-    float y0 = WINDOW_HEIGHT* y;
+    float y0 = WINDOW_HEIGHT * y;
     float x1 = WINDOW_WIDTH * (x + width);
     float y1 = WINDOW_HEIGHT * (y + height);
 
@@ -1045,29 +1016,21 @@ void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceC
         y1 = y + height;
     }
 
-    Vertex verts[4] = {
-        { glm::vec3(x0, y0, 0.0f) },
-        { glm::vec3(x0, y1, 0.0f) },
-        { glm::vec3(x1, y1, 0.0f) },
-        { glm::vec3(x1, y0, 0.0f) }
-    };
-    FaceQuad fq = CreateFaceQuadFromVerts( verts );
+    Vertex   verts[ 4 ] = { { glm::vec3(x0, y0, 0.0f) },
+                            { glm::vec3(x0, y1, 0.0f) },
+                            { glm::vec3(x1, y1, 0.0f) },
+                            { glm::vec3(x1, y0, 0.0f) } };
+    FaceQuad fq         = CreateFaceQuadFromVerts(verts);
 
-    uint16_t iOffset = (uint16_t)m_ShapesBatch->m_LastIndex;
-    uint16_t indices[6] = {
-        iOffset + 0, iOffset + 1, iOffset + 2,
-        iOffset + 2, iOffset + 3, iOffset + 0
-    };
+    uint16_t iOffset      = (uint16_t)m_ShapesBatch->m_LastIndex;
+    uint16_t indices[ 6 ] = { iOffset + 0, iOffset + 1, iOffset + 2, iOffset + 2, iOffset + 3, iOffset + 0 };
 
     // NOTE: (Michael): The batch interface is going to change once we have
     // the first prototype going. So no need to fix those inconvenciences
     // of unused (and unwanted) out_* variables for now!
-    int out_OffsetIndices = 0; // TODO: Not needed here!
+    int out_OffsetIndices  = 0; // TODO: Not needed here!
     int out_OffsetVertices = 0; // TODO: Not needed here!
-    m_ShapesBatch->Add(fq.vertices, 4,
-                              indices, 6,
-                              &out_OffsetVertices, &out_OffsetIndices,
-                              false, DRAW_MODE_SOLID);
+    m_ShapesBatch->Add(fq.vertices, 4, indices, 6, &out_OffsetVertices, &out_OffsetIndices, false, DRAW_MODE_SOLID);
 
     m_ShapesBatch->m_LastIndex += 4;
 
@@ -1081,33 +1044,27 @@ void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceC
     FlushShapes();
 }
 
-void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels)
-{
+void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) {
     glm::mat4 view = camera->ViewMatrix();
     // TODO: Global Setting for perspective values
-    glm::mat4 proj = glm::perspective(
-        glm::radians(45.0f),
-        (float)m_WindowWidth / (float)m_WindowHeight,
-        0.1f, 10000.0f);
+    glm::mat4 proj
+        = glm::perspective(glm::radians(45.0f), (float)m_WindowWidth / (float)m_WindowHeight, 0.1f, 10000.0f);
 
     m_ColliderShader->Activate();
     m_ColliderShader->SetViewProjMatrices(view, proj);
 
     m_ColliderBatch->Bind();
-    for (int i = 0; i < numModels; i++) {
-        HKD_Model* model = models[i];
+    for ( int i = 0; i < numModels; i++ ) {
+        HKD_Model* model = models[ i ];
         m_ColliderShader->SetVec4("uDebugColor", model->debugColor);
-        EllipsoidCollider ec = model->ellipsoidColliders[model->currentAnimIdx];
-        glm::vec3 scale = glm::vec3(
-            ec.radiusA,
-            ec.radiusA,
-            ec.radiusB);
+        EllipsoidCollider ec    = model->ellipsoidColliders[ model->currentAnimIdx ];
+        glm::vec3         scale = glm::vec3(ec.radiusA, ec.radiusA, ec.radiusB);
 
         glm::mat4 T = glm::translate(glm::mat4(1.0f), ec.center);
         glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
         glm::mat4 M = T * S;
         m_ColliderShader->SetMat4("model", M);
-        std::vector<GLBatchDrawCmd> drawCmds = {m_EllipsoidColliderDrawCmd};
+        std::vector<GLBatchDrawCmd> drawCmds = { m_EllipsoidColliderDrawCmd };
         //glDrawArrays(GL_TRIANGLES, m_EllipsoidColliderDrawCmd.offset, m_EllipsoidColliderDrawCmd.numVerts);
         ExecuteDrawCmds(drawCmds, GEOM_TYPE_VERTEX_ONLY);
         // glDrawArrays(GL_LINES,
@@ -1117,20 +1074,23 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
 }
 
 void GLRender::RenderConsole(Console* console, CFont* font) {
-    if (!console->m_isActive) return;
+    if ( !console->m_isActive ) return;
 
-    const float relHeight = scr_consize.value;
-    const float height = m_WindowHeight * relHeight;
+    const float relHeight   = scr_consize.value;
+    const float height      = m_WindowHeight * relHeight;
     const float borderWidth = 2.0f;
-    const float textMargin = 10.0f;
-    const float lineHeight = font->m_Size + textMargin; // TODO: possibly derive from font *line gap* metric in the future?
-    const float charWidth = font->m_Size * 0.602f; // assumes mono-space font  // FIXME: this is just an estimation, should be derived from the font!
+    const float textMargin  = 10.0f;
+    const float lineHeight
+        = font->m_Size + textMargin; // TODO: possibly derive from font *line gap* metric in the future?
+    const float charWidth
+        = font->m_Size
+          * 0.602f; // assumes mono-space font  // FIXME: this is just an estimation, should be derived from the font!
 
-    const float inputY = height - font->m_Size - textMargin;
-    float logY = inputY - textMargin * 2 - font->m_Size;
-    const int maxLines = floor(logY / lineHeight) + 1;
-    const int maxChars = floor((m_WindowWidth - 2 * textMargin) / charWidth);
-    const bool isScrollable = console->m_lineBuffer.Size() > maxLines;
+    const float inputY       = height - font->m_Size - textMargin;
+    float       logY         = inputY - textMargin * 2 - font->m_Size;
+    const int   maxLines     = floor(logY / lineHeight) + 1;
+    const int   maxChars     = floor((m_WindowWidth - 2 * textMargin) / charWidth);
+    const bool  isScrollable = console->m_lineBuffer.Size() > maxLines;
 
     Begin2D();
     m_ConsoleFBO->Bind();
@@ -1146,49 +1106,49 @@ void GLRender::RenderConsole(Console* console, CFont* font) {
 
     // draw input
     SetFont(font, glm::vec4(1.0f));
-    std::string prefix = "> ";
-    int maxInputChars = maxChars - prefix.length();
-    int textOffset = ((console->CursorPos() - 1) / maxInputChars) * maxInputChars; // integer division
-    if (console->CurrentInput().length() > maxInputChars) prefix = "<>"; // indicate line overflow
+    std::string prefix        = "> ";
+    int         maxInputChars = maxChars - prefix.length();
+    int         textOffset    = ((console->CursorPos() - 1) / maxInputChars) * maxInputChars; // integer division
+    if ( console->CurrentInput().length() > maxInputChars ) prefix = "<>";                    // indicate line overflow
     std::string inputText = prefix + console->CurrentInput().substr(textOffset, maxInputChars);
     R_DrawText(inputText, textMargin, inputY, COORD_MODE_ABS);
 
     // draw cursor
-    if (console->m_blinkTimer < 500.0) {
+    if ( console->m_blinkTimer < 500.0 ) {
         float cursorX = textMargin + (console->CursorPos() - textOffset + prefix.length()) * charWidth;
         SetShapeColor(glm::vec4(0.8f, 0.8f, 0.8f, 1.0f));
         DrawBox(cursorX - 2.5f, inputY - 3.0f, 5.0f, font->m_Size + 4.0f, COORD_MODE_ABS);
-    } else if (console->m_blinkTimer > 1000.0) {
+    } else if ( console->m_blinkTimer > 1000.0 ) {
         console->m_blinkTimer = 0;
     }
 
     // draw bottom scroll indicator
-    if (isScrollable && console->ScrollPos() != 0) {
+    if ( isScrollable && console->ScrollPos() != 0 ) {
         R_DrawText(std::string(maxChars, '^'), textMargin, logY + lineHeight * 0.7f, COORD_MODE_ABS);
     }
 
     // draw log lines
-    for (int i = 0; i < maxLines; i++) {
-        int lineOffset = isScrollable ? console->ScrollPos() + i : i;
+    for ( int i = 0; i < maxLines; i++ ) {
+        int         lineOffset = isScrollable ? console->ScrollPos() + i : i;
         std::string line;
-        if (!console->m_lineBuffer.Get(lineOffset, &line)) {
-            if (isScrollable) {
-                std::string msg = " END OF LOG ";
-                int chars = (maxChars - msg.length()) / 2;
-                msg = std::string(chars, '-') + msg;
+        if ( !console->m_lineBuffer.Get(lineOffset, &line) ) {
+            if ( isScrollable ) {
+                std::string msg   = " END OF LOG ";
+                int         chars = (maxChars - msg.length()) / 2;
+                msg               = std::string(chars, '-') + msg;
                 R_DrawText(msg + std::string(maxChars - msg.length(), '-'), textMargin, logY, COORD_MODE_ABS);
             }
             break;
         }
-        if (scr_conwraplines.value && line.length() > maxChars) {
+        if ( scr_conwraplines.value && line.length() > maxChars ) {
             std::vector<std::string> segments;
-            for (int offset = 0; offset < line.length(); offset += maxChars) {
+            for ( int offset = 0; offset < line.length(); offset += maxChars ) {
                 segments.push_back(line.substr(offset, maxChars));
             }
-            for (int j = segments.size() - 1; j >= 0; j--) {
-                R_DrawText(segments[j], textMargin, logY, COORD_MODE_ABS);
+            for ( int j = segments.size() - 1; j >= 0; j-- ) {
+                R_DrawText(segments[ j ], textMargin, logY, COORD_MODE_ABS);
                 logY -= lineHeight;
-                if (++i == maxLines) break;
+                if ( ++i == maxLines ) break;
             }
         } else {
             R_DrawText(line, textMargin, logY, COORD_MODE_ABS);
@@ -1200,8 +1160,7 @@ void GLRender::RenderConsole(Console* console, CFont* font) {
     End2D();
 }
 
-void GLRender::RenderEnd(void)
-{
+void GLRender::RenderEnd(void) {
     // At this point the GL default FBO must be active!
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -1222,34 +1181,31 @@ void GLRender::RenderEnd(void)
     // Composite all the FBOs together
     m_CompositeShader->Activate();
 
-    GLuint texLoc3d = glGetUniformLocation(m_CompositeShader->Program(),
-                                           "main3dSceneTexture");
+    GLuint texLoc3d = glGetUniformLocation(m_CompositeShader->Program(), "main3dSceneTexture");
 
-    GLuint texLoc2d = glGetUniformLocation(m_CompositeShader->Program(),
-                                           "screenspace2dTexture");
+    GLuint texLoc2d = glGetUniformLocation(m_CompositeShader->Program(), "screenspace2dTexture");
 
-    GLuint texLocConsole = glGetUniformLocation(m_CompositeShader->Program(),
-                                                "consoleTexture");
+    GLuint texLocConsole = glGetUniformLocation(m_CompositeShader->Program(), "consoleTexture");
 
     glUniform1i(texLoc3d, 0);
     // Bind the 3d scene FBO and draw it.
     CglRenderTexture main3dSceneTexture = m_3dFBO->m_ColorTexture;
-    glActiveTexture( GL_TEXTURE0 );
-    glBindTexture( GL_TEXTURE_2D, main3dSceneTexture.m_gl_Handle );
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, main3dSceneTexture.m_gl_Handle);
 
     glUniform1i(texLoc2d, 1);
     // Bind the 2d screenspace FBO texture and draw on top.
     CglRenderTexture screenSpace2dTexture = m_2dFBO->m_ColorTexture;
-    glActiveTexture( GL_TEXTURE1 );
-    glBindTexture( GL_TEXTURE_2D, screenSpace2dTexture.m_gl_Handle );
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, screenSpace2dTexture.m_gl_Handle);
 
     glUniform1i(texLocConsole, 2);
     // Bind the 2d console FBO texture and draw on top.
     CglRenderTexture consoleTexture = m_ConsoleFBO->m_ColorTexture;
-    glActiveTexture( GL_TEXTURE2 );
-    glBindTexture( GL_TEXTURE_2D, consoleTexture.m_gl_Handle );
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, consoleTexture.m_gl_Handle);
 
-    glDrawArrays( GL_TRIANGLES, 0, 6 );
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // FIX: This is the reason why textures in OpenGL suck!!! If we are
     // not careful, and *don't* set the state back, then the following
@@ -1259,8 +1215,8 @@ void GLRender::RenderEnd(void)
     // (I just did!). Luckily, we can use bindless
     // textures in OpenGL which we *definitely* want to use in a
     // facelift of the renderer.
-    glBindTexture( GL_TEXTURE_2D, 0 );
-    glActiveTexture( GL_TEXTURE0 );
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE0);
 
     // Render ImGui Elements ontop of everything.
     ImGui::Render();
@@ -1276,58 +1232,40 @@ void GLRender::RenderEnd(void)
     m_PrimitiveIndexdDrawCmds.clear();
 }
 
-void GLRender::InitShaders()
-{
+void GLRender::InitShaders() {
     Shader::InitGlobalBuffers();
 
     // Models
 
     m_ModelShader = new Shader();
-    if ( !m_ModelShader->Load(
-        "shaders/entities.vert",
-        "shaders/entities.frag",
-        SHADER_FEATURE_MODEL_ANIMATION_BIT
-    )) {
+    if ( !m_ModelShader->Load("shaders/entities.vert", "shaders/entities.frag", SHADER_FEATURE_MODEL_ANIMATION_BIT) ) {
         printf("Problems initializing model shaders!\n");
     }
 
     // Immediate mode Primitives: Lines, Tris, ...
 
     m_ImPrimitivesShader = new Shader();
-    if ( !m_ImPrimitivesShader->Load(
-        "shaders/primitives.vert",
-        "shaders/primitives.frag"
-    )) {
+    if ( !m_ImPrimitivesShader->Load("shaders/primitives.vert", "shaders/primitives.frag") ) {
         printf("Problems initializing primitives shader!\n");
     }
 
     // Colliders (for now: Ellipsoids, but can also be AABBs, etc.)
 
     m_ColliderShader = new Shader();
-    if ( !m_ColliderShader->Load(
-        "shaders/colliders.vert",
-        "shaders/colliders.frag"
-        )) {
+    if ( !m_ColliderShader->Load("shaders/colliders.vert", "shaders/colliders.frag") ) {
         printf("Problems initializin colliders shader!\n");
     }
 
     // TODO: Just to test if shaders overwrite data from each other. Delete later!
     Shader* foo = new Shader();
-    if ( !foo->Load(
-        "shaders/entities.vert",
-        "shaders/entities.frag",
-        SHADER_FEATURE_MODEL_ANIMATION_BIT
-    )) {
+    if ( !foo->Load("shaders/entities.vert", "shaders/entities.frag", SHADER_FEATURE_MODEL_ANIMATION_BIT) ) {
         printf("Problems initializing model shaders!\n");
     }
 
     // 2D Screenspace: UI, Console, etc.
 
     m_FontShader = new Shader();
-    if ( !m_FontShader->Load(
-        "shaders/font.vert",
-        "shaders/font.frag"
-        )) {
+    if ( !m_FontShader->Load("shaders/font.vert", "shaders/font.frag") ) {
         printf("Problems initializing font shader!\n");
     }
     // TODO: We could think about actually creating a subclass
@@ -1339,40 +1277,27 @@ void GLRender::InitShaders()
     m_FontShader->InitializeFontUniforms();
 
     m_ShapesShader = new Shader();
-    if ( !m_ShapesShader->Load(
-        "shaders/shapes2d.vert",
-        "shaders/shapes2d.frag"
-    )) {
+    if ( !m_ShapesShader->Load("shaders/shapes2d.vert", "shaders/shapes2d.frag") ) {
         printf("Problems initializing shapes2d shader!\n");
     }
     m_ShapesShader->InitializeShapesUniforms();
 
     m_CompositeShader = new Shader();
-    if ( !m_CompositeShader->Load(
-        "shaders/composite.vert",
-        "shaders/composite.frag"
-    )) {
+    if ( !m_CompositeShader->Load("shaders/composite.vert", "shaders/composite.frag") ) {
         printf("Problems initializing composite shader!\n");
     }
 
     m_WorldShader = new Shader();
-    if ( !m_WorldShader->Load(
-        "shaders/world.vert",
-        "shaders/world.frag"
-    )) {
+    if ( !m_WorldShader->Load("shaders/world.vert", "shaders/world.frag") ) {
         printf("Problems initializing world shader!\n");
     }
 
     m_BrushShader = new Shader();
-    if ( !m_BrushShader->Load(
-        "shaders/brush.vert",
-        "shaders/brush.frag"
-    )) {
+    if ( !m_BrushShader->Load("shaders/brush.vert", "shaders/brush.frag") ) {
         printf("Problems initializing brush shader!\n");
     }
 }
 
-void GLRender::SetWindowTitle(char* windowTitle)
-{
+void GLRender::SetWindowTitle(char* windowTitle) {
     SDL_SetWindowTitle(m_Window, windowTitle);
 }

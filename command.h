@@ -3,17 +3,13 @@
 
 class Command {
 
-public:
-
-    Command() = default;
+  public:
+    Command()  = default;
     ~Command() = default;
 
     virtual void Execute() = 0;
 
-private:
-
+  private:
 };
 
-
 #endif
-

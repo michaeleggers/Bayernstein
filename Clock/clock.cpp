@@ -6,14 +6,12 @@
 #include "clock.h"
 #include "SDL_timer.h"
 
-CrudeTimer* CrudeTimer::Instance()
-{
-	static CrudeTimer instance;
+CrudeTimer* CrudeTimer::Instance() {
+    static CrudeTimer instance;
 
-	return &instance;
+    return &instance;
 }
 
 double CrudeTimer::GetTime() {
-	return SDL_GetTicks();
+    return SDL_GetTicks();
 }
-

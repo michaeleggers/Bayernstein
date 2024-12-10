@@ -14,10 +14,9 @@
 #include "../../Message/message_dispatcher.h"
 #include "../../camera.h"
 #include "../../collision.h"
-#include "../../r_model.h"
 #include "../../input_receiver.h"
+#include "../../r_model.h"
 #include "../moving_entity.h"
-
 
 class Player : public MovingEntity, public IInputReceiver {
 
@@ -30,7 +29,7 @@ class Player : public MovingEntity, public IInputReceiver {
     void Update() override;
     bool HandleMessage(const Telegram& telegram) override;
     void HandleInput() override;
-    
+
     void UpdateCamera(Camera* camera);
     void UpdatePosition(glm::vec3 newPosition) override;
 
@@ -51,18 +50,18 @@ class Player : public MovingEntity, public IInputReceiver {
         }
         return false;
     }
-  
-private:
+
+  private:
     StateMachine<Player>* m_pStateMachine;
-    double m_AttackDelay = 100;
-    double m_LastAttack = 0;
+    double                m_AttackDelay = 100;
+    double                m_LastAttack  = 0;
 
     HKD_Model m_Model;
     // moving members
 
-private:
-    glm::vec3 m_Forward, m_Side;
-    AnimState m_AnimationState;
+  private:
+    glm::vec3         m_Forward, m_Side;
+    AnimState         m_AnimationState;
     EllipsoidCollider m_EllipsoidCollider;
 
     void LoadModel(const char* path, glm::vec3 initialPosition);
@@ -70,4 +69,3 @@ private:
 };
 
 #endif // PLAYER_H
-

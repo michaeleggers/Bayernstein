@@ -5,13 +5,13 @@
 #ifndef BODY_H
 #define BODY_H
 
-#include <glm/glm.hpp>
 #include <glm/ext.hpp>
+#include <glm/glm.hpp>
 
 #include "Shape.h"
 
 class Body {
-public:
+  public:
     glm::vec3 GetCenterOfMassWorldSpace() const;
     glm::vec3 GetCenterOfMassModelSpace() const;
 
@@ -20,14 +20,12 @@ public:
 
     void ApplyImpulseLinear(glm::vec3& impulse);
 
-    glm::vec3   m_Position;
-    glm::quat   m_Orientation;
-    glm::vec3   m_LinearVelocity;
-    float       m_InvMass;
-    float       m_Elasticity;
-    Shape*      m_Shape;
+    glm::vec3 m_Position;
+    glm::quat m_Orientation;
+    glm::vec3 m_LinearVelocity;
+    float     m_InvMass;
+    float     m_Elasticity;
+    Shape*    m_Shape;
 };
-
-
 
 #endif //BODY_H

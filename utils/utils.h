@@ -49,6 +49,4 @@ template <typename T> std::vector<T> ParseValues(const std::string& input) {
     return values;
 }
 
-
 #endif
-

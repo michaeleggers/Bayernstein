@@ -1,10 +1,10 @@
 #ifndef PATROL_PATH_H
 #define PATROL_PATH_H
 
-#include <string>
-#include <vector>
-#include <unordered_map>
 #include <assert.h>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "../dependencies/glm/glm.hpp"
 #include "../r_common.h"
@@ -24,7 +24,7 @@ enum Direction {
 };
 
 class PatrolPath {
-public:
+  public:
     PatrolPath()
         : m_Points(),
           m_Radius(5.0),
@@ -48,7 +48,7 @@ public:
             Waypoint point = other->m_Points[ i ];
             // Makes sure that the point's path pointer points to this.
             // Also sets the m_CurrentWaypointName on first call.
-            AddPoint(point); 
+            AddPoint(point);
         }
         m_Name                 = other->m_Name;
         m_Radius               = other->m_Radius;
@@ -72,8 +72,8 @@ public:
     void                  SetCurrentWaypoint(std::string targetname);
     void                  SetNextWaypoint(std::string targetname);
     std::vector<Vertex>   GetPointsAsVertices();
-  
-public:
+
+  public:
     Direction   m_direction;
     float       m_OffsetToEntity = 0.0;
     float       m_Radius;
@@ -81,8 +81,8 @@ public:
     bool        IsClosed() {
         return m_Points.size() > 1 && m_Points[ 0 ].targetname == m_Points[ m_Points.size() - 1 ].target;
     };
-  
-private:
+
+  private:
     std::vector<Waypoint>                     m_Points;
     std::unordered_map<std::string, Waypoint> m_TargetnameToWaypoint;
     std::string                               m_CurrentWaypointName;

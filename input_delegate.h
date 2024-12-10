@@ -5,7 +5,7 @@
 
 class CInputDelegate {
 
-public:
+  public:
     static CInputDelegate* Instance();
 
     void SetReceiver(IInputReceiver* receiver);
@@ -17,14 +17,13 @@ public:
     void Enable();
     void Disable();
 
-private:
+  private:
     /* Singleton! */
     CInputDelegate()  = default;
     ~CInputDelegate() = default;
 
     IInputReceiver* m_InputReceiver = nullptr;
-    bool            m_Enabled = true;
+    bool            m_Enabled       = true;
 };
 
 #endif
-
