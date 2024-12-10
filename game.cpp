@@ -37,8 +37,8 @@ static int hkd_Clamp(int val, int clamp) {
 }
 
 Game::Game(std::string exePath, hkdInterface* pInterface) {
-    m_pInterface = pInterface;
-    m_ExePath = exePath;
+    m_pInterface     = pInterface;
+    m_ExePath        = exePath;
     m_pEntityManager = EntityManager::Instance();
 }
 
@@ -49,7 +49,7 @@ void Game::Init() {
     VariableManager::Register(&dbg_show_enemy_velocity);
 
     // Load a font file from disk
-    m_ConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 72);
+    m_ConsoleFont   = new CFont("fonts/HackNerdFont-Bold.ttf", 72);
     m_ConsoleFont30 = new CFont("fonts/HackNerdFont-Bold.ttf", 150); // Same font at different size
 
     IRender* renderer = GetRenderer();
@@ -69,54 +69,54 @@ void Game::Init() {
 #endif
 
     size_t inputLength = mapData.length();
-    Map map = getMap(&mapData[ 0 ], inputLength, mapVersion);
+    Map    map         = getMap(&mapData[ 0 ], inputLength, mapVersion);
 
     m_World = CWorld::Instance();
     m_World->InitWorldFromMap(map);
-     m_pPlayerEntity = m_World->PlayerEntity();
+    m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.
     // Creates batches for each texture-name. That way we can
     // reduce draw-calls and texture-binds when rendering world geometry.
 
-    renderer->RegisterWorld( m_World);
+    renderer->RegisterWorld(m_World);
 
     //m_pPlayerEntity = new Player(idCounter++, m_pPlayerEntity->m_Position);
     //m_pEntityManager->RegisterEntity(m_pPlayerEntity);
- 
+
 #if 0 // Enable second debug playerz
     glm::vec3 dbgPlayerStartPos = m_pPlayerEntity->m_Position + glm::vec3(20.0f, -100.0f, 10.0f);
     m_pDebugPlayerEntity = new Player(dbgPlayerStartPos);
     printf("Debug Player Start Pos: %f, %f, %f\n", dbgPlayerStartPos.x, dbgPlayerStartPos.y, dbgPlayerStartPos.z);
     m_pEntityManager->RegisterEntity(m_pDebugPlayerEntity);
     int hDebugPlayerModel = renderer->RegisterModel(m_pDebugPlayerEntity->GetModel());
-#endif 
+#endif
 
-    m_pFlyCameraEntity = new CFlyCamera( glm::vec3(-912, -586, 609) );
-    
+    m_pFlyCameraEntity = new CFlyCamera(glm::vec3(-912, -586, 609));
+
     // Init fly camera to look at the player.
     m_pFlyCameraEntity->m_Camera.LookAt(m_pPlayerEntity->m_Position);
-  
+
     // FIX: If the follow camera is registered *before* one of the entities
     // the follow camera will lag behind one frame because it won't
     // get the most up to date position of its target!
     // We can choose to have a dedicated array for all of the
     // camera entity types and let the entity manager take care
     // of correct update order.
-    m_pFollowCameraEntity = new CFollowCamera(m_pPlayerEntity);
+    m_pFollowCameraEntity           = new CFollowCamera(m_pPlayerEntity);
     m_pFollowCameraEntity->m_Camera = Camera(m_pPlayerEntity->m_Position);
     m_pFollowCameraEntity->m_Camera.m_Pos.y -= 200.0f;
     m_pFollowCameraEntity->m_Camera.m_Pos.z += 100.0f;
     m_pFollowCameraEntity->m_Camera.RotateAroundSide(0.0f);
     //m_pFollowCameraEntity->m_Camera.RotateAroundUp(180.0f);
     m_pEntityManager->RegisterEntity(m_pFollowCameraEntity);
-   
+
     // Upload this model to the GPU. This will add the model to the model-batch and you get an ID where to find the data
     // in the batch?
 
     //int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
     //
-   
+
     // Test Input Binding
 
     // Keyboard buttons
@@ -132,13 +132,13 @@ void Game::Init() {
     inputHandler->BindInputToActionName(SDLK_LEFT, "turn_left");
     inputHandler->BindInputToActionName(SDLK_RIGHT, "turn_right");
     // Mouse buttons
-    inputHandler->BindInputToActionName(SDL_BUTTON_LEFT, "fire"); 
-    inputHandler->BindInputToActionName(SDL_BUTTON_RIGHT, "look"); 
-    inputHandler->BindInputToActionName(SDL_MOUSEMOTION, "mlook"); 
+    inputHandler->BindInputToActionName(SDL_BUTTON_LEFT, "fire");
+    inputHandler->BindInputToActionName(SDL_BUTTON_RIGHT, "look");
+    inputHandler->BindInputToActionName(SDL_MOUSEMOTION, "mlook");
 
     // Let the player receive input by default
     CInputDelegate::Instance()->SetReceiver(m_pPlayerEntity);
-    
+
     // Disable mouse cursor in FPS mode (initial mode)
     SDL_SetRelativeMouseMode(SDL_TRUE);
     //SDL_SetWindowMouseGrab(renderer->GetWindow(),
@@ -149,16 +149,16 @@ void Game::Init() {
 
 static void DrawCoordinateSystem(IRender* renderer) {
     Vertex origin = { glm::vec3(0.0f) };
-    origin.color = glm::vec4(1.0f);
-    Vertex X = { glm::vec3(100.0f, 0.0f, 0.0f) };
-    X.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-    Vertex Y = { glm::vec3(0.0f, 100.0f, 0.0f) };
-    Y.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-    Vertex Z = { glm::vec3(0.0f, 0.0f, 100.0f) };
-    Z.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-    Vertex OX[] = { origin, X };
-    Vertex OY[] = { origin, Y };
-    Vertex OZ[] = { origin, Z };
+    origin.color  = glm::vec4(1.0f);
+    Vertex X      = { glm::vec3(100.0f, 0.0f, 0.0f) };
+    X.color       = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    Vertex Y      = { glm::vec3(0.0f, 100.0f, 0.0f) };
+    Y.color       = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    Vertex Z      = { glm::vec3(0.0f, 0.0f, 100.0f) };
+    Z.color       = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+    Vertex OX[]   = { origin, X };
+    Vertex OY[]   = { origin, Y };
+    Vertex OZ[]   = { origin, Z };
     renderer->ImDrawLines(OX, 2);
     renderer->ImDrawLines(OY, 2);
     renderer->ImDrawLines(OZ, 2);
@@ -175,33 +175,32 @@ bool Game::RunFrame(double dt) {
         m_pInterface->QuitGame();
     }
 
-    // Toggle who should be controlled by the input system 
-    static IInputReceiver* receivers[2] = { m_pPlayerEntity, m_pFlyCameraEntity };
-    static BaseGameEntity* entities[2] = { m_pPlayerEntity, m_pFlyCameraEntity };
-    static Camera* renderCam = &m_pPlayerEntity->GetCamera();
+    // Toggle who should be controlled by the input system
+    static IInputReceiver* receivers[ 2 ] = { m_pPlayerEntity, m_pFlyCameraEntity };
+    static BaseGameEntity* entities[ 2 ]  = { m_pPlayerEntity, m_pFlyCameraEntity };
+    static Camera*         renderCam      = &m_pPlayerEntity->GetCamera();
 
     // Toggle receivers
     static int receiverToggle = 0;
     if ( KeyWentDown(SDLK_u) ) {
         printf("Switching to receiver num: %d\n", receiverToggle);
         receiverToggle = ++receiverToggle % 2;
-        CInputDelegate::Instance()->SetReceiver( receivers[ receiverToggle ] ); 
-        m_pFollowCameraEntity->SetTarget( entities[ receiverToggle ] );
+        CInputDelegate::Instance()->SetReceiver(receivers[ receiverToggle ]);
+        m_pFollowCameraEntity->SetTarget(entities[ receiverToggle ]);
         renderCam = &m_pPlayerEntity->GetCamera();
         if ( entities[ receiverToggle ]->Type() == ET_FLY_CAMERA ) {
             SDL_SetRelativeMouseMode(SDL_FALSE);
             SDL_SetWindowGrab(renderer->GetWindow(), SDL_FALSE);
             SDL_ShowCursor(SDL_ENABLE);
             CFlyCamera* flyCamEnt = (CFlyCamera*)entities[ receiverToggle ];
-            renderCam = &flyCamEnt->m_Camera;
-        }
-        else {
+            renderCam             = &flyCamEnt->m_Camera;
+        } else {
             SDL_SetRelativeMouseMode(SDL_TRUE);
             SDL_SetWindowGrab(renderer->GetWindow(), SDL_TRUE);
             SDL_ShowCursor(SDL_DISABLE);
         }
     }
-    
+
     // Handle the input
     CInputDelegate::Instance()->HandleInput();
 
@@ -234,9 +233,9 @@ bool Game::RunFrame(double dt) {
     ImGui::End();
 
     ImGui::Begin("Statistics");
-    ImGui::Text( "World Tri count: %d", m_World->StaticGeometryCount() );
-    ImGui::Text( "Brush Entity count: %d", m_World->GetModelPtrs().size() );
-    ImGui::Text( "Total Entity count: %d", EntityManager::Instance()->Entities().size() );
+    ImGui::Text("World Tri count: %d", m_World->StaticGeometryCount());
+    ImGui::Text("Brush Entity count: %d", m_World->GetModelPtrs().size());
+    ImGui::Text("Total Entity count: %d", EntityManager::Instance()->Entities().size());
     ImGui::End();
 
     // Main 3D: This is where all the 3D rendering happens (in its own FBO)
@@ -250,7 +249,7 @@ bool Game::RunFrame(double dt) {
             // Draw Debug Circle for enemy
             glm::vec3 center = enemy->m_Position + enemy->m_Forward * enemy->m_pSteeringBehaviour->m_WanderDistance;
             renderer->ImDrawCircle(center, enemy->m_pSteeringBehaviour->m_WanderRadius, DOD_WORLD_UP);
-        
+
             // Draw Debug Line for player veloctiy vector
             Line velocityDebugLine = {
                 Vertex(center),
@@ -277,13 +276,14 @@ bool Game::RunFrame(double dt) {
 #endif
 
 #if 1 // Toggle moving entity rendering. Also renders world.
-        renderer->Render(renderCam, 
-                         m_World->GetModelPtrs().data(), m_World->GetModelPtrs().size(),
-                         m_World->GetBrushModelPtrs().data(), m_World->GetBrushModelPtrs().size());
+        renderer->Render(renderCam,
+                         m_World->GetModelPtrs().data(),
+                         m_World->GetModelPtrs().size(),
+                         m_World->GetBrushModelPtrs().data(),
+                         m_World->GetBrushModelPtrs().size());
 #endif
 
         // auto type = enemy->m_Type;
-
 
 #if 0
         if ( collisionInfo.didCollide ) {
@@ -300,18 +300,18 @@ bool Game::RunFrame(double dt) {
 
         // FIX: Remove later. Ugly.
         renderer->SetActiveCamera(renderCam);
-        HKD_Model* playerColliderModel[] = { m_pPlayerEntity->GetModel() };
-        std::vector<BaseGameEntity*> pAllEntities = m_pEntityManager->Entities();
-        for (int i = 0; i < pAllEntities.size(); i++) {
-            BaseGameEntity* pEntity = pAllEntities[i];
-            if (pEntity->Type() == ET_ENEMY) {
-                Enemy* pEnemy = (Enemy*)pEntity;
+        HKD_Model*                   playerColliderModel[] = { m_pPlayerEntity->GetModel() };
+        std::vector<BaseGameEntity*> pAllEntities          = m_pEntityManager->Entities();
+        for ( int i = 0; i < pAllEntities.size(); i++ ) {
+            BaseGameEntity* pEntity = pAllEntities[ i ];
+            if ( pEntity->Type() == ET_ENEMY ) {
+                Enemy*     pEnemy = (Enemy*)pEntity;
                 HKD_Model* pModel = pEnemy->GetModel();
-                assert( pModel != nullptr && "Enemy entity must have a model" );
+                assert(pModel != nullptr && "Enemy entity must have a model");
                 renderer->RenderColliders(renderCam, &pModel, 1);
             }
         }
-        
+
         renderer->End3D();
     } // End3D scope
 
@@ -360,7 +360,6 @@ bool Game::RunFrame(double dt) {
     } // End2D Scope
 #endif
 
-
     return true;
 }
 
@@ -372,4 +371,3 @@ void Game::Shutdown() {
     // delete m_pEntityManager;
     m_pEntityManager->KillEntities();
 }
-

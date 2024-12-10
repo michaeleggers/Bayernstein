@@ -14,22 +14,21 @@ enum message_type {
 };
 
 inline std::string MessageToString(int message) {
-    switch (message) {
+    switch ( message ) {
     case 0: {
-            return "Attack";
-        } break;
+        return "Attack";
+    } break;
     case 1: {
-            return "Hello World"; 
-        } break;
+        return "Hello World";
+    } break;
     case 2: {
-            return "Collision";
-        } break;
+        return "Collision";
+    } break;
 
     default: {
-            return "Not recognized!";
-        }
+        return "Not recognized!";
+    }
     }
 }
 
 #endif // MESSAGETYPE_H
-

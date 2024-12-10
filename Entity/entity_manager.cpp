@@ -70,9 +70,8 @@ void EntityManager::UpdateEntitiesPostCollision() {
 std::vector<BaseGameEntity*> EntityManager::Entities() {
     std::vector<BaseGameEntity*> entities{};
     for ( auto [ id, entity ] : m_EntityMap ) {
-        entities.push_back( entity );
+        entities.push_back(entity);
     }
 
     return entities;
 }
-

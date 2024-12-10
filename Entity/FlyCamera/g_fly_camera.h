@@ -25,27 +25,23 @@
 */
 class CFlyCamera : public BaseGameEntity, public IInputReceiver {
 
-public:
+  public:
     CFlyCamera() = delete;
-    CFlyCamera(glm::vec3 pos = glm::vec3(0.0f)); 
+    CFlyCamera(glm::vec3 pos = glm::vec3(0.0f));
     ~CFlyCamera();
 
     void PostCollisionUpdate() override;
     bool HandleMessage(const Telegram& telegram) override;
     void HandleInput() override;
-    
+
     Camera m_Camera;
     float  m_LookSpeed = 0.2f;
 
-private:
-    int m_MouseX = 0;
-    int m_MouseY = 0;
+  private:
+    int m_MouseX     = 0;
+    int m_MouseY     = 0;
     int m_MousePrevX = 0;
     int m_MousePrevY = 0;
 };
 
 #endif
-
-
-
-

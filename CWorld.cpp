@@ -7,21 +7,20 @@
 #include <assert.h>
 
 #include <string.h>
-#include <vector>
 #include <unordered_set>
+#include <vector>
 
 #define GLM_FORCE_RADIANS
-#include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/ext.hpp"
+#include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/gtx/quaternion.hpp"
 
-#include "utils/utils.h"
-#include "map_parser.h"
-#include "irender.h"
-#include "hkd_interface.h"
 #include "Entity/base_game_entity.h"
 #include "Message/message_type.h"
-
+#include "hkd_interface.h"
+#include "irender.h"
+#include "map_parser.h"
+#include "utils/utils.h"
 
 CWorld* CWorld::Instance() {
     static CWorld m_World;
@@ -32,8 +31,8 @@ CWorld* CWorld::Instance() {
 void CWorld::InitWorldFromMap(const Map& map) {
     // Get some subsystems
     EntityManager* m_pEntityManager = EntityManager::Instance();
-    IRender* renderer = GetRenderer();
-   
+    IRender*       renderer         = GetRenderer();
+
     // TODO: Init via .MAP property.
     m_Gravity = glm::vec3(0.0f, 0.0f, -200.0f);
 
@@ -41,7 +40,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
     std::vector<MapPolygon> polysoup = createPolysoup(map);
     // Convert to tris
     m_MapTris = CWorld::CreateMapTrisFromMapPolys(polysoup);
-    
+
     m_StaticGeometryCount = m_MapTris.size();
 
     // Now initialize all the entities. Those also include brush
@@ -58,16 +57,16 @@ void CWorld::InitWorldFromMap(const Map& map) {
             const Property& prop = e.properties[ j ];
             if ( prop.key == "classname" ) {
                 if ( prop.value == "func_door" ) {
-                    Door* door = new Door(e.properties, e.brushes); 
-                    m_pEntityManager->RegisterEntity(door); 
+                    Door* door = new Door(e.properties, e.brushes);
+                    m_pEntityManager->RegisterEntity(door);
                     HKD_Model* model = door->GetModel();
-                    m_pBrushModels.push_back( model );
+                    m_pBrushModels.push_back(model);
                     std::vector<MapTri>& mapTris = door->MapTris();
-                    m_pBrushMapTris.push_back( &mapTris );
+                    m_pBrushMapTris.push_back(&mapTris);
                 } else if ( prop.value == "info_player_start" ) {
-                    assert( m_pPlayerEntity == nullptr ); // There can only be one
+                    assert(m_pPlayerEntity == nullptr); // There can only be one
                     glm::vec3 playerStartPosition = CWorld::GetOrigin(&e);
-                    m_pPlayerEntity = new FirstPersonPlayer(playerStartPosition);
+                    m_pPlayerEntity               = new FirstPersonPlayer(playerStartPosition);
                     m_pEntityManager->RegisterEntity(m_pPlayerEntity);
                     // Upload this model to the GPU. Not using the handle atm.
                     int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
@@ -75,7 +74,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                 } else if ( prop.value == "monster_soldier" ) {
                     // just a placeholder entity from trenchbroom/quake
                     glm::vec3 enemyStartPosition = CWorld::GetOrigin(&e);
-                    Enemy* enemy = new Enemy(e.properties);
+                    Enemy*    enemy              = new Enemy(e.properties);
                     m_pEntityManager->RegisterEntity(enemy);
                     int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
                     m_pModels.push_back(enemy->GetModel());
@@ -91,24 +90,24 @@ void CWorld::InitWorldFromMap(const Map& map) {
 
     // NOTE: At the moment, maps without an 'info_player_start' are not allowed.
     // FIX: (Michael): I think it should be possible to not have a player?
-    assert( m_pPlayerEntity != nullptr );
+    assert(m_pPlayerEntity != nullptr);
 
     // Create paths from waypoints
     std::unordered_set<std::string> visited; // waypoints that are already part of any path
 
-    for (const auto& [targetname, waypoint] : m_NameToWaypoint) {
+    for ( const auto& [ targetname, waypoint ] : m_NameToWaypoint ) {
         // Skip waypoints already in a patrol path
-        if (visited.count(targetname)) {
+        if ( visited.count(targetname) ) {
             continue;
         }
 
         // Start a new patrol path
-        PatrolPath currentPath;
-        Waypoint current = waypoint;
+        PatrolPath                      currentPath;
+        Waypoint                        current = waypoint;
         std::unordered_set<std::string> pathVisited; // Track for cycles
 
         while ( !current.target.empty() ) { // Does the waypoint point to another?
-            if (pathVisited.count(current.targetname)) {
+            if ( pathVisited.count(current.targetname) ) {
                 // Cycle detected, break the path
                 break;
             }
@@ -119,7 +118,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
 
             // Move to the next waypoint if it exists
             auto it = m_NameToWaypoint.find(current.target);
-            if (it != m_NameToWaypoint.end()) {
+            if ( it != m_NameToWaypoint.end() ) {
                 current = it->second;
             } else {
                 break; // End of the chain
@@ -139,18 +138,18 @@ void CWorld::InitWorldFromMap(const Map& map) {
     // FIX: Need a target to Entity map. But waypoints are no entities at the moment.
     // So atm it is expected that the target the entity points to is a waypoint!
     std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
-    for (int i = 0; i < entities.size(); i++) {
-        BaseGameEntity* entity = entities[i];
-        if (entity->Type() == ET_ENEMY) {
+    for ( int i = 0; i < entities.size(); i++ ) {
+        BaseGameEntity* entity = entities[ i ];
+        if ( entity->Type() == ET_ENEMY ) {
             Enemy* enemy = (Enemy*)entity;
             if ( !enemy->m_Target.empty() ) {
                 // Find the waypoint and its path
                 // FIX: This also is easier if waypoints are entities
-                for (int j = 0; j < m_Paths.size(); j++) {
-                    PatrolPath& path = m_Paths[j];
+                for ( int j = 0; j < m_Paths.size(); j++ ) {
+                    PatrolPath&           path   = m_Paths[ j ];
                     std::vector<Waypoint> points = path.GetPoints();
-                    for (int k = 0; k < points.size(); k++) {
-                        Waypoint point = points[k];
+                    for ( int k = 0; k < points.size(); k++ ) {
+                        Waypoint point = points[ k ];
                         if ( enemy->m_Target == point.targetname ) {
                             // copy its path for internal use in this enemy
                             PatrolPath* pPathCopy = new PatrolPath(&path);
@@ -166,155 +165,143 @@ void CWorld::InitWorldFromMap(const Map& map) {
 }
 
 void CWorld::CollideEntitiesWithWorld() {
-    std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
-    double dt = GetDeltaTime();
-    static double accumulator = 0.0;
+    std::vector<BaseGameEntity*> entities    = EntityManager::Instance()->Entities();
+    double                       dt          = GetDeltaTime();
+    static double                accumulator = 0.0;
     accumulator += dt;
     int numUpdateSteps = 0;
 
-    while (accumulator >= DOD_FIXED_UPDATE_TIME) {
-        for (int i = 0; i < entities.size(); i++) {
-            BaseGameEntity* pEntity = entities[i];
+    while ( accumulator >= DOD_FIXED_UPDATE_TIME ) {
+        for ( int i = 0; i < entities.size(); i++ ) {
+            BaseGameEntity* pEntity = entities[ i ];
 
             if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
 
                 EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
-                if (ec == nullptr) {
+                if ( ec == nullptr ) {
                     continue;
                 }
 
-                    
                 pEntity->m_PrevPosition = ec->center; //pEntity->m_Position;
                 //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
-                CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(*ec,
-                                                                          (float)DOD_FIXED_UPDATE_TIME/1000.0f*pEntity->m_Velocity,
-                                                                          (float)DOD_FIXED_UPDATE_TIME/1000.0f*m_Gravity,
-                                                                          m_MapTris.data(),
-                                                                          StaticGeometryCount(),
-                                                                          m_pBrushMapTris);
+                CollisionInfo collisionInfo
+                    = CollideEllipsoidWithMapTris(*ec,
+                                                  (float)DOD_FIXED_UPDATE_TIME / 1000.0f * pEntity->m_Velocity,
+                                                  (float)DOD_FIXED_UPDATE_TIME / 1000.0f * m_Gravity,
+                                                  m_MapTris.data(),
+                                                  StaticGeometryCount(),
+                                                  m_pBrushMapTris);
 
                 // FIX: Again. Components could fix this.
                 HKD_Model* model = nullptr;
-                if (pEntity->Type() == ET_PLAYER) {
+                if ( pEntity->Type() == ET_PLAYER ) {
                     model = ((Player*)pEntity)->GetModel();
-                }
-                else if (pEntity->Type() == ET_ENEMY) {
+                } else if ( pEntity->Type() == ET_ENEMY ) {
                     model = ((Enemy*)pEntity)->GetModel();
                 }
 
                 // Update the position of the collider.
-                for (int i = 0; i < model->animations.size(); i++) {
-                    model->ellipsoidColliders[i].center = collisionInfo.basePos;
+                for ( int i = 0; i < model->animations.size(); i++ ) {
+                    model->ellipsoidColliders[ i ].center = collisionInfo.basePos;
                 }
 
-
-            } // Check if player or enemy 
+            } // Check if player or enemy
         } // Check all entities
         accumulator -= DOD_FIXED_UPDATE_TIME;
         numUpdateSteps++;
     } // while (accumulator >= DOD_FIXED_UPDATE_TIME) {
 
     // Avoid 'spiral of hell'.
-    if (numUpdateSteps > 5) {
+    if ( numUpdateSteps > 5 ) {
         printf("WARNING: SPIRAL OF HELL!!!\n");
         accumulator = 0;
     }
-   
+
     // Now, update all the entities positions. But only if they are of
     // a certain type.
-    // FIX: Dumb! We should loop over the collider components and 
+    // FIX: Dumb! We should loop over the collider components and
     // then update their owners. Again: We need the actor-component model ;)
-    for (int i = 0; i < entities.size(); i++) {
-        BaseGameEntity* pEntity = entities[i];
+    for ( int i = 0; i < entities.size(); i++ ) {
+        BaseGameEntity* pEntity = entities[ i ];
         if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
             EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
-            
-            if (ec == nullptr) {
+
+            if ( ec == nullptr ) {
                 continue;
             }
 
-            double t = accumulator / DOD_FIXED_UPDATE_TIME;
+            double    t             = accumulator / DOD_FIXED_UPDATE_TIME;
             glm::vec3 perTickMotion = ec->center - pEntity->m_PrevPosition;
-            pEntity->UpdatePosition( pEntity->m_PrevPosition + (float)t*perTickMotion );
-            
+            pEntity->UpdatePosition(pEntity->m_PrevPosition + (float)t * perTickMotion);
+
             // Check if entity is in air.
-            CollisionInfo ci = PushTouch(*ec,
-                                         -DOD_WORLD_UP*7.0f, 
-                                          m_MapTris.data(),
-                                          StaticGeometryCount() );
-            
+            CollisionInfo ci = PushTouch(*ec, -DOD_WORLD_UP * 7.0f, m_MapTris.data(), StaticGeometryCount());
+
             if ( ci.didCollide ) {
                 pEntity->m_CollisionState = ES_ON_GROUND;
-            }
-            else {
+            } else {
                 pEntity->m_CollisionState = ES_IN_AIR;
             }
-   
+
             // Also check for brush entities such as doors
             // (we could stand on top of them).
-            for (int i = 0; i < m_pBrushMapTris.size(); i++) {
-                std::vector<MapTri>* brushMapTris = m_pBrushMapTris[i];
+            for ( int i = 0; i < m_pBrushMapTris.size(); i++ ) {
+                std::vector<MapTri>* brushMapTris = m_pBrushMapTris[ i ];
 
-                CollisionInfo brushCi = PushTouch(*ec,
-                                                 -DOD_WORLD_UP*7.0f, 
-                                                  brushMapTris->data(),
-                                                  brushMapTris->size() );
+                CollisionInfo brushCi
+                    = PushTouch(*ec, -DOD_WORLD_UP * 7.0f, brushMapTris->data(), brushMapTris->size());
                 if ( brushCi.didCollide ) {
                     pEntity->m_CollisionState = ES_ON_GROUND;
                     break;
                 }
             }
-
         }
     }
-
-
 }
 
 // FIX: Slow. Can we do better? Push touch is more than an overlap check!
 // We need to recheck all the entities in the inner loop because only
 // the first entity from the outer loop is the one who 'pushes'.
 void CWorld::CollideEntities() {
-    
+
     std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
-    double dt = GetDeltaTime();
-  
+    double                       dt       = GetDeltaTime();
+
     // Push Touch: Entity 'bumps' into other entity.
-    for (int i = 0; i < entities.size(); i++) {
-        BaseGameEntity* pEntity = entities[i];
-        
+    for ( int i = 0; i < entities.size(); i++ ) {
+        BaseGameEntity* pEntity = entities[ i ];
+
         // Ignore non moving entities. They cannot 'bump' without velocity.
         if ( glm::length(pEntity->m_Velocity) <= 0.0f ) {
             continue;
         }
 
-        for (int j = 0; j < entities.size(); j++) {
-  
-            BaseGameEntity* pOther = entities[j];
+        for ( int j = 0; j < entities.size(); j++ ) {
+
+            BaseGameEntity* pOther = entities[ j ];
             if ( pOther->ID() == pEntity->ID() ) { // Don't collide with itself.
                 continue;
             }
-   
+
             if ( pOther->Type() == ET_DOOR ) {
-                Door* pDoor = (Door*)pOther;
-                EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
-                
-                if (ec == nullptr) {
+                Door*              pDoor = (Door*)pOther;
+                EllipsoidCollider* ec    = pEntity->GetEllipsoidColliderPtr();
+
+                if ( ec == nullptr ) {
                     continue;
                 }
-               
+
                 CollisionInfo ci = PushTouch(*ec,
-                                             (float)DOD_FIXED_UPDATE_TIME/1000.0f*pEntity->m_Velocity, 
-                                             pDoor->MapTris().data(), 
+                                             (float)DOD_FIXED_UPDATE_TIME / 1000.0f * pEntity->m_Velocity,
+                                             pDoor->MapTris().data(),
                                              pDoor->MapTris().size());
 
-                if (ci.didCollide) { 
+                if ( ci.didCollide ) {
                     printf("COLLIDED!\n");
                     Dispatcher->DispatchMessage(
                         SEND_MSG_IMMEDIATELY, pEntity->ID(), pDoor->ID(), message_type::Collision, 0);
                 }
             }
-            
         }
     }
 }
@@ -323,9 +310,9 @@ std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolyg
     // Get the renderer to register the textures
     IRender* renderer = GetRenderer();
 
-    std::vector<MapTri> mapTris{};
-    std::vector<MapPolygon> tris = triangulate(mapPolys);
-    glm::vec4 triColor = glm::vec4(0.1f, 0.8f, 1.0f, 1.0f);
+    std::vector<MapTri>     mapTris{};
+    std::vector<MapPolygon> tris     = triangulate(mapPolys);
+    glm::vec4               triColor = glm::vec4(0.1f, 0.8f, 1.0f, 1.0f);
     for ( int i = 0; i < tris.size(); i++ ) {
         MapPolygon mapPoly = tris[ i ];
 
@@ -336,10 +323,10 @@ std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolyg
         Vertex C = { glm::vec3(mapPoly.vertices[ 2 ].pos.x, mapPoly.vertices[ 2 ].pos.y, mapPoly.vertices[ 2 ].pos.z),
                      mapPoly.vertices[ 2 ].uv };
 
-        A.color = triColor;
-        B.color = triColor;
-        C.color = triColor;
-        MapTri tri = { .tri = { A, B, C } };
+        A.color         = triColor;
+        B.color         = triColor;
+        C.color         = triColor;
+        MapTri tri      = { .tri = { A, B, C } };
         tri.textureName = mapPoly.textureName;
         //FIX: Search through all supported image formats not just PNG.
         tri.hTexture = renderer->RegisterTextureGetHandle(tri.textureName + ".tga");
@@ -369,7 +356,7 @@ Waypoint CWorld::GetWaypoint(const Entity* entity) {
     for ( const Property& property : entity->properties ) {
         if ( property.key == "origin" ) {
             std::vector<float> values = ParseValues<float>(property.value);
-            waypoint.position = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
+            waypoint.position         = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
         } else if ( property.key == "targetname" ) {
             waypoint.targetname = property.value;
 
@@ -380,5 +367,3 @@ Waypoint CWorld::GetWaypoint(const Entity* entity) {
 
     return waypoint;
 }
-
-

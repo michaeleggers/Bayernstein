@@ -18,26 +18,25 @@
 
 class Enemy : public MovingEntity {
   public:
-
     explicit Enemy(const std::vector<Property>& properties);
 
     ~Enemy() override {
         delete m_pStateMachine;
         delete m_pSteeringBehaviour;
-        delete m_Path; 
+        delete m_Path;
     }
-   
+
     [[nodiscard]] StateMachine<Enemy>* GetFSM() const {
         return m_pStateMachine;
     }
 
-    bool                HandleMessage(const Telegram& message) override;
-    EllipsoidCollider*  GetEllipsoidColliderPtr() override; 
-    void                PreCollisionUpdate() override;
-    void                PostCollisionUpdate() override;
-    void                UpdatePosition(glm::vec3 newPosition) override;
-    
-    HKD_Model*          GetModel();
+    bool               HandleMessage(const Telegram& message) override;
+    EllipsoidCollider* GetEllipsoidColliderPtr() override;
+    void               PreCollisionUpdate() override;
+    void               PostCollisionUpdate() override;
+    void               UpdatePosition(glm::vec3 newPosition) override;
+
+    HKD_Model* GetModel();
 
     void Wander() {
         m_pStateMachine->ChangeState(EnemyWander::Instance());
@@ -79,7 +78,7 @@ class Enemy : public MovingEntity {
     PatrolPath* m_Path;
     // moving members
 
-private:
+  private:
     AnimState m_AnimationState;
 
     void LoadModel(const char* path, glm::vec3 initialPosition);
