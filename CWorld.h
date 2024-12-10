@@ -64,6 +64,7 @@ class CWorld {
     static Waypoint            GetWaypoint(const Entity* entity);
     static std::vector<MapTri> CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys);
     static std::vector<MapTri> CreateMapFromLightmapTrisFile(HKD_File lightmapTrisFile);
+    static Vertex              StaticVertexToVertex(StaticVertex staticVertex);
 
     std::vector<MapTri> m_MapTris;
     glm::vec3           m_Gravity;

@@ -370,4 +370,51 @@ Waypoint CWorld::GetWaypoint(const Entity* entity) {
     return waypoint;
 }
 
-std::vector<MapTri> CWorld::CreateMapFromLightmapTrisFile(lightmapTrisFile) {}
+Vertex CWorld::StaticVertexToVertex(StaticVertex staticVertex) {
+    Vertex result{ staticVertex.pos, staticVertex.uv, staticVertex.uvLightmap, staticVertex.bc, staticVertex.normal };
+
+    return result;
+}
+
+std::vector<MapTri> CWorld::CreateMapFromLightmapTrisFile(HKD_File lightmapTrisFile) {
+    /*
+struct MapTriLightmapper {
+    StaticVertex[ 3 ] vertices;
+    std::string textureName;
+    uint64_t    surfaceFlags;
+    uint64_t    contentFlags;
+};
+
+struct MapTri {
+    Tri         tri;
+    std::string textureName;
+    std::string lightmap;
+    uint64_t    hTexture; // GPU handle set by renderer.
+};
+*/
+    MapTriLightmapper*             currentLightmapTri;
+    std::vector<MapTriLightmapper> lightmapperTris{};
+    std::vector<MapTri>            mapTris{};
+
+    size_t numLightmapTris = lightmapTrisFile.size / sizeof(MapTriLightmapper);
+    mapTris.resize(numLightmapTris);
+
+    currentLightmapTri = (MapTriLightmapper*)lightmapTrisFile.data;
+    for ( int i = 0; i < numLightmapTris; i++ ) {
+        MapTri mapTri{};
+        Vertex vertices[ 3 ];
+        vertices[ 0 ] = StaticVertexToVertex(currentLightmapTri->vertices[ 0 ]);
+        vertices[ 1 ] = StaticVertexToVertex(currentLightmapTri->vertices[ 1 ]);
+        vertices[ 2 ] = StaticVertexToVertex(currentLightmapTri->vertices[ 2 ]);
+
+        memcpy(mapTri.tri.vertices, vertices, 3 * sizeof(Vertex));
+
+        mapTri.textureName = std::string(currentLightmapTri->textureName);
+
+        mapTris[ i ] = mapTri;
+
+        currentLightmapTri++;
+    }
+
+    return mapTris;
+}

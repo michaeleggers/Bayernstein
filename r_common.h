@@ -99,10 +99,10 @@ struct MapTri {
 };
 
 struct MapTriLightmapper {
-    StaticVertex[ 3 ] vertices;
-    std::string textureName;
-    uint64_t    surfaceFlags;
-    uint64_t    contentFlags;
+    StaticVertex vertices[ 3 ];
+    char         textureName[ 256 ];
+    uint64_t     surfaceFlags;
+    uint64_t     contentFlags;
 };
 
 struct Line {
