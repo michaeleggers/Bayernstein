@@ -160,7 +160,7 @@ def clip_polygon(polygon, edge_start, edge_end):
     
     return clipped_polygon
 
-def square_triangle_overlap(square, triangle, threshold=0.00000001):
+def square_triangle_overlap(square, triangle, threshold=0.001):
     A, B, C, D = square
     T1, T2, T3 = triangle
 
@@ -188,7 +188,7 @@ def square_triangle_overlap(square, triangle, threshold=0.00000001):
     #print(overlap_area)
     return overlap_area > threshold
 
-def square_triangles_overlap(square, triangles, threshold=0.00000001):
+def square_triangles_overlap(square, triangles, threshold=0.001):
     """
     Check if a square overlaps with at least one triangle from a list of triangles.
 

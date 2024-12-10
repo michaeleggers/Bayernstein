@@ -77,7 +77,7 @@ class Lightmapper:
                         ]
                         
 
-                        if geometry.square_triangles_overlap(pixel_corner_uvs, triangles):
+                        if geometry.square_triangles_overlap(pixel_corner_uvs, triangles, threshold=0.0001):
                             
                             #u_ws = u * frame_width_ws
                             #v_ws = v * frame_height_ws
