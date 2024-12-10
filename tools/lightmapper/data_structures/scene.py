@@ -160,7 +160,7 @@ class Scene:
             tex_width, tex_height = texture_dimensions[texture_name]
 
             # Convert UVs back to pixel space
-            pixel_tex_uv = [[u * tex_width, v * tex_height] for u, v in tex_uv]
+            pixel_tex_uv = [[u, v] for u, v in tex_uv]
 
             # Create vertex dictionary with positions, texture UVs, and lightmap UVs
             vertices = [
