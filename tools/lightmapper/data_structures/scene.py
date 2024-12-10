@@ -201,12 +201,15 @@ class Scene:
 
             # Create 3 vertices for the current triangle
             vertices = []
+            bc = [(0,1), (0,1),(0,1)]
             for j in range(3):
                 vertex = CompiledVertex(
                     pos=triangle_positions[j],
                     normal=normal,
                     uv_texture=tex_uvs[j],
-                    uv_lightmap=lm_uvs[j]
+                    uv_lightmap=lm_uvs[j],
+                    bc=bc[j],
+                    color=(0,0,0)
                 )
                 vertices.append(vertex)
 
