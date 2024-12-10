@@ -11,9 +11,8 @@
 
 #include "../Message/telegram.h"
 #include "../collision.h"
-#include "../utils/utils.h"
 #include "../map_parser.h"
-
+#include "../utils/utils.h"
 
 // NOTE: (Michael): This is essentially what a discriminated union would give us in C.
 // TODO: (Michael): Game devs must be able to define their own ET_*. That would not go here
@@ -29,7 +28,7 @@ enum EntityType {
 
 class BaseGameEntity {
   private:
-    int m_ID{}; // Set by entity manager.
+    int        m_ID{}; // Set by entity manager.
     EntityType m_Type;
 
   public:
@@ -37,8 +36,7 @@ class BaseGameEntity {
         m_Type = type;
     }
 
-    template<typename T>
-    bool GetProperty(const std::vector<Property>& properties, std::string propName, T* value) {
+    template <typename T> bool GetProperty(const std::vector<Property>& properties, std::string propName, T* value) {
         for ( const Property& property : properties ) {
             if ( property.key == propName ) {
                 *value = ParseProperty<T>(property.value);
@@ -49,38 +47,32 @@ class BaseGameEntity {
         return false;
     }
 
-    template<typename T>
-    T ParseProperty(const std::string& sValue);
+    template <typename T> T ParseProperty(const std::string& sValue);
 
-    template<>
-    glm::vec3 ParseProperty<glm::vec3>(const std::string& sValue) {
+    template <> glm::vec3 ParseProperty<glm::vec3>(const std::string& sValue) {
         std::vector<float> origin = ParseValues<float>(sValue);
-        return glm::vec3( origin[0], origin[1], origin[2] );
+        return glm::vec3(origin[ 0 ], origin[ 1 ], origin[ 2 ]);
     }
 
-    template<>
-    std::string ParseProperty<std::string>(const std::string& sValue) {
+    template <> std::string ParseProperty<std::string>(const std::string& sValue) {
         return sValue;
     }
 
-    template<>
-    float ParseProperty<float>(const std::string& sValue) {
+    template <> float ParseProperty<float>(const std::string& sValue) {
         std::vector<float> floats = ParseValues<float>(sValue);
         return floats[ 0 ];
     }
-    
-    template<>
-    double ParseProperty<double>(const std::string& sValue) {
+
+    template <> double ParseProperty<double>(const std::string& sValue) {
         std::vector<double> floats = ParseValues<double>(sValue);
         return floats[ 0 ];
     }
-    
-    template<>
-    int ParseProperty<int>(const std::string& sValue) {
+
+    template <> int ParseProperty<int>(const std::string& sValue) {
         std::vector<int> ints = ParseValues<int>(sValue);
         return ints[ 0 ];
     }
-    
+
     virtual ~BaseGameEntity() = default;
 
     // all entities must implement an update function
@@ -97,7 +89,7 @@ class BaseGameEntity {
     }
 
     void SetID(int value);
-    
+
     [[nodiscard]] int ID() const {
         return m_ID;
     }
@@ -111,12 +103,11 @@ class BaseGameEntity {
     virtual EllipsoidCollider GetEllipsoidCollider() const {
         return {};
     };
-    
-    glm::vec3   m_Position = glm::vec3(0.0f);
-    glm::vec3   m_Velocity = glm::vec3(0.0f); // TODO: Actually make use of it and remove from subclasses!
-    float       m_RotationAngle = 0.0f; // TODO: Should be a quaternion called m_Orientation.
-    std::string m_Target = "";
+
+    glm::vec3   m_Position      = glm::vec3(0.0f);
+    glm::vec3   m_Velocity      = glm::vec3(0.0f); // TODO: Actually make use of it and remove from subclasses!
+    float       m_RotationAngle = 0.0f;            // TODO: Should be a quaternion called m_Orientation.
+    std::string m_Target        = "";
 };
 
 #endif // BASEGAMEENTITY_H
-

@@ -37,7 +37,7 @@ void MessageDispatcher::Discharge(BaseGameEntity* pReceiver, const Telegram& tel
 
 void MessageDispatcher::DispatchMessage(double delay, int sender, int receiver, int message, void* ExtraInfo) {
     // get pointers to the sender and receiver
-    BaseGameEntity* pSender = EntityManager::Instance()->GetEntityFromID(sender);
+    BaseGameEntity* pSender   = EntityManager::Instance()->GetEntityFromID(sender);
     BaseGameEntity* pReceiver = EntityManager::Instance()->GetEntityFromID(receiver);
 
     // make sure the receiver is valid

@@ -10,23 +10,22 @@
 #include "r_itexture.h"
 
 class GLTextureManager {
-public:
-	static GLTextureManager* Instance();
-	
-	ITexture* CreateTexture(std::string filename);
-	uint64_t  CreateTextureGetHandle(std::string filename);
-	ITexture* CreateTexture(CFont* font);
-	ITexture* GetTexture(std::string filename);
-	ITexture* GetTexture(uint64_t handle);
+  public:
+    static GLTextureManager* Instance();
 
-	// TODO: Shutdown methods
+    ITexture* CreateTexture(std::string filename);
+    uint64_t  CreateTextureGetHandle(std::string filename);
+    ITexture* CreateTexture(CFont* font);
+    ITexture* GetTexture(std::string filename);
+    ITexture* GetTexture(uint64_t handle);
 
-	std::unordered_map<std::string, ITexture*>	m_NameToTexture;
-	std::unordered_map<uint64_t, ITexture*>		m_HandleToTexture;
+    // TODO: Shutdown methods
 
-private:
-	GLTextureManager();
-	
+    std::unordered_map<std::string, ITexture*> m_NameToTexture;
+    std::unordered_map<uint64_t, ITexture*>    m_HandleToTexture;
+
+  private:
+    GLTextureManager();
 };
 
 #endif
