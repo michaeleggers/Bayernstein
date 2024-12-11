@@ -437,8 +437,12 @@ Tri TriToEllipsoidSpace(Tri tri, glm::mat3 toESPace) {
     return result;
 }
 
+// NOTE: This is to prevent allocating new memory every
+// time 'PushTouch' is being called. This is a temporary
+// fix. It increases the framerate on a release build
+// from around 400FPS to 2000FPS on a recent GPU.
+// However this also highly depends on the STL implementation.
 static std::vector<Tri> g_esTriMemory;
-
 CollisionInfo PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapTri* tris, int triCount) {
     g_esTriMemory.clear();
     for ( int i = 0; i < triCount; i++ ) {
