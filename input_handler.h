@@ -3,8 +3,8 @@
 
 #include "command.h"
 
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
 enum class ButtonState {
     NONE,
@@ -15,22 +15,20 @@ enum class ButtonState {
 
 class CInputHandler {
 
-public:
+  public:
     // Singleton class!
     static CInputHandler* Instance();
 
     void        BindInputToActionName(int key, const std::string& actionName);
-    ButtonState GetMappedButtonState(const std::string& actionName); 
+    ButtonState GetMappedButtonState(const std::string& actionName);
 
-private:
+  private:
     CInputHandler()  = default;
     ~CInputHandler() = default;
 
-    std::unordered_map<std::string, int>         m_ActionNameToInput;
-    
+    std::unordered_map<std::string, int> m_ActionNameToInput;
 };
 
 #define CHECK_ACTION(actionName) (CInputHandler::Instance()->GetMappedButtonState(actionName))
 
 #endif
-
