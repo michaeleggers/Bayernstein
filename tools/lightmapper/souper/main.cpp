@@ -11,7 +11,6 @@
 * Have fun. Michael.
 */
 
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #define MAP_PARSER_IMPLEMENTATION
@@ -20,9 +19,9 @@
 #include <nlohmann/json.hpp>
 
 #include <SDL.h>
-#include <polysoup.h>
 #include <image.h>
 #include <platform.h>
+#include <polysoup.h>
 
 #include <stdio.h>
 #include <string>
@@ -34,22 +33,16 @@ using json = nlohmann::json;
 // relies on) it is being used and expected to be set.
 std::string g_GameDir;
 
-
 void to_json(json& j, const QuakeMapVertex& vertex) {
-    j = json{
-        {"pos", {vertex.pos.x, vertex.pos.y, vertex.pos.z}},
-        {"uv", {vertex.uv.x, vertex.uv.y}}
-    };
+    j = json{ { "pos", { vertex.pos.x, vertex.pos.y, vertex.pos.z } }, { "uv", { vertex.uv.x, vertex.uv.y } } };
 }
 
 void to_json(json& j, const MapPolygon& polygon) {
-    j = json{
-        {"vertices", polygon.vertices},
-        {"normal", {polygon.normal.x, polygon.normal.y, polygon.normal.z}},
-        {"textureName", polygon.textureName},
-        {"surfaceFlags", polygon.surfaceFlags},
-        {"contentFlags", polygon.contentFlags}
-    };
+    j = json{ { "vertices", polygon.vertices },
+              { "normal", { polygon.normal.x, polygon.normal.y, polygon.normal.z } },
+              { "textureName", polygon.textureName },
+              { "surfaceFlags", polygon.surfaceFlags },
+              { "contentFlags", polygon.contentFlags } };
 }
 
 void saveMapPolygonsToJson(const std::string& filename, const std::vector<MapPolygon>& polygons) {
@@ -58,7 +51,7 @@ void saveMapPolygonsToJson(const std::string& filename, const std::vector<MapPol
 
     // Write JSON to file
     std::ofstream file(filename);
-    if (file.is_open()) {
+    if ( file.is_open() ) {
         file << j.dump(4); // Pretty print with an indentation of 4 spaces
         file.close();
     } else {
@@ -68,26 +61,26 @@ void saveMapPolygonsToJson(const std::string& filename, const std::vector<MapPol
 
 int main(int argc, char** argv) {
 
-    if (argc < 4) {
+    if ( argc < 4 ) {
         printf("Usage: soup <game-dir> <MAP-file> <out-file>\nBye!\n");
         return -1;
     }
 
-    g_GameDir = argv[1];
-    std::string mapFile = argv[2];
-    std::string outFile = argv[3];
+    g_GameDir = std::string(argv[ 1 ]);
+    std::string mapFile = argv[ 2 ];
+    std::string outFile = argv[ 3 ];
     std::string exePath = hkd_GetExePath();
-    g_GameDir = exePath + g_GameDir;
 
     std::string fullPath = mapFile;
     std::string mapData = loadTextFile(fullPath);
 
     size_t inputLength = mapData.length();
-    Map map = getMap(&mapData[0], inputLength, VALVE_220); 
+    Map map = getMap(&mapData[ 0 ], inputLength, VALVE_220);
     std::vector<MapPolygon> polysoup = createPolysoup(map);
     std::vector<MapPolygon> tris = triangulate(polysoup);
 
-    // Print UV coordinates for debugging
+// Print UV coordinates for debugging
+#if 0
     for (const auto& poly : tris) {
         std::cout << "Polygon with texture: " << poly.textureName << "\n";
         for (const auto& vertex : poly.vertices) {
@@ -95,14 +88,14 @@ int main(int argc, char** argv) {
         }
         std::cout << "------\n";
     }
-    
+#endif
+
     //writePolySoupBinary(outFile, tris);
     try {
         saveMapPolygonsToJson(outFile, tris);
-    } catch (const std::exception& e) {
+    } catch ( const std::exception& e ) {
         std::cerr << e.what() << std::endl;
     }
 
     return 0;
 }
-

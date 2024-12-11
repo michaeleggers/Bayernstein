@@ -50,7 +50,14 @@ def soup_map(assets_path: Path, map_path: Path) -> Path:
     temp_output_file = assets_path / 'temp/temp.json'
     # Ensure the temporary directory exists
     temp_output_file.parent.mkdir(parents=True, exist_ok=True)
-    command = [str(souper_path), str(assets_path), str(map_path), str(temp_output_file)]
+
+    # Convert back to string and append a slash if necessary as
+    # python's Path throws away a trailing /
+    normalized_assets_path = str(assets_path)
+    if assets_path.is_dir() and not normalized_assets_path.endswith('/'):
+        normalized_assets_path += '/'
+
+    command = [str(souper_path), normalized_assets_path, str(map_path), str(temp_output_file)]
     subprocess.run(command, check=True)
 
     return temp_output_file
