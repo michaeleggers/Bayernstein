@@ -437,12 +437,14 @@ Tri TriToEllipsoidSpace(Tri tri, glm::mat3 toESPace) {
     return result;
 }
 
+static std::vector<Tri> g_esTriMemory;
+
 CollisionInfo PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapTri* tris, int triCount) {
-    std::vector<Tri> esTris;
+    g_esTriMemory.clear();
     for ( int i = 0; i < triCount; i++ ) {
         Tri tri   = tris[ i ].tri;
         Tri esTri = TriToEllipsoidSpace(tri, ec.toESpace);
-        esTris.push_back(esTri);
+        g_esTriMemory.push_back(esTri);
     }
     glm::vec3 esBasePos  = ec.toESpace * ec.center;
     glm::vec3 esVelocity = ec.toESpace * velocity;
@@ -455,7 +457,7 @@ CollisionInfo PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapTri* tris, 
     ci.basePos         = esBasePos;
 
     for ( int i = 0; i < triCount; i++ ) {
-        CollideUnitSphereWithTri(&ci, esTris[ i ]);
+        CollideUnitSphereWithTri(&ci, g_esTriMemory[ i ]);
         if ( ci.didCollide ) {
             break;
         }
