@@ -7,6 +7,7 @@
 #include "../Console/CommandManager.h"
 #include "../Console/Console.h"
 #include "../utils/utils.h"
+#include "../globals.h"
 
 void GetVolume_f(std::vector<std::string> _args) {
     float global   = Audio::m_Soloud.getGlobalVolume();
@@ -65,9 +66,15 @@ bool Audio::Init() {
         return false;
     }
 
+    m_Soloud.set3dSoundSpeed(DOD_AUDIO_SOUNDSPEED);
+
+    m_Soloud.setGlobalVolume(0.0f);
+
     m_MusicBusHandle    = m_Soloud.play(m_MusicBus);
     m_AmbienceBusHandle = m_Soloud.play(m_AmbienceBus);
     m_SfxBusHandle      = m_Soloud.play(m_SfxBus);
+
+    m_Soloud.fadeGlobalVolume(2.0f, 5.0); // fade in audio to avoid harsh sounds at startup
 
     CommandManager::Add("get_volume", GetVolume_f);
     CommandManager::Add("set_volume", SetVolume_f);

@@ -13,11 +13,17 @@
 #include "../../dependencies/glm/gtx/quaternion.hpp"
 #include "../../dependencies/glm/gtx/vector_angle.hpp"
 
+#include "../../Audio/Audio.h"
+#include "../../globals.h"
 #include "../../input.h"
 #include "../../input_handler.h"
 #include "../../utils/quick_math.h"
 #include "../../utils/utils.h"
 #include "g_enemy_states.h"
+
+extern std::string g_GameDir;
+
+SoLoud::Wav Enemy::m_SfxFootsteps;
 
 Enemy::Enemy(const std::vector<Property>& properties)
     : MovingEntity(ET_ENEMY),
@@ -35,6 +41,13 @@ Enemy::Enemy(const std::vector<Property>& properties)
     m_Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
     m_pSteeringBehaviour = new SteeringBehaviour(this);
     // m_pSteeringBehaviour->WanderOn();
+
+    if (m_SfxFootsteps.getLength() == 0.0) { // TODO: this is a bit hacky, maybe init static audio source differenty?
+        m_SfxFootsteps.load((g_GameDir + "audio/sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav").c_str());
+        m_SfxFootsteps.setLooping(true);
+        m_SfxFootsteps.set3dAttenuation(DOD_AUDIO_ATTENUATION_MODEL, DOD_AUDIO_ATTENUATION_ROLLOFF);
+        m_SfxFootsteps.set3dMinMaxDistance(DOD_AUDIO_MIN_DISTANCE, DOD_AUDIO_MAX_DISTANCE);
+    }
 }
 
 void Enemy::Update() {
@@ -64,15 +77,30 @@ void Enemy::Update() {
         // Update the forward and side vectors
         m_Forward = newForward;
         m_Side    = glm::cross(m_Forward, m_Up);
+    
+        if (Audio::m_Soloud.isValidVoiceHandle(m_FootstepsHandle)) {
+            Audio::m_Soloud.set3dSourcePosition(m_FootstepsHandle, m_Position.x, m_Position.y, m_Position.z);
+            Audio::m_Soloud.set3dSourceVelocity(m_FootstepsHandle, m_Velocity.x, m_Velocity.y, m_Velocity.z);
+            Audio::m_Soloud.update3dAudio();
+        } else {
+            m_FootstepsHandle = Audio::m_SfxBus.play3d(m_SfxFootsteps, m_Position.x, m_Position.y, m_Position.z, m_Velocity.x, m_Velocity.y, m_Velocity.z);
+        }
     }
+
 
     if ( Speed() >= 0.00001f ) {
         m_AnimationState = ANIM_STATE_WALK;
-    } else if ( Speed() > m_MaxSpeed * 0.5f ) {
+        Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.6f);
+        Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps.mVolume * 0.4f);
+    } else if ( Speed() > m_MaxSpeed * 0.5f ) { // FIXME: will this condition ever happen
         m_AnimationState = ANIM_STATE_RUN;
+        Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.9f); // adjust sample speed to better match animation
+        Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps.mVolume);
     } else {
         m_AnimationState = ANIM_STATE_IDLE;
+        Audio::m_Soloud.stop(m_FootstepsHandle);
     }
+
     SetAnimState(&m_Model, m_AnimationState);
     UpdateModel(&m_Model, (float)dt);
 }
