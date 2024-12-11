@@ -179,7 +179,7 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri) {
     glm::vec3 basePos   = ci->basePos;
     glm::vec3 velocity  = ci->velocity;
 
-    if ( glm::dot(glm::normalize(velocity), normal) >= 0.0f ) return;
+    if ( glm::dot(velocity, normal) >= 0.0f ) return;
     // Signed distance from plane to unit sphere's center
     float sD = glm::dot(normal, basePos - ptOnPlane);
 
