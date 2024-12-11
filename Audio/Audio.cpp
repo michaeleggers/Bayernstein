@@ -8,27 +8,42 @@
 #include "../Console/Console.h"
 #include "../utils/utils.h"
 
+void GetVolume_f(std::vector<std::string> _args) {
+    float global   = Audio::m_Soloud.getGlobalVolume();
+    float sfx      = Audio::m_Soloud.getVolume(Audio::m_SfxBusHandle);
+    float ambience = Audio::m_Soloud.getVolume(Audio::m_AmbienceBusHandle);
+    float music    = Audio::m_Soloud.getVolume(Audio::m_MusicBusHandle);
+    Console::Printf("global: %.2f  ---  sfx: %.2f  ---  ambiance: %.2f  ---  music: %.2f", global, sfx, ambience, music);
+}
 
 void SetVolume_f(std::vector<std::string> args) {
-    std::string cmd = args[ 0 ];
-    if ( args.size() != 2 ) {
+    std::string bus;
+    std::string arg;
+    if ( args.size() == 2 ) {
+        bus = "global";
+        arg = args[ 1 ];
+    } else if ( args.size() == 3 ) {
+        bus = args[ 1 ];
+        arg = args[ 2 ];
+    } else {
         Console::Print("Unsupported number of arguments!");
+        return;
     }
 
-    std::string arg = args[ 1 ];
     if ( !IsStringFloat(arg) ) {
         Console::Printf("Can't set volume, invalid value '%s'.", arg);
     } else {
-        printf("volume cmd: %s\n", cmd.c_str());
         float val = atof(arg.c_str());
-        if ( cmd == "set_volume_music" ) {
+        if ( bus == "music" ) {
             Audio::m_Soloud.setVolume(Audio::m_MusicBusHandle, val);
-        } else if ( cmd == "set_volume_ambience" ) {
+        } else if ( bus == "ambience" ) {
             Audio::m_Soloud.setVolume(Audio::m_AmbienceBusHandle, val);
-        } else if ( cmd == "set_volume_sfx" ) {
+        } else if ( bus == "sfx" ) {
             Audio::m_Soloud.setVolume(Audio::m_SfxBusHandle, val);
-        } else if ( cmd == "set_volume" ) {
+        } else if ( bus == "global" ) {
             Audio::m_Soloud.setGlobalVolume(val);
+        } else {
+            Console::Printf("Unsupported audio bus '%s', use: global, sfx, ambience, music", bus);
         }
     }
 }
@@ -54,11 +69,8 @@ bool Audio::Init() {
     m_AmbienceBusHandle = m_Soloud.play(m_AmbienceBus);
     m_SfxBusHandle      = m_Soloud.play(m_SfxBus);
 
+    CommandManager::Add("get_volume", GetVolume_f);
     CommandManager::Add("set_volume", SetVolume_f);
-    CommandManager::Add("set_volume_music", SetVolume_f);
-    CommandManager::Add("set_volume_ambience", SetVolume_f);
-    CommandManager::Add("set_volume_sfx", SetVolume_f);
-    // TODO: ^^ should these be `ConsoleVariable`s with onChange callbacks (similar to some vars in quake)?
 
     return true;
 }
