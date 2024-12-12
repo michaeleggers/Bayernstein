@@ -75,7 +75,8 @@ class Scene:
             # Check if texture exists, otherwise set to "default.png"
             texture_name = triangle['textureName']
             texture_path = f"{assets_path}/textures/{texture_name}.tga"
-            if not Path(texture_path).exists():
+            if not Path(texture_path).exists():                
+                print(f'(load_from_json): Cannot load texture path: ${texture_path}')
                 texture_name = "default"
                 texture_path = f"{assets_path}/textures/{texture_name}.tga"
 
