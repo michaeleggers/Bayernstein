@@ -39,6 +39,10 @@ freely, subject to the following restrictions:
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
+// NOTE(@pythno): Will clash with glm::min/max so don't define
+//                min/max in Windows.h!
+#define NOMINMAX
+
 #include <windows.h> // only needed for OutputDebugStringA, should be solved somehow.
 #define SOLOUD_ASSERT(x) if (!(x)) { char temp[200]; sprintf(temp, "%s(%d): assert(%s) failed.\n", __FILE__, __LINE__, #x); OutputDebugStringA(temp); __debugbreak(); }
 #else

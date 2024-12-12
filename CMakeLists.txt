@@ -37,6 +37,7 @@ endif ()
 
 add_subdirectory(dependencies/SDL2.28.4)
 
+set(SOLOUD_SRC_PATH dependencies/soloud/src)
 
 # add_executable(Game
 #   ${SRC_FILES}
@@ -190,21 +191,6 @@ add_executable(Game
 
     dependencies/glad/src/glad.c
     
-    ${RESOURCE_FILES}
-)
-
-target_include_directories(Game
-    PUBLIC dependencies
-    PUBLIC dependencies/glad/include
-    PUBLIC dependencies/imgui
-    PUBLIC dependencies/SDL2.28.4/include
-    PUBLIC dependencies/soloud/include
-)
-
-add_definitions(-DWITH_MINIAUDIO) # enable soloud miniaudio backend
-
-set(SOLOUD_SRC_PATH dependencies/soloud/src)
-target_sources(Game PUBLIC
     # Core
     ${SOLOUD_SRC_PATH}/core/soloud.cpp
     ${SOLOUD_SRC_PATH}/core/soloud_audiosource.cpp
@@ -258,8 +244,19 @@ target_sources(Game PUBLIC
     ${SOLOUD_SRC_PATH}/filter/soloud_lofifilter.cpp
     ${SOLOUD_SRC_PATH}/filter/soloud_robotizefilter.cpp
     ${SOLOUD_SRC_PATH}/filter/soloud_waveshaperfilter.cpp
+
+    ${RESOURCE_FILES}
 )
 
+target_include_directories(Game
+    PUBLIC dependencies
+    PUBLIC dependencies/glad/include
+    PUBLIC dependencies/imgui
+    PUBLIC dependencies/SDL2.28.4/include
+    PUBLIC dependencies/soloud/include
+)
+
+add_definitions(-DWITH_MINIAUDIO) # enable soloud miniaudio backend
 
 target_link_libraries(Game PUBLIC
     SDL2
