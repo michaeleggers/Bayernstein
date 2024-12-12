@@ -14,6 +14,9 @@
 #include <stdint.h>
 #include <unordered_map>
 
+#include "soloud.h"
+#include "soloud_wavstream.h"
+
 #include "r_common.h"
 #include "./Entity/base_game_entity.h"
 #include "Entity/Door/g_door.h"
@@ -79,6 +82,9 @@ private:
     std::vector<HKD_Model*>              m_BrushModels;
     // Keep references to brush entities' map tris
     std::vector< std::vector<MapTri>* >  m_pBrushMapTris;
+
+    SoLoud::WavStream m_MusicIdle;
+    SoLoud::handle    m_MusicIdleHandle;
 };
 
 

@@ -15,6 +15,7 @@
 #include "dependencies/glm/ext.hpp"
 #include "dependencies/glm/gtx/quaternion.hpp"
 
+#include "Audio/Audio.h"
 #include "utils/utils.h"
 #include "map_parser.h"
 #include "irender.h"
@@ -22,6 +23,7 @@
 #include "Entity/base_game_entity.h"
 #include "Message/message_type.h"
 
+extern std::string g_GameDir;
 
 CWorld* CWorld::Instance() {
     static CWorld m_World;
@@ -165,6 +167,11 @@ void CWorld::InitWorldFromMap(const Map& map) {
             }
         }
     }
+
+    m_MusicIdle.load((g_GameDir + "audio/music/GranVals_Placeholder.wav").c_str());
+    m_MusicIdle.setVolume(0.15f);
+    m_MusicIdle.setLooping(true);
+    m_MusicIdleHandle = Audio::m_MusicBus.play(m_MusicIdle, -1);
 }
 
 void CWorld::CollideEntitiesWithWorld() {
