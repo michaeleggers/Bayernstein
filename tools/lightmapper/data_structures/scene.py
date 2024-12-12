@@ -74,10 +74,10 @@ class Scene:
 
             # Check if texture exists, otherwise set to "default.png"
             texture_name = triangle['textureName']
-            texture_path = f"{assets_path}/textures/{texture_name}.png"
+            texture_path = f"{assets_path}/textures/{texture_name}.tga"
             if not Path(texture_path).exists():
                 texture_name = "default"
-                texture_path = f"{assets_path}/textures/{texture_name}.png"
+                texture_path = f"{assets_path}/textures/{texture_name}.tga"
 
             # Cache texture size if not already cached
             if texture_name not in texture_dimensions_cache:
@@ -156,7 +156,7 @@ class Scene:
 
             # Get texture dimensions (width, height), open the texture only if necessary
             if texture_name not in texture_dimensions:
-                texture_path = f"{assets_path}/textures/{texture_name}.png"
+                texture_path = f"{assets_path}/textures/{texture_name}.tga"
                 with Image.open(texture_path) as img:
                     texture_dimensions[texture_name] = img.size  # (width, height)
 
@@ -257,7 +257,7 @@ class Scene:
         texture_index_mapping = {}  # Dictionary to map texture names to indices
 
         for index, texture_name in enumerate(textures):
-            path = Path(textures_directory) / f"{texture_name}.png"
+            path = Path(textures_directory) / f"{texture_name}.tga"
             image = Image.open(path).convert("RGBA")
             images[texture_name] = image
             max_width = max(max_width, image.width)
