@@ -33,7 +33,6 @@ class Scene:
 
         textures_directory = Path(assets_path) / 'textures'
         self.triangles, self.texture_uvs, self.lightmap_uvs, self.textures, self.emissions = self.load_from_json(map_path, assets_path)
-        print(self.texture_uvs)
         self.texture_array, self.texture_array_uvs, self.texture_index_mapping = self.create_texture_array(self.textures, self.texture_uvs, textures_directory)
         if lightmap_path:
             self.load_lightmap(lightmap_path)
@@ -53,7 +52,6 @@ class Scene:
         texture_dimensions_cache = {}
 
         # Load JSON data
-        print(json_path)
         with open(json_path, 'r') as file:
             data = json.load(file)
 
@@ -205,7 +203,8 @@ class Scene:
 
             # Create 3 vertices for the current triangle
             vertices = []
-            bc = [[0.0,1.0, 0.0], [0.0,1.0, 0.0],[0.0,1.0, 0.0]]
+            # this is just random for now
+            bc = [[1.0,0.0, 0.0], [0.0,1.0, 0.0],[0.0, 0.0, 1.0]]
             for j in range(3):
                 vertex = CompiledVertex(
                     pos=triangle_positions[j],
@@ -217,12 +216,19 @@ class Scene:
                 )
                 vertices.append(vertex)
 
+            # Find the texture name associated with this triangle
+            texture_name = None
+            for tex_name, tri_indices in self.textures.items():
+                if i in tri_indices:
+                    texture_name = tex_name
+                    break
+
             # Create a CompiledTriangle with these 3 vertices
             compiled_triangle = CompiledTriangle(
                 vertices=vertices,
-                textureName='default.png',  # Example texture name, adjust as needed
-                surfaceFlags=1,
-                contentFlags=1
+                textureName=texture_name,  
+                surfaceFlags=1, # placeholder till souper returns flags
+                contentFlags=1  # placeholder till souper returns flags
             )
 
             compiled_triangles.append(compiled_triangle)
@@ -241,7 +247,6 @@ class Scene:
             vertices = tuple(vec(*v) for v in vertex_tuple)
             triangles_ds.append(Triangle(vertices))
         self.triangles_ds = triangles_ds
-        print(len(self.triangles_ds))
 
         # Step 2: Create Frames
         self.frames, self.lightmap_uvs, uv_map_ws_size = uv_mapper.create_frames(triangles_ds, patch_resolution, debug=True)
@@ -260,6 +265,7 @@ class Scene:
         for index, texture_name in enumerate(textures):
             path = Path(textures_directory) / f"{texture_name}.tga"
             image = Image.open(path).convert("RGBA")
+
             images[texture_name] = image
             max_width = max(max_width, image.width)
             max_height = max(max_height, image.height)
@@ -311,7 +317,10 @@ class Scene:
                 x, y, z = vertex
                 u_t, v_t = self.texture_uvs[i][j]
                 u_l, v_l = self.lightmap_uvs[i][j]
+                #u_t = random.random()
+                #v_t = random.random()
 
+                #print(u_t, v_t)
                 vertex_list.extend([x, y, z, u_t, v_t, u_l, v_l, texture_index])
 
         self.vertex_array = np.array(vertex_list, dtype=np.float32)

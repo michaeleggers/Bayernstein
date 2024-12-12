@@ -132,48 +132,6 @@ class Frame:
         return projected_triangles, projection_matrix
     
 
-    def __calculate_bbox_3d2(self) -> Tuple[BoundingBox, Vector3f]:
-        """Calculate the 3D min and max points of a 2D bounding box projected back to the original 3D plane."""
-
-        if not self.triangles:
-            raise ValueError("Triangles list is empty.")
-
-        # Use the first triangle to compute the plane basis
-        v0 = self.triangles[0].vertices[0].to_array()
-        v1 = self.triangles[0].vertices[1].to_array()
-        v2 = self.triangles[0].vertices[2].to_array()
-
-        # Compute two edges of the first triangle
-        edge1 = v1 - v0
-        edge2 = v2 - v0
-
-        # Compute the normal of the plane
-        normal = np.cross(edge1, edge2)
-        normal = normal / np.linalg.norm(normal)  # Normalize the normal vector
-
-        # Find two orthogonal vectors (u and v) in the plane
-        u = edge1 / np.linalg.norm(edge1)
-        v = np.cross(normal, u)
-        v = v / np.linalg.norm(v)
-
-        # Extract 2D bounding box values
-        origin_x, origin_y, width, height = self.bounding_box
-        min_2d = (origin_x, origin_y)
-        max_2d = (origin_x + width, origin_y + height)
-
-        # Function to reproject a 2D point back into 3D space
-        def reproject_to_3d(point_2d: Tuple[float, float]) -> np.ndarray:
-            x, y = point_2d
-            return v0 + x * u + y * v
-
-        # Compute 3D coordinates of the bounding box corners
-        min_3d = reproject_to_3d(min_2d)
-        max_3d = reproject_to_3d(max_2d)
-
-        bounding_box = BoundingBox(Vector3f(min_3d[0], min_3d[1], min_3d[2]), Vector3f(max_3d[0], max_3d[1], max_3d[2]))
-        return bounding_box, Vector3f(normal[0], normal[1], normal[2])
-    
-
     def __calculate_bounding_box_3d(self) -> BoundingBox:
         if not self.triangles:
             raise ValueError("The list of triangles is empty.")

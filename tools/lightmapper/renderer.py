@@ -126,7 +126,7 @@ class Renderer:
         self.texture_array_id = glGenTextures(1)
         glActiveTexture(GL_TEXTURE0)  # Ensure GL_TEXTURE0 is active for the texture array
         glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_array_id)
-        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, max_width, max_height, num_layers, 0, GL_RGBA, GL_FLOAT, texture_array)
+        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, max_width, max_height, num_layers, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_array)
 
         # Set texture parameters for the texture array
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT)
