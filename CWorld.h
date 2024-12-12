@@ -85,6 +85,8 @@ private:
 
     SoLoud::WavStream m_MusicIdle;
     SoLoud::handle    m_MusicIdleHandle;
+    SoLoud::WavStream m_Ambience;
+    SoLoud::handle    m_AmbienceHandle;
 };
 
 

@@ -172,6 +172,11 @@ void CWorld::InitWorldFromMap(const Map& map) {
     m_MusicIdle.setVolume(0.15f);
     m_MusicIdle.setLooping(true);
     m_MusicIdleHandle = Audio::m_MusicBus.play(m_MusicIdle, -1);
+
+    m_Ambience.load((g_GameDir + "audio/ambience/sonniss/DSGNDron_EMF_Designed_Drone_Ambience_Forbidden_Cave.wav").c_str());
+    m_Ambience.setVolume(0.15f);
+    m_Ambience.setLooping(true);
+    m_AmbienceHandle = Audio::m_AmbienceBus.play(m_Ambience, -1);
 }
 
 void CWorld::CollideEntitiesWithWorld() {
