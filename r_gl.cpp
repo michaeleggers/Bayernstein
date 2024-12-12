@@ -242,7 +242,7 @@ bool GLRender::Init(void) {
     SDL_ShowWindow(m_Window);
 
     // GL Vsync on
-    if ( SDL_GL_SetSwapInterval(1) != 0 ) {
+    if ( SDL_GL_SetSwapInterval(0) != 0 ) {
         SDL_Log("Failed to enable vsync!\n");
     } else {
         SDL_Log("vsync enabled\n");
