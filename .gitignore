@@ -31,4 +31,4 @@
 **/assets/compiled/**
 **/temp/**
 
-!tools/lightmapper/souper/bin/**
+tools/lightmapper/souper/bin/**
