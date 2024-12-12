@@ -459,6 +459,8 @@ def closest_plane_intersection(point: Vector3f, normal: Vector3f, triangles: Lis
     tolerance = 0.01
     closest_distance = float('inf')
 
+    print("############")
+
     for triangle in triangles:
         # Get the triangle normal and vertices
         tri_normal = triangle.normal().normalize()
@@ -499,9 +501,9 @@ def closest_plane_intersection(point: Vector3f, normal: Vector3f, triangles: Lis
     return closest_distance if closest_distance != float('inf') else None
 
 
-def point_is_covered_by_triangle(point: Vector3f, normal: Vector3f, triangles: List[Triangle]):
+def point_is_covered_by_triangle(point: Vector3f, normal: Vector3f, triangles: List[Triangle], threshold=0.1):
     for triangle in triangles:
-        if is_triangle_on_plane(triangle, point, normal, threshold=1.0):
+        if is_triangle_on_plane(triangle, point, normal, threshold=threshold):
             if is_point_in_triangle(point, triangle):
                 return True
     
@@ -535,10 +537,15 @@ def distance_to_closest_triangle_facing_away(point: Vector3f, plane_normal: Vect
             projected_intersection_normal = project_vector_onto_plane(triangle_normal, plane_normal).normalize()
             dot_product = origin_to_projection_vector.dot(projected_intersection_normal)
             # if a traingle covers a patch, the origin_to_projection_vector will be close to the triangles normal 
-            # TODO: project triangles normal on plane first as right now this only works for orthogonal scenes
-            if dot_product > 0.99999:
+            if dot_product > 0.99:
                 distance = distance_between_points(point, line_segment_projection)
                 closest_distance = min(closest_distance, distance)
+        else:
+            # as with snapped geometry this may be quite often the case: 
+            # -> return 0 to make sure the pixel will counted as illigal to be sure
+            # as otherwise floating point inprecision will cause artefacts
+            closest_distance = 0
+
 
     return closest_distance
 
@@ -657,7 +664,8 @@ def is_point_in_triangle(point: Vector3f, triangle: Triangle) -> bool:
 
     denom = dot00 * dot11 - dot01 * dot01
     if denom == 0:
-        return False
+        print("aaaa")
+        return True
 
     u = (dot11 * dot02 - dot01 * dot12) / denom
     v = (dot00 * dot12 - dot01 * dot02) / denom

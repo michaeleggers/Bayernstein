@@ -76,18 +76,10 @@ class Lightmapper:
                             (u + half_pixel_size_u, v - half_pixel_size_v)
                         ]
                         
-
-                        if geometry.square_triangles_overlap(pixel_corner_uvs, triangles, threshold=0.0001):
+                        patch_uv_area = pixel_size_u * pixel_size_v
+                        threshold = patch_uv_area * 0.6 # more than half the path must be within the triangle
+                        if geometry.square_triangles_overlap(pixel_corner_uvs, triangles, threshold=threshold):
                             
-                            #u_ws = u * frame_width_ws
-                            #v_ws = v * frame_height_ws
-                            #distance = geometry.point_to_line_distance_right_of_segment((u_ws, v_ws), frame.intersections)
-                            #if distance and distance < 1/patch_resolution:
-                                #print(distance, frame_width_uvs, frame_height_uvs)
-                                #illegal_pixels.append((u_pixel, v_pixel))
-                                #continue
-                                #pass
-
                             worldspace_position = self.interpolate_uv_to_world(
                                 frame.triangles[0],
                                 frame.lm_uvs_bbox_space[0],
@@ -95,15 +87,12 @@ class Lightmapper:
                             )
                             
                             # Check if patch is covered by triangle on the same plane
-                            if geometry.point_is_covered_by_triangle(worldspace_position, frame.frame_normal, frame.close_triangles):
+                            if geometry.point_is_covered_by_triangle(worldspace_position, frame.frame_normal, frame.close_triangles, threshold=min(1/patch_resolution, 0.01)):
                                 illegal_pixels.append((u_pixel, v_pixel))
                                 continue
 
 
                             distance = geometry.distance_to_closest_triangle_facing_away(worldspace_position, frame.frame_normal, frame.intersection_segments, frame.intersection_normals)
-                            #distance_to_closest_triangle = geometry.closest_plane_intersection(worldspace_position, frame.frame_normal, external_triangles)
-                            #print(distance_to_closest_triangle)
-                            #print(distance_to_closest_triangle, 1/patch_resolution *  5)
                             if distance < 1/patch_resolution *  2:
                                 illegal_pixels.append((u_pixel, v_pixel))
                                 continue
@@ -155,7 +144,7 @@ class Lightmapper:
             self.renderer.update_light_map()
 
         self.scene.generate_light_map(lightmap_path)
-        self.save_lightmap_as_png(lightmap_path)
+        self.save_lightmap_as_png_with_exposure(lightmap_path, 1000.0)
 
 
         pass
@@ -208,22 +197,26 @@ class Lightmapper:
 
         return Vector3f(world_position[0], world_position[1], world_position[2])
 
-    def save_lightmap_as_png(self, lightmap_path: Path):
+    def save_lightmap_as_png_with_exposure(self, lightmap_path: Path, exposure: float):
         # Load the HDR image with floating-point precision
         hdr_image = cv2.imread(str(lightmap_path), cv2.IMREAD_UNCHANGED)
 
         if hdr_image is None:
             print(f"Failed to load image from {str(lightmap_path)}")
             return
-        
+
         # Check if it's loaded in BGR format and convert to RGB
         if hdr_image.shape[2] == 3:  # Only convert if it's a 3-channel image
             hdr_image = cv2.cvtColor(hdr_image, cv2.COLOR_BGR2RGB)
 
-        # Convert HDR image (float32) back to 8-bit image for PNG saving
-        # We scale the float values back into the 0-255 range
-        normalized_image = cv2.normalize(hdr_image, None, 0, 255, cv2.NORM_MINMAX)
-        png_image = np.clip(normalized_image, 0, 255).astype(np.uint8)
+        # Apply the exposure-based tone mapping
+        tone_mapped_image = 1.0 - np.exp(-hdr_image * exposure)
+
+        # Gamma correction (assume 2.2 gamma)
+        tone_mapped_image = np.power(tone_mapped_image, 1.0 / 2.2)
+
+        # Scale the tone-mapped image back to 0-255 range and convert to 8-bit
+        png_image = np.clip(tone_mapped_image * 255, 0, 255).astype(np.uint8)
 
         # Convert back to BGR format for saving as PNG
         png_image_bgr = cv2.cvtColor(png_image, cv2.COLOR_RGB2BGR)

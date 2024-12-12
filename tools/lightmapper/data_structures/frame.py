@@ -218,7 +218,7 @@ class Frame:
         # Exclude triangles within the current frame
         external_triangles = [tri for tri in all_triangles if tri not in self.triangles]
         # Exclude triangles not intersecting wiht this frames bbox
-        self.close_triangles = [tri for tri in external_triangles if self.bounding_box_3d.intersects(tri.bounding_box)]
+        self.close_triangles = [tri for tri in external_triangles if self.bounding_box_3d.intersects(tri.bounding_box, tolerance=self.patch_ws_size)]
 
         intersection_segments = []
         intersection_normals = []
@@ -228,7 +228,7 @@ class Frame:
             center = tri1.triangle_center()
             for tri2 in self.close_triangles:
                 # Bounding box overlap check for faster rejection
-                if not tri1.bounding_box.intersects(tri2.bounding_box):
+                if not tri1.bounding_box.intersects(tri2.bounding_box, tolerance=self.patch_ws_size):
                     continue
 
                 # Calculate signed distances of tri2's vertices to tri1's plane
