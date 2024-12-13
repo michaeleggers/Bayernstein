@@ -23,7 +23,6 @@
 #include "Entity/base_game_entity.h"
 #include "Message/message_type.h"
 
-extern std::string g_GameDir;
 
 CWorld* CWorld::Instance() {
     static CWorld m_World;
@@ -168,15 +167,11 @@ void CWorld::InitWorldFromMap(const Map& map) {
         }
     }
 
-    m_MusicIdle.load((g_GameDir + "audio/music/GranVals_Placeholder.wav").c_str());
-    m_MusicIdle.setVolume(0.15f);
-    m_MusicIdle.setLooping(true);
-    m_MusicIdleHandle = Audio::m_MusicBus.play(m_MusicIdle, -1);
+    m_MusicIdle = Audio::LoadSource("music/GranVals_Placeholder.wav", 0.15f, true, true);
+    m_MusicIdleHandle = Audio::m_MusicBus.play(*m_MusicIdle, -1);
 
-    m_Ambience.load((g_GameDir + "audio/ambience/sonniss/DSGNDron_EMF_Designed_Drone_Ambience_Forbidden_Cave.wav").c_str());
-    m_Ambience.setVolume(0.15f);
-    m_Ambience.setLooping(true);
-    m_AmbienceHandle = Audio::m_AmbienceBus.play(m_Ambience, -1);
+    m_Ambience = Audio::LoadSource("ambience/sonniss/DSGNDron_EMF_Designed_Drone_Ambience_Forbidden_Cave.wav", 0.15f, true, true);
+    m_AmbienceHandle = Audio::m_AmbienceBus.play(*m_Ambience, -1);
 }
 
 void CWorld::CollideEntitiesWithWorld() {

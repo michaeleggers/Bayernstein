@@ -1,6 +1,9 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
+#include <string>
+#include <unordered_map>
+
 #include "soloud.h"
 #include "soloud_bus.h"
 
@@ -21,7 +24,7 @@ class Audio {
 
     static SoLoud::Bus    m_AmbienceBus;
     static SoLoud::handle m_AmbienceBusHandle;
-    
+
     static SoLoud::Bus    m_SfxBus;
     static SoLoud::handle m_SfxBusHandle;
 
@@ -29,7 +32,20 @@ class Audio {
     static bool Init();
     static void Deinit();
 
+    /**
+     * Creates an audio source from the given file.
+     * If the file was already loaded, a reference to the existing source is returned (and given defaults are ignored).
+     * @param path the audio file to load, relative to the 'audio' asset directory
+     * @param volume default volume for audio instances
+     * @param loop default flag if the audio instances should repeat
+     * @param stream stream from disk during playback if `true`, load audio into memory otherwise
+     */
+    static SoLoud::AudioSource* LoadSource(const std::string& path, float volume = 1.0f, bool loop = false, bool stream = false);
+
     Audio() = delete; // don't allow instantiation
+
+  private:
+    static std::unordered_map<std::string, SoLoud::AudioSource*> m_Sources;
 };
 
 #endif // AUDIO_H

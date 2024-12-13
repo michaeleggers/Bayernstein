@@ -14,8 +14,6 @@
 
 #include <SDL.h>
 
-extern std::string g_GameDir;
-
 Player::Player(glm::vec3 initialPosition)
     : MovingEntity(ET_PLAYER),
       m_pStateMachine(nullptr),
@@ -25,12 +23,9 @@ Player::Player(glm::vec3 initialPosition)
     LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
     m_Position = initialPosition;
 
-    m_SfxJump.load((g_GameDir + "audio/sfx/jump_01.wav").c_str());
-    m_SfxGunshot.load((g_GameDir + "audio/sfx/sonniss/PM_SFG_VOL1_WEAPON_8_2_GUN_GUNSHOT_FUTURISTIC.wav").c_str());
-    m_SfxFootsteps.load((g_GameDir + "audio/sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav").c_str());
-
-    m_SfxJump.setVolume(0.5f);
-    m_SfxFootsteps.setLooping(true);
+    m_SfxJump = Audio::LoadSource("sfx/jump_01.wav", 0.5f);
+    m_SfxGunshot = Audio::LoadSource("sfx/sonniss/PM_SFG_VOL1_WEAPON_8_2_GUN_GUNSHOT_FUTURISTIC.wav");
+    m_SfxFootsteps = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
 }
 
 // FIX: At the moment called by the game itself.
@@ -172,16 +167,16 @@ void Player::UpdatePlayerModel() {
 
     if (playerAnimState == ANIM_STATE_RUN) {
         if (!Audio::m_Soloud.isValidVoiceHandle(m_FootstepsHandle)) {
-            m_FootstepsHandle = Audio::m_SfxBus.play(m_SfxFootsteps);
+            m_FootstepsHandle = Audio::m_SfxBus.play(*m_SfxFootsteps);
         }
 
         if ( speed == ButtonState::PRESSED ) {
             playerAnimState = ANIM_STATE_WALK;
             Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.6f);
-            Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps.mVolume * 0.4f);
+            Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume * 0.4f);
         } else {
             Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.9f); // adjust sample speed to better match animation
-            Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps.mVolume);
+            Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume);
         }
     } else {
         Audio::m_Soloud.stop(m_FootstepsHandle);
@@ -191,12 +186,12 @@ void Player::UpdatePlayerModel() {
     ButtonState jumpState = CHECK_ACTION("jump");
     if (jumpState == ButtonState::WENT_DOWN) {
         printf("I am jumping!\n");
-        Audio::m_SfxBus.play(m_SfxJump, m_SfxJump.mVolume);
+        Audio::m_SfxBus.play(*m_SfxJump, -1);
     }
     ButtonState fireState = CHECK_ACTION("fire");
     if (fireState == ButtonState::WENT_DOWN) {
         printf("FIRE!\n");
-        Audio::m_SfxBus.play(m_SfxGunshot);
+        Audio::m_SfxBus.play(*m_SfxGunshot);
     }
     ButtonState prevWeapon = CHECK_ACTION("switch_to_prev_weapon");
     if (prevWeapon == ButtonState::WENT_DOWN) {

@@ -6,7 +6,6 @@
 #define ENEMY_H
 
 #include "soloud.h"
-#include "soloud_wav.h"
 
 #include "../../FSM/state_machine.h"
 #include "../../collision.h"
@@ -76,8 +75,8 @@ class Enemy : public MovingEntity {
     SteeringBehaviour*   m_pSteeringBehaviour;
     double               m_Health = 100;
 
-    static SoLoud::Wav m_SfxFootsteps;
-    SoLoud::handle     m_FootstepsHandle = 0;
+    SoLoud::AudioSource* m_SfxFootsteps;
+    SoLoud::handle       m_FootstepsHandle = 0;
 
     // FIX: Those should be components for next milestone.
     HKD_Model   m_Model;

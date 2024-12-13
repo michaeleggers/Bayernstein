@@ -4,10 +4,15 @@
 #include <string>
 #include <vector>
 
+#include "soloud_wav.h"
+#include "soloud_wavstream.h"
+
 #include "../Console/CommandManager.h"
 #include "../Console/Console.h"
-#include "../utils/utils.h"
 #include "../globals.h"
+#include "../utils/utils.h"
+
+extern std::string g_GameDir;
 
 void GetVolume_f(std::vector<std::string> _args) {
     float global   = Audio::m_Soloud.getGlobalVolume();
@@ -61,6 +66,8 @@ SoLoud::handle Audio::m_AmbienceBusHandle;
 SoLoud::Bus    Audio::m_SfxBus;
 SoLoud::handle Audio::m_SfxBusHandle;
 
+std::unordered_map<std::string, SoLoud::AudioSource*> Audio::m_Sources;
+
 bool Audio::Init() {
     if ( m_Soloud.init() != SoLoud::SO_NO_ERROR ) {
         return false;
@@ -84,4 +91,35 @@ bool Audio::Init() {
 
 void Audio::Deinit() {
     m_Soloud.deinit();
+}
+
+SoLoud::AudioSource* Audio::LoadSource(const std::string& path, float volume, bool loop, bool stream) {
+    auto it = m_Sources.find(path);
+    if ( it != m_Sources.end() ) {
+        return it->second;
+    } else {
+        std::string filePath = g_GameDir + "audio/" + path;
+        SoLoud::AudioSource* source;
+        SoLoud::result result;
+        if ( stream ) {
+            SoLoud::WavStream* wavstream = new SoLoud::WavStream();
+            result = wavstream->load(filePath.c_str());
+            source = wavstream;
+        } else {
+            SoLoud::Wav* wav = new SoLoud::Wav();
+            result = wav->load(filePath.c_str());
+            source = wav;
+        }
+        if ( result != SoLoud::SO_NO_ERROR ) {
+            printf("Loading audio source failed: %s (%s)\n", m_Soloud.getErrorString(result), path.c_str());
+        }
+
+        source->setVolume(volume);
+        source->setLooping(loop);
+        source->set3dAttenuation(DOD_AUDIO_ATTENUATION_MODEL, DOD_AUDIO_ATTENUATION_ROLLOFF);
+        source->set3dMinMaxDistance(DOD_AUDIO_MIN_DISTANCE, DOD_AUDIO_MAX_DISTANCE);
+
+        m_Sources.insert({ path, source });
+        return source;
+    }
 }
