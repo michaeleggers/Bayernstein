@@ -27,6 +27,7 @@ tools/lightmapper/temp/lightmap.hdr
 **/assets/models/**
 **/assets/maps/**
 **/assets/textures/**
+**/assets/audio/**
 **/assets/blender/**
 **/assets/photos/**
 **/logs/**

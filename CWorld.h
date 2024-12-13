@@ -32,7 +32,7 @@
 class CWorld {
   public:
     static CWorld* Instance();
-    void           InitWorldFromMap(const Map& map, HKD_File lightmapTrisFile);
+    void           InitWorldFromMap(const Map& map, const std::string& plyFilename);
     void           CollideEntitiesWithWorld();
     void           CollideEntities();
 
@@ -89,6 +89,10 @@ class CWorld {
     // Keep references to brush entities' map tris so we
     // can easily collide against brush entities as well.
     std::vector<std::vector<MapTri>*> m_pBrushMapTris;
+
+    // If a lightmap is loaded, this handle stores
+    // the texture handle on the GPU.
+    uint64_t m_hLightmapTexture;
 };
 
 #endif // _CWORLD_H_

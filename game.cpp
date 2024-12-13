@@ -75,11 +75,8 @@ void Game::Init() {
     m_World = CWorld::Instance();
 
     // Load lightmap triangles and lightmap texture
-    HKD_File plyFile;
-    assert(hkd_read_file(std::string(m_ExePath + "../assets/maps/room.ply").c_str(), &plyFile) == HKD_FILE_SUCCESS);
-    uint64_t hLightmapTexture = renderer->RegisterTextureGetHandle("room.png");
 
-    m_World->InitWorldFromMap(map, plyFile);
+    m_World->InitWorldFromMap(map, "room");
     m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.

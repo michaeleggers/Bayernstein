@@ -403,7 +403,7 @@ void GLRender::RegisterWorld(CWorld* world) {
 }
 
 // Returns the CPU handle
-uint64_t GLRender::RegisterTextureGetHandle(std::string name) {
+uint64_t GLRender::RegisterTextureGetHandle(const std::string& name) {
     return m_TextureManager->CreateTextureGetHandle(name);
 }
 

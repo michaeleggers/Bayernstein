@@ -29,7 +29,7 @@ CWorld* CWorld::Instance() {
     return &m_World;
 }
 
-void CWorld::InitWorldFromMap(const Map& map, HKD_File lightmapTrisFile) {
+void CWorld::InitWorldFromMap(const Map& map, const std::string& plyFilename) {
     // Get some subsystems
     EntityManager* m_pEntityManager = EntityManager::Instance();
     IRender*       renderer         = GetRenderer();
@@ -39,9 +39,18 @@ void CWorld::InitWorldFromMap(const Map& map, HKD_File lightmapTrisFile) {
 
     // Get static geometry from map
     std::vector<MapPolygon> polysoup = createPolysoup(map);
+
     // Convert to tris
-    // m_MapTris = CWorld::CreateMapTrisFromMapPolys(polysoup);
-    m_MapTris = CWorld::CreateMapFromLightmapTrisFile(lightmapTrisFile);
+    if ( !plyFilename.empty() ) {
+        HKD_File    plyFile;
+        std::string exePath     = hkd_GetExePath();
+        std::string fullPlyPath = exePath + "../assets/maps/" + plyFilename + ".ply";
+        assert(hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS);
+        m_MapTris          = CWorld::CreateMapFromLightmapTrisFile(plyFile);
+        m_hLightmapTexture = renderer->RegisterTextureGetHandle(plyFilename + ".png");
+    } else {
+        m_MapTris = CWorld::CreateMapTrisFromMapPolys(polysoup);
+    }
 
     m_StaticGeometryCount = m_MapTris.size();
 
