@@ -379,10 +379,10 @@ Vertex CWorld::StaticVertexToVertex(StaticVertex staticVertex) {
 std::vector<MapTri> CWorld::CreateMapFromLightmapTrisFile(HKD_File lightmapTrisFile) {
     /*
 struct MapTriLightmapper {
-    StaticVertex[ 3 ] vertices;
-    std::string textureName;
-    uint64_t    surfaceFlags;
-    uint64_t    contentFlags;
+    StaticVertex vertices[ 3 ];
+    char         textureName[ 64 ];
+    uint64_t     surfaceFlags;
+    uint64_t     contentFlags;
 };
 
 struct MapTri {
@@ -392,6 +392,9 @@ struct MapTri {
     uint64_t    hTexture; // GPU handle set by renderer.
 };
 */
+    // Get the renderer to register the textures
+    IRender* renderer = GetRenderer();
+
     MapTriLightmapper*             currentLightmapTri;
     std::vector<MapTriLightmapper> lightmapperTris{};
     std::vector<MapTri>            mapTris{};
@@ -410,6 +413,7 @@ struct MapTri {
         memcpy(mapTri.tri.vertices, vertices, 3 * sizeof(Vertex));
 
         mapTri.textureName = std::string(currentLightmapTri->textureName);
+        mapTri.hTexture    = renderer->RegisterTextureGetHandle(mapTri.textureName + ".tga");
 
         mapTris[ i ] = mapTri;
 
