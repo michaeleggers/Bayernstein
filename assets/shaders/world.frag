@@ -64,6 +64,6 @@ void main() {
 
     vec4 diffuseColor = texture( diffuseTexture, uv );
     
-    out_Color = vec4( lightmapColor.rgb, 1.0f );
+    out_Color = vec4( diffuseColor.rgb * lightmapColor.rgb, 1.0f );
 
 }
