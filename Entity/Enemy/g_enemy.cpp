@@ -19,17 +19,12 @@
 #include "../../input_handler.h"
 #include "../../utils/quick_math.h"
 #include "../../utils/utils.h"
+#include "../Console/Variables.h"
 #include "g_enemy_states.h"
 
 std::vector<Tri> GenerateVisionCone(
-    glm::vec3 position,
-    glm::vec3 direction,
-    glm::vec3 up,
-    float     angle,
-    float     range,
-    float     height,
-    glm::vec4 color = glm::vec4(0.0, 1.0, 0.0, 1.0)
-) {
+    glm::vec3 position, glm::vec3 direction, glm::vec3 up, float angle, float range, float height, glm::vec4 color) {
+
     std::vector<Tri> tris = {};
 
     glm::vec3 normalizedDirection = glm::normalize(direction);
@@ -123,7 +118,6 @@ void Enemy::Update() {
         m_Side    = glm::cross(m_Forward, m_Up);
     }
 
-    printf("Speed: %f of %f, %f percent \n", Speed(), m_MaxSpeed, Speed() / m_MaxSpeed);
     if ( Speed() >= 0.0001f ) {
         m_AnimationState = ANIM_STATE_WALK;
         if ( Speed() > m_MaxSpeed * 0.5f ) {
@@ -146,21 +140,20 @@ void Enemy::Update() {
     float     angleBetweenEntityAndPlayer = glm::degrees(glm::angle(forwardToPlayer, m_Forward));
     m_PlayerInAngle                       = angleBetweenEntityAndPlayer < (m_vision_angle / 2.0f);
 
-    // this should be considereing the players height as well
+    // TODO: this should be considereing the players height as well
     m_PlayerOnSameLevel = m_Position.z + m_vision_height / 2.0f > m_pPlayerEnity->m_Position.z
                           && m_Position.z - m_vision_height / 2.0f < m_pPlayerEnity->m_Position.z;
-    printf("in range: %b, in angle: %b, same level %b\n", m_PlayerInRange, m_PlayerInAngle, m_PlayerOnSameLevel);
-    m_PlayerDetected = m_PlayerInAngle && m_PlayerInRange;
+    m_PlayerDetected = m_PlayerInAngle && m_PlayerInRange && m_PlayerOnSameLevel;
 
-    if ( m_PlayerDetected ) {
-        m_vision_cone
-            = GenerateVisionCone(conePosition, m_Forward, DOD_WORLD_UP, 45.0f, 195.0f, 80, glm::vec4(1, 0, 0, 1));
+    if ( dbg_show_enemy_vision.value == 1 ) {
+        if ( m_PlayerDetected ) {
+            m_vision_cone = GenerateVisionCone(
+                conePosition, m_Forward, DOD_WORLD_UP, m_vision_angle, m_range, m_vision_height, glm::vec4(1, 0, 0, 1));
+        } else {
+            m_vision_cone = GenerateVisionCone(
+                conePosition, m_Forward, DOD_WORLD_UP, m_vision_angle, m_range, m_vision_height, glm::vec4(0, 1, 0, 1));
+        }
     }
-    else {
-        m_vision_cone
-            = GenerateVisionCone(conePosition, m_Forward, DOD_WORLD_UP, 45.0f, 195.0f, 80, glm::vec4(0, 1, 0, 1));
-    }
-
     //------------------------------------
 
     SetAnimState(&m_Model, m_AnimationState);

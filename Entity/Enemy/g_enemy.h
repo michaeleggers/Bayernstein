@@ -15,6 +15,14 @@
 #include "../steering_behaviour.h"
 #include "g_enemy_states.h"
 
+std::vector<Tri> GenerateVisionCone(glm::vec3 position,
+                                    glm::vec3 direction,
+                                    glm::vec3 up,
+                                    float     angle,
+                                    float     range,
+                                    float     height,
+                                    glm::vec4 color = glm::vec4(0.0, 1.0, 0.0, 1.0));
+
 class Enemy : public MovingEntity {
   public:
     void Update() override;

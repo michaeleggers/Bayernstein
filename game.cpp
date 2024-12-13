@@ -12,6 +12,7 @@
 #include "./Message/message_type.h"
 #include "CWorld.h"
 #include "Console/VariableManager.h"
+#include "Console/Variables.h"
 #include "Path/path.h"
 #include "Shape.h"
 #include "ShapeSphere.h"
@@ -27,10 +28,6 @@
 #include "r_itexture.h"
 #include "utils/utils.h"
 
-// TODO: Maybe put them into a game-independent file later.
-ConsoleVariable dbg_show_wander         = { "dbg_show_wander", 0 };
-ConsoleVariable dbg_show_enemy_velocity = { "dbg_show_enemy_velocity", 0 };
-
 static int hkd_Clamp(int val, int clamp) {
     if ( val > clamp || val < clamp ) return clamp;
     return val;
@@ -44,10 +41,7 @@ Game::Game(std::string exePath, hkdInterface* pInterface) {
 
 void Game::Init() {
     m_AccumTime = 0.0f;
-
-    VariableManager::Register(&dbg_show_wander);
-    VariableManager::Register(&dbg_show_enemy_velocity);
-
+    InitDebugVariables();
     // Load a font file from disk
     m_ConsoleFont   = new CFont("fonts/HackNerdFont-Bold.ttf", 72);
     m_ConsoleFont30 = new CFont("fonts/HackNerdFont-Bold.ttf", 150); // Same font at different size
@@ -212,10 +206,22 @@ bool Game::RunFrame(double dt) {
     // Main 3D: This is where all the 3D rendering happens (in its own FBO)
     {
         renderer->Begin3D();
-        Enemy* enemy = m_pEntityManager->GetFirstEnemy();
-        renderer->ImDrawTris(enemy->m_vision_cone.data(), enemy->m_vision_cone.size(), false, DRAW_MODE_WIREFRAME);
+        if ( dbg_show_enemy_vision.value == 1 ) {
+            Enemy* enemy = m_pEntityManager->GetFirstEnemy();
+            renderer->ImDrawTris(enemy->m_vision_cone.data(), enemy->m_vision_cone.size(), false, DRAW_MODE_WIREFRAME);
+        }
 
-        if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 ) {
+        if ( dbg_show_enemy_velocity.value == 1 ) {
+            Enemy*            enemy   = m_pEntityManager->GetFirstEnemy();
+            EllipsoidCollider ecEnemy = enemy->GetEllipsoidCollider();
+            // Draw Debug Line for player veloctiy vector
+            Line velocityDebugLine    = { Vertex(ecEnemy.center), Vertex(ecEnemy.center + 150.0f * enemy->m_Velocity) };
+            velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+            velocityDebugLine.b.color = velocityDebugLine.a.color;
+            renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
+        }
+
+        if ( dbg_show_wander.value == 1 ) {
 
             Enemy*            enemy   = m_pEntityManager->GetFirstEnemy();
             EllipsoidCollider ecEnemy = enemy->GetEllipsoidCollider();
@@ -224,13 +230,13 @@ bool Game::RunFrame(double dt) {
             renderer->ImDrawCircle(center, enemy->m_pSteeringBehaviour->m_WanderRadius, DOD_WORLD_UP);
 
             // Draw Debug Line for player veloctiy vector
-            Line velocityDebugLine = {
+            Line wanderDebugLine = {
                 Vertex(center),
                 Vertex(enemy->m_pSteeringBehaviour->m_WanderTarget) //* enemy->m_pSteeringBehaviour->m_WanderRadius
             };
-            velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-            velocityDebugLine.b.color = velocityDebugLine.a.color;
-            renderer->ImDrawLines(velocityDebugLine.vertices, 2, false);
+            wanderDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+            wanderDebugLine.b.color = wanderDebugLine.a.color;
+            renderer->ImDrawLines(wanderDebugLine.vertices, 2, false);
         }
         // Render World Geometry (Batched triangles)
         //renderer->SetActiveCamera(&m_FollowCamera);
@@ -238,15 +244,15 @@ bool Game::RunFrame(double dt) {
 
         DrawCoordinateSystem(renderer);
 
-#if 1 // debug paths
-        for ( int i = 0; i < m_World->m_Paths.size(); i++ ) {
+        if ( dbg_show_paths.value == 1 ) {
+            for ( int i = 0; i < m_World->m_Paths.size(); i++ ) {
 
-            PatrolPath path = m_World->m_Paths[ i ];
+                PatrolPath path = m_World->m_Paths[ i ];
 
-            std::vector<Vertex> vertices = path.GetPointsAsVertices();
-            renderer->ImDrawLines(vertices.data(), vertices.size(), path.IsClosed());
+                std::vector<Vertex> vertices = path.GetPointsAsVertices();
+                renderer->ImDrawLines(vertices.data(), vertices.size(), path.IsClosed());
+            }
         }
-#endif
 
 #if 1 // Toggle moving entity rendering. Also renders world.
         renderer->Render(renderCam,
