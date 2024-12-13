@@ -7,12 +7,15 @@
 
 struct ConsoleVariable {
     const std::string name;
-    const float defaultValue;
-    float value;
+    const float       defaultValue;
+    float             value;
     // TODO: maybe store entered value string (like quake) to avoid formatting issues for printing (esp. with floats)? see `HandleCommand()`.
     // TODO: optionally store min/max value (and maybe stepsize?) for input validation?
     // TODO: add description / help text for console help?
-    ConsoleVariable(std::string n, float v) : name(n), defaultValue(v), value(v) {}
+    ConsoleVariable(std::string n, float v)
+        : name(n),
+          defaultValue(v),
+          value(v) {}
 };
 
 /**
@@ -20,11 +23,11 @@ struct ConsoleVariable {
  * Loosely based on Quake's (QSS-M) `cvar` implementation.
  */
 class VariableManager {
-private:
+  private:
     /** List of registered variables, mapped by their (unique) name. */
     static std::map<std::string, ConsoleVariable*> m_Variables;
 
-public:
+  public:
     /** Initialize VariableManager variables / commands. */
     static void Init();
     /** Registers the given variable to be available in the console. */
@@ -54,4 +57,3 @@ public:
 };
 
 #endif // VARIABLEMANAGER_H
-

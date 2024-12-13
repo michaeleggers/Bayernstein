@@ -24,9 +24,9 @@ class Enemy : public MovingEntity {
     ~Enemy() override {
         delete m_pStateMachine;
         delete m_pSteeringBehaviour;
-        delete m_Path; 
+        delete m_Path;
     }
-   
+
     [[nodiscard]] StateMachine<Enemy>* GetFSM() const {
         return m_pStateMachine;
     }

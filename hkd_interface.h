@@ -14,5 +14,4 @@ struct hkdInterface {
 
 IRender* GetRenderer();
 
-
 #endif

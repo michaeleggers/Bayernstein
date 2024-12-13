@@ -23,7 +23,7 @@
 */
 class CFollowCamera : public BaseGameEntity {
 
-public:
+  public:
     CFollowCamera(BaseGameEntity* target = nullptr);
     ~CFollowCamera();
 
@@ -34,10 +34,8 @@ public:
 
     Camera m_Camera;
 
-private:
+  private:
     BaseGameEntity* m_Target = nullptr;
 };
 
 #endif
-
-

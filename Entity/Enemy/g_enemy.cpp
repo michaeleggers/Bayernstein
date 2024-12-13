@@ -42,35 +42,37 @@ std::vector<Tri> GenerateVisionCone(
     Vertex centerTop    = {.pos = {position.x, position.y, position.z + halfHeight}, .color = color};
     Vertex centerBottom = {.pos = {position.x, position.y, position.z - halfHeight}, .color = color};
 
-    glm::vec3 left  = position + (transformToLeft * normalizedDirection * range);
-    glm::vec3 right = position + (transformToRight * normalizedDirection * range);
+    int                 segments  = 8;
+    float               angleStep = angle / (float)segments;
+    std::vector<Vertex> topVertices;
+    std::vector<Vertex> bottomVertices;
 
-    Vertex leftTop    = {.pos = {left.x, left.y, left.z + halfHeight}, .color = color};
-    Vertex leftBottom = {.pos = {left.x, left.y, left.z - halfHeight}, .color = color};
+    for ( int i = 0; i <= segments; ++i ) {
+        float     currentAngle = -halfAngle + (float)i * angleStep;
+        glm::mat3 transform    = glm::rotate(glm::mat4(1.0f), glm::radians(currentAngle), up);
 
-    Vertex rightTop    = {.pos = {right.x, right.y, right.z + halfHeight}, .color = color};
-    Vertex rightBottom = {.pos = {right.x, right.y, right.z - halfHeight}, .color = color};
+        glm::vec3 edge = position + (transform * normalizedDirection * range);
 
-    Tri top    = {centerTop, rightTop, leftTop};
-    Tri bottom = {centerBottom, leftBottom, rightBottom};
-    tris.push_back(top);
-    tris.push_back(bottom);
+        Vertex topVertex    = {.pos = {edge.x, edge.y, edge.z + halfHeight}, .color = color};
+        Vertex bottomVertex = {.pos = {edge.x, edge.y, edge.z - halfHeight}, .color = color};
 
-    Tri left0 = {centerTop, leftTop, leftBottom};
-    Tri left1 = {leftBottom, centerBottom, centerTop};
-    tris.push_back(left0);
-    tris.push_back(left1);
+        topVertices.push_back(topVertex);
+        bottomVertices.push_back(bottomVertex);
+    }
 
-    Tri right0 = {centerTop, rightBottom, rightTop};
-    Tri right1 = {centerBottom, rightBottom, centerTop};
-    tris.push_back(right0);
-    tris.push_back(right1);
+    for ( int i = 0; i < segments; ++i ) {
+        // Top and bottom triangles
+        Tri topTri    = {centerTop, topVertices[ i + 1 ], topVertices[ i ]};
+        Tri bottomTri = {centerBottom, bottomVertices[ i ], bottomVertices[ i + 1 ]};
+        tris.push_back(topTri);
+        tris.push_back(bottomTri);
 
-    Tri back0 = {leftTop, rightTop, rightBottom};
-    Tri back1 = {rightBottom, leftBottom, leftTop};
-    tris.push_back(back0);
-    tris.push_back(back1);
-
+        // Side triangles
+        Tri leftSideTop    = {topVertices[ i ], topVertices[ i + 1 ], bottomVertices[ i ]};
+        Tri leftSideBottom = {bottomVertices[ i ], topVertices[ i + 1 ], bottomVertices[ i + 1 ]};
+        tris.push_back(leftSideTop);
+        tris.push_back(leftSideBottom);
+    }
     return tris;
 };
 
@@ -88,7 +90,7 @@ Enemy::Enemy(const std::vector<Property>& properties)
 
     LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
     m_vision_cone        = GenerateVisionCone(m_Position, m_Forward, m_Up, m_vision_angle, m_range, m_vision_height);
-    m_Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_Velocity           = glm::vec3(0.0f, 0.0f, 0.0f);
     m_pSteeringBehaviour = new SteeringBehaviour(this);
     // m_pSteeringBehaviour->WanderOn();
 }
