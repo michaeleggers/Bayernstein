@@ -219,13 +219,11 @@ void CWorld::CollideEntities() {
                 Door*             pDoor = (Door*)pOther;
                 EllipsoidCollider ec    = pEntity->GetEllipsoidCollider();
                 CollisionInfo     ci    = PushTouch(
-                    ec, static_cast<float>(dt) * pEntity->m_Velocity, pDoor->MapTris().data(), pDoor->MapTris().size()
-                );
+                    ec, static_cast<float>(dt) * pEntity->m_Velocity, pDoor->MapTris().data(), pDoor->MapTris().size());
                 if ( ci.didCollide ) {
                     printf("COLLIDED!\n");
                     Dispatcher->DispatchMessage(
-                        SEND_MSG_IMMEDIATELY, pEntity->ID(), pDoor->ID(), message_type::Collision, 0
-                    );
+                        SEND_MSG_IMMEDIATELY, pEntity->ID(), pDoor->ID(), message_type::Collision, 0);
                 }
             }
         }
