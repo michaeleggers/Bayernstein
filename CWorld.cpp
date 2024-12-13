@@ -76,6 +76,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     // just a placeholder entity from trenchbroom/quake
                     glm::vec3 enemyStartPosition = CWorld::GetOrigin(&e);
                     Enemy* enemy = new Enemy(e.properties);
+                    enemy->RegisterPlayer(m_pPlayerEntity);
                     m_pEntityManager->RegisterEntity(enemy);
 
                     int hEnemyModel = renderer->RegisterModel(enemy->GetModel());

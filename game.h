@@ -4,12 +4,13 @@
 #include <string>
 
 #include "CWorld.h"
+#include "Entity/FlyCamera/g_fly_camera.h"
+#include "Entity/FollowCamera/g_follow_camera.h"
+#include "Entity/Player/g_player.h"
+#include "Entity/entity_manager.h"
+
 #include "Entity/Door/g_door.h"
 #include "Entity/Enemy/g_enemy.h"
-#include "Entity/Player/g_player.h"
-#include "Entity/FollowCamera/g_follow_camera.h"
-#include "Entity/FlyCamera/g_fly_camera.h"
-#include "Entity/entity_manager.h"
 #include "Path/path.h"
 #include "camera.h"
 #include "hkd_interface.h"

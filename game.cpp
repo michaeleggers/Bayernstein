@@ -213,6 +213,8 @@ bool Game::RunFrame(double dt) {
     // Main 3D: This is where all the 3D rendering happens (in its own FBO)
     {
         renderer->Begin3D();
+        Enemy* enemy = m_pEntityManager->GetFirstEnemy();
+        renderer->ImDrawTris(enemy->m_vision_cone.data(), enemy->m_vision_cone.size(), false, DRAW_MODE_WIREFRAME);
 
         if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 ) {
 
@@ -333,4 +335,3 @@ void Game::Shutdown() {
     // delete m_pEntityManager;
     m_pEntityManager->KillEntities();
 }
-
