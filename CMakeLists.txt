@@ -122,6 +122,8 @@ add_executable(Game
     Console/CommandManager.h
     Console/VariableManager.cpp
     Console/VariableManager.h
+    Console/Variables.cpp
+    Console/Variables.h
     CWorld.cpp
     CWorld.h
     collision.cpp

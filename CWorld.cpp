@@ -75,6 +75,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     // just a placeholder entity from trenchbroom/quake
                     glm::vec3 enemyStartPosition = CWorld::GetOrigin(&e);
                     Enemy*    enemy              = new Enemy(e.properties);
+                    enemy->RegisterPlayer(m_pPlayerEntity);
                     m_pEntityManager->RegisterEntity(enemy);
 
                     int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
@@ -282,7 +283,6 @@ Waypoint CWorld::GetWaypoint(const Entity* entity) {
             waypoint.position         = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
         } else if ( property.key == "targetname" ) {
             waypoint.targetname = property.value;
-
         } else if ( property.key == "target" ) {
             waypoint.target = property.value;
         }

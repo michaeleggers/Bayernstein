@@ -5,13 +5,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#define GLM_FORCE_RADIANS
-#include "../../dependencies/glm/ext.hpp"
-#include "../../dependencies/glm/glm.hpp"
-
 #include "../../Clock/clock.h"
 #include "../../FSM/state_machine.h"
-#include "../../Message/message_dispatcher.h"
 #include "../../camera.h"
 #include "../../collision.h"
 #include "../../input_receiver.h"

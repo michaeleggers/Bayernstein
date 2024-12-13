@@ -1,6 +1,7 @@
 #ifndef _GLOBALS_H_
 #define _GLOBALS_H_
 
+#include "Console/VariableManager.h"
 #define GLM_FORCE_RADIANS
 #include "../../dependencies/glm/ext.hpp"
 #include "../../dependencies/glm/glm.hpp"

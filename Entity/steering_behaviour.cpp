@@ -56,7 +56,10 @@ glm::vec3 SteeringBehaviour::CalculateWeightedSum() {
             printf("SteeringBehaviour::FollowPath: m_pPath is nullptr! Ignore.\n");
         }
     }
-    return math::TruncateVec3(m_SteeringForce, m_pEntity->m_MaxForce);
+
+    glm::vec3 truncatedForce = math::TruncateVec3(m_SteeringForce, m_pEntity->m_MaxForce);
+    truncatedForce           = truncatedForce * 0.5f;
+    return truncatedForce;
 }
 
 //------------------------------- Wander ---------------------------------

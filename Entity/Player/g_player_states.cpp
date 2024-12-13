@@ -4,6 +4,7 @@
 
 #include "g_player_states.h"
 
+#include "../../Message/message_dispatcher.h"
 #include "../../utils/utils.h"
 #include "../Message/message_type.h"
 #include <stdio.h>

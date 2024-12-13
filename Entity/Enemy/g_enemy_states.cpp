@@ -57,6 +57,14 @@ void EnemyAttacking::Enter(Enemy* pEnemy) {
 }
 
 void EnemyAttacking::Execute(Enemy* pEnemy) {
+
+    pEnemy->m_pSteeringBehaviour->SetTargetAgent(pEnemy->m_pPlayerEnity);
+    pEnemy->m_pSteeringBehaviour->SeekOn();
+    if ( glm::distance(pEnemy->m_Position, pEnemy->m_pPlayerEnity->m_Position) < 15 ) {
+        pEnemy->m_pSteeringBehaviour->SeekOff();
+        pEnemy->m_pSteeringBehaviour->ArriveOn();
+    }
+
     //printf("Enemy is executing Attacking State\n");
 }
 
@@ -150,6 +158,13 @@ void EnemyPatrol::Enter(Enemy* pEnemy) {
 }
 
 void EnemyPatrol::Execute(Enemy* pEnemy) {
+    if ( !pEnemy->m_pSteeringBehaviour->isFollowPathOn() ) {
+
+        pEnemy->m_pSteeringBehaviour->FollowPathOn();
+    }
+    if ( pEnemy->m_PlayerDetected ) {
+        pEnemy->GetFSM()->ChangeState(EnemyAttacking::Instance());
+    }
     //printf("Enemy is executing Patrol State\n");
 }
 
