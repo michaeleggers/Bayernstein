@@ -1,28 +1,42 @@
-from dataclasses import dataclass
-from typing import List, Optional, Tuple
-from data_structures.triangle import Triangle
 import numpy as np
-from scipy.spatial import ConvexHull
+import math
+from typing import List, Tuple
+
+from data_structures.triangle import Triangle
 from data_structures.vector3f import Vector3f
 from data_structures.line_segment import LineSegment
 from data_structures.bounding_box import BoundingBox
 from util import geometry
 
 class Frame:
+    
+    # Initialization fields
     triangles: List[Triangle]
     triangles_indices: List[int]
     patch_ws_size = 0
+    
     projected_triangles: List[Tuple[Tuple[float]]]
-    bounding_box: Tuple[float, float, float, float]  # (origin_x, origin_y, width, height)
-    bounding_box_3d: BoundingBox
+    frame_normal: Vector3f
+    bounding_box: Tuple[float, float, float, float] # (origin_x, origin_y, width, height)
+    bounding_box_3d: BoundingBox                    # (origin_x, origin_y, width, height)
     lm_uvs: List[Tuple[float, float]]
     lm_uvs_bbox_space: List[Tuple[float, float]]
-    frame_normal: Vector3f
-
-    # Frame intersections for illegal pixel calculations
+    
+    # Frame intersections (for illegal pixel calculations)
     close_triangles: List[Triangle]
     intersection_segments: List[LineSegment] = []
     intersection_normals: List[Vector3f] = []
+
+    frame_u_start: int
+    frame_v_start: int
+    frame_u_end: int
+    frame_v_end: int
+
+    legal_pixels: List[Tuple[int, int]]
+    legal_positions: List[Vector3f]
+    legal_normals: List[Vector3f]
+    illegal_pixels: List[Tuple[int, int]]
+
 
 
     def __init__(
@@ -31,58 +45,72 @@ class Frame:
         triangles_indices: List[int],
         patch_ws_size: float
     ):
+        # The triangles assigned to this frame
         self.triangles = triangles
+        # The indices of this frame's triangles in the scene's triangles list
         self.triangles_indices = triangles_indices
+        # How large is a patch?
         self.patch_ws_size = patch_ws_size
-        self.projected_triangles, self.projection_matrix = self.__project_triangles_to_2d(self.triangles)
-        self.bounding_box_unpadded = self._calculate_bounding_box()
 
+        # All the (coplanar) triangles are projected onto their shared plane. 
+        # The projected triangles are used to calculate the frame's size (bbox) within its plane which is necessary for the uv mapping
+        # The uv mapped frame is the basis for the patch placement
+        self.projected_triangles, self.projection_matrix = self.__project_triangles_to_2d(self.triangles)
+        self.bounding_box_unpadded = self._calculate_bounding_box_2d()
+        frame_width, frame_height = self.bounding_box_unpadded[2], self.bounding_box_unpadded[3]
+        # As right now its assumed that all triangles within a frame are coplanar we can just pick the normal of any triangle
         self.frame_normal = self.triangles[0].normal()
 
-
-        # Check if the height is less than or equal to the width
-        width, height = self.bounding_box_unpadded[2], self.bounding_box_unpadded[3]
-        if width > height:
+        # Check the frame's aspect ratio, if width is greater than height rotate the frame. 
+        # Having all frames rotated with their larger side as height allows for a more efficient uv mapping later on
+        if frame_width > frame_height:
             # Rotate the bounding box (flip width and height)
-            self.bounding_box_unpadded = (self.bounding_box_unpadded[0], self.bounding_box_unpadded[1], height, width)
-
+            self.bounding_box_unpadded = (self.bounding_box_unpadded[0], self.bounding_box_unpadded[1], frame_height, frame_width)
+            
             # Rotate the projected triangles (flip x and y)
-            self.projected_triangles = [
-                [[v[1], v[0]] for v in triangle] for triangle in self.projected_triangles
-            ]
+            self.projected_triangles = [[[v[1], v[0]] for v in triangle] for triangle in self.projected_triangles]
 
             # Flip X and Y axes in the projection matrix by swapping rows 0 and 1
             flipped_projection_matrix = self.projection_matrix.copy()
             flipped_projection_matrix[[0, 1], :] = flipped_projection_matrix[[1, 0], :]
             self.projection_matrix = flipped_projection_matrix
         
-        # Adjust projected triangles based on bounding box origin (also consider padding)
-        self.projected_triangles = [
-            [[v[0] - self.bounding_box_unpadded[0] + self.patch_ws_size, v[1] - self.bounding_box_unpadded[1] + self.patch_ws_size] for v in triangle]
-            for triangle in self.projected_triangles
-        ]
-
-        # Add padding to the bounding box
+        # Add padding to the bounding box to ensure no light leakage between neighbouring frames
         self.bounding_box = (
             self.bounding_box_unpadded[0], 
             self.bounding_box_unpadded[1], 
             self.bounding_box_unpadded[2] + self.patch_ws_size + self.patch_ws_size, 
             self.bounding_box_unpadded[3] + self.patch_ws_size + self.patch_ws_size
         )
-        
-        # Calculate the 3d bounding box based on the triangles projection
+
+        # Adjust projected triangles based on bounding box origin (also consider padding)
+        self.projected_triangles = [
+            [[v[0] - self.bounding_box_unpadded[0] + self.patch_ws_size, v[1] - self.bounding_box_unpadded[1] + self.patch_ws_size] for v in triangle]
+            for triangle in self.projected_triangles
+        ]
+
+        # Calculate this frame's 3d bounding box
         self.bounding_box_3d = self.__calculate_bounding_box_3d()
 
+        # Initialize this frame's uv lists
         self.tex_uvs = []
         self.lm_uvs = []
         self.lm_uvs_bbox_space = []
 
-    
-    def __project_triangles_to_2d(
-        self, triangles: List[Triangle]
-    ) -> Tuple[
-        List[Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]], np.ndarray
-    ]:
+        
+        self.frame_u_start = 0
+        self.frame_v_start = 0
+        self.frame_u_end = 0
+        self.frame_v_end = 0
+        self.frame_width_pixels = 0
+        self.frame_height_pixels = 0
+
+
+    def __project_triangles_to_2d(self, triangles: List[Triangle]) -> Tuple[List[Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]], np.ndarray]:
+        """
+        Projects the triangles onto their plane, it's assumed all triangles passed are coplanar. Returns the projection matrix used.
+        """
+        
         if not triangles:
             return [], np.eye(4)  # No triangles, return identity matrix
 
@@ -114,13 +142,6 @@ class Frame:
         # Invert the matrix to transform global coordinates to plane-local coordinates
         projection_matrix = np.linalg.inv(projection_matrix)
 
-        # Function to project a vertex to 2D
-        def project_vertex(vertex: np.ndarray) -> Tuple[float, float]:
-            relative_position = vertex - v0  # Translate to origin
-            x = np.dot(relative_position, u)  # Projection onto u
-            y = np.dot(relative_position, v)  # Projection onto v
-            return (x, y)
-
         # Project all triangles
         projected_triangles = []
         for triangle in triangles:
@@ -133,6 +154,10 @@ class Frame:
     
 
     def __calculate_bounding_box_3d(self) -> BoundingBox:
+        """
+        Calculate the 3D bounding box that encompasses all the triangles ind 3D worldspace.
+        """
+
         if not self.triangles:
             raise ValueError("The list of triangles is empty.")
 
@@ -148,8 +173,11 @@ class Frame:
             max=Vector3f(max_x, max_y, max_z),
         )
 
-    def _calculate_bounding_box(self) -> Tuple[float, float, float, float]:
-        """Calculate the 2D bounding box that encompasses all the triangles."""
+    def _calculate_bounding_box_2d(self) -> Tuple[float, float, float, float]:
+        """
+        Calculate the 2D bounding box that encompasses all the projected triangles.
+        """
+
         min_x, min_y = float('inf'), float('inf')
         max_x, max_y = float('-inf'), float('-inf')
 
@@ -175,6 +203,7 @@ class Frame:
         Returns:
         - A 2D point in the plane's local coordinate system.
         """
+
         # Convert the point to homogeneous coordinates (x, y, z, 1)
         homogeneous_point = np.append(point, 1)  # Now the point is a 4D vector
 
@@ -190,27 +219,6 @@ class Frame:
 
         return projected_point
     
-    def calculate_uv_coordinates(self, point: Tuple[float, float], bbox: Tuple[float, float, float, float]) -> Tuple[float, float]:
-        """
-        Calculate UV coordinates for a 2D point inside a bounding box.
-
-        Parameters:
-        - point: The 2D point (x, y).
-        - bbox: The bounding box (minx, miny, width, height).
-
-        Returns:
-        - The UV coordinates (u, v), normalized to [0, 1].
-        """
-        minx, miny, width, height = bbox
-        x, y = point
-
-        # Normalize the point inside the bounding box
-        u = (x - minx) / width
-        v = (y - miny) / height
-
-        return (u, v)
-
-        
     def calculate_intersections(self, all_triangles: List[Triangle]):
 
         threshold = 0.1
@@ -248,6 +256,112 @@ class Frame:
 
         self.intersection_segments = intersection_segments
         self.intersection_normals = intersection_normals
+
+    def generate_patches(self, patch_resolution):
+
+        self.legal_pixels = []
+        self.legal_positions = []
+        self.legal_normals = []
+        self.illegal_pixels = []
+
+        frame_width_ws = self.bounding_box[2]
+        frame_height_ws = self.bounding_box[3]
+        frame_origin_u_pixels = math.ceil(self.bounding_box[0] * patch_resolution)
+        frame_origin_v_pixels = math.ceil(self.bounding_box[1] * patch_resolution)
+        self.frame_width_pixels = math.ceil(frame_width_ws * patch_resolution)
+        self.frame_height_pixels = math.ceil(frame_height_ws * patch_resolution)
+
+        # The frames position within the uv map in pixels
+        frame_origin_u_pixels = math.ceil(self.bounding_box[0] * patch_resolution)
+        frame_origin_v_pixels = math.ceil(self.bounding_box[1] * patch_resolution)
+        self.frame_u_start = int(frame_origin_u_pixels)
+        self.frame_v_start = int(frame_origin_v_pixels)
+        self.frame_u_end = self.frame_u_start + int(self.frame_width_pixels)
+        self.frame_v_end = self.frame_v_start + int(self.frame_height_pixels)
+
+        triangles_uv_space = [triangle for triangle in self.lm_uvs_bbox_space]
+
+        for v_pixel in range(self.frame_height_pixels):
+            v = v_pixel / (self.frame_height_pixels -1)
+            for u_pixel in range(self.frame_width_pixels):
+                u = u_pixel / (self.frame_width_pixels -1)
+
+                if geometry.is_point_in_triangles_2d((u, v), triangles_uv_space):
+                            
+                    worldspace_position = self.interpolate_uv_to_world(
+                        self.triangles[0],
+                        self.lm_uvs_bbox_space[0],
+                        (u, v)
+                    )
+
+                    # Check if patch is covered by triangle on the same plane
+                    if geometry.point_is_covered_by_triangle(worldspace_position, self.frame_normal, self.close_triangles, threshold=min(1/patch_resolution, 0.01)):
+                        self.illegal_pixels.append((u_pixel, v_pixel))
+                        continue
+                    
+                    # Check if there is a intersectin triangle which covers this patch
+                    distance = geometry.distance_to_closest_triangle_facing_away(worldspace_position, self.frame_normal, self.intersection_segments, self.intersection_normals)
+                    if distance < 1/patch_resolution *  2:
+                        self.illegal_pixels.append((u_pixel, v_pixel))
+                        continue
+
+                    self.legal_pixels.append((u_pixel, v_pixel))
+                    self.legal_positions.append(worldspace_position)
+                    self.legal_normals.append(self.frame_normal)
+
+                else:
+                    self.illegal_pixels.append((u_pixel, v_pixel))
+
+
+    def interpolate_uv_to_world(self, triangle: Triangle, uv_coords: np.ndarray, uv_point: tuple[float, float]) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Interpolate world coordinates and normal at a given UV point within a triangle.
+
+        Args:
+            vertices: Vertices of the triangle in world space.
+            uv_coords: UV coordinates of the triangle.
+            uv_point (tuple[float, float]): UV coordinates of the point to interpolate.
+        """
+        vertices = np.array([(vertex.x, vertex.y, vertex.z) for vertex in triangle.vertices])
+        uv_coords = np.array(uv_coords)
+        uv_point = np.array(uv_point)
+
+        bary_coords = self.calculate_barycentric(uv_coords, uv_point)
+
+        # Use barycentric coordinates to interpolate the world space position
+        world_position = bary_coords[0] * vertices[0] + bary_coords[1] * vertices[1] + bary_coords[2] * vertices[2]
+
+        return Vector3f(world_position[0], world_position[1], world_position[2])
+    
+    def calculate_barycentric(self, uv_coords: np.ndarray, uv_point: np.ndarray) -> np.ndarray:
+        """
+        Calculate barycentric coordinates for a UV point within a UV triangle.
+
+        Args:
+            uv_coords (np.ndarray): UV coordinates of the triangle.
+            uv_point (np.ndarray): UV coordinates of the point.
+
+        Returns:
+            np.ndarray: Barycentric coordinates (w0, w1, w2).
+        """
+        u0, v0 = uv_coords[0]
+        u1, v1 = uv_coords[1]
+        u2, v2 = uv_coords[2]
+        u_p, v_p = uv_point
+
+        # Compute the area of the full triangle in UV space
+        denom = (v1 - v2) * (u0 - u2) + (u2 - u1) * (v0 - v2)
+        if denom == 0:
+            raise ValueError("The triangle's UV coordinates are degenerate (zero area).")
+
+        # Barycentric coordinates for uv_point
+        w0 = ((v1 - v2) * (u_p - u2) + (u2 - u1) * (v_p - v2)) / denom
+        w1 = ((v2 - v0) * (u_p - u2) + (u0 - u2) * (v_p - v2)) / denom
+        w2 = 1 - w0 - w1
+
+        return np.array([w0, w1, w2])
+
+        
 
     
 

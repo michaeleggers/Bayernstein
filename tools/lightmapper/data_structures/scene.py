@@ -1,19 +1,16 @@
+# Python packages
 import numpy as np
-from tqdm import tqdm
-from PIL import Image
 import cv2
-from pathlib import Path
 import pyrr
 import math
 import json
-import os
-import random
 from PIL import Image
-from scipy.spatial import KDTree
+from tqdm import tqdm
+from PIL import Image
+from pathlib import Path
+from typing import List
 
-import util.uv_mapper as uv_mapper
-import util.geometry as geometry
-from data_structures.color import Color
+# Data structures
 from data_structures.patch import Patch
 from data_structures.vector3f import Vector3f as vec
 from data_structures.compiled_vertex import CompiledVertex
@@ -21,9 +18,9 @@ from data_structures.compiled_triangle import CompiledTriangle
 from data_structures.triangle import Triangle
 from data_structures.frame import Frame
 
-
-from typing import List
-
+# Utility functions
+import util.uv_mapper as uv_mapper
+import util.geometry as geometry
 
 
 class Scene:
@@ -31,14 +28,18 @@ class Scene:
 
     def __init__(self, map_path, assets_path, lightmap_path = None) -> None:
 
+        # Load the map from JSON
         textures_directory = Path(assets_path) / 'textures'
         self.triangles, self.texture_uvs, self.lightmap_uvs, self.textures, self.emissions = self.load_from_json(map_path, assets_path)
-        self.texture_array, self.texture_array_uvs, self.texture_index_mapping = self.create_texture_array(self.textures, self.texture_uvs, textures_directory)
+        # Create the Texture Array using the geometries texture informations
+        self.texture_array, self.texture_index_mapping = self.create_texture_array(self.textures, self.texture_uvs, textures_directory)
+        # If a lightmap exists (which may be the case when testing): load it
         if lightmap_path:
             self.load_lightmap(lightmap_path)
         
-        self.patches: List[Patch] = []
+        # A frame is a collection of (for now planar) triangles, usually forming a quad
         self.frames: List[Frame] = []
+        # This holds all the scene's triangles as a Triangle data structure
         self.triangles_ds: List[Triangle] = []
 
     def load_from_json(self, json_path: Path, assets_path: Path):
@@ -90,22 +91,6 @@ class Scene:
 
             emission.append(triangle.get('emission', 0.0))
 
-        # Normalize UVs after loading all texture names and gathering data
-        normalized_texture_uvs = []
-        for texture_name, triangle_indices in textures.items():
-            texture_width, texture_height = texture_dimensions_cache[texture_name]
-
-            # Normalize UVs for each triangle that uses this texture
-            for triangle_index in triangle_indices:
-                normalized_triangle_uvs = []
-                for u, v in texture_uvs[triangle_index]:
-                    # Repeat and normalize UVs
-                    u_normalized = u / texture_width # (u % texture_width) / texture_width
-                    v_normalized = v / texture_width # (v % texture_height) / texture_height
-                    normalized_triangle_uvs.append((u_normalized, v_normalized))
-                normalized_texture_uvs.append(normalized_triangle_uvs)
-
-
         # Convert lists to numpy arrays
         triangles = np.array(triangles, dtype=np.float64)
         texture_uvs = np.array(texture_uvs, dtype=np.float32)
@@ -117,22 +102,8 @@ class Scene:
     def save_to_json(self, json_path: Path, assets_path: Path) -> 'Scene':
         """
         Save the triangle data to a JSON file.
-
-        Parameters:
-        -----------
-        triangles : np.ndarray
-            Array of triangle vertex positions with shape (N, 3, 3).
-        texture_uvs : np.ndarray
-            Array of texture UV coordinates for each vertex with shape (N, 3, 2).
-        lightmap_uvs : np.ndarray
-            Array of lightmap UV coordinates for each vertex with shape (N, 3, 2).
-        textures : dict
-            Dictionary mapping texture names to lists of triangle indices.
-        emission : np.ndarray
-            Array of emission values for each triangle with shape (N,).
-        json_path : Path
-            The path to save the JSON file to.
         """
+
         data = []
 
         # Cache texture dimensions to avoid opening the same texture multiple times
@@ -158,8 +129,6 @@ class Scene:
                 texture_path = f"{assets_path}/textures/{texture_name}.tga"
                 with Image.open(texture_path) as img:
                     texture_dimensions[texture_name] = img.size  # (width, height)
-
-            tex_width, tex_height = texture_dimensions[texture_name]
 
             # Convert UVs back to pixel space
             pixel_tex_uv = [[u, v] for u, v in tex_uv]
@@ -188,6 +157,10 @@ class Scene:
         return self
     
     def save_to_binary(self, binary_path: Path) -> 'Scene':
+        """
+        Save the triangle data to a binary file.
+        """
+
         compiled_triangles = []
 
         for i, (triangle, tex_uv, lm_uv, emit) in enumerate(zip(self.triangles, self.texture_uvs, self.lightmap_uvs, self.emissions)):
@@ -195,15 +168,12 @@ class Scene:
             triangle_positions = [[vertex[0], vertex[1], vertex[2]] for vertex in triangle]
             tex_uvs = [[float(u), float(v)] for u, v in tex_uv]
             lm_uvs = [[float(u), float(v)] for u, v in lm_uv]
-            normal_array = geometry.calculate_normal(np.asarray(triangle_positions[0]),
-                                                    np.asarray(triangle_positions[1]),
-                                                    np.asarray(triangle_positions[2]))
+            normal_array = geometry.calculate_normal(np.asarray(triangle_positions[0]), np.asarray(triangle_positions[1]), np.asarray(triangle_positions[2]))
             normal = (float(normal_array[0]), float(normal_array[1]), float(normal_array[2]))
-
 
             # Create 3 vertices for the current triangle
             vertices = []
-            # this is just random for now
+            # These barycentric coordinates are placeholders
             bc = [[1.0,0.0, 0.0], [0.0,1.0, 0.0],[0.0, 0.0, 1.0]]
             for j in range(3):
                 vertex = CompiledVertex(
@@ -227,8 +197,8 @@ class Scene:
             compiled_triangle = CompiledTriangle(
                 vertices=vertices,
                 textureName=texture_name,  
-                surfaceFlags=1, # placeholder till souper returns flags
-                contentFlags=1  # placeholder till souper returns flags
+                surfaceFlags=1, # Placeholder till souper returns flags
+                contentFlags=1  # Placeholder till souper returns flags
             )
 
             compiled_triangles.append(compiled_triangle)
@@ -238,55 +208,85 @@ class Scene:
             for triangle in compiled_triangles:
                 f.write(triangle.to_binary())
 
-    def create_frames(self, patch_resolution: float = 0.0625) -> 'Scene':
+        return self
 
+    def create_texture_array(self, textures, uvs, textures_directory):
+            # Step 1: Load all textures and find the largest resolution
+            images = {}
+            max_width, max_height = 0, 0
+            texture_index_mapping = {}  # Dictionary to map texture names to indices
+
+            for index, texture_name in enumerate(textures):
+                path = Path(textures_directory) / f"{texture_name}.tga"
+                image = Image.open(path).convert("RGBA")
+
+                images[texture_name] = image
+                max_width = max(max_width, image.width)
+                max_height = max(max_height, image.height)
+                texture_index_mapping[texture_name] = index  # Map texture name to its index
+
+            # Step 2: Resize all images to the largest resolution
+            for texture_name, image in images.items():
+                if image.size != (max_width, max_height):
+                    images[texture_name] = image.resize((max_width, max_height), Image.LANCZOS)
+
+            # Step 3: Create a texture array with appropriate dimensions
+            num_textures = len(images)
+            texture_array = np.zeros((num_textures, max_height, max_width, 4), dtype=np.uint8)
+
+            for index, (texture_name, image) in enumerate(images.items()):
+                texture_array[index] = np.array(image)
+
+            return texture_array, texture_index_mapping
+
+    def create_frames(self, patch_resolution: float = 0.0625) -> 'Scene':
+        """
+        Frames are a datastructures which hold (planar) triangles to which the patch placement is deligated to.
+        """
         
-        # Step 1: Create Triangle Data Structure
+        # Step 1: Create Triangle Data Structures
         triangles_ds = []
         for vertex_tuple in self.triangles:
             vertices = tuple(vec(*v) for v in vertex_tuple)
             triangles_ds.append(Triangle(vertices))
         self.triangles_ds = triangles_ds
 
-        # Step 2: Create Frames
-        self.frames, self.lightmap_uvs, uv_map_ws_size = uv_mapper.create_frames(triangles_ds, patch_resolution, debug=True)
+        # Step 2: Construct Frames and use them to create the uv mapping
+        self.frames = self.__construct_frames(triangles_ds, 1/patch_resolution)
+        self.frames, self.lightmap_uvs, uv_map_ws_size = uv_mapper.create_uv_mapping(self.frames, triangles_ds, patch_resolution, debug=True)
         self.light_map_resolution = math.ceil(uv_map_ws_size * patch_resolution)
         self.light_map = np.zeros((self.light_map_resolution, self.light_map_resolution, 3), dtype=np.float32)
 
         # Step 3: Precalculate geometry intersections (for illegal pixel calculations)
-        [frame.calculate_intersections(triangles_ds) for frame in self.frames]
+        [frame.calculate_intersections(triangles_ds) for frame in tqdm(self.frames, desc="Calculating intersections")]
 
-    def create_texture_array(self, textures, uvs, textures_directory):
-        # 1. Load all textures and find the largest resolution
-        images = {}
-        max_width, max_height = 0, 0
-        texture_index_mapping = {}  # Dictionary to map texture names to indices
+        # Step 4: Generate Patches
+        [frame.generate_patches(patch_resolution) for frame in tqdm(self.frames, desc="Generating patches")]
 
-        for index, texture_name in enumerate(textures):
-            path = Path(textures_directory) / f"{texture_name}.tga"
-            image = Image.open(path).convert("RGBA")
+    
+    def __construct_frames(self, triangles: List[Triangle], padding: float) -> List[Frame]:
+        """Group triangles into shapes based on planar adjacency."""
+        used = set()
+        frames: List[Frame] = []
 
-            images[texture_name] = image
-            max_width = max(max_width, image.width)
-            max_height = max(max_height, image.height)
-            texture_index_mapping[texture_name] = index  # Map texture name to its index
+        for i, triangle in enumerate(triangles):
+            if i in used:
+                continue
 
-        # 2. Resize all images to the largest resolution
-        for texture_name, image in images.items():
-            if image.size != (max_width, max_height):
-                images[texture_name] = image.resize((max_width, max_height), Image.LANCZOS)
+            # Find a neighboring triangle to form a planar surface
+            for j, other_triangle in enumerate(triangles):
+                if i != j and j not in used and geometry.count_shared_vertices(triangle, other_triangle) == 2:
+                    if geometry.are_coplanar(triangle, other_triangle):
+                        frames.append(Frame(triangles=[triangle, other_triangle], triangles_indices=[i, j], patch_ws_size=padding))
+                        used.update([i, j])
+                        break
+            else:
+                # If no match is found, add the triangle as a single shape
+                frames.append(Frame(triangles=[triangle], triangles_indices=[i, j], patch_ws_size=padding))
+                used.add(i)
 
-        # 3. Create a texture array with appropriate dimensions
-        num_textures = len(images)
-        texture_array = np.zeros((num_textures, max_height, max_width, 4), dtype=np.uint8)
+        return frames
 
-        for index, (texture_name, image) in enumerate(images.items()):
-            texture_array[index] = np.array(image)
-
-        # 4. Adjust UVs (these remain unchanged)
-        adjusted_uvs = [None] * len(uvs)  # Initialize a list to hold adjusted UVs for each triangle
-
-        return texture_array, adjusted_uvs, texture_index_mapping
 
     def load_lightmap(self, lightmap_path):
 

@@ -7,6 +7,38 @@ from dataclasses import dataclass
 import math
 
 
+def are_coplanar(triangle1: Triangle, triangle2: Triangle, tolerance: float = 1e-1) -> bool:
+    """Check if two triangles are coplanar."""
+    # Extract vertices as numpy arrays
+    v1, v2, v3 = (v.to_array() for v in triangle1.vertices)
+    w1, w2, w3 = (v.to_array() for v in triangle2.vertices)
+
+    # Compute normals of the triangles
+    normal1 = np.cross(v2 - v1, v3 - v1)
+    normal2 = np.cross(w2 - w1, w3 - w1)
+
+    # Check if normals are parallel (dot product close to 1 or -1)
+    if not np.isclose(np.dot(normal1, normal2) / (np.linalg.norm(normal1) * np.linalg.norm(normal2)), 1, atol=tolerance):
+        return False
+
+    # Check if all vertices of triangle2 lie in the plane of triangle1
+    plane_d = -np.dot(normal1, v1)  # Plane equation: normal1 · x + d = 0
+    for w in [w1, w2, w3]:
+        if not np.isclose(np.dot(normal1, w) + plane_d, 0, atol=tolerance):
+            return False
+
+    return True
+
+def count_shared_vertices(triangle1: Triangle, triangle2: Triangle, tolerance: float = 1e-6) -> int:
+    """Count the number of approximately shared vertices between two triangles."""
+    def are_approx_equal(v1: Vector3f, v2: Vector3f) -> bool:
+        return np.allclose(v1.to_array(), v2.to_array(), atol=tolerance)
+    
+    return sum(1 for v1 in triangle1.vertices for v2 in triangle2.vertices if are_approx_equal(v1, v2))
+
+def snap_to_multiple(value, multiple):
+    return ((value + multiple - 1) // multiple) * multiple
+
 def bounding_box_triangle(A, B, C):
     min_x = min(A[0], B[0], C[0])
     max_x = max(A[0], B[0], C[0])
@@ -206,7 +238,6 @@ def square_triangles_overlap(square, triangles, threshold=0.001):
             return True
     return False
 
-
 def compute_intersection(tri1: Triangle, tri2: Triangle) -> Optional[Tuple[Vector3f, Vector3f]]:
     """
     Computes the intersection line segment (if any) between two triangles.
@@ -397,7 +428,6 @@ def calculate_closest_distance(point: Tuple[float, float], lines: List[LineSegme
 
     return min_distance if min_distance != float('inf') else None  # Return None if no valid line found
 
-
 def point_to_line_distance_right_of_segment(point, line_segments):
     def is_left(p, p1, p2):
         # Calculate the 2D cross product of (p1 -> p2) and (p1 -> p)
@@ -500,7 +530,6 @@ def closest_plane_intersection(point: Vector3f, normal: Vector3f, triangles: Lis
 
     return closest_distance if closest_distance != float('inf') else None
 
-
 def point_is_covered_by_triangle(point: Vector3f, normal: Vector3f, triangles: List[Triangle], threshold=0.1):
     for triangle in triangles:
         if is_triangle_on_plane(triangle, point, normal, threshold=threshold):
@@ -549,7 +578,6 @@ def distance_to_closest_triangle_facing_away(point: Vector3f, plane_normal: Vect
 
     return closest_distance
 
-
 def intersects_plane(signed_distances: List[float]) -> bool:
     """Checks if a triangle intersects the plane."""
 
@@ -557,7 +585,6 @@ def intersects_plane(signed_distances: List[float]) -> bool:
     has_positive = any(d > 0.01 for d in signed_distances)
     has_negative = any(d < -0.01 for d in signed_distances)
     return has_positive and has_negative
-
 
 def compute_plane_triangle_intersection2(plane_point: Vector3f, plane_normal: Vector3f, 
                                         v0: Vector3f, v1: Vector3f, v2: Vector3f) -> List[Vector3f]:
@@ -626,6 +653,8 @@ def compute_plane_triangle_intersection(plane_point: Vector3f, plane_normal: Vec
     else:
         return None
 
+
+
 def is_point_in_triangle(point: Vector3f, triangle: Triangle) -> bool:
     def vector_sub(v1: Vector3f, v2: Vector3f) -> Vector3f:
         return Vector3f(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z)
@@ -671,8 +700,41 @@ def is_point_in_triangle(point: Vector3f, triangle: Triangle) -> bool:
     v = (dot00 * dot12 - dot01 * dot02) / denom
 
     return u >= 0 and v >= 0 and (u + v) <= 1
-    
 
+def is_point_in_triangles_2d(point: Tuple[float, float], triangles) -> bool:
+    for triangle in triangles:
+        if is_point_in_triangle_2d(point, triangle):
+            return True
+    return False
+
+def is_point_in_triangle_2d(
+    point: Tuple[float, float], 
+    triangle: Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]
+) -> bool:
+    """
+    Checks if a 2D point is inside a given triangle using the barycentric method.
+
+    Args:
+        point (Tuple[float, float]): The (x, y) coordinates of the point.
+        triangle (Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]): 
+            The vertices of the triangle, each defined as (x, y).
+
+    Returns:
+        bool: True if the point is inside the triangle, False otherwise.
+    """
+    def sign(p1, p2, p3):
+        return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1])
+
+    v1, v2, v3 = triangle
+    d1 = sign(point, v1, v2)
+    d2 = sign(point, v2, v3)
+    d3 = sign(point, v3, v1)
+
+    has_neg = (d1 < 0) or (d2 < 0) or (d3 < 0)
+    has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
+
+    return not (has_neg and has_pos)
+    
 def project_point_onto_segment(segment_start: Vector3f, segment_end: Vector3f, point: Vector3f) -> Vector3f:
     """
     Projects a point onto a line segment defined by two points.
@@ -760,7 +822,6 @@ def signed_distance_to_plane(point: Vector3f, plane_point: Vector3f, plane_norma
     vec = Vector3f(point.x - plane_point.x, point.y - plane_point.y, point.z - plane_point.z)
     # Dot product with the plane's normal gives the signed distance
     return vec.x * plane_normal.x + vec.y * plane_normal.y + vec.z * plane_normal.z
-
 
 def project_vector_onto_plane(vector: Vector3f, plane_normal: Vector3f) -> Vector3f:
     """

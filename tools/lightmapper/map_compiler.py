@@ -5,13 +5,12 @@ import sys
 import os
 import argparse
 import subprocess
-import platform
+from pathlib import Path
 
 from renderer import Renderer
 from lightmapper import Lightmapper
 from data_structures.scene import Scene
 from data_structures.color import Color
-from pathlib import Path
 
 
 def compile_map(
@@ -23,18 +22,19 @@ def compile_map(
         atmospheric_color=Color(0, 0, 0)
     ):
 
+    # Step 1: Read and parse the .map file
+    # this is a temporary json used for communication between souper and lightmapper
     temp_output_path = soup_map(assets_path=assets_path, map_path=map_path)
 
+    # Step 2: Use the geometry to calculate the lightmaps, save the lightmap as a png and the parsed .map file as a .ply file
     generate_lightmaps(temp_output_path, assets_path, map_path.stem, output_path, iterations, patches_resolution, atmospheric_color)
 
 def soup_map(assets_path: Path, map_path: Path) -> Path:
-
     """
     loads in a .map file, calculates triangles and saves them as a json in a temporary location
     """
     
-    # the parent folder of self
-    # Check if the script is running as a bundled executable
+    # Check if the script is running as a bundled executable or as python script to figure out the correct path
     if getattr(sys, 'frozen', False):
         # If running from the bundled executable, use the extracted folder
         base_path = Path(sys._MEIPASS)
@@ -42,21 +42,24 @@ def soup_map(assets_path: Path, map_path: Path) -> Path:
         # If running from the source code, use the regular script path
         base_path = Path(__file__).resolve().parent
 
+    # Depending on the os, use the correct souper location and filename
     if os.name == 'nt':  # Windows
         souper_path = base_path / 'souper/bin/Debug/souper.exe'
     else:  # macOS / Linux
         souper_path = base_path / 'souper/bin/souper'
-        
+    
+    # The temporary file location is hardcoded to the assets folder for now
+    # This will no longer be necessary after the migration to c++
     temp_output_file = assets_path / 'temp/temp.json'
     # Ensure the temporary directory exists
     temp_output_file.parent.mkdir(parents=True, exist_ok=True)
 
-    # Convert back to string and append a slash if necessary as
-    # python's Path throws away a trailing /
+    # Convert back to string and append a slash if necessary as python's Path throws away a trailing /
     normalized_assets_path = str(assets_path)
     if assets_path.is_dir() and not normalized_assets_path.endswith('/'):
         normalized_assets_path += '/'
 
+    # Run souper as a subprocess
     command = [str(souper_path), normalized_assets_path, str(map_path), str(temp_output_file)]
     subprocess.run(command, check=True)
 
@@ -72,21 +75,16 @@ def generate_lightmaps(
         atmospheric_color: Color
         ):
  
-    # Create the scene
+    # Initialize the scene, create frames as well as the vertex_array and save them
     scene = Scene(temp_map_path, assets_path)
     scene.create_frames(patch_resolution=patch_resolution)
     scene.generate_vertex_array()
-    scene.save_to_json(output_path / f'{map_name}/{map_name}.json', assets_path)
     scene.save_to_binary(output_path / f'{map_name}/{map_name}.ply')
+    # for now also save it as a json as it is useful for debugging purposes, can be removed later
+    scene.save_to_json(output_path / f'{map_name}/{map_name}.json', assets_path)   
 
     # Create the renderer
-    lightmap_renderer = Renderer(
-        width=64, 
-        height=64, 
-        scene=scene, 
-        atmosphere_color=atmospheric_color, 
-        lightmap_mode=True
-    )
+    lightmap_renderer = Renderer(width=64, height=64, scene=scene, atmosphere_color=atmospheric_color, lightmap_mode=True)
 
     # Initialize the lightmapper
     lightmapper = Lightmapper(scene=scene, renderer=lightmap_renderer)
@@ -96,7 +94,7 @@ def generate_lightmaps(
     lightmapper.generate_lightmap(lightmap_path=lightmap_path, iterations=iterations, patch_resolution=patch_resolution)
 
     # Clean up
-    #lightmap_renderer.destroy()
+    lightmap_renderer.destroy()
 
 if __name__ == "__main__":
 

@@ -387,7 +387,7 @@ class Renderer:
         glDeleteTextures(1, (self.texture_array_id,))
         glDeleteTextures(1, (self.lightmap_texture_id,))
         if self.lightmap_mode:
-            glDeleteTextures(1, (self.fbo_texture))
+            glDeleteTextures(1, (self.fbo_texture,))
 
         # Delete shader program
         glDeleteProgram(self.shader)
