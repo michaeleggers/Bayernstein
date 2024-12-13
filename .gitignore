@@ -19,18 +19,25 @@
 
 # Some local docs
 **/line_vs_swept_sphere.md
-**/__pycache__/
-tools/lightmapper/debug_lightmap.png
-tools/lightmapper/debug_uv_maps.png
-tools/lightmapper/temp/lightmap.hdr
 
+# Assets
 **/assets/models/**
 **/assets/maps/**
 **/assets/textures/**
 **/assets/audio/**
 **/assets/blender/**
 **/assets/photos/**
+
+# Logfiles
 **/logs/**
 
 **/*.zip
 .env
+
+
+# lightmapper
+**/__pycache__/**
+**/debug/**
+**/assets/compiled/**
+**/temp/**
+tools/lightmapper/souper/bin/**

@@ -1,7 +1,12 @@
-import argparse
+# TODO: Put this somewhere in the readme later. Just for Michael to remember
+# Call this on Linux: python map_compiler.py ../../../../assets/ /maps/temple2.map ./ 3 0.5
+
+import sys
 import os
+import argparse
 import subprocess
-import json
+import platform
+
 from renderer import Renderer
 from lightmapper import Lightmapper
 from data_structures.scene import Scene
@@ -19,7 +24,7 @@ def compile_map(
     ):
 
     temp_output_path = soup_map(assets_path=assets_path, map_path=map_path)
-    
+
     generate_lightmaps(temp_output_path, assets_path, map_path.stem, output_path, iterations, patches_resolution, atmospheric_color)
 
 def soup_map(assets_path: Path, map_path: Path) -> Path:
@@ -29,15 +34,33 @@ def soup_map(assets_path: Path, map_path: Path) -> Path:
     """
     
     # the parent folder of self
-    base_path = Path(__file__).resolve().parent
-    souper_path = base_path / 'souper/bin/Debug/souper.exe'
-    temp_output_file = base_path / 'temp/temp.json'
+    # Check if the script is running as a bundled executable
+    if getattr(sys, 'frozen', False):
+        # If running from the bundled executable, use the extracted folder
+        base_path = Path(sys._MEIPASS)
+    else:
+        # If running from the source code, use the regular script path
+        base_path = Path(__file__).resolve().parent
 
-    command = [str(souper_path), str(assets_path), str(map_path), str(temp_output_file)]
+    if os.name == 'nt':  # Windows
+        souper_path = base_path / 'souper/bin/Debug/souper.exe'
+    else:  # macOS / Linux
+        souper_path = base_path / 'souper/bin/souper'
+        
+    temp_output_file = assets_path / 'temp/temp.json'
+    # Ensure the temporary directory exists
+    temp_output_file.parent.mkdir(parents=True, exist_ok=True)
+
+    # Convert back to string and append a slash if necessary as
+    # python's Path throws away a trailing /
+    normalized_assets_path = str(assets_path)
+    if assets_path.is_dir() and not normalized_assets_path.endswith('/'):
+        normalized_assets_path += '/'
+
+    command = [str(souper_path), normalized_assets_path, str(map_path), str(temp_output_file)]
     subprocess.run(command, check=True)
 
     return temp_output_file
-
 
 def generate_lightmaps(
         temp_map_path: Path, 
@@ -45,16 +68,16 @@ def generate_lightmaps(
         map_name: str, 
         output_path: Path, 
         iterations: int,
-        patches_resolution: int, 
+        patch_resolution: int, 
         atmospheric_color: Color
         ):
  
     # Create the scene
     scene = Scene(temp_map_path, assets_path)
-    scene.create_patches(patches_resolution=patches_resolution)
+    scene.create_frames(patch_resolution=patch_resolution)
     scene.generate_vertex_array()
-    #scene.save_to_json(assets_path / f'compiled/{map_name}/{map_name}.json', assets_path)
     scene.save_to_json(output_path / f'{map_name}/{map_name}.json', assets_path)
+    scene.save_to_binary(output_path / f'{map_name}/{map_name}.ply')
 
     # Create the renderer
     lightmap_renderer = Renderer(
@@ -70,7 +93,7 @@ def generate_lightmaps(
 
     # Generate the lightmaps
     lightmap_path = output_path / f'{map_name}/{map_name}.hdr'
-    lightmapper.generate_lightmap(lightmap_path=lightmap_path, iterations=iterations)
+    lightmapper.generate_lightmap(lightmap_path=lightmap_path, iterations=iterations, patch_resolution=patch_resolution)
 
     # Clean up
     #lightmap_renderer.destroy()

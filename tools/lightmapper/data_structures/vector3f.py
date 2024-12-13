@@ -1,5 +1,7 @@
 import numpy as np
+from dataclasses import dataclass
 
+@dataclass(frozen=True)
 class Vector3f:
     """A class representing a 3D vector with float components.
 
@@ -9,17 +11,33 @@ class Vector3f:
         z (float): The z-coordinate of the vector.
     """
 
-    def __init__(self, x: float, y: float, z: float) -> None:
-        """Initialize a Vector3f instance.
+    x: float
+    y: float
+    z: float
 
-        Args:
-            x (float): The x-coordinate.
-            y (float): The y-coordinate.
-            z (float): The z-coordinate.
-        """
-        self.x = float(x)
-        self.y = float(y)
-        self.z = float(z)
+    def __sub__(self, other: 'Vector3f') -> 'Vector3f':
+        return Vector3f(self.x - other.x, self.y - other.y, self.z - other.z)
+
+    def __add__(self, other: 'Vector3f') -> 'Vector3f':
+        return Vector3f(self.x + other.x, self.y + other.y, self.z + other.z)
+    
+    def __mul__(self, scalar: float) -> 'Vector3f':
+        """Multiplies the vector by a scalar."""
+        return Vector3f(self.x * scalar, self.y * scalar, self.z * scalar)
+
+    def cross(self, other: 'Vector3f') -> 'Vector3f':
+        return Vector3f(
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x
+        )
+
+    def dot(self, other: 'Vector3f') -> float:
+        return self.x * other.x + self.y * other.y + self.z * other.z
+
+    def normalize(self) -> 'Vector3f':
+        length = np.sqrt(self.x**2 + self.y**2 + self.z**2)
+        return Vector3f(self.x / length, self.y / length, self.z / length)
 
     def to_tuple(self) -> tuple[float, float, float]:
         """Convert the vector to a tuple.
@@ -52,3 +70,12 @@ class Vector3f:
             str: A user-friendly string representation of the vector.
         """
         return f"[{self.x}, {self.y}, {self.z}]"
+    
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Vector3f):
+            return False
+        return (
+            abs(self.x - other.x) < 1e-6 and
+            abs(self.y - other.y) < 1e-6 and
+            abs(self.z - other.z) < 1e-6
+        )
