@@ -32,7 +32,7 @@
 class CWorld {
   public:
     static CWorld* Instance();
-    void           InitWorldFromMap(const Map& map, const std::string& plyFilename);
+    void           InitWorldFromMap(const Map& map, const std::string& plyFilename = "");
     void           CollideEntitiesWithWorld();
     void           CollideEntities();
 

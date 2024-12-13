@@ -41,14 +41,20 @@ void CWorld::InitWorldFromMap(const Map& map, const std::string& plyFilename) {
     std::vector<MapPolygon> polysoup = createPolysoup(map);
 
     // Convert to tris
+    bool lightmapLoaded = false;
     if ( !plyFilename.empty() ) {
         HKD_File    plyFile;
         std::string exePath     = hkd_GetExePath();
         std::string fullPlyPath = exePath + "../assets/maps/" + plyFilename + ".ply";
-        assert(hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS);
-        m_MapTris          = CWorld::CreateMapFromLightmapTrisFile(plyFile);
-        m_hLightmapTexture = renderer->RegisterTextureGetHandle(plyFilename + ".png");
-    } else {
+        if ( hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS ) {
+            m_MapTris          = CWorld::CreateMapFromLightmapTrisFile(plyFile);
+            m_hLightmapTexture = renderer->RegisterTextureGetHandle(plyFilename + ".png");
+            lightmapLoaded     = true;
+        } else {
+            printf("Warning (CWorld): Lightmap file '%s' could not be loaded!\n", plyFilename.c_str());
+        }
+    }
+    if ( !lightmapLoaded ) {
         m_MapTris = CWorld::CreateMapTrisFromMapPolys(polysoup);
     }
 
