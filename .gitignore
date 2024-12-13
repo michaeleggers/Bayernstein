@@ -4,6 +4,8 @@
 
 **/.DS_Store
 **/.vscode/**
+**/.zed/**
+**/.cache/**
 
 **/*.o/
 
@@ -17,12 +19,20 @@
 
 # Some local docs
 **/line_vs_swept_sphere.md
+
+# Assets
 **/assets/models/**
 **/assets/maps/**
 **/assets/textures/**
+**/assets/audio/**
+**/assets/blender/**
+**/assets/photos/**
+
+# Logfiles
 **/logs/**
 
 **/*.zip
+.env
 
 
 # lightmapper
@@ -30,5 +40,4 @@
 **/debug/**
 **/assets/compiled/**
 **/temp/**
-
 tools/lightmapper/souper/bin/**

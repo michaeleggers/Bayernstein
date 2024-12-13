@@ -7,38 +7,38 @@
 #include "CommandManager.h"
 #include "VariableManager.h"
 
-#include "../utils.h"
-#include "../irender.h"
-#include "../r_font.h"
 #include "../hkd_interface.h"
 #include "../input.h"
+#include "../irender.h"
+#include "../r_font.h"
+#include "../utils/utils.h"
 
-
-ConsoleVariable con_stdout = {"con_stdout", 1};
-
+ConsoleVariable con_stdout = { "con_stdout", 1 };
+ConsoleVariable con_scroll = { "con_scroll", 1 };
 
 Console* Console::instance = nullptr;
 
-Console::Console(int lineBufferSize, int inputHistorySize) :
-    m_lineBuffer(lineBufferSize), 
-    m_inputHistory(inputHistorySize) {
+Console::Console(int lineBufferSize, int inputHistorySize)
+    : m_lineBuffer(lineBufferSize),
+      m_inputHistory(inputHistorySize) {
 
-        m_pConsoleFont = new CFont("fonts/HackNerdFont-Bold.ttf", 26);
-        IRender *renderer = GetRenderer();
-        renderer->RegisterFont(m_pConsoleFont);
+    m_pConsoleFont    = new CFont("fonts/HackNerdFont-Bold.ttf", 26);
+    IRender* renderer = GetRenderer();
+    renderer->RegisterFont(m_pConsoleFont);
 }
 
 Console* Console::Create(int lineBufferSize, int inputHistorySize) {
-    if (instance == nullptr) {
+    if ( instance == nullptr ) {
         instance = new Console(lineBufferSize, inputHistorySize);
         VariableManager::Register(&con_stdout);
+        VariableManager::Register(&con_scroll);
     }
     return instance;
 }
 
 const Console* Console::Instance() {
-    assert( instance != nullptr );
-    
+    assert(instance != nullptr);
+
     return instance;
 }
 
@@ -47,11 +47,13 @@ int Console::ScrollPos() {
 }
 
 void Console::Scroll(int delta) {
+    if ( !con_scroll.value ) return;
+
     m_scrollPos += delta;
 
-    if (m_scrollPos >= m_lineBuffer.Size()) {
+    if ( m_scrollPos >= m_lineBuffer.Size() ) {
         m_scrollPos = m_lineBuffer.Size() - 1;
-    } else if (m_scrollPos < 0) {
+    } else if ( m_scrollPos < 0 ) {
         m_scrollPos = 0;
     }
 }
@@ -63,9 +65,9 @@ int Console::CursorPos() {
 void Console::MoveCursor(int delta) {
     m_cursorPos += delta;
 
-    if (m_cursorPos > (int)m_currentInput.length()) {
+    if ( m_cursorPos > (int)m_currentInput.length() ) {
         m_cursorPos = m_currentInput.length();
-    } else if (m_cursorPos < 0) {
+    } else if ( m_cursorPos < 0 ) {
         m_cursorPos = 0;
     }
     m_blinkTimer = 0;
@@ -77,21 +79,21 @@ std::string Console::CurrentInput() {
 
 void Console::SetInput(std::string input) {
     m_currentInput = input;
-    m_cursorPos = input.length();
-    m_blinkTimer = 0;
+    m_cursorPos    = input.length();
+    m_blinkTimer   = 0;
 }
 
 void Console::SetInputFromHistory(int delta) {
-    if (delta == 0 || m_inputHistory.Size() == 0) return;
+    if ( delta == 0 || m_inputHistory.Size() == 0 ) return;
     m_inputHistoryPos += delta;
 
-    if (m_inputHistoryPos >= m_inputHistory.Size()) {
+    if ( m_inputHistoryPos >= m_inputHistory.Size() ) {
         m_inputHistoryPos = m_inputHistory.Size() - 1;
-    } else if (m_inputHistoryPos < -1) {
+    } else if ( m_inputHistoryPos < -1 ) {
         m_inputHistoryPos = -1;
     }
     std::string str = "";
-    if (m_inputHistoryPos > -1) {
+    if ( m_inputHistoryPos > -1 ) {
         m_inputHistory.Get(m_inputHistoryPos, &str);
     }
     SetInput(str);
@@ -104,7 +106,7 @@ void Console::UpdateInput(std::string substr) {
 }
 
 void Console::DeleteInput(int delta) {
-    if (delta < 0) {
+    if ( delta < 0 ) {
         int prevCursorPos = m_cursorPos;
         MoveCursor(delta);
         int eraseCount = prevCursorPos - m_cursorPos;
@@ -118,13 +120,13 @@ void Console::DeleteInput(int delta) {
 void Console::SubmitInput() {
     Print(m_currentInput);
     m_inputHistoryPos = -1;
-    m_cursorPos = 0;
-    m_scrollPos = 0;
-    m_blinkTimer = 0;
+    m_cursorPos       = 0;
+    m_scrollPos       = 0;
+    m_blinkTimer      = 0;
 
-    if (m_currentInput == "") return;
+    if ( m_currentInput == "" ) return;
     std::string lastInput;
-    if (!m_inputHistory.Get(0, &lastInput) || lastInput != m_currentInput) {
+    if ( !m_inputHistory.Get(0, &lastInput) || lastInput != m_currentInput ) {
         m_inputHistory.Push(m_currentInput);
     }
     CommandManager::ExecuteString(m_currentInput);
@@ -132,7 +134,7 @@ void Console::SubmitInput() {
 }
 
 void Console::Print(std::string str) {
-    if (con_stdout.value) {
+    if ( con_stdout.value ) {
         printf("%s\n", str.c_str());
     }
     instance->m_lineBuffer.Push(str);
@@ -143,13 +145,13 @@ void Console::PrintfImpl(const char* fmt, ...) {
     va_start(args, fmt);
     va_list argsCpy;
     va_copy(argsCpy, args);
-    int argsSize = vsnprintf(NULL, 0, fmt, args) + 1;
-    char* buffer = (char*)malloc( argsSize );
+    int   argsSize = vsnprintf(NULL, 0, fmt, args) + 1;
+    char* buffer   = (char*)malloc(argsSize);
     va_end(args);
-    vsnprintf(buffer, argsSize, fmt, argsCpy); 
+    vsnprintf(buffer, argsSize, fmt, argsCpy);
     va_end(argsCpy);
 
-    if (con_stdout.value) {
+    if ( con_stdout.value ) {
         printf("%s\n", buffer);
     }
     instance->m_lineBuffer.Push(std::string(buffer));
@@ -160,27 +162,28 @@ void Console::PrintfImpl(const char* fmt, ...) {
 void Console::RunFrame() {
     float msPerFrame = (float)GetDeltaTime();
     m_blinkTimer += msPerFrame;
-    if (TextInput().length()) {
+    if ( TextInput().length() ) {
         UpdateInput(TextInput());
-    } else if (KeyWentDownUnbuffered(SDLK_UP)) { 
+    } else if ( GetMouseWheel().updated ) {
+        Scroll(GetMouseWheel().current.y);
+    } else if ( KeyWentDownUnbuffered(SDLK_UP) ) {
         SetInputFromHistory(1);
-    } else if (KeyWentDownUnbuffered(SDLK_DOWN)) {
+    } else if ( KeyWentDownUnbuffered(SDLK_DOWN) ) {
         SetInputFromHistory(-1);
-    } else if (KeyWentDownUnbuffered(SDLK_LEFT)) {
+    } else if ( KeyWentDownUnbuffered(SDLK_LEFT) ) {
         MoveCursor(-1);
-    } else if (KeyWentDownUnbuffered(SDLK_RIGHT)) {
+    } else if ( KeyWentDownUnbuffered(SDLK_RIGHT) ) {
         MoveCursor(1);
-    } else if (KeyWentDownUnbuffered(SDLK_BACKSPACE)) {
+    } else if ( KeyWentDownUnbuffered(SDLK_BACKSPACE) ) {
         DeleteInput(-1);
-    } else if (KeyWentDownUnbuffered(SDLK_DELETE)) {
+    } else if ( KeyWentDownUnbuffered(SDLK_DELETE) ) {
         DeleteInput(1);
-    } else if (KeyWentDown(SDLK_RETURN)) {
+    } else if ( KeyWentDown(SDLK_RETURN) ) {
         SubmitInput();
     }
-    
+
     IRender* renderer = GetRenderer();
     //renderer->RenderBegin();
     renderer->RenderConsole(this, m_pConsoleFont);
     //renderer->RenderEnd();
 }
-

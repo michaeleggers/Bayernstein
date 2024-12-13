@@ -8,20 +8,19 @@
 
 class CglFBO {
 
-public:
+  public:
     CglFBO();
     CglFBO(int width, int height);
     ~CglFBO();
 
-    void Bind(); 
+    void Bind();
     void Unbind();
 
-    int	    m_Width;
-    int	    m_Height;
-    GLuint  m_hFBO;
+    int              m_Width;
+    int              m_Height;
+    GLuint           m_hFBO;
     CglRenderTexture m_ColorTexture;
     CglRenderTexture m_DepthTexture;
 };
 
 #endif
-

@@ -2,8 +2,10 @@
 // Created by benek on 10/14/24.
 //
 
-#include "message_dispatcher.h"
 #include <stdio.h>
+
+#include "message_dispatcher.h"
+
 #include "../Clock/clock.h"
 #include "message_type.h"
 
@@ -14,7 +16,7 @@
 //
 //   this class is a singleton
 //-----------------------------------------------------------------------------
-MessageDispatcher *MessageDispatcher::Instance() {
+MessageDispatcher* MessageDispatcher::Instance() {
     static MessageDispatcher instance;
 
     return &instance;
@@ -24,8 +26,8 @@ MessageDispatcher *MessageDispatcher::Instance() {
 //
 //  see description in header
 //------------------------------------------------------------------------
-void MessageDispatcher::Discharge(BaseGameEntity *pReceiver, const Telegram &telegram) {
-    if (!pReceiver->HandleMessage(telegram)) {
+void MessageDispatcher::Discharge(BaseGameEntity* pReceiver, const Telegram& telegram) {
+    if ( !pReceiver->HandleMessage(telegram) ) {
         // telegram could not be handled
 #ifdef SHOW_MESSAGING_INFO
         printf("Warning! Message not handled: %s\n", MessageToString(telegram.Message).c_str());
@@ -33,24 +35,27 @@ void MessageDispatcher::Discharge(BaseGameEntity *pReceiver, const Telegram &tel
     }
 }
 
-void MessageDispatcher::DispatchMessage(double delay, int sender, int receiver, int message, void *ExtraInfo) {
+void MessageDispatcher::DispatchMessage(double delay, int sender, int receiver, int message, void* ExtraInfo) {
     // get pointers to the sender and receiver
-    BaseGameEntity *pSender = EntityManager::Instance()->GetEntityFromID(sender);
-    BaseGameEntity *pReceiver = EntityManager::Instance()->GetEntityFromID(receiver);
+    BaseGameEntity* pSender   = EntityManager::Instance()->GetEntityFromID(sender);
+    BaseGameEntity* pReceiver = EntityManager::Instance()->GetEntityFromID(receiver);
 
     // make sure the receiver is valid
-    if (pReceiver == nullptr) {
+    if ( pReceiver == nullptr ) {
         printf("\nWarning! No Receiver found with ID: %i\n", receiver);
         return;
     }
 
     // create the telegram
-    Telegram telegram(0, sender, receiver, message, ExtraInfo);
+    Telegram telegram = { 0, sender, receiver, message, ExtraInfo };
 
     // if there is no delay, route telegram immediately
-    if (delay <= 0.0f) {
-        printf("\nInstant telegram dispatched at time: %f by %i for %i. Message is %s\n", Clock->GetTime(),
-               pSender->ID(), pReceiver->ID(), MessageToString(message).c_str());
+    if ( delay <= 0.0f ) {
+        printf("\nInstant telegram dispatched at time: %f by %i for %i. Message is %s\n",
+               Clock->GetTime(),
+               pSender->ID(),
+               pReceiver->ID(),
+               MessageToString(message).c_str());
         Discharge(pReceiver, telegram);
     } else {
         double currentTime = Clock->GetTime();
@@ -60,8 +65,11 @@ void MessageDispatcher::DispatchMessage(double delay, int sender, int receiver, 
         // and put it in the queue
         m_DelayedMessages.insert(telegram);
 
-        printf("\nDelayed telegram from %i recorded at time %f for %i. Message is %s\n", pSender->ID(),
-               Clock->GetTime(), pReceiver->ID(), MessageToString(message).c_str());
+        printf("\nDelayed telegram from %i recorded at time %f for %i. Message is %s\n",
+               pSender->ID(),
+               Clock->GetTime(),
+               pReceiver->ID(),
+               MessageToString(message).c_str());
         Discharge(pReceiver, telegram);
     }
 }
@@ -77,12 +85,12 @@ void MessageDispatcher::DispatchDelayedMessages() {
     // now peek at the queue to see if any telegrams need dispatching.
     // remove all telegrams from the front of the queue that have gone
     // past their sell by date
-    while (!m_DelayedMessages.empty() && (m_DelayedMessages.begin()->DispatchTime < currentTime) &&
-           (m_DelayedMessages.begin()->DispatchTime > 0)) {
+    while ( !m_DelayedMessages.empty() && (m_DelayedMessages.begin()->DispatchTime < currentTime)
+            && (m_DelayedMessages.begin()->DispatchTime > 0) ) {
         // read the telegram from the front of the queue
-        const Telegram &telegram = *m_DelayedMessages.begin();
+        const Telegram& telegram = *m_DelayedMessages.begin();
         // find the recipient
-        BaseGameEntity *pReceiver = EntityManager::Instance()->GetEntityFromID(telegram.Receiver);
+        BaseGameEntity* pReceiver = EntityManager::Instance()->GetEntityFromID(telegram.Receiver);
 
         printf("\nQueued telegram ready for dispatch: Sent to %i\n", pReceiver->ID());
 

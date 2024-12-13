@@ -92,12 +92,15 @@ add_executable(Game
     camera.cpp
     physics.h
     physics.cpp
-    utils.h
-    utils.cpp
+    utils/utils.h
+    utils/utils.cpp
+    utils/quick_math.h
+    utils/quick_math.cpp
     image.h
     image.cpp
     polysoup.h
     polysoup.cpp
+    map_parser.h
     game.h
     game.cpp
 
@@ -123,13 +126,20 @@ add_executable(Game
     CWorld.h
     collision.cpp
     collision.h
+    globals.h
     Clock/clock.cpp
     Clock/clock.h
+    Path/path.cpp
+    Path/path.h
     Message/message_dispatcher.cpp
     Message/message_dispatcher.h
     Message/telegram.h
     Entity/base_game_entity.cpp
     Entity/base_game_entity.h
+    Entity/moving_entity.cpp
+    Entity/moving_entity.h
+    Entity/steering_behaviour.cpp
+    Entity/steering_behaviour.h
     FSM/state_machine.h
     FSM/istate.h
     Entity/entity_manager.cpp
@@ -138,6 +148,10 @@ add_executable(Game
     Entity/Player/g_player_states.h
     Entity/Player/g_player.cpp
     Entity/Player/g_player.h
+    Entity/FirstPersonPlayer/g_fp_player.h
+    Entity/FirstPersonPlayer/g_fp_player.cpp
+    Entity/FirstPersonPlayer/g_fp_player_states.cpp
+    Entity/FirstPersonPlayer/g_fp_player_states.h
     Entity/Enemy/g_enemy_states.cpp
     Entity/Enemy/g_enemy_states.h
     Entity/Enemy/g_enemy.cpp
@@ -193,6 +207,3 @@ target_link_libraries(Game PUBLIC
     SDL2
     SDL2main
 )
-
-
-

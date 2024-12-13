@@ -42,7 +42,7 @@ class DoorOpening : public State<Door> {
     bool OnMessage(Door* agent, const Telegram& telegram) override;
 };
 
-class DoorOpened: public State<Door> {
+class DoorOpened : public State<Door> {
   private:
     DoorOpened() = default;
     // copy ctor and assignment should be private
@@ -59,5 +59,3 @@ class DoorOpened: public State<Door> {
     bool OnMessage(Door* agent, const Telegram& telegram) override;
 };
 #endif // _DOOR_STATES_H_
-
-

@@ -5,23 +5,24 @@
 #ifndef MESSAGEDISPATCHER_H
 #define MESSAGEDISPATCHER_H
 
+#include <set>
+
 #include "../Entity/base_game_entity.h"
 #include "../Entity/entity_manager.h"
 #include "telegram.h"
-#include <set>
 
 // to make life easier...
 #define Dispatcher MessageDispatcher::Instance()
 
 // to make code easier to read
 constexpr double SEND_MSG_IMMEDIATELY = 0.0;
-constexpr int NO_ADDITIONAL_INFO = 0;
-constexpr int SENDER_ID_IRRELEVANT = -1;
+constexpr int    NO_ADDITIONAL_INFO   = 0;
+constexpr int    SENDER_ID_IRRELEVANT = -1;
 
 class MessageDispatcher {
   private:
     std::set<Telegram> m_DelayedMessages;
-    void Discharge(BaseGameEntity* pReciever, const Telegram& message);
+    void               Discharge(BaseGameEntity* pReciever, const Telegram& message);
     MessageDispatcher() = default;
 
     // copy ctor and assignment should be private
@@ -37,4 +38,3 @@ class MessageDispatcher {
 };
 
 #endif // MESSAGEDISPATCHER_H
-

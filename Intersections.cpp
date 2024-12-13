@@ -10,8 +10,8 @@ bool Intersect(Body* bodyA, Body* bodyB, Contact& contact) {
     contact.bodyA = bodyA;
     contact.bodyB = bodyB;
 
-    glm::vec3 ab = bodyB->m_Position - bodyA->m_Position;
-    contact.normal = glm::normalize(ab);
+    glm::vec3 ab     = bodyB->m_Position - bodyA->m_Position;
+    contact.normal   = glm::normalize(ab);
     float distanceAB = glm::length(ab);
 
     ShapeSphere* shapeA = (ShapeSphere*)bodyA->m_Shape;
@@ -20,7 +20,7 @@ bool Intersect(Body* bodyA, Body* bodyB, Contact& contact) {
     contact.ptOnA_WorldSpace = bodyA->m_Position + shapeA->m_Radius * contact.normal;
     contact.ptOnB_WorldSpace = bodyB->m_Position - shapeB->m_Radius * contact.normal;
 
-    float radiusAB = shapeA->m_Radius + shapeB->m_Radius;
+    float radiusAB        = shapeA->m_Radius + shapeB->m_Radius;
     float distanceSquared = distanceAB * distanceAB;
 
     if ( distanceSquared < (radiusAB * radiusAB) ) {
@@ -29,6 +29,3 @@ bool Intersect(Body* bodyA, Body* bodyB, Contact& contact) {
 
     return false;
 }
-
-
-

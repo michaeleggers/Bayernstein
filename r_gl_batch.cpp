@@ -5,11 +5,11 @@
 #include <string>
 
 #define GLM_FORCE_RADIANS
-#include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/ext.hpp"
+#include "dependencies/glm/glm.hpp"
 
 #include "r_common.h"
-#include "r_gl_texture.h" 
+#include "r_gl_texture.h"
 
 //struct Vertex {
 //    glm::vec3 pos;
@@ -21,15 +21,14 @@
 //    glm::vec4 blendweights;
 //};
 
-GLBatch::GLBatch(uint32_t maxVerts)
-{
+GLBatch::GLBatch(uint32_t maxVerts) {
     m_GeometryType = GEOM_TYPE_VERTEX_ONLY;
 
     m_MaxVerts = maxVerts;
 
     m_MaxIndices = 0;
 
-    m_NumVerts = 0;
+    m_NumVerts        = 0;
     m_VertOffsetIndex = 0;
 
     m_IndexOffsetIndex = 0;
@@ -39,6 +38,7 @@ GLBatch::GLBatch(uint32_t maxVerts)
 
     glGenBuffers(1, &m_VBO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+    // FIX: Make configurable if data is dynamic or static.
     glBufferData(GL_ARRAY_BUFFER, m_MaxVerts * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 
     // Input assembly for vertex shader
@@ -51,7 +51,7 @@ GLBatch::GLBatch(uint32_t maxVerts)
 
     glEnableVertexAttribArray(2); // uv lightmap
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_UV_LIGHTMAP_OFFSET);
-    
+
     glEnableVertexAttribArray(3); // bc
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BC_OFFSET);
 
@@ -72,19 +72,18 @@ GLBatch::GLBatch(uint32_t maxVerts)
     glBindVertexArray(0);
 }
 
-GLBatch::GLBatch(uint32_t maxVerts, uint32_t maxIndices)
-{
+GLBatch::GLBatch(uint32_t maxVerts, uint32_t maxIndices) {
     m_GeometryType = GEOM_TYPE_INDEXED;
 
-    m_MaxVerts = maxVerts;
+    m_MaxVerts   = maxVerts;
     m_MaxIndices = maxIndices;
 
-    m_NumVerts = 0;
+    m_NumVerts        = 0;
     m_VertOffsetIndex = 0;
 
-    m_NumIndices = 0;
+    m_NumIndices       = 0;
     m_IndexOffsetIndex = 0;
-    m_LastIndex = 0;
+    m_LastIndex        = 0;
 
     glGenVertexArrays(1, &m_VAO);
     glBindVertexArray(m_VAO);
@@ -103,7 +102,7 @@ GLBatch::GLBatch(uint32_t maxVerts, uint32_t maxIndices)
 
     glEnableVertexAttribArray(2); // uv lightmap
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_UV_LIGHTMAP_OFFSET);
-    
+
     glEnableVertexAttribArray(3); // bc
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)VERT_BC_OFFSET);
 
@@ -132,9 +131,8 @@ GLBatch::GLBatch(uint32_t maxVerts, uint32_t maxIndices)
 }
 
 // TODO: cullFace and drawMode not used!
-int GLBatch::Add(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
-{
-    if (m_VertOffsetIndex + 3*numTris > m_MaxVerts) {
+int GLBatch::Add(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
+    if ( m_VertOffsetIndex + 3 * numTris > m_MaxVerts ) {
         printf("No more space on GPU to upload more triangles!\nSpace available: %d\n", m_MaxVerts - m_VertOffsetIndex);
         return -1;
     }
@@ -143,27 +141,26 @@ int GLBatch::Add(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
     glBufferSubData(GL_ARRAY_BUFFER, m_VertOffsetIndex * sizeof(Vertex), numTris * sizeof(Tri), tris);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);    
+    glBindVertexArray(0);
 
     int offset = m_VertOffsetIndex;
-    m_VertOffsetIndex += 3*numTris;
+    m_VertOffsetIndex += 3 * numTris;
 
     return offset;
 }
 
-int GLBatch::Add(MapTri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
+int GLBatch::AddMapTris(MapTri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode) {
     std::vector<Tri> rawTris{};
-    rawTris.resize( numTris );
-    for (int i = 0; i < numTris; i++) {
+    rawTris.resize(numTris);
+    for ( int i = 0; i < numTris; i++ ) {
         rawTris[ i ] = tris[ i ].tri;
     }
-    
-    return Add( rawTris.data(), numTris, cullFace, drawMode );
+
+    return Add(rawTris.data(), numTris, cullFace, drawMode);
 }
 
-int GLBatch::Add(Vertex* verts, uint32_t numVerts, bool cullFace, DrawMode drawMode)
-{
-    if (m_VertOffsetIndex + numVerts > m_MaxVerts) {
+int GLBatch::Add(Vertex* verts, uint32_t numVerts, bool cullFace, DrawMode drawMode) {
+    if ( m_VertOffsetIndex + numVerts > m_MaxVerts ) {
         printf("No more space on GPU to upload more vertices!\nSpace available: %d\n", m_MaxVerts - m_VertOffsetIndex);
         return -1;
     }
@@ -180,15 +177,22 @@ int GLBatch::Add(Vertex* verts, uint32_t numVerts, bool cullFace, DrawMode drawM
     return offset;
 }
 
-bool GLBatch::Add(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, int* out_offset, int* out_idxOffset, bool cullFace, DrawMode drawMode)
-{
-    if (m_VertOffsetIndex + numVerts > m_MaxVerts) {
+bool GLBatch::Add(Vertex*   verts,
+                  uint32_t  numVerts,
+                  uint16_t* indices,
+                  uint32_t  numIndices,
+                  int*      out_offset,
+                  int*      out_idxOffset,
+                  bool      cullFace,
+                  DrawMode  drawMode) {
+    if ( m_VertOffsetIndex + numVerts > m_MaxVerts ) {
         printf("No more space on GPU to upload more vertices!\nSpace available: %d\n", m_MaxVerts - m_VertOffsetIndex);
         return false;
     }
 
-    if (m_IndexOffsetIndex + numIndices > m_MaxIndices) {
-        printf("No more space on GPU to upload more indices!\nSpace available: %d\n", m_MaxIndices - m_IndexOffsetIndex);
+    if ( m_IndexOffsetIndex + numIndices > m_MaxIndices ) {
+        printf("No more space on GPU to upload more indices!\nSpace available: %d\n",
+               m_MaxIndices - m_IndexOffsetIndex);
         return false;
     }
 
@@ -201,7 +205,8 @@ bool GLBatch::Add(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t 
     m_VertOffsetIndex += numVerts;
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iVBO);
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, m_IndexOffsetIndex * sizeof(uint16_t), numIndices * sizeof(uint16_t), indices);
+    glBufferSubData(
+        GL_ELEMENT_ARRAY_BUFFER, m_IndexOffsetIndex * sizeof(uint16_t), numIndices * sizeof(uint16_t), indices);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     *out_idxOffset = m_IndexOffsetIndex;
@@ -212,26 +217,25 @@ bool GLBatch::Add(Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t 
     return true;
 }
 
-void GLBatch::Bind()
-{
+void GLBatch::Bind() {
     glBindVertexArray(m_VAO);
 
     // WE HAVE TO BIND THIS EXPLICITLY... WHY??? OpenGL is nuts.
-    if (m_GeometryType == GEOM_TYPE_INDEXED) {
+    if ( m_GeometryType == GEOM_TYPE_INDEXED ) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_iVBO);
     }
 }
 
 void GLBatch::Unbind() {
-    glBindVertexArray( 0 );
+    glBindVertexArray(0);
 }
 
 void GLBatch::Reset() {
-    m_NumVerts = 0;
-    m_VertOffsetIndex = 0;    
-    m_NumIndices = 0;
+    m_NumVerts         = 0;
+    m_VertOffsetIndex  = 0;
+    m_NumIndices       = 0;
     m_IndexOffsetIndex = 0;
-    m_LastIndex = 0;
+    m_LastIndex        = 0;
 }
 
 void GLBatch::Kill() {
@@ -239,13 +243,10 @@ void GLBatch::Kill() {
     glDeleteVertexArrays(1, &m_VAO);
 }
 
-uint32_t GLBatch::VertCount()
-{
+uint32_t GLBatch::VertCount() {
     return m_VertOffsetIndex;
 }
 
 uint32_t GLBatch::IndexCount() {
     return m_IndexOffsetIndex;
 }
-
-

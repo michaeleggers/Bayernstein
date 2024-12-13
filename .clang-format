@@ -5,9 +5,9 @@ AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
 AlignArrayOfStructures: None
 AlignConsecutiveMacros: None
-AlignConsecutiveAssignments: None
+AlignConsecutiveAssignments: true
 AlignConsecutiveBitFields: None
-AlignConsecutiveDeclarations: None
+AlignConsecutiveDeclarations: true 
 AlignEscapedNewlines: Right
 AlignOperands: Align
 AlignTrailingComments: true
@@ -70,8 +70,8 @@ DisableFormat: false
 EmptyLineAfterAccessModifier: Never
 EmptyLineBeforeAccessModifier: LogicalBlock
 ExperimentalAutoDetectBinPacking: false
-PackConstructorInitializers: BinPack
-ConstructorInitializerAllOnOneLineOrOnePerLine: false
+PackConstructorInitializers: Never
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
 AllowAllConstructorInitializersOnNextLine: true
 FixNamespaceComments: true
 ForEachMacros:

@@ -5,14 +5,14 @@
 
 class CglRenderTexture {
 
-public:
+  public:
     CglRenderTexture();
     CglRenderTexture(int width, int height, GLenum format);
     ~CglRenderTexture();
     void Bind();
     void Unbind();
 
-    GLuint         m_gl_Handle;
+    GLuint m_gl_Handle;
     //unsigned char* m_Pixeldata;
     int m_Width;
     int m_Height;
