@@ -82,7 +82,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     m_Models.push_back(enemy->GetModel());
                 } else if ( prop.value == "path_corner" ) { // FIX: Should be an entity type as well.
                     Waypoint point = CWorld::GetWaypoint(&e);
-                    m_NameToWaypoint.insert({point.targetname, point});
+                    m_NameToWaypoint.insert({ point.targetname, point });
                 } else {
                     printf("Unknown entity type: %s\n", prop.value.c_str());
                 }
@@ -242,17 +242,17 @@ std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolyg
     for ( int i = 0; i < tris.size(); i++ ) {
         MapPolygon mapPoly = tris[ i ];
 
-        Vertex A = {glm::vec3(mapPoly.vertices[ 0 ].pos.x, mapPoly.vertices[ 0 ].pos.y, mapPoly.vertices[ 0 ].pos.z),
-                    mapPoly.vertices[ 0 ].uv};
-        Vertex B = {glm::vec3(mapPoly.vertices[ 1 ].pos.x, mapPoly.vertices[ 1 ].pos.y, mapPoly.vertices[ 1 ].pos.z),
-                    mapPoly.vertices[ 1 ].uv};
-        Vertex C = {glm::vec3(mapPoly.vertices[ 2 ].pos.x, mapPoly.vertices[ 2 ].pos.y, mapPoly.vertices[ 2 ].pos.z),
-                    mapPoly.vertices[ 2 ].uv};
+        Vertex A = { glm::vec3(mapPoly.vertices[ 0 ].pos.x, mapPoly.vertices[ 0 ].pos.y, mapPoly.vertices[ 0 ].pos.z),
+                     mapPoly.vertices[ 0 ].uv };
+        Vertex B = { glm::vec3(mapPoly.vertices[ 1 ].pos.x, mapPoly.vertices[ 1 ].pos.y, mapPoly.vertices[ 1 ].pos.z),
+                     mapPoly.vertices[ 1 ].uv };
+        Vertex C = { glm::vec3(mapPoly.vertices[ 2 ].pos.x, mapPoly.vertices[ 2 ].pos.y, mapPoly.vertices[ 2 ].pos.z),
+                     mapPoly.vertices[ 2 ].uv };
 
         A.color         = triColor;
         B.color         = triColor;
         C.color         = triColor;
-        MapTri tri      = {.tri = {A, B, C}};
+        MapTri tri      = { .tri = { A, B, C } };
         tri.textureName = mapPoly.textureName;
         //FIX: Search through all supported image formats not just PNG.
         tri.hTexture = renderer->RegisterTextureGetHandle(tri.textureName + ".tga");
