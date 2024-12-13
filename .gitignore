@@ -7,7 +7,6 @@
 **/.zed/**
 **/.cache/**
 
-ashed changes
 **/*.o/
 
 **/cmake-build-debug/**

@@ -63,8 +63,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     m_BrushModels.push_back(model);
                     std::vector<MapTri>& mapTris = door->MapTris();
                     m_pBrushMapTris.push_back(&mapTris);
-                }
-                else if ( prop.value == "info_player_start" ) {
+                } else if ( prop.value == "info_player_start" ) {
                     assert(m_pPlayerEntity == nullptr); // There can only be one
                     glm::vec3 playerStartPosition = CWorld::GetOrigin(&e);
                     m_pPlayerEntity               = new Player(playerStartPosition);
@@ -72,8 +71,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     // Upload this model to the GPU. Not using the handle atm.
                     int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
                     m_Models.push_back(m_pPlayerEntity->GetModel());
-                }
-                else if ( prop.value == "monster_soldier" ) {
+                } else if ( prop.value == "monster_soldier" ) {
                     // just a placeholder entity from trenchbroom/quake
                     glm::vec3 enemyStartPosition = CWorld::GetOrigin(&e);
                     Enemy*    enemy              = new Enemy(e.properties);
@@ -82,12 +80,10 @@ void CWorld::InitWorldFromMap(const Map& map) {
 
                     int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
                     m_Models.push_back(enemy->GetModel());
-                }
-                else if ( prop.value == "path_corner" ) { // FIX: Should be an entity type as well.
+                } else if ( prop.value == "path_corner" ) { // FIX: Should be an entity type as well.
                     Waypoint point = CWorld::GetWaypoint(&e);
                     m_NameToWaypoint.insert({point.targetname, point});
-                }
-                else {
+                } else {
                     printf("Unknown entity type: %s\n", prop.value.c_str());
                 }
             }
@@ -126,8 +122,7 @@ void CWorld::InitWorldFromMap(const Map& map) {
             auto it = m_NameToWaypoint.find(current.target);
             if ( it != m_NameToWaypoint.end() ) {
                 current = it->second;
-            }
-            else {
+            } else {
                 break; // End of the chain
             }
         }
@@ -182,14 +177,12 @@ void CWorld::CollideEntitiesWithWorld() {
 
             EllipsoidCollider ec = pEntity->GetEllipsoidCollider();
             //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
-            CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(
-                ec,
-                static_cast<float>(dt) * pEntity->m_Velocity,
-                static_cast<float>(dt) * m_Gravity,
-                m_MapTris.data(),
-                StaticGeometryCount(),
-                m_pBrushMapTris
-            );
+            CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
+                                                                      static_cast<float>(dt) * pEntity->m_Velocity,
+                                                                      static_cast<float>(dt) * m_Gravity,
+                                                                      m_MapTris.data(),
+                                                                      StaticGeometryCount(),
+                                                                      m_pBrushMapTris);
 
             // Iterate over brush entities and check for collision as well...
 
@@ -249,15 +242,12 @@ std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolyg
     for ( int i = 0; i < tris.size(); i++ ) {
         MapPolygon mapPoly = tris[ i ];
 
-        Vertex A
-            = {glm::vec3(mapPoly.vertices[ 0 ].pos.x, mapPoly.vertices[ 0 ].pos.y, mapPoly.vertices[ 0 ].pos.z),
-               mapPoly.vertices[ 0 ].uv};
-        Vertex B
-            = {glm::vec3(mapPoly.vertices[ 1 ].pos.x, mapPoly.vertices[ 1 ].pos.y, mapPoly.vertices[ 1 ].pos.z),
-               mapPoly.vertices[ 1 ].uv};
-        Vertex C
-            = {glm::vec3(mapPoly.vertices[ 2 ].pos.x, mapPoly.vertices[ 2 ].pos.y, mapPoly.vertices[ 2 ].pos.z),
-               mapPoly.vertices[ 2 ].uv};
+        Vertex A = {glm::vec3(mapPoly.vertices[ 0 ].pos.x, mapPoly.vertices[ 0 ].pos.y, mapPoly.vertices[ 0 ].pos.z),
+                    mapPoly.vertices[ 0 ].uv};
+        Vertex B = {glm::vec3(mapPoly.vertices[ 1 ].pos.x, mapPoly.vertices[ 1 ].pos.y, mapPoly.vertices[ 1 ].pos.z),
+                    mapPoly.vertices[ 1 ].uv};
+        Vertex C = {glm::vec3(mapPoly.vertices[ 2 ].pos.x, mapPoly.vertices[ 2 ].pos.y, mapPoly.vertices[ 2 ].pos.z),
+                    mapPoly.vertices[ 2 ].uv};
 
         A.color         = triColor;
         B.color         = triColor;
@@ -293,11 +283,9 @@ Waypoint CWorld::GetWaypoint(const Entity* entity) {
         if ( property.key == "origin" ) {
             std::vector<float> values = ParseValues<float>(property.value);
             waypoint.position         = glm::vec3(values[ 0 ], values[ 1 ], values[ 2 ]);
-        }
-        else if ( property.key == "targetname" ) {
+        } else if ( property.key == "targetname" ) {
             waypoint.targetname = property.value;
-        }
-        else if ( property.key == "target" ) {
+        } else if ( property.key == "target" ) {
             waypoint.target = property.value;
         }
     }
