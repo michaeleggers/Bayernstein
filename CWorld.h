@@ -83,9 +83,9 @@ private:
     std::vector< std::vector<MapTri>* >  m_pBrushMapTris;
 
     SoLoud::AudioSource* m_MusicIdle;
-    SoLoud::handle       m_MusicIdleHandle;
+    SoLoud::handle       m_MusicIdleHandle = 0;
     SoLoud::AudioSource* m_Ambience;
-    SoLoud::handle       m_AmbienceHandle;
+    SoLoud::handle       m_AmbienceHandle = 0;
 };
 
 

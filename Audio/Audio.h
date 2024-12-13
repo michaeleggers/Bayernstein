@@ -14,6 +14,9 @@
  * NOTE:
  * When working with voice handles (`SoLoud::handle`) that can be invalid/unused, make sure to properly initialize them with `0`!
  * Otherwise they might have a random value that matches a different sound (or mixing bus) handle, causing that to get messed up unexpectedly.
+ * NOTE:
+ * Passing `-1` as the volume when playing a sound through a bus causes it to use the sound source's default volume.
+ * This appears to be a bug and shouldn't be necessary: https://github.com/jarikomppa/soloud/issues/381
  */
 class Audio {
   public:

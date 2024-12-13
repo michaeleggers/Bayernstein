@@ -4,6 +4,7 @@
 
 #include "g_door_states.h"
 
+#include "../../Audio/Audio.h"
 #include "../../utils/utils.h"
 #include "../../r_model.h"
 #include "../../CWorld.h"
@@ -20,6 +21,7 @@ DoorClosed* DoorClosed::Instance() {
 
 void DoorClosed::Enter(Door* pDoor) {
     printf("Door entered Closed State\n");
+    pDoor->m_SfxMovement->End3d(pDoor->m_SoundEmitterPos);
 }
 
 void DoorClosed::Execute(Door* pDoor) {
@@ -28,6 +30,7 @@ void DoorClosed::Execute(Door* pDoor) {
 
 void DoorClosed::Exit(Door* pDoor) {
     printf("Door is exiting Closed State\n");
+    pDoor->m_SfxMovement->Begin3d(pDoor->m_SoundEmitterPos);
 }
 
 bool DoorClosed::OnMessage(Door* agent, const Telegram& telegram) {
@@ -115,6 +118,7 @@ DoorOpened* DoorOpened::Instance() {
 
 void DoorOpened::Enter(Door* pDoor) {
     printf("Door entered Opened State\n");
+    pDoor->m_SfxMovement->End3d(pDoor->m_SoundEmitterPos);
 }
 
 void DoorOpened::Execute(Door* pDoor) {
@@ -123,6 +127,7 @@ void DoorOpened::Execute(Door* pDoor) {
 
 void DoorOpened::Exit(Door* pDoor) {
     //printf("Door is exiting Opened State\n");
+    pDoor->m_SfxMovement->Begin3d(pDoor->m_SoundEmitterPos);
 }
 
 bool DoorOpened::OnMessage(Door* agent, const Telegram& telegram) {
