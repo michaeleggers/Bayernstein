@@ -60,6 +60,14 @@ class CWorld {
         return m_pBrushModels;
     }
 
+    bool IsLightmapAvailable() {
+        return m_LightmapAvailable;
+    }
+
+    uint64_t GetLightmapTextureHandle() {
+        return m_hLightmapTexture;
+    }
+
     static glm::vec3           GetOrigin(const Entity* entity);
     static Waypoint            GetWaypoint(const Entity* entity);
     static std::vector<MapTri> CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys);
@@ -93,6 +101,7 @@ class CWorld {
     // If a lightmap is loaded, this handle stores
     // the texture handle on the GPU.
     uint64_t m_hLightmapTexture;
+    bool     m_LightmapAvailable;
 };
 
 #endif // _CWORLD_H_

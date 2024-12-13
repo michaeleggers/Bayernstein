@@ -9,13 +9,15 @@ in vec4 ViewPosWorldSpace;
 in vec4 Pos;
 in mat4 ViewMat;
 in vec2 uv;
+in vec2 uvLightmap;
 
 out vec4 out_Color;
 
-uniform sampler2D diffuseTexture;
+layout(binding = 0) uniform sampler2D diffuseTexture;  // Slot 0
+layout(binding = 1) uniform sampler2D lightmapTexture; // Slot 1
 
 layout (std140) uniform Settings {
-    uint drawWireframe;
+    uint shaderSettingBits;
 };
 
 float edgeFactor(){
@@ -27,6 +29,8 @@ float edgeFactor(){
 const uint SHADER_WIREFRAME_ON_MESH = 0x00000001 << 0;
 const uint SHADER_LINEMODE          = 0x00000001 << 1;
 const uint SHADER_ANIMATED          = 0x00000001 << 2;
+const uint SHADER_IS_TEXTURED       = 0x00000001 << 3;
+const uint SHADER_USE_LIGHTMAP      = 0x00000001 << 4;
 
 void main() {
 
@@ -39,22 +43,27 @@ void main() {
     float lightContribution = abs(dot(fragToLight, Normal.xyz));
 
     vec4 wireframe = vec4(0.0);
-    if ( (drawWireframe & SHADER_WIREFRAME_ON_MESH) == SHADER_WIREFRAME_ON_MESH) {
+    if ( (shaderSettingBits & SHADER_WIREFRAME_ON_MESH) == SHADER_WIREFRAME_ON_MESH) {
         wireframe = vec4(mix(vec3(1.0), vec3(0.0), edgeFactor()), 1.0);
         wireframe.a = 0.2;
         wireframe.rgb *= wireframe.a;
     }
 
     vec3 finalColor;
-    if ( (drawWireframe & SHADER_LINEMODE) == SHADER_LINEMODE) {
+    if ( (shaderSettingBits & SHADER_LINEMODE) == SHADER_LINEMODE) {
         finalColor = Color.rgb;
     } else {        
         vec3 ambient = 0.3*Color.rgb;
         finalColor = clamp(ambient + Color.rgb*lightColor.rgb*lightContribution, 0.0f, 1.0f);
     }
 
+    vec4 lightmapColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    if ( (shaderSettingBits & SHADER_USE_LIGHTMAP) == SHADER_USE_LIGHTMAP ) {
+        lightmapColor = texture( lightmapTexture, uvLightmap );
+    }
+
     vec4 diffuseColor = texture( diffuseTexture, uv );
     
-    out_Color = vec4( diffuseColor.rgb, 1.0f );
+    out_Color = vec4( diffuseColor.rgb * lightmapColor.rgb, 1.0f );
 
 }

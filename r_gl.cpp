@@ -400,6 +400,12 @@ void GLRender::RegisterWorld(CWorld* world) {
                                    DRAW_MODE_SOLID };
         m_TexHandleToWorldDrawCmd.insert({ texHandle, drawCmd });
     }
+
+    // Check if lightmap available
+    if ( world->IsLightmapAvailable() ) {
+        m_UseLightmap      = true;
+        m_hLightmapTexture = world->GetLightmapTextureHandle();
+    }
 }
 
 // Returns the CPU handle
@@ -758,12 +764,21 @@ void GLRender::Render(
     m_WorldBatch->Bind();
     m_WorldShader->Activate();
     m_WorldShader->SetViewProjMatrices(view, proj);
-
+    // Bind diffuse texture to texture slot 0
     for ( auto const& [ texHandle, drawCmd ] : m_TexHandleToWorldDrawCmd ) {
         std::vector<GLBatchDrawCmd> drawCmds{ drawCmd };
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texHandle);
+        if ( m_UseLightmap ) {
+            m_WorldShader->SetShaderSettingBits(SHADER_USE_LIGHTMAP);
+            // Bind lightmap texture to texture slot 1.
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, m_hLightmapTexture);
+        }
         ExecuteDrawCmds(drawCmds, GEOM_TYPE_VERTEX_ONLY);
     }
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE0);
 
     /*for (auto const& [ texHandle, batch ] : m_TexHandleToWorldBatch) {*/
     /*    batch->Bind();*/
@@ -799,7 +814,6 @@ void GLRender::Render(
         m_ModelShader->ResetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
     }
     for ( int i = 0; i < numModels; i++ ) {
-
         HKD_Model* hkdModel = models[ i ];
 
         if ( hkdModel->renderFlags & MODEL_RENDER_FLAG_IGNORE ) {

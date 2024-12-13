@@ -37,25 +37,28 @@ void CWorld::InitWorldFromMap(const Map& map, const std::string& plyFilename) {
     // TODO: Init via .MAP property.
     m_Gravity = glm::vec3(0.0f, 0.0f, -200.0f);
 
-    // Get static geometry from map
-    std::vector<MapPolygon> polysoup = createPolysoup(map);
-
     // Convert to tris
-    bool lightmapLoaded = false;
+
+    // Check if a lightmap is available
+    m_LightmapAvailable = false;
     if ( !plyFilename.empty() ) {
         HKD_File    plyFile;
         std::string exePath     = hkd_GetExePath();
         std::string fullPlyPath = exePath + "../assets/maps/" + plyFilename + ".ply";
         if ( hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS ) {
-            m_MapTris          = CWorld::CreateMapFromLightmapTrisFile(plyFile);
-            m_hLightmapTexture = renderer->RegisterTextureGetHandle(plyFilename + ".png");
-            lightmapLoaded     = true;
+            m_MapTris           = CWorld::CreateMapFromLightmapTrisFile(plyFile);
+            m_hLightmapTexture  = renderer->RegisterTextureGetHandle(plyFilename + ".png");
+            m_LightmapAvailable = true;
         } else {
             printf("Warning (CWorld): Lightmap file '%s' could not be loaded!\n", plyFilename.c_str());
         }
     }
-    if ( !lightmapLoaded ) {
-        m_MapTris = CWorld::CreateMapTrisFromMapPolys(polysoup);
+    // No lightmap provided or found. It's fine. The world can be initialized
+    // from the ASCII MAP file as well. But everything will be bright.
+    if ( !m_LightmapAvailable ) {
+        // Get static geometry from map
+        std::vector<MapPolygon> polysoup = createPolysoup(map);
+        m_MapTris                        = CWorld::CreateMapTrisFromMapPolys(polysoup);
     }
 
     m_StaticGeometryCount = m_MapTris.size();

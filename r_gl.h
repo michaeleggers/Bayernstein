@@ -3,6 +3,7 @@
 
 #include "irender.h"
 
+#include <stdint.h>
 #include <vector>
 
 #include <SDL.h>
@@ -140,6 +141,10 @@ class GLRender : public IRender {
 
     // 2D Rendering state
     CFont* m_CurrentFont;
+
+    // Lightmap
+    bool     m_UseLightmap = false;
+    uint64_t m_hLightmapTexture;
 };
 
 #endif
