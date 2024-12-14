@@ -9,6 +9,7 @@ from tqdm import tqdm
 from PIL import Image
 from pathlib import Path
 from typing import List
+from multiprocessing import Pool, cpu_count
 
 # Data structures
 from data_structures.patch import Patch
@@ -261,7 +262,27 @@ class Scene:
         [frame.calculate_intersections(triangles_ds) for frame in tqdm(self.frames, desc="Calculating intersections")]
 
         # Step 4: Generate Patches
-        [frame.generate_patches(patch_resolution) for frame in tqdm(self.frames, desc="Generating patches")]
+        with Pool(processes=cpu_count()) as pool:
+            # Map the frames to the worker pool, each worker will process one frame
+            results = pool.starmap(
+                self.generate_patches_for_frame,  # Function to call in each worker
+                [(frame, patch_resolution) for frame in self.frames]  # Arguments for each frame
+            )
+        self.frames = results
+
+        self.positions = []
+        self.directions = []
+        [self.positions.extend(frame.legal_positions) for frame in self.frames]
+        [self.directions.extend(frame.legal_normals) for frame in self.frames]
+
+    def calculate_intersection_for_frame(self, frame: Frame, triangles_ds):
+        frame.calculate_intersections(triangles_ds)
+        return frame
+    
+    def generate_patches_for_frame(self, frame: Frame, patch_resolution):
+        frame.generate_patches(patch_resolution)
+        return frame
+
 
     
     def __construct_frames(self, triangles: List[Triangle], padding: float) -> List[Frame]:
@@ -317,10 +338,7 @@ class Scene:
                 x, y, z = vertex
                 u_t, v_t = self.texture_uvs[i][j]
                 u_l, v_l = self.lightmap_uvs[i][j]
-                #u_t = random.random()
-                #v_t = random.random()
 
-                #print(u_t, v_t)
                 vertex_list.extend([x, y, z, u_t, v_t, u_l, v_l, texture_index])
 
         self.vertex_array = np.array(vertex_list, dtype=np.float32)
@@ -328,8 +346,35 @@ class Scene:
 
         return self
     
-    
-        return False  # No triangle was found in front of the patch=
+    def generate_line_array(self) -> 'Scene':
+        """
+        For debugging
+        """
+        positions = []
+        directions = []
+        [positions.extend(frame.legal_positions) for frame in self.frames]
+        [directions.extend(frame.legal_normals) for frame in self.frames]
+
+        line_list = []
+        
+        # Define default color (white in this case)
+        color = [1.0, 1.0, 1.0]  # RGB color (white)
+
+        # Iterate through all positions and directions for the lines
+        for position, direction in zip(positions, directions):
+            # Add the position and direction for the start of the line
+            x, y, z = position.x, position.y, position.z
+            dx, dy, dz = direction.x, direction.y, direction.z
+            
+            # Add start position with color
+            line_list.extend([x, y, z] + color)
+            # Add end position with color
+            line_list.extend([x + dx * 3, y + dy * 3, z + dz * 3] + color)
+
+        self.line_array = np.array(line_list, dtype=np.float32)
+        self.line_count = len(self.line_array) // 6  # Each line has 2 vertices, each with position (3 values) and color (3 values)
+
+        return self
     
     def generate_light_map(self, light_map_file_path: Path) -> None:
         """

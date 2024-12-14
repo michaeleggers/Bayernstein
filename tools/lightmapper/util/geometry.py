@@ -530,11 +530,22 @@ def closest_plane_intersection(point: Vector3f, normal: Vector3f, triangles: Lis
 
     return closest_distance if closest_distance != float('inf') else None
 
-def point_is_covered_by_triangle(point: Vector3f, normal: Vector3f, triangles: List[Triangle], threshold=0.1):
+def point_is_covered_by_triangle(point: Vector3f, normal: Vector3f, triangles: List[Triangle], threshold=1e-8):
     for triangle in triangles:
         if is_triangle_on_plane(triangle, point, normal, threshold=threshold):
             if is_point_in_triangle(point, triangle):
                 return True
+            else:
+                proj1 = project_point_onto_segment(triangle.vertices[0], triangle.vertices[1], point)
+                proj2 = project_point_onto_segment(triangle.vertices[1], triangle.vertices[2], point)
+                proj3 = project_point_onto_segment(triangle.vertices[2], triangle.vertices[0], point)
+                dis1 = distance_between_points(point, proj1)
+                dis2 = distance_between_points(point, proj2)
+                dis3 = distance_between_points(point, proj3)
+
+                if dis1 < threshold or dis2 < threshold or dis3 < threshold:
+                    return True
+
     
     return False
 
@@ -565,9 +576,9 @@ def distance_to_closest_triangle_facing_away(point: Vector3f, plane_normal: Vect
             triangle_normal = intersection_normals[i]
             projected_intersection_normal = project_vector_onto_plane(triangle_normal, plane_normal).normalize()
             dot_product = origin_to_projection_vector.dot(projected_intersection_normal)
+            distance = distance_between_points(point, line_segment_projection)
             # if a traingle covers a patch, the origin_to_projection_vector will be close to the triangles normal 
-            if dot_product > 0.99:
-                distance = distance_between_points(point, line_segment_projection)
+            if dot_product > 0.999 or distance < 0.01:
                 closest_distance = min(closest_distance, distance)
         else:
             # as with snapped geometry this may be quite often the case: 
@@ -693,7 +704,6 @@ def is_point_in_triangle(point: Vector3f, triangle: Triangle) -> bool:
 
     denom = dot00 * dot11 - dot01 * dot01
     if denom == 0:
-        print("aaaa")
         return True
 
     u = (dot11 * dot02 - dot01 * dot12) / denom
@@ -704,7 +714,8 @@ def is_point_in_triangle(point: Vector3f, triangle: Triangle) -> bool:
 def is_point_in_triangles_2d(point: Tuple[float, float], triangles) -> bool:
     for triangle in triangles:
         if is_point_in_triangle_2d(point, triangle):
-            return True
+            if is_point_on_triangle_edge(point, triangle) == False:
+                return True
     return False
 
 def is_point_in_triangle_2d(
@@ -734,6 +745,44 @@ def is_point_in_triangle_2d(
     has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
 
     return not (has_neg and has_pos)
+
+
+def is_point_on_triangle_edge(
+    point: Tuple[float, float], 
+    triangle: Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]], 
+    tolerance: float = 1e-8
+) -> bool:
+    """Check if a 2D point lies on the edge of a 2D triangle.
+
+    Args:
+        point (Tuple[float, float]): The point to check (x, y).
+        triangle (Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]): 
+            The vertices of the triangle as ((x1, y1), (x2, y2), (x3, y3)).
+        tolerance (float): Tolerance for numerical imprecision.
+
+    Returns:
+        bool: True if the point lies on an edge of the triangle, otherwise False.
+    """
+
+    def is_point_on_line_segment(p: Tuple[float, float], a: Tuple[float, float], b: Tuple[float, float]) -> bool:
+        """Check if point `p` lies on the line segment `ab`."""
+        # Calculate cross product to check collinearity
+        cross_product = (b[1] - a[1]) * (p[0] - a[0]) - (b[0] - a[0]) * (p[1] - a[1])
+        if abs(cross_product) > tolerance:
+            return False  # Not collinear
+
+        # Check if the point lies within the bounds of the segment
+        min_x, max_x = min(a[0], b[0]), max(a[0], b[0])
+        min_y, max_y = min(a[1], b[1]), max(a[1], b[1])
+        return min_x - tolerance <= p[0] <= max_x + tolerance and min_y - tolerance <= p[1] <= max_y + tolerance
+
+    # Extract triangle vertices
+    v0, v1, v2 = triangle
+
+    # Check if the point is on any of the triangle's edges
+    return (is_point_on_line_segment(point, v0, v1) or
+            is_point_on_line_segment(point, v1, v2) or
+            is_point_on_line_segment(point, v2, v0))
     
 def project_point_onto_segment(segment_start: Vector3f, segment_end: Vector3f, point: Vector3f) -> Vector3f:
     """

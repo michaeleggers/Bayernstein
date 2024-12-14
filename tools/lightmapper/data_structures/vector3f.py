@@ -38,6 +38,9 @@ class Vector3f:
     def normalize(self) -> 'Vector3f':
         length = np.sqrt(self.x**2 + self.y**2 + self.z**2)
         return Vector3f(self.x / length, self.y / length, self.z / length)
+    
+    def magnitude(self) -> float:
+        return (self.x**2 + self.y**2 + self.z**2)**0.5
 
     def to_tuple(self) -> tuple[float, float, float]:
         """Convert the vector to a tuple.

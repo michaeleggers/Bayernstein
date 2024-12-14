@@ -5,6 +5,8 @@ import math
 from pathlib import Path
 from tqdm import tqdm               # for progress bar
 from scipy.spatial import KDTree    # for illegal pixel neares neighbour search
+import random
+
 
 # Renderer
 from renderer import Renderer
@@ -34,32 +36,54 @@ class Lightmapper:
         for iteration in range(iterations):
 
             new_lightmap = light_map.copy()
+            self.all_positions = []
+            self.all_normals = []
 
             for frame_index, frame in enumerate(tqdm(self.scene.frames, desc="Rendering Iteration")):
                 frame_light_map = np.zeros((frame.frame_height_pixels, frame.frame_width_pixels, 3), dtype=np.float32)
-                for i, legal_pixel in enumerate(frame.legal_pixels):
-                    
-                    views = hemicube.generate_hemicube_views(frame.legal_normals[i])
 
-                    images = []
+                # Batch legal pixels for rendering
+                positions = []
+                directions = []
+                up_vectors = []
+                frustums = []
+
+                # Collect all views for batching
+                for i, normal in enumerate(frame.legal_normals):
+                    views = hemicube.generate_hemicube_views(normal)
                     for view in views:
-                        image_array = self.renderer.render_single_image(frame.legal_positions[i], view['direction'], view['up_vector'])
-                        cut_image = hemicube.cut_image_with_frustum(image_array, view['frustum'])
-                        images.append(cut_image)
-                    hc = hemicube.merge_views_hemicube(images[0], images[1], images[2], images[3], images[4])
+                        directions.append(view['direction'])
+                        up_vectors.append(view['up_vector'])
+                        frustums.append(view['frustum'])
+                        positions.append(frame.legal_positions[i])
+                    
+                    self.all_positions.append(frame.legal_positions[i])
+                    self.all_normals.append(views[0]['direction'])
+
+                # Render all views in a single batch
+                images = self.renderer.render_batch_images(positions, directions, up_vectors)
+
+                # Process each legal pixel
+                for i, legal_pixel in enumerate(frame.legal_pixels):
+                    batch_index = i * len(views)
+                    cut_images = [
+                        hemicube.cut_image_with_frustum(images[batch_index + j], frustums[batch_index + j])
+                        for j in range(len(views))
+                    ]
+
+                    hc = hemicube.merge_views_hemicube(*cut_images)
                     hc_corrected = hc * correction_map
 
                     sum_r = np.sum(hc_corrected[:, :, 0])  # Sum of the Red channel
                     sum_g = np.sum(hc_corrected[:, :, 1])  # Sum of the Green channel
                     sum_b = np.sum(hc_corrected[:, :, 2])  # Sum of the Blue channel
-                    
+
                     frame_light_map[legal_pixel[1], legal_pixel[0], 0] = sum_r
                     frame_light_map[legal_pixel[1], legal_pixel[0], 1] = sum_g
                     frame_light_map[legal_pixel[1], legal_pixel[0], 2] = sum_b
 
                 if len(frame.legal_pixels) > 0:
-
-                    # Set illegal pixels to the color of the neares legal neighbour
+                    # Set illegal pixels to the color of the nearest legal neighbor
                     frame_light_map_copy = frame_light_map.copy()
                     kdtree = KDTree(frame.legal_pixels)
                     valid_colors = np.array([frame_light_map_copy[v, u] for u, v in frame.legal_pixels])
@@ -68,6 +92,7 @@ class Lightmapper:
                         frame_light_map[v_pixel, u_pixel, :] = valid_colors[idx]
 
                 new_lightmap[frame.frame_v_start:frame.frame_v_end, frame.frame_u_start:frame.frame_u_end, :] = frame_light_map
+                    
 
             self.scene.light_map = new_lightmap
             self.renderer.update_light_map()

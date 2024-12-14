@@ -77,9 +77,9 @@ class Frame:
         
         # Add padding to the bounding box to ensure no light leakage between neighbouring frames
         self.bounding_box = (
-            self.bounding_box_unpadded[0], 
-            self.bounding_box_unpadded[1], 
-            self.bounding_box_unpadded[2] + self.patch_ws_size + self.patch_ws_size, 
+            self.bounding_box_unpadded[0] - self.patch_ws_size, 
+            self.bounding_box_unpadded[1] - self.patch_ws_size, 
+            self.bounding_box_unpadded[2] + self.patch_ws_size + self.patch_ws_size,
             self.bounding_box_unpadded[3] + self.patch_ws_size + self.patch_ws_size
         )
 
@@ -250,12 +250,80 @@ class Frame:
                 # Check for actual tri2 intersection with tri1's plane
                 intersection_segment = geometry.compute_plane_triangle_intersection(center, normal, tri2)
 
-                if intersection_segment:
+                if intersection_segment and self.line_segment_intersects_triangle(intersection_segment.start, intersection_segment.end, tri1):
                     intersection_segments.append(intersection_segment)
                     intersection_normals.append(tri2.normal())
 
         self.intersection_segments = intersection_segments
         self.intersection_normals = intersection_normals
+
+
+    def line_segment_intersects_triangle(
+        self,
+        line_start: Vector3f, 
+        line_end: Vector3f, 
+        triangle: Triangle, 
+        tolerance: float = 1e-4
+    ) -> bool:
+        """Check if a line segment intersects a triangle in 3D space."""
+        
+        def is_point_in_triangle(pt: Vector3f, v0: Vector3f, v1: Vector3f, v2: Vector3f) -> bool:
+            """Check if a point is strictly inside a triangle using barycentric coordinates."""
+            v0v1 = v1 - v0
+            v0v2 = v2 - v0
+            v0p = pt - v0
+
+            # Compute dot products
+            dot00 = v0v2.dot(v0v2)
+            dot01 = v0v2.dot(v0v1)
+            dot02 = v0v2.dot(v0p)
+            dot11 = v0v1.dot(v0v1)
+            dot12 = v0v1.dot(v0p)
+
+            # Compute barycentric coordinates
+            denom = dot00 * dot11 - dot01 * dot01
+            if abs(denom) < tolerance:
+                return False  # Degenerate triangle
+            inv_denom = 1 / denom
+            u = (dot11 * dot02 - dot01 * dot12) * inv_denom
+            v = (dot00 * dot12 - dot01 * dot02) * inv_denom
+
+            # Check if point is inside the triangle but not on edges
+            return u > tolerance and v > tolerance and (u + v) < (1 - tolerance)
+
+        def edge_intersects_segment(edge_start: Vector3f, edge_end: Vector3f, seg_start: Vector3f, seg_end: Vector3f) -> bool:
+            """Check if a segment intersects a triangle edge, excluding overlaps."""
+            edge_dir = edge_end - edge_start
+            seg_dir = seg_end - seg_start
+            cross = edge_dir.cross(seg_dir)
+            cross_mag = cross.magnitude()
+
+            # If cross product is small, lines are parallel
+            if cross_mag < tolerance:
+                return False
+
+            # Solve for intersection parameters
+            t = (seg_start - edge_start).cross(seg_dir).dot(cross) / cross_mag
+            u = (seg_start - edge_start).cross(edge_dir).dot(cross) / cross_mag
+
+            # Ensure intersection lies strictly between segment and edge endpoints
+            return (t > tolerance and t < 1 - tolerance and 
+                    u > tolerance and u < 1 - tolerance)
+
+        # Extract vertices
+        v0, v1, v2 = triangle.vertices
+
+        # Check if either endpoint of the line segment is inside the triangle
+        if is_point_in_triangle(line_start, v0, v1, v2) or is_point_in_triangle(line_end, v0, v1, v2):
+            return True
+
+        # Check if the line segment intersects any triangle edge
+        if (edge_intersects_segment(v0, v1, line_start, line_end) or
+            edge_intersects_segment(v1, v2, line_start, line_end) or
+            edge_intersects_segment(v2, v0, line_start, line_end)):
+            return True
+
+        return False
 
     def generate_patches(self, patch_resolution):
 
@@ -279,23 +347,26 @@ class Frame:
         self.frame_u_end = self.frame_u_start + int(self.frame_width_pixels)
         self.frame_v_end = self.frame_v_start + int(self.frame_height_pixels)
 
+        half_u_pixel = (1 / self.frame_width_pixels) / 2
+        half_v_pixel = (1 / self.frame_height_pixels) / 2
+
         triangles_uv_space = [triangle for triangle in self.lm_uvs_bbox_space]
 
         for v_pixel in range(self.frame_height_pixels):
-            v = v_pixel / (self.frame_height_pixels -1)
+            v = v_pixel / (self.frame_height_pixels)
             for u_pixel in range(self.frame_width_pixels):
-                u = u_pixel / (self.frame_width_pixels -1)
+                u = u_pixel / (self.frame_width_pixels)
 
                 if geometry.is_point_in_triangles_2d((u, v), triangles_uv_space):
                             
                     worldspace_position = self.interpolate_uv_to_world(
                         self.triangles[0],
                         self.lm_uvs_bbox_space[0],
-                        (u, v)
+                        (u + half_u_pixel, v + half_v_pixel)
                     )
 
                     # Check if patch is covered by triangle on the same plane
-                    if geometry.point_is_covered_by_triangle(worldspace_position, self.frame_normal, self.close_triangles, threshold=min(1/patch_resolution, 0.01)):
+                    if geometry.point_is_covered_by_triangle(worldspace_position, self.frame_normal, self.close_triangles, 1e-8):
                         self.illegal_pixels.append((u_pixel, v_pixel))
                         continue
                     
@@ -332,6 +403,7 @@ class Frame:
         world_position = bary_coords[0] * vertices[0] + bary_coords[1] * vertices[1] + bary_coords[2] * vertices[2]
 
         return Vector3f(world_position[0], world_position[1], world_position[2])
+
     
     def calculate_barycentric(self, uv_coords: np.ndarray, uv_point: np.ndarray) -> np.ndarray:
         """
