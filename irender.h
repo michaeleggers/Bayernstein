@@ -69,6 +69,7 @@ class IRender {
     virtual void DrawWorldTris()                                                                                = 0;
     virtual void Begin2D()                                                                                      = 0;
     virtual void End2D()                                                                                        = 0;
+    virtual void DrawSprite(Sprite* sprite)                                                                     = 0;
     virtual void SetFont(CFont* font, glm::vec4 color = glm::vec4(1.0f))                                        = 0;
     virtual void SetShapeColor(glm::vec4 color = glm::vec4(1.0f))                                               = 0;
     virtual void FlushFonts()                                                                                   = 0;
