@@ -140,8 +140,8 @@ void Game::Init() {
     CInputDelegate::Instance()->SetReceiver(m_pPlayerEntity);
 
     // Create a HUD for the player
-    uint64_t hHUDtexture = renderer->RegisterTextureGetHandle("hud_elements.tga");
-    m_CrosshairSprite    = CreateSprite(hHUDtexture, glm::vec2(0.0f), glm::vec2(64.0f));
+    // This will create  the correct uv coordinates.
+    m_CrosshairSprite = CreateSprite("hud_elements.tga", glm::vec2(0.0f), glm::vec2(64.0f));
 
     // Disable mouse cursor in FPS mode (initial mode)
     SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -324,8 +324,7 @@ bool Game::RunFrame(double dt) {
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     // 2D stuff also has its own, dedicated FBO!
     {
-        renderer
-            ->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
+        renderer->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
 
         // If you want to draw in absolute coordinates then you have to specify it.
         // Depends on the resolution of the render window!
