@@ -172,6 +172,9 @@ void GLRender::Shutdown(void) {
     m_ImPrimitivesShader->Unload();
     delete m_ImPrimitivesShader;
 
+    m_SpriteShader->Unload();
+    delete m_SpriteShader;
+
     // Destroy FBOs
     delete m_2dFBO;
     delete m_3dFBO;
@@ -242,7 +245,7 @@ bool GLRender::Init(void) {
     SDL_ShowWindow(m_Window);
 
     // GL Vsync on
-    if ( SDL_GL_SetSwapInterval(0) != 0 ) {
+    if ( SDL_GL_SetSwapInterval(1) != 0 ) {
         SDL_Log("Failed to enable vsync!\n");
     } else {
         SDL_Log("vsync enabled\n");
@@ -889,7 +892,12 @@ void GLRender::End2D() {
 void GLRender::DrawSprite(const Sprite*        sprite,
                           const glm::vec2&     pos,
                           const glm::vec2&     scaleXY,
-                          ScreenSpaceCoordMode coordMode) {}
+                          ScreenSpaceCoordMode coordMode) {
+
+    m_SpriteShader->Activate();
+    glBindTexture(GL_TEXTURE_2D, (GLuint)sprite->hTexture);
+    glDrawArrays(GL_TRIANGLES, 6, 0);
+}
 
 void GLRender::SetFont(CFont* font, glm::vec4 color) {
 
@@ -1319,6 +1327,11 @@ void GLRender::InitShaders() {
     m_BrushShader = new Shader();
     if ( !m_BrushShader->Load("shaders/brush.vert", "shaders/brush.frag") ) {
         printf("Problems initializing brush shader!\n");
+    }
+
+    m_SpriteShader = new Shader();
+    if ( !m_SpriteShader->Load("shaders/sprite.vert", "shaders/sprite.frag") ) {
+        printf("Problems initializing sprite shader!\n");
     }
 }
 

@@ -191,12 +191,10 @@ struct MeshEllipsoid {
 };
 
 struct Sprite {
-    // x, y Pixel coordinates into the texture
-    float x;
-    float y;
-    // width and height in pixels
-    float width;
-    float height;
+    // uv coordinates at top left of sprite texture.
+    glm::vec2 uvTopLeft;
+    // uv coordinates at the bottom right of the texture.
+    glm::vec2 uvBottomRight;
     // Resource on the GPU
     uint64_t hTexture;
 };

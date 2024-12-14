@@ -133,6 +133,8 @@ class GLRender : public IRender {
     Shader* m_CompositeShader;
     Shader* m_FontShader;
     Shader* m_ShapesShader;
+    Shader* m_SpriteShader;
+
     // Offsets into collider batch
     GLBatchDrawCmd m_EllipsoidColliderDrawCmd;
 
