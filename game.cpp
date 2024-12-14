@@ -141,7 +141,7 @@ void Game::Init() {
 
     // Create a HUD for the player
     uint64_t hHUDtexture = renderer->RegisterTextureGetHandle("hud_elements.tga");
-    m_CrosshairSprite = CreateSprite(hHUDtexture, glm::vec2(0.0f), glm::vec2(64.0f), glm::vec2(0.5f), glm::vec2(1.0f));
+    m_CrosshairSprite    = CreateSprite(hHUDtexture, glm::vec2(0.0f), glm::vec2(64.0f));
 
     // Disable mouse cursor in FPS mode (initial mode)
     SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -324,45 +324,41 @@ bool Game::RunFrame(double dt) {
     // Usage example of 2D Screenspace Rendering (useful for UI, HUD, Console...)
     // 2D stuff also has its own, dedicated FBO!
     {
-        renderer->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
-       
-        //renderer->DrawBox( 10, 20, 200, 200, glm::vec4(0.4f, 0.3f, 1.0f, 1.0f) );
-        renderer->SetFont( m_ConsoleFont, glm::vec4(0.0f, 0.0f, 0.0f, 0.75f) );
-        renderer->R_DrawText("Welcome to the texture test.", 0.0f, 0.0f, COORD_MODE_ABS);
-        
-        renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) );
-        renderer->R_DrawText("Welcome to the texture test.", 10.0f, 10.0f, COORD_MODE_ABS);
-        
+        renderer
+            ->Begin2D(); // Enable screenspace 2D rendering. Binds the 2d offscreen framebuffer and activates the 2d shaders.
+
         // If you want to draw in absolute coordinates then you have to specify it.
-        // Depends on the resolution of the render window! 
-        renderer->SetFont( m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f) );
-        renderer->R_DrawText("Some more text in yellow :)", 0.0f, 200.0f, COORD_MODE_ABS); 
+        // Depends on the resolution of the render window!
+        renderer->SetFont(m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+        renderer->R_DrawText("Some more text in yellow :)", 0.0f, 200.0f, COORD_MODE_ABS);
         renderer->R_DrawText("And blended with box on top", 100.0f, 300.0f, COORD_MODE_ABS);
 
-        renderer->SetShapeColor( glm::vec4(0.7f, 0.3f, 0.7f, 0.7) );
-        renderer->DrawBox( 200.0f, 200.0f, 800.0f, 200.0f, COORD_MODE_ABS );
+        renderer->SetShapeColor(glm::vec4(0.7f, 0.3f, 0.7f, 0.7));
+        renderer->DrawBox(200.0f, 200.0f, 800.0f, 200.0f, COORD_MODE_ABS);
 
-        renderer->SetShapeColor( glm::vec4(1.0f, 0.0f, 0.0f, 1.0f) );
-        renderer->DrawBox( 0.5f, 0.5f, 0.25f, 0.5f );
+        renderer->SetShapeColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        renderer->DrawBox(0.5f, 0.5f, 0.25f, 0.5f);
 
-        renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
+        renderer->SetFont(m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f));
 
         // Use Relative coords (the default). Independent from screen resolution.
         // Goes from 0 (top/left) to 1 (bottom/right).
-        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)", 0.5f, 0.5f); 
+        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)", 0.5f, 0.5f);
 
-        renderer->SetShapeColor( glm::vec4(0.3f, 0.3f, 0.7f, 1.0) );
-        renderer->DrawBox( 600, 600, 200, 100, COORD_MODE_ABS );
-        renderer->SetFont( m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f) );
-        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)", 
-                             600.0f, 600.0f, COORD_MODE_ABS);
-        renderer->SetFont( m_ConsoleFont30, glm::vec4(0.0f, 0.0f, 1.0f, 0.5f) );
-        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)", 
-                             605.0f, 605.0f, COORD_MODE_ABS);
+        renderer->SetShapeColor(glm::vec4(0.3f, 0.3f, 0.7f, 1.0));
+        renderer->DrawBox(600, 600, 200, 100, COORD_MODE_ABS);
+        renderer->SetFont(m_ConsoleFont30, glm::vec4(0.3f, 1.0f, 0.6f, 1.0f));
+        renderer->R_DrawText("Waaay smaller text here!!!! (font size 30)", 600.0f, 600.0f, COORD_MODE_ABS);
 
         renderer->End2D(); // Stop 2D mode. Unbind 2d offscreen framebuffer.
     } // End2D Scope
 #endif
+
+    renderer->Begin2D();
+
+    renderer->DrawSprite(&m_CrosshairSprite, glm::vec2(0.5f), glm::vec2(1.0f), COORD_MODE_REL);
+
+    renderer->End2D();
 
     return true;
 }

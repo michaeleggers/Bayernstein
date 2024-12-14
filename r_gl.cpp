@@ -886,7 +886,10 @@ void GLRender::End2D() {
     // TODO: (Michael): Unbind bound (font-)textures?
 }
 
-void GLRender::DrawSprite(Sprite* sprite, ScreenSpaceCoordMode coordMode) {}
+void GLRender::DrawSprite(const Sprite*        sprite,
+                          const glm::vec2&     pos,
+                          const glm::vec2&     scaleXY,
+                          ScreenSpaceCoordMode coordMode) {}
 
 void GLRender::SetFont(CFont* font, glm::vec4 color) {
 

@@ -191,10 +191,13 @@ struct MeshEllipsoid {
 };
 
 struct Sprite {
-    float    x;
-    float    y;
-    float    width;
-    float    height;
+    // x, y Pixel coordinates into the texture
+    float x;
+    float y;
+    // width and height in pixels
+    float width;
+    float height;
+    // Resource on the GPU
     uint64_t hTexture;
 };
 
@@ -232,9 +235,7 @@ void          TransformEllipsoid(Ellipsoid* ellipsoid, glm::mat4 modelMatrix);
 NBox          CreateNBox(glm::vec3 scale, uint32_t numSubdivs);
 Plane         CreatePlaneFromTri(Tri tri);
 Sprite        CreateSprite(const uint64_t&  hTexture,
-                           const glm::vec2& topLeft,     // top left of texture in pixel coordinates
-                           const glm::vec2& bottomRight, // bottom right of texture in pixel coordinates
-                           const glm::vec2& pos,
-                           const glm::vec2& scale);
+                           const glm::vec2& topLeft,      // top left of texture in pixel coordinates
+                           const glm::vec2& bottomRight); // bottom right of texture in pixel coordinates
 
 #endif
