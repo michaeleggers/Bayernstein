@@ -23,8 +23,10 @@ extern std::string g_GameDir;
 
 #define BIND_POINT_VIEW_PROJECTION 0
 #define BIND_POINT_SETTINGS 1
+
 #define BIND_POINT_FONT 3
 #define BIND_POINT_SHAPES 4
+#define BIND_POINT_SPRITE_DATA 5
 
 static GLuint g_PaletteBindingPoint = 2; // FIX: Not sure about this one.
 
@@ -103,6 +105,24 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName, uint
     }
 
     return true;
+}
+
+void Shader::InitializeSpriteUniforms() {
+    // TODO: (Michael): Uniform Binding happens quite often (see init shader above). Simplify this.
+
+    GLuint bindingPoint  = BIND_POINT_SPRITE_DATA;
+    m_SpriteUniformIndex = glGetUniformBlockIndex(m_ShaderProgram, "SpriteData");
+    if ( m_SpriteUniformIndex == GL_INVALID_INDEX ) {
+        printf("Not able to bind sprite ubo!\n");
+        // TODO: What to do in this case???
+    }
+    glUniformBlockBinding(m_ShaderProgram, m_SpriteUniformIndex, bindingPoint);
+
+    glGenBuffers(1, &m_SpriteUBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, m_SpriteUBO);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(SpriteUB), nullptr, GL_DYNAMIC_DRAW);
+    glBindBufferRange(GL_UNIFORM_BUFFER, bindingPoint, m_SpriteUBO, 0, sizeof(SpriteUB));
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void Shader::InitializeFontUniforms() {

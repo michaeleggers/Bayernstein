@@ -38,6 +38,7 @@ class Shader {
     void        ResetShaderSettingBits(uint32_t bits);
     void        InitializeFontUniforms();
     void        InitializeShapesUniforms();
+    void        InitializeSpriteUniforms();
     static void InitGlobalBuffers();
 
     // Some people would say this must be private. But I find it
@@ -45,6 +46,7 @@ class Shader {
     // a new value to this UBO handle, ok? Thanks!
     GLuint m_FontUBO;
     GLuint m_ShapesUBO;
+    GLuint m_SpriteUBO;
 
   private:
     bool CompileShader(const std::string& fileName, GLenum shaderType, GLuint& outShader);
@@ -65,6 +67,7 @@ class Shader {
     // 2d screenspace uniforms
     GLuint m_FontUniformIndex;
     GLuint m_ShapesUniformIndex;
+    GLuint m_SpriteUniformIndex;
 };
 
 #endif

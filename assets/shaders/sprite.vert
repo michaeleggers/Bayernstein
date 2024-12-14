@@ -10,7 +10,16 @@ const vec2 quad_pos[6] = vec2[6](
     vec2(0.0f, 0.0f)
 );
 
-layout (std140, binding = 0) uniform SpriteData {
+layout (std140) uniform ViewProjMatrices {
+    mat4 view;
+    mat4 proj;
+};
+
+layout (std140) uniform Settings {
+	uint settings;
+};
+
+layout (std140) uniform SpriteData {
     vec2 pos;
 	vec2 scale;
 	vec2 uv_topLeft;
