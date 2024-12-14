@@ -15,6 +15,7 @@
 #include "camera.h"
 #include "hkd_interface.h"
 #include "irender.h"
+#include "r_common.h"
 
 class Game {
   public:
@@ -45,6 +46,9 @@ class Game {
     double m_AccumTime;
 
     CWorld* m_World;
+
+    // HUD
+    Sprite m_CrosshairSprite;
 };
 
 #endif

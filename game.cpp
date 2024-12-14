@@ -139,6 +139,10 @@ void Game::Init() {
     // Let the player receive input by default
     CInputDelegate::Instance()->SetReceiver(m_pPlayerEntity);
 
+    // Create a HUD for the player
+    uint64_t hHUDtexture = renderer->RegisterTextureGetHandle("hud_elements.tga");
+    m_CrosshairSprite = CreateSprite(hHUDtexture, glm::vec2(0.0f), glm::vec2(64.0f), glm::vec2(0.5f), glm::vec2(1.0f));
+
     // Disable mouse cursor in FPS mode (initial mode)
     SDL_SetRelativeMouseMode(SDL_TRUE);
     //SDL_SetWindowMouseGrab(renderer->GetWindow(),
