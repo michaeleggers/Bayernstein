@@ -231,5 +231,10 @@ MeshEllipsoid CreateUnitEllipsoid(uint32_t numSubdivs);
 void          TransformEllipsoid(Ellipsoid* ellipsoid, glm::mat4 modelMatrix);
 NBox          CreateNBox(glm::vec3 scale, uint32_t numSubdivs);
 Plane         CreatePlaneFromTri(Tri tri);
+Sprite        CreateSprite(const uint64_t&  hTexture,
+                           const glm::vec2& uvTopLeft,
+                           const glm::vec2& uvBottomRight,
+                           const glm::vec2& pos,
+                           const glm::vec2& dimensions);
 
 #endif

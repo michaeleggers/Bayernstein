@@ -70,7 +70,7 @@ class GLRender : public IRender {
     virtual void DrawWorldTris() override;
     virtual void Begin2D() override;
     virtual void End2D() override;
-    virtual void DrawSprite(Sprite* sprite) override;
+    virtual void DrawSprite(Sprite* sprite, ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
     virtual void SetFont(CFont* font, glm::vec4 color = glm::vec4(1.0f)) override;
     virtual void SetShapeColor(glm::vec4 color = glm::vec4(1.0f)) override;
     virtual void

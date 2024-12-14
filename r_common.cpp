@@ -403,3 +403,11 @@ Plane CreatePlaneFromTri(Tri tri) {
 
     return { normal, d };
 }
+
+Sprite CreateSprite(const uint64_t&  hTexture,
+                    const glm::vec2& uvTopLeft,
+                    const glm::vec2& uvBottomRight,
+                    const glm::vec2& pos,
+                    const glm::vec2& dimensions) {
+    return {};
+}
