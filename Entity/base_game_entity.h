@@ -115,11 +115,16 @@ class BaseGameEntity {
         return nullptr;
     };
 
-    glm::vec3            m_Position     = glm::vec3(0.0f);
-    glm::vec3            m_PrevPosition = glm::vec3(0.0f);
-    glm::vec3            m_Velocity     = glm::vec3(0.0f); // TODO: Actually make use of it and remove from subclasses!
+    // Set by the collision system every frame by interpolating
+    // between m_PrevPosition and the collisions responses' result.
+    glm::vec3 m_Position = glm::vec3(0.0f);
+
+    // Set by the collision system every 'DOD_FIXED_UPDATE_TIME'.
+    glm::vec3 m_PrevPosition = glm::vec3(0.0f);
+
+    glm::vec3            m_Velocity = glm::vec3(0.0f);
     glm::quat            m_Orientation;
-    float                m_RotationAngle = 0.0f; // TODO: Should be a quaternion called m_Orientation.
+    float                m_RotationAngle = 0.0f; // TODO: Update follow cam and player to not use this.
     std::string          m_Target        = "";
     EntityCollisionState m_CollisionState;
 };
