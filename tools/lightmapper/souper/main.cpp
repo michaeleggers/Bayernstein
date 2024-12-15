@@ -45,18 +45,87 @@ void to_json(json& j, const MapPolygon& polygon) {
               { "contentFlags", polygon.contentFlags } };
 }
 
-void saveMapPolygonsToJson(const std::string& filename, const std::vector<MapPolygon>& polygons) {
-    // Convert the vector of polygons to JSON
-    json j = polygons;
+void saveMapToJson(const std::string& filename, 
+                   const std::vector<MapPolygon>& polygons, 
+                   const std::vector<PointLight>& lights) {
+    // Create a JSON object to hold both polygons and lights
+    json j;
+
+    // Convert polygons to JSON
+    j["polygons"] = polygons;
+
+    // Convert lights to JSON
+    j["lights"] = json::array();
+    for (const auto& light : lights) {
+        j["lights"].push_back({
+            {"origin", light.origin},
+            {"intensity", light.intensity},
+            {"color", light.color},
+            {"range", light.range}
+        });
+    }
 
     // Write JSON to file
     std::ofstream file(filename);
-    if ( file.is_open() ) {
+    if (file.is_open()) {
         file << j.dump(4); // Pretty print with an indentation of 4 spaces
         file.close();
     } else {
         throw std::runtime_error("Unable to open file for writing: " + filename);
     }
+}
+static std::string getPropertyValue(const std::vector<Property>& properties, const std::string& key, const std::string& defaultValue = "") {
+    for (const auto& p : properties) {
+        if (p.key == key) {
+            return p.value;
+        }
+    }
+
+    if (!defaultValue.empty()) {
+        return defaultValue;
+    }
+
+    throw std::runtime_error("Property key not found: " + key);
+}
+
+// this function already exists in polysoup
+static bool hasClassname(const Entity& e, std::string classname) {
+    for ( int i = 0; i < e.properties.size(); i++ ) {
+        const Property& p = e.properties[ i ];
+        if ( p.value == classname ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::vector<PointLight> extractPointLights(const Map& map) {
+    std::vector<PointLight> pointLights;
+
+    for (const auto& entity : map.entities) {
+        // Check if entity has classname "light"
+        if (!hasClassname(entity, "light")) {
+            continue;
+        }
+
+        try {
+            PointLight light;
+
+            // Extract fields from properties with optional defaults
+            light.origin = getPropertyValue(entity.properties, "origin");
+            light.intensity = std::stof(getPropertyValue(entity.properties, "light", "1")); // Default intensity = 1.0
+            light.color = getPropertyValue(entity.properties, "color", "1.0 1.0 1.0");           // Default color = white
+            light.range = std::stof(getPropertyValue(entity.properties, "range", "256.0"));     // Default range = 256.0
+
+            // Add to the list
+            pointLights.push_back(light);
+        } catch (const std::exception& e) {
+            // Handle missing or malformed fields gracefully
+            std::cerr << "Error parsing light entity: " << e.what() << std::endl;
+        }
+    }
+
+    return pointLights;
 }
 
 int main(int argc, char** argv) {
@@ -78,6 +147,7 @@ int main(int argc, char** argv) {
     Map map = getMap(&mapData[ 0 ], inputLength, VALVE_220);
     std::vector<MapPolygon> polysoup = createPolysoup(map);
     std::vector<MapPolygon> tris = triangulate(polysoup);
+    std::vector<PointLight> lights = extractPointLights(map);
 
 // Print UV coordinates for debugging
 #if 0
@@ -90,9 +160,10 @@ int main(int argc, char** argv) {
     }
 #endif
 
+
     //writePolySoupBinary(outFile, tris);
     try {
-        saveMapPolygonsToJson(outFile, tris);
+        saveMapToJson(outFile, tris, lights);
     } catch ( const std::exception& e ) {
         std::cerr << e.what() << std::endl;
     }

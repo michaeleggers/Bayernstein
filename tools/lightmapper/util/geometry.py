@@ -248,7 +248,7 @@ def compute_intersection(tri1: Triangle, tri2: Triangle) -> Optional[Tuple[Vecto
         Finds the intersection point (if any) between a triangle's plane and an edge.
         """
         v0, v1, v2 = tri.vertices
-        normal = tri.normal()
+        normal = tri.normal
         edge = p2 - p1
         edge_dot_normal = edge.dot(normal)
 
@@ -367,8 +367,8 @@ def compute_intersection(tri1: Triangle, tri2: Triangle) -> Optional[Tuple[Vecto
         unique_points = list({(p.x, p.y, p.z): p for p in intersection_points}.values())
         if len(unique_points) == 2:
             start, end = unique_points
-            normal1 = tri1.normal().to_array()
-            normal2 = tri2.normal().to_array()
+            normal1 = tri1.normal.to_array()
+            normal2 = tri2.normal.to_array()
             # Check if the line segment needs to be reversed based on normal orientations
             if not is_left_of_line(start.to_array(), end.to_array(), normal1, normal2):
                 start, end = end, start

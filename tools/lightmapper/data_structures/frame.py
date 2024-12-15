@@ -6,6 +6,7 @@ from data_structures.triangle import Triangle
 from data_structures.vector3f import Vector3f
 from data_structures.line_segment import LineSegment
 from data_structures.bounding_box import BoundingBox
+from data_structures.point_light import PointLight
 from util import geometry
 
 class Frame:
@@ -59,7 +60,7 @@ class Frame:
         self.bounding_box_unpadded = self._calculate_bounding_box_2d()
         frame_width, frame_height = self.bounding_box_unpadded[2], self.bounding_box_unpadded[3]
         # As right now its assumed that all triangles within a frame are coplanar we can just pick the normal of any triangle
-        self.frame_normal = self.triangles[0].normal()
+        self.frame_normal = self.triangles[0].normal
 
         # Check the frame's aspect ratio, if width is greater than height rotate the frame. 
         # Having all frames rotated with their larger side as height allows for a more efficient uv mapping later on
@@ -232,7 +233,7 @@ class Frame:
         intersection_normals = []
 
         for tri1 in self.triangles:
-            normal = tri1.normal()
+            normal = tri1.normal
             center = tri1.triangle_center()
             for tri2 in self.close_triangles:
                 # Bounding box overlap check for faster rejection
@@ -252,7 +253,7 @@ class Frame:
 
                 if intersection_segment and self.line_segment_intersects_triangle(intersection_segment.start, intersection_segment.end, tri1):
                     intersection_segments.append(intersection_segment)
-                    intersection_normals.append(tri2.normal())
+                    intersection_normals.append(tri2.normal)
 
         self.intersection_segments = intersection_segments
         self.intersection_normals = intersection_normals
@@ -330,6 +331,7 @@ class Frame:
         self.legal_pixels = []
         self.legal_positions = []
         self.legal_normals = []
+        self.legal_incoming_light = []
         self.illegal_pixels = []
 
         frame_width_ws = self.bounding_box[2]
@@ -379,6 +381,7 @@ class Frame:
                     self.legal_pixels.append((u_pixel, v_pixel))
                     self.legal_positions.append(worldspace_position)
                     self.legal_normals.append(self.frame_normal)
+                    self.legal_incoming_light.append(Vector3f(0, 0, 0))
 
                 else:
                     self.illegal_pixels.append((u_pixel, v_pixel))
@@ -432,6 +435,40 @@ class Frame:
         w2 = 1 - w0 - w1
 
         return np.array([w0, w1, w2])
+    
+    def calculate_incoming_light(self, lights: List[PointLight], triangles: List[Triangle]):
+        for i, patch_position in enumerate(self.legal_positions):
+            incoming_light = Vector3f(0, 0, 0)
+
+            for point_light in lights:
+                light_dir = point_light.origin - patch_position
+                light_distance = light_dir.magnitude()
+                light_dir = light_dir.normalize()
+
+
+                if light_distance > point_light.range:
+                    continue
+
+                blocked = False
+
+                for triangle in triangles:
+                    if any((patch_position - v).magnitude() < 1e-6 for v in triangle.vertices):
+                        continue  # Skip the triangle the patch is on
+
+                    t = triangle.intersect_ray(point_light.origin, -light_dir)
+                    if t is not None and t < light_distance - 1e-6:
+                        blocked = True
+                        break
+
+                if not blocked:
+                    attenuation = max(0.0, float(point_light.intensity / (light_distance ** 2)))
+                    incoming_light_x = attenuation * max(0.0, light_dir.dot(self.frame_normal)) * point_light.color.x
+                    incoming_light_y = attenuation * max(0.0, light_dir.dot(self.frame_normal)) * point_light.color.y
+                    incoming_light_z = attenuation * max(0.0, light_dir.dot(self.frame_normal)) * point_light.color.z
+                    incoming_light_vec = Vector3f(incoming_light_x, incoming_light_y, incoming_light_z)
+                    incoming_light += incoming_light_vec
+
+            self.legal_incoming_light[i] = incoming_light
 
         
 

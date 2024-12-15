@@ -78,6 +78,10 @@ class Lightmapper:
                     sum_g = np.sum(hc_corrected[:, :, 1])  # Sum of the Green channel
                     sum_b = np.sum(hc_corrected[:, :, 2])  # Sum of the Blue channel
 
+                    sum_r += frame.legal_incoming_light[i].x
+                    sum_g += frame.legal_incoming_light[i].y
+                    sum_b += frame.legal_incoming_light[i].z
+
                     frame_light_map[legal_pixel[1], legal_pixel[0], 0] = sum_r
                     frame_light_map[legal_pixel[1], legal_pixel[0], 1] = sum_g
                     frame_light_map[legal_pixel[1], legal_pixel[0], 2] = sum_b

@@ -18,6 +18,7 @@ from data_structures.compiled_vertex import CompiledVertex
 from data_structures.compiled_triangle import CompiledTriangle
 from data_structures.triangle import Triangle
 from data_structures.frame import Frame
+from data_structures.point_light import PointLight
 
 # Utility functions
 import util.uv_mapper as uv_mapper
@@ -31,7 +32,7 @@ class Scene:
 
         # Load the map from JSON
         textures_directory = Path(assets_path) / 'textures'
-        self.triangles, self.texture_uvs, self.lightmap_uvs, self.textures, self.emissions = self.load_from_json(map_path, assets_path)
+        self.triangles, self.texture_uvs, self.lightmap_uvs, self.textures, self.emissions, self.lights = self.load_from_json(map_path, assets_path)
         # Create the Texture Array using the geometries texture informations
         self.texture_array, self.texture_index_mapping = self.create_texture_array(self.textures, self.texture_uvs, textures_directory)
         # If a lightmap exists (which may be the case when testing): load it
@@ -49,6 +50,7 @@ class Scene:
         lightmap_uvs = []
         textures = {}
         emission = []
+        lights = []
 
         # Cache to store texture dimensions (width, height) for each unique texture
         texture_dimensions_cache = {}
@@ -57,8 +59,16 @@ class Scene:
         with open(json_path, 'r') as file:
             data = json.load(file)
 
+        # Extract lights
+        for light_data in data.get('lights', []):
+            origin = vec(*map(float, light_data['origin'].split()))
+            color = vec(*map(float, light_data['color'].split()))
+            intensity = float(light_data['intensity'])
+            range_ = float(light_data['range'])
+            lights.append(PointLight(origin=origin, intensity=intensity, color=color, range=range_))
+
         # Loop over polygons in JSON data
-        for triangle_index, triangle in enumerate(data):
+        for triangle_index, triangle in enumerate(data.get('polygons', [])):
             # Each polygon has a set of vertices and a texture
             triangle_vertices = []
             triangle_texture_uvs = []
@@ -76,7 +86,7 @@ class Scene:
             texture_name = triangle['textureName']
             texture_path = f"{assets_path}/textures/{texture_name}.tga"
             if not Path(texture_path).exists():                
-                print(f'(load_from_json): Cannot load texture path: ${texture_path}')
+                print(f'(load_from_json): Cannot load texture path: {texture_path}')
                 texture_name = "default"
                 texture_path = f"{assets_path}/textures/{texture_name}.tga"
 
@@ -98,14 +108,16 @@ class Scene:
         lightmap_uvs = np.array(lightmap_uvs, dtype=np.float32)
         emission = np.array(emission, dtype=np.float32)
 
-        return triangles, texture_uvs, lightmap_uvs, textures, emission
+        return triangles, texture_uvs, lightmap_uvs, textures, emission, lights
 
     def save_to_json(self, json_path: Path, assets_path: Path) -> 'Scene':
         """
-        Save the triangle data to a JSON file.
+        Save the scene data (including triangles and lights) to a JSON file.
         """
-
-        data = []
+        data = {
+            "lights": [],
+            "polygons": []
+        }
 
         # Cache texture dimensions to avoid opening the same texture multiple times
         texture_dimensions = {}
@@ -139,18 +151,30 @@ class Scene:
                 {"pos": triangle[j], "uv": pixel_tex_uv[j], "uv_lightmap": lm_uv[j]}
                 for j in range(len(triangle))
             ]
-            
-            # Construct the triangle entry
-            triangle_data = {
+
+            # Construct the polygon entry
+            polygon_data = {
                 "vertices": vertices,
                 "textureName": texture_name,
                 "emission": emit
             }
 
-            data.append(triangle_data)
+            data["polygons"].append(polygon_data)
+
+        # Loop over lights in the scene and add them to the JSON
+        for light in self.lights:
+
+            light_data = {
+                "color": f"{light.color.x} {light.color.y} {light.color.z}",
+                "intensity": light.intensity,
+                "origin": f"{light.origin.x} {light.origin.y} {light.origin.z}",
+                "range": light.range
+            }
+            data["lights"].append(light_data)
 
         # Ensure the directory exists
         json_path.parent.mkdir(parents=True, exist_ok=True)
+
         # Write JSON data to file
         with open(json_path, 'w') as file:
             json.dump(data, file, indent=4)
@@ -259,9 +283,11 @@ class Scene:
         self.light_map = np.zeros((self.light_map_resolution, self.light_map_resolution, 3), dtype=np.float32)
 
         # Step 3: Precalculate geometry intersections (for illegal pixel calculations)
-        [frame.calculate_intersections(triangles_ds) for frame in tqdm(self.frames, desc="Calculating intersections")]
+        print("PREPROCESSING: calculating geometry intersections")
+        [frame.calculate_intersections(triangles_ds) for frame in self.frames]
 
         # Step 4: Generate Patches
+        print("PREPROCESSING: generating patches")
         with Pool(processes=cpu_count()) as pool:
             # Map the frames to the worker pool, each worker will process one frame
             results = pool.starmap(
@@ -281,6 +307,7 @@ class Scene:
     
     def generate_patches_for_frame(self, frame: Frame, patch_resolution):
         frame.generate_patches(patch_resolution)
+        frame.calculate_incoming_light(self.lights, self.triangles_ds)
         return frame
 
 

@@ -24,6 +24,9 @@ class Vector3f:
     def __mul__(self, scalar: float) -> 'Vector3f':
         """Multiplies the vector by a scalar."""
         return Vector3f(self.x * scalar, self.y * scalar, self.z * scalar)
+    
+    def __neg__(self) -> 'Vector3f':
+        return Vector3f(-self.x, -self.y, -self.z)
 
     def cross(self, other: 'Vector3f') -> 'Vector3f':
         return Vector3f(
