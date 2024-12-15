@@ -10,6 +10,8 @@
 
 #include <SDL.h>
 
+#include "dependencies/glm/glm.hpp"
+
 #include "CWorld.h"
 #include "Console/Console.h"
 #include "camera.h"
@@ -89,6 +91,7 @@ class IRender {
     virtual void        RenderConsole(Console* console, CFont* font)                            = 0;
     virtual void        RenderEnd(void)                                                         = 0;
     virtual void        SetWindowTitle(char* windowTitle)                                       = 0;
+    virtual glm::vec2   GetWindowDimensions()                                                   = 0;
     virtual SDL_Window* GetWindow()                                                             = 0;
 
   private:

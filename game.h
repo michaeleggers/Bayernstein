@@ -49,6 +49,7 @@ class Game {
 
     // HUD
     Sprite m_CrosshairSprite;
+    Sprite m_BoltSprite;
 };
 
 #endif

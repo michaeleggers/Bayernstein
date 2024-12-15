@@ -1353,3 +1353,7 @@ void GLRender::InitShaders() {
 void GLRender::SetWindowTitle(char* windowTitle) {
     SDL_SetWindowTitle(m_Window, windowTitle);
 }
+
+glm::vec2 GLRender::GetWindowDimensions() {
+    return glm::vec2(m_WindowWidth, m_WindowHeight);
+}

@@ -87,6 +87,7 @@ class GLRender : public IRender {
     virtual SDL_Window* GetWindow() override {
         return m_Window;
     };
+    virtual glm::vec2 GetWindowDimensions() override;
 
     void           ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType);
     void           InitShaders();

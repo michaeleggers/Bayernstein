@@ -141,7 +141,8 @@ void Game::Init() {
 
     // Create a HUD for the player
     // This will create  the correct uv coordinates.
-    m_CrosshairSprite = CreateSprite("hud_elements.tga", glm::vec2(2 * 64, 64), glm::vec2(3 * 64, 2 * 64));
+    m_CrosshairSprite = CreateSprite("hud_elements.tga", glm::vec2(0.0f), glm::vec2(64.0f));
+    m_BoltSprite      = CreateSprite("hud_elements.tga", glm::vec2(64.0f, 0.0f), glm::vec2(128.0f, 64.0f));
 
     // Disable mouse cursor in FPS mode (initial mode)
     SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -357,7 +358,11 @@ bool Game::RunFrame(double dt) {
 
     renderer->SetFont(m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
     renderer->R_DrawText("Sprite Test", 0.5f, 0.0f, COORD_MODE_REL);
-    renderer->DrawSprite(&m_CrosshairSprite, glm::vec2(0.5f), glm::vec2(2.0f, 2.0f), COORD_MODE_REL);
+    glm::vec2 windowDimensions = renderer->GetWindowDimensions();
+    glm::vec2 relSpriteSize    = m_CrosshairSprite.size / windowDimensions;
+    renderer->DrawSprite(
+        &m_CrosshairSprite, glm::vec2(0.5f - relSpriteSize / 2.0f), glm::vec2(1.0f, 1.0f), COORD_MODE_REL);
+    renderer->DrawSprite(&m_BoltSprite, glm::vec2(0.01f), glm::vec2(1.0f), COORD_MODE_REL);
 
     renderer->End2D();
 
