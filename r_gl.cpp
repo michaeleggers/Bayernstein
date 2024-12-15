@@ -891,12 +891,25 @@ void GLRender::End2D() {
 
 void GLRender::DrawSprite(const Sprite*        sprite,
                           const glm::vec2&     pos,
-                          const glm::vec2&     scaleXY,
+                          const glm::vec2&     scale,
                           ScreenSpaceCoordMode coordMode) {
 
+    float posX = pos.x;
+    float posY = pos.y;
+    if ( coordMode == COORD_MODE_REL ) {
+        posX *= m_WindowWidth;
+        posY *= m_WindowHeight;
+    }
+
     m_SpriteShader->Activate();
+
+    SpriteUB spriteShaderData = { glm::vec2(posX, posY), sprite->size, sprite->uvTopLeft, sprite->uvBottomRight };
+    glBindBuffer(GL_UNIFORM_BUFFER, m_SpriteShader->m_SpriteUBO);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(SpriteUB), (void*)&spriteShaderData);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
     glBindTexture(GL_TEXTURE_2D, (GLuint)sprite->hTexture);
-    glDrawArrays(GL_TRIANGLES, 6, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void GLRender::SetFont(CFont* font, glm::vec4 color) {
@@ -1333,6 +1346,7 @@ void GLRender::InitShaders() {
     if ( !m_SpriteShader->Load("shaders/sprite.vert", "shaders/sprite.frag") ) {
         printf("Problems initializing sprite shader!\n");
     }
+    m_SpriteShader->InitializeSpriteUniforms();
 }
 
 void GLRender::SetWindowTitle(char* windowTitle) {

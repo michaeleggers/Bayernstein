@@ -33,8 +33,10 @@ void main() {
     v = scale * v;
     v = v + pos;
 
-	uv = vec2(0.0f, 0.0f);
+    vec4 clipSpaceV = proj * view * vec4(v, 0.0f, 1.0f);
 
-    gl_Position = vec4( v, 0.0f, 1.0f );
+    uv = vec2(0.0f, 0.0f);
+
+    gl_Position = clipSpaceV;
 }
 

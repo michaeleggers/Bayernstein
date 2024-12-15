@@ -1,17 +1,18 @@
 #include "r_common.h"
 
+#include <assert.h>
 #include <math.h>
+
+#define GLM_FORCE_RADIANS
+#include "dependencies/glm/ext.hpp"
+#include "dependencies/glm/glm.hpp"
+#include "dependencies/glm/gtx/quaternion.hpp"
 
 #include "collision.h"
 #include "hkd_interface.h"
 #include "irender.h"
 #include "r_gl_texture_mgr.h"
 #include "r_model.h"
-
-#define GLM_FORCE_RADIANS
-#include "dependencies/glm/ext.hpp"
-#include "dependencies/glm/glm.hpp"
-#include "dependencies/glm/gtx/quaternion.hpp"
 
 void RotateTri(Tri* tri, glm::vec3 axis, float angle) {
     glm::quat q   = glm::angleAxis(glm::radians(angle), glm::normalize(axis));
@@ -413,5 +414,22 @@ Sprite CreateSprite(const std::string& textureFilename, const glm::vec2& topLeft
     GLTextureManager* textureManager = GLTextureManager::Instance();
     ITexture*         spriteTexture  = textureManager->CreateTexture(textureFilename);
 
-    return {};
+    float textureWidth  = (float)spriteTexture->m_Width;
+    float textureHeight = (float)spriteTexture->m_Height;
+    float spriteWidth   = bottomRight.x - topLeft.x;
+    float spriteHeight  = bottomRight.y - topLeft.y;
+
+    // Convert texture window to uv coordinates [0, 1]
+    float s1 = topLeft.x / textureWidth;
+    float t1 = topLeft.y / textureHeight;
+    float s2 = bottomRight.x / textureWidth;
+    float t2 = bottomRight.y / textureHeight;
+
+    Sprite sprite{};
+    sprite.size          = glm::vec2(spriteWidth, spriteHeight);
+    sprite.uvTopLeft     = glm::vec2(s1, t1);
+    sprite.uvBottomRight = glm::vec2(s2, t2);
+    sprite.hTexture      = spriteTexture->m_hGPU;
+
+    return sprite;
 }

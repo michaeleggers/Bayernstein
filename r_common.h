@@ -198,6 +198,7 @@ struct MeshEllipsoid {
 };
 
 struct Sprite {
+    glm::vec2 size;
     // uv coordinates at top left of sprite texture.
     glm::vec2 uvTopLeft;
     // uv coordinates at the bottom right of the texture.
