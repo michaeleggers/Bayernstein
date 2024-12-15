@@ -42,10 +42,16 @@ freely, subject to the following restrictions:
 // NOTE(@pythno): Will clash with glm::min/max so don't define
 //                min/max in Windows.h!
 //#define NOMINMAX
-
 //#include <windows.h> // only needed for OutputDebugStringA, should be solved somehow.
+
+// NOTE(@pythno): Instead of including the whole Windows.h header we could
+// also export the OutputDebugStringA symbol, as it is the only thing needed.
+// The linker will see this and can resolve the symbol.
+// Thanks to Andre Weissflog for the suggestion.
 extern "C" {
 __declspec(dllimport) void __stdcall OutputDebugStringA(const char* str);
+}
+
 #define SOLOUD_ASSERT(x)                                                                                               \
     if ( !(x) ) {                                                                                                      \
         char temp[ 200 ];                                                                                              \
@@ -53,8 +59,6 @@ __declspec(dllimport) void __stdcall OutputDebugStringA(const char* str);
         OutputDebugStringA(temp);                                                                                      \
         __debugbreak();                                                                                                \
     }
-}
-
 #else
 #include <assert.h> // assert
 #define SOLOUD_ASSERT(x) assert(x)
