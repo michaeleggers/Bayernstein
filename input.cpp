@@ -15,6 +15,7 @@ static bool        g_PerFrameScancodes[ SDL_NUM_SCANCODES ];
 static Uint8       g_MouseButtons;
 static Uint8       g_PrevMouseButtons;
 static MouseMotion g_MouseMotionState;
+static bool        g_MouseMoved;
 static MouseWheel  g_MouseWheelState;
 
 static std::string g_EventText;
@@ -23,6 +24,7 @@ void HandleInput(void) {
     memcpy(g_PrevScancodes, g_Scancodes, SDL_NUM_SCANCODES * sizeof(bool));
     g_PrevMouseButtons = g_MouseButtons;
     memset(g_PerFrameScancodes, 0, SDL_NUM_SCANCODES * sizeof(bool));
+    g_MouseMoved = false;
 
     g_Events                  = 0;
     g_EventText               = "";
@@ -56,6 +58,7 @@ void HandleInput(void) {
             g_MouseButtons ^= SDL_BUTTON(event.button.button);
         }
         if ( event.type == SDL_MOUSEMOTION ) {
+            g_MouseMoved               = true;
             g_MouseMotionState.prev    = g_MouseMotionState.current;
             g_MouseMotionState.current = event.motion;
         }
@@ -125,6 +128,13 @@ bool RightMouseWentDown(void) {
 
 const MouseMotion GetMouseMotion(void) {
     return g_MouseMotionState;
+}
+
+bool MouseMoved(int event) {
+    // There is no button for mouse moved but we want to
+    // be able to ask for this in the input handler.
+    // That is why we check for SDL_MOUSEMOTION.
+    return (event == SDL_MOUSEMOTION) && g_MouseMoved;
 }
 
 const MouseWheel GetMouseWheel(void) {

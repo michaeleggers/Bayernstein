@@ -138,7 +138,7 @@ bool intersectThreePlanes(MapPlane p0, MapPlane p1, MapPlane p2, glm::f64vec3* i
         return false;
 
     *intersectionPoint
-        = (-p0.d * (glm::cross(p1.n, p2.n))-p1.d * (glm::cross(p2.n, p0.n))-p2.d * (glm::cross(p0.n, p1.n))) / det;
+        = (-p0.d * (glm::cross(p1.n, p2.n)) - p1.d * (glm::cross(p2.n, p0.n)) - p2.d * (glm::cross(p0.n, p1.n))) / det;
 
     return true;
 }

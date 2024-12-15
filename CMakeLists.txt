@@ -148,6 +148,10 @@ add_executable(Game
     Entity/Player/g_player_states.h
     Entity/Player/g_player.cpp
     Entity/Player/g_player.h
+    Entity/FirstPersonPlayer/g_fp_player.h
+    Entity/FirstPersonPlayer/g_fp_player.cpp
+    Entity/FirstPersonPlayer/g_fp_player_states.cpp
+    Entity/FirstPersonPlayer/g_fp_player_states.h
     Entity/Enemy/g_enemy_states.cpp
     Entity/Enemy/g_enemy_states.h
     Entity/Enemy/g_enemy.cpp

@@ -6,6 +6,7 @@
 #include "CWorld.h"
 #include "Entity/Door/g_door.h"
 #include "Entity/Enemy/g_enemy.h"
+#include "Entity/FirstPersonPlayer/g_fp_player.h"
 #include "Entity/FlyCamera/g_fly_camera.h"
 #include "Entity/FollowCamera/g_follow_camera.h"
 #include "Entity/Player/g_player.h"
@@ -27,12 +28,12 @@ class Game {
     hkdInterface* m_pInterface;
     std::string   m_ExePath;
 
-    Player*        m_pPlayerEntity;
-    Player*        m_pDebugPlayerEntity; // Entity we can fly around with
-    Enemy*         m_pEnemyEntity;
-    CFlyCamera*    m_pFlyCameraEntity;
-    CFollowCamera* m_pFollowCameraEntity;
-    EntityManager* m_pEntityManager;
+    FirstPersonPlayer* m_pPlayerEntity;
+    Player*            m_pDebugPlayerEntity; // Entity we can fly around with
+    Enemy*             m_pEnemyEntity;
+    CFlyCamera*        m_pFlyCameraEntity;
+    CFollowCamera*     m_pFollowCameraEntity;
+    EntityManager*     m_pEntityManager;
 
     Camera m_Camera;
 

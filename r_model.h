@@ -11,6 +11,7 @@
 #include "dependencies/glm/glm.hpp"
 
 #include "Body.h"
+#include "Entity/base_game_entity.h"
 #include "collision.h"
 #include "iqm_loader.h"
 #include "map_parser.h"
@@ -39,13 +40,17 @@ enum HKD_ModelType {
     HKD_MODEL_TYPE_ANIMATED
 };
 
+#define MODEL_RENDER_FLAG_NONE (0x00000001 << 0)
+#define MODEL_RENDER_FLAG_IGNORE (0x00000001 << 1)
+
 struct HKD_Model {
+    BaseGameEntity*       pOwner;
     HKD_ModelType         type;
     std::string           filename;
     std::vector<Tri>      tris;
     std::vector<HKD_Mesh> meshes;
-    glm::vec3             position;
-    glm::quat             orientation;
+    glm::vec3             position;    // Relative to its entity owner.
+    glm::quat             orientation; // Relative to its entity owner.
     glm::vec3             scale;
     int                   gpuModelHandle; // -1: Data not yet on GPU
     std::vector<Pose>
@@ -68,8 +73,9 @@ struct HKD_Model {
     glm::vec4 debugColor;
 
     // Rigid Body Physics
-    bool isRigidBody;
-    Body body;
+    bool     isRigidBody;
+    Body     body;
+    uint32_t renderFlags;
 };
 
 HKD_Model CreateModelFromIQM(IQMModel* model);

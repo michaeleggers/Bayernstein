@@ -18,8 +18,6 @@
 
 class Enemy : public MovingEntity {
   public:
-    void Update() override;
-
     explicit Enemy(const std::vector<Property>& properties);
 
     ~Enemy() override {
@@ -32,10 +30,13 @@ class Enemy : public MovingEntity {
         return m_pStateMachine;
     }
 
-    bool              HandleMessage(const Telegram& telegram) override;
-    EllipsoidCollider GetEllipsoidCollider() const override;
-    HKD_Model*        GetModel();
-    void              UpdatePosition(glm::vec3 newPosition) override;
+    bool               HandleMessage(const Telegram& message) override;
+    EllipsoidCollider* GetEllipsoidColliderPtr() override;
+    void               PreCollisionUpdate() override;
+    void               PostCollisionUpdate() override;
+    void               UpdatePosition(glm::vec3 newPosition) override;
+
+    HKD_Model* GetModel();
 
     void Wander() {
         m_pStateMachine->ChangeState(EnemyWander::Instance());
@@ -78,8 +79,7 @@ class Enemy : public MovingEntity {
     // moving members
 
   private:
-    AnimState         m_AnimationState;
-    EllipsoidCollider m_EllipsoidCollider;
+    AnimState m_AnimationState;
 
     void LoadModel(const char* path, glm::vec3 initialPosition);
     void UpdateEnemyModel();

@@ -78,8 +78,11 @@ class GLRender : public IRender {
     virtual void FlushShapes() override;
     virtual void
     DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
-    virtual void RenderEnd(void) override;
-    virtual void SetWindowTitle(char* windowTitle) override;
+    virtual void        RenderEnd(void) override;
+    virtual void        SetWindowTitle(char* windowTitle) override;
+    virtual SDL_Window* GetWindow() override {
+        return m_Window;
+    };
 
     void           ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType);
     void           InitShaders();

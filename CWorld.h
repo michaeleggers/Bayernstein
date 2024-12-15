@@ -17,6 +17,7 @@
 #include "./Entity/base_game_entity.h"
 #include "Entity/Door/g_door.h"
 #include "Entity/Enemy/g_enemy.h"
+#include "Entity/FirstPersonPlayer/g_fp_player.h"
 #include "Entity/FlyCamera/g_fly_camera.h"
 #include "Entity/FollowCamera/g_follow_camera.h"
 #include "Entity/Player/g_player.h"
@@ -42,7 +43,7 @@ class CWorld {
         return m_StaticGeometryCount;
     }
 
-    Player* PlayerEntity() {
+    FirstPersonPlayer* PlayerEntity() {
         return m_pPlayerEntity;
     }
 
@@ -51,11 +52,11 @@ class CWorld {
     }
 
     std::vector<HKD_Model*>& GetModelPtrs() {
-        return m_Models;
+        return m_pModels;
     }
 
     std::vector<HKD_Model*>& GetBrushModelPtrs() {
-        return m_BrushModels;
+        return m_pBrushModels;
     }
 
     static glm::vec3           GetOrigin(const Entity* entity);
@@ -74,10 +75,16 @@ class CWorld {
 
     uint64_t m_StaticGeometryCount;
     // FIX: Does the player really *always* have to exist?
-    Player*                 m_pPlayerEntity = nullptr;
-    std::vector<HKD_Model*> m_Models;
-    std::vector<HKD_Model*> m_BrushModels;
-    // Keep references to brush entities' map tris
+    FirstPersonPlayer* m_pPlayerEntity = nullptr;
+
+    // Model entities that are defined via an IQM model.
+    std::vector<HKD_Model*> m_pModels;
+
+    // Models for brush entities.
+    std::vector<HKD_Model*> m_pBrushModels;
+
+    // Keep references to brush entities' map tris so we
+    // can easily collide against brush entities as well.
     std::vector<std::vector<MapTri>*> m_pBrushMapTris;
 };
 

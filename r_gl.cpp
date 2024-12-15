@@ -20,6 +20,8 @@
 
 #include "Console/Console.h"
 #include "Console/VariableManager.h"
+#include "Entity/base_game_entity.h"
+#include "globals.h"
 #include "input.h"
 #include "platform.h"
 #include "r_common.h"
@@ -187,12 +189,7 @@ bool GLRender::Init(void) {
 */
 
     // Create an application window with the following settings:
-    m_Window = SDL_CreateWindow("HKD",
-                                SDL_WINDOWPOS_UNDEFINED,
-                                SDL_WINDOWPOS_UNDEFINED,
-                                WINDOW_WIDTH,
-                                WINDOW_HEIGHT,
-                                SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
+    m_Window = SDL_CreateWindow("HKD", 1, 1, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
 
     // BEWARE! These flags must be set AFTER SDL_CreateWindow. Otherwise SDL
     // just doesn't cate about them (at least on Linux)!
@@ -245,7 +242,7 @@ bool GLRender::Init(void) {
     SDL_ShowWindow(m_Window);
 
     // GL Vsync on
-    if ( SDL_GL_SetSwapInterval(1) != 0 ) {
+    if ( SDL_GL_SetSwapInterval(0) != 0 ) {
         SDL_Log("Failed to enable vsync!\n");
     } else {
         SDL_Log("vsync enabled\n");
@@ -803,16 +800,32 @@ void GLRender::Render(
     }
     for ( int i = 0; i < numModels; i++ ) {
 
-        GLModel model = m_Models[ models[ i ]->gpuModelHandle ];
+        HKD_Model* hkdModel = models[ i ];
 
-        if ( models[ i ]->numJoints > 0 ) {
+        if ( hkdModel->renderFlags & MODEL_RENDER_FLAG_IGNORE ) {
+            continue;
+        }
+
+        GLModel model = m_Models[ hkdModel->gpuModelHandle ];
+
+        if ( hkdModel->numJoints > 0 ) {
             m_ModelShader->SetShaderSettingBits(SHADER_ANIMATED);
-            m_ModelShader->SetMatrixPalette(&models[ i ]->palette[ 0 ], models[ i ]->numJoints);
+            m_ModelShader->SetMatrixPalette(&hkdModel->palette[ 0 ], hkdModel->numJoints);
         } else {
             m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
         }
 
-        glm::mat4 modelMatrix = CreateModelMatrix(models[ i ]);
+        BaseGameEntity* pOwner           = hkdModel->pOwner;
+        glm::vec3       ownerPos         = glm::vec3(0.0f);
+        glm::quat       ownerOrientation = glm::angleAxis(0.0f, DOD_WORLD_FORWARD);
+        if ( pOwner != nullptr ) {
+            ownerPos         = pOwner->m_Position;
+            ownerOrientation = pOwner->m_Orientation;
+        }
+        glm::vec3 position    = ownerPos + hkdModel->position;
+        glm::quat orientation = ownerOrientation * hkdModel->orientation;
+        glm::vec3 scale       = hkdModel->scale;
+        glm::mat4 modelMatrix = CreateModelMatrix(position, orientation, scale);
         m_ModelShader->SetMat4("model", modelMatrix);
 
         for ( int j = 0; j < model.meshes.size(); j++ ) {
@@ -1055,21 +1068,27 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
 
     m_ColliderBatch->Bind();
     for ( int i = 0; i < numModels; i++ ) {
-        HKD_Model* model = models[ i ];
-        m_ColliderShader->SetVec4("uDebugColor", model->debugColor);
-        EllipsoidCollider ec    = model->ellipsoidColliders[ model->currentAnimIdx ];
+        HKD_Model* pModel   = models[ i ];
+        glm::vec3  ownerPos = glm::vec3(0.0f);
+        if ( pModel->pOwner != nullptr ) {
+            ownerPos = pModel->pOwner->m_Position;
+        }
+        m_ColliderShader->SetVec4("uDebugColor", pModel->debugColor);
+        EllipsoidCollider ec    = pModel->ellipsoidColliders[ pModel->currentAnimIdx ];
         glm::vec3         scale = glm::vec3(ec.radiusA, ec.radiusA, ec.radiusB);
 
-        glm::mat4 T = glm::translate(glm::mat4(1.0f), ec.center);
+        glm::mat4 T = glm::translate(glm::mat4(1.0f), ownerPos);
         glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
         glm::mat4 M = T * S;
         m_ColliderShader->SetMat4("model", M);
         std::vector<GLBatchDrawCmd> drawCmds = { m_EllipsoidColliderDrawCmd };
         //glDrawArrays(GL_TRIANGLES, m_EllipsoidColliderDrawCmd.offset, m_EllipsoidColliderDrawCmd.numVerts);
+        // FIX: Add to the list of draw commands and execute later? Not sure...
         ExecuteDrawCmds(drawCmds, GEOM_TYPE_VERTEX_ONLY);
-        // glDrawArrays(GL_LINES,
-        //     m_EllipsoidColliderDrawCmd.offset,
-        //     m_EllipsoidColliderDrawCmd.numVerts);
+        //m_PrimitiveDrawCmds.push_back(m_EllipsoidColliderDrawCmd);
+        //glDrawArrays(GL_LINES,
+        //             m_EllipsoidColliderDrawCmd.offset,
+        //             m_EllipsoidColliderDrawCmd.numVerts);
     }
 }
 

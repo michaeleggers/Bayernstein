@@ -33,10 +33,10 @@ void Player::UpdatePosition(glm::vec3 newPosition) {
     }
     m_Model.position.x = newPosition.x;
     m_Model.position.y = newPosition.y;
-    m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
+    m_Model.position.z = newPosition.z - GetEllipsoidColliderPtr()->radiusB;
 }
 
-void Player::Update() {
+void Player::PostCollisionUpdate() {
 
     if ( KeyPressed(SDLK_w) ) {
         m_pStateMachine->ChangeState(PlayerRunning::Instance());
@@ -76,7 +76,6 @@ void Player::LoadModel(const char* path, glm::vec3 initialPosition) {
     }
 
     SetAnimState(&m_Model, ANIM_STATE_WALK);
-    m_EllipsoidCollider = GetEllipsoidCollider();
 }
 
 // NOTE: This is not being used now as the entity should not own
@@ -183,8 +182,8 @@ void Player::UpdatePlayerModel() {
     // UpdateModel(&m_Model, (float)dt);
 }
 
-EllipsoidCollider Player::GetEllipsoidCollider() const {
-    return m_Model.ellipsoidColliders[ m_Model.currentAnimIdx ];
+EllipsoidCollider* Player::GetEllipsoidColliderPtr() {
+    return &m_Model.ellipsoidColliders[ m_Model.currentAnimIdx ];
 }
 
 HKD_Model* Player::GetModel() {
@@ -199,6 +198,10 @@ void Player::HandleInput() {
     ButtonState captainState = CHECK_ACTION("set_captain");
     if ( captainState == ButtonState::WENT_DOWN ) {
         printf("Player: I am the captain!\n");
+    }
+    ButtonState mouseMove = CHECK_ACTION("mlook");
+    if ( mouseMove == ButtonState::MOVED ) {
+        printf("Mouse moved\n");
     }
     UpdatePlayerModel();
 }
