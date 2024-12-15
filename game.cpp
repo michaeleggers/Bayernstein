@@ -357,7 +357,7 @@ bool Game::RunFrame(double dt) {
 
     renderer->SetFont(m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
     renderer->R_DrawText("Sprite Test", 0.5f, 0.0f, COORD_MODE_REL);
-    renderer->DrawSprite(&m_CrosshairSprite, glm::vec2(0.5f), glm::vec2(1.0f), COORD_MODE_REL);
+    renderer->DrawSprite(&m_CrosshairSprite, glm::vec2(0.5f), glm::vec2(0.5f), COORD_MODE_REL);
 
     renderer->End2D();
 

@@ -21,8 +21,9 @@ layout (std140) uniform Settings {
 
 layout (std140) uniform SpriteData {
     vec2 pos;
-	vec2 scale;
-	vec2 uv_topLeft;
+    vec2 size;
+    vec2 scale;
+    vec2 uv_topLeft;
     vec2 uv_bottomRight;
 };
 
@@ -30,7 +31,7 @@ out vec2 uv;
 
 void main() {
     vec2 v = quad_pos[ gl_VertexID ];
-    v = scale * v;
+    v = scale * size * v;
     v = v + pos;
 
     vec4 clipSpaceV = proj * view * vec4(v, 0.0f, 1.0f);

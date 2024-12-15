@@ -903,7 +903,8 @@ void GLRender::DrawSprite(const Sprite*        sprite,
 
     m_SpriteShader->Activate();
 
-    SpriteUB spriteShaderData = { glm::vec2(posX, posY), sprite->size, sprite->uvTopLeft, sprite->uvBottomRight };
+    SpriteUB spriteShaderData
+        = { glm::vec2(posX, posY), sprite->size, scale, sprite->uvTopLeft, sprite->uvBottomRight };
     glBindBuffer(GL_UNIFORM_BUFFER, m_SpriteShader->m_SpriteUBO);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(SpriteUB), (void*)&spriteShaderData);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);

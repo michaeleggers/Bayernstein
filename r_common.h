@@ -88,6 +88,7 @@ struct ShapesUB {
 
 struct SpriteUB {
     glm::vec2 pos;
+    glm::vec2 size;
     glm::vec2 scale;
     glm::vec2 uvTopLeft;
     glm::vec2 uvBottomRight;
