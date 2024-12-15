@@ -360,9 +360,8 @@ bool Game::RunFrame(double dt) {
     renderer->R_DrawText("Sprite Test", 0.5f, 0.0f, COORD_MODE_REL);
     glm::vec2 windowDimensions = renderer->GetWindowDimensions();
     glm::vec2 relSpriteSize    = m_CrosshairSprite.size / windowDimensions;
-    renderer->DrawSprite(
-        &m_CrosshairSprite, glm::vec2(0.5f - relSpriteSize / 2.0f), glm::vec2(1.0f, 1.0f), COORD_MODE_REL);
-    renderer->DrawSprite(&m_BoltSprite, glm::vec2(0.01f), glm::vec2(1.0f), COORD_MODE_REL);
+    renderer->DrawSprite(&m_CrosshairSprite, glm::vec2(0.5f - relSpriteSize / 2.0f), glm::vec2(0.25f), COORD_MODE_REL);
+    renderer->DrawSprite(&m_BoltSprite, glm::vec2(0.0f), glm::vec2(2.0f), COORD_MODE_REL);
 
     renderer->End2D();
 
