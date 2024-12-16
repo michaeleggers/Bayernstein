@@ -42,10 +42,8 @@ add_executable(souper
     ../../../image.cpp
 )
 
-set (SDL2_libs_dir "${SDL_LIBRARIES_DIR}")
 set (SDL2_include_dir "${SDL_INCLUDE_DIR}")
 
-message("SDL2 libs dir is set to: ${SDL2_libs_dir}")
 message("SDL2 include dir is set to: ${SDL2_include_dir}")
 
 target_include_directories(souper
@@ -58,19 +56,11 @@ target_link_directories(souper PUBLIC
     ${SDL2_libs_dir} 
 )
 
-if (WIN32)
-    target_link_libraries(souper PUBLIC
-        SDL2
-        SDL2main
-    )
-endif()
+target_link_libraries(souper PUBLIC
+    SDL2
+    SDL2main
+)
 
-if (UNIX)
-    target_link_libraries(souper PUBLIC
-        ${SDL2_libs_dir}/libSDL2.a
-        ${SDL2_libs_dir}/libSDL2main.a
-    )
-endif()
 
 
 

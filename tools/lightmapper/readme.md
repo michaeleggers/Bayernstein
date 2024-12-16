@@ -172,6 +172,18 @@ cmake -DSDL_INCLUDE_DIR="/usr/local/include/SDL2" -DSDL_LIBRARIES_DIR="/usr/loca
 make
 ```
 
+### Building Souper (Fedora):
+```bash
+sudo dnf install SDL2-devel
+
+cd tools/lightmapper/souper
+mkdir build
+cd build
+
+cmake -DSDL_INCLUDE_DIR="/usr/include/SDL2" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
+make
+```
+
 ### Running Python File on Unix
 if: Failed to create GLFW window"
 then do:
