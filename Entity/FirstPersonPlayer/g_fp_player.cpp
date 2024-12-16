@@ -34,6 +34,11 @@ FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
     //m_Camera.RotateAroundSide(-60.0f);
     m_PrevCollisionState = ES_UNDEFINED;
     m_Momentum           = glm::vec3(0.0f);
+
+    m_SfxJump    = Audio::LoadSource("sfx/jump_01.wav", 0.5f);
+    m_SfxGunshot = Audio::LoadSource("sfx/sonniss/PM_SFG_VOL1_WEAPON_8_2_GUN_GUNSHOT_FUTURISTIC.wav");
+    m_SfxFootsteps
+        = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
 }
 
 // FIX: At the moment called by the game itself.
@@ -52,6 +57,7 @@ void FirstPersonPlayer::PreCollisionUpdate() {
     if ( m_PrevCollisionState == ES_ON_GROUND ) {
         if ( m_WantsToJump ) {
             printf("Jumping....\n");
+            Audio::m_SfxBus.play(*m_SfxJump, -1);
             m_FlyMomentum   = m_Momentum;
             m_FlyMomentum.z = JUMPING_MOMENTUM;
         }
@@ -209,6 +215,7 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     ButtonState left      = CHECK_ACTION("left");
     ButtonState right     = CHECK_ACTION("right");
     ButtonState speed     = CHECK_ACTION("speed");
+    ButtonState fire      = CHECK_ACTION("fire");
     ButtonState jump      = CHECK_ACTION("jump");
     ButtonState turnLeft  = CHECK_ACTION("turn_left");
     ButtonState turnRight = CHECK_ACTION("turn_right");
@@ -280,14 +287,25 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     m_WantsToJump = jump == ButtonState::WENT_DOWN;
 
     if ( playerAnimState == ANIM_STATE_RUN ) {
+        if ( !Audio::m_Soloud.isValidVoiceHandle(m_FootstepsHandle) ) {
+            m_FootstepsHandle = Audio::m_SfxBus.play(*m_SfxFootsteps);
+        }
         if ( speed == ButtonState::PRESSED ) {
             playerAnimState = ANIM_STATE_WALK;
+            Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.6f);
+            Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume * 0.4f);
+        } else {
+            // adjust sample speed to better match animation
+            Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.9f);
+            Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume);
         }
+    } else {
+        Audio::m_Soloud.stop(m_FootstepsHandle);
     }
 
-    ButtonState fireState = CHECK_ACTION("fire");
-    if ( fireState == ButtonState::PRESSED ) {
-        printf("FIRE!\n");
+    fire = CHECK_ACTION("fire");
+    if ( fire == ButtonState::PRESSED ) {
+        Audio::m_SfxBus.play(*m_SfxGunshot);
     }
 
     SetAnimState(&m_Model, playerAnimState);

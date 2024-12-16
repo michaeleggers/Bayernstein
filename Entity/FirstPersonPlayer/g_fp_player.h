@@ -105,6 +105,12 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
     glm::vec3            m_FlyMomentum   = glm::vec3(0.0f);
     EntityCollisionState m_PrevCollisionState;
 
+    // Audio
+    SoLoud::AudioSource* m_SfxGunshot;
+    SoLoud::AudioSource* m_SfxJump;
+    SoLoud::AudioSource* m_SfxFootsteps;
+    SoLoud::handle       m_FootstepsHandle = 0;
+
     void LoadModel(const char* path, glm::vec3 initialPosition);
     void UpdatePlayerModel();
 };

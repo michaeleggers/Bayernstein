@@ -173,8 +173,8 @@ void Player::UpdatePlayerModel() {
             Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.6f);
             Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume * 0.4f);
         } else {
-            Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle,
-                                                 0.9f); // adjust sample speed to better match animation
+            // adjust sample speed to better match animation
+            Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.9f);
             Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume);
         }
     } else {
