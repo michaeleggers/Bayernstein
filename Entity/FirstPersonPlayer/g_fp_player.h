@@ -88,7 +88,7 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
 
   private:
     glm::vec3            m_Forward, m_Side;
-    AnimState            m_AnimationState;
+    AnimState            m_AnimState;
     Camera               m_Camera;
     float                m_Pitch         = 0.0f; // The thing when the camera rotates around its side axis
     float                m_Yaw           = 0.0f; // The thing when the camera rotates around the world up axis

@@ -23,7 +23,8 @@
 FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
     : MovingEntity(ET_PLAYER),
       m_pStateMachine(nullptr),
-      m_AnimationState(ANIM_STATE_IDLE) {
+      m_AnimState(ANIM_STATE_IDLE)
+{
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(FirstPersonPlayerIdle::Instance());
     LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
@@ -44,18 +45,22 @@ FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
 // FIX: At the moment called by the game itself.
 // Must be called before entity system updates entities.
 // (Calls ::Update() on Entities).
-void FirstPersonPlayer::UpdatePosition(glm::vec3 newPosition) {
+void FirstPersonPlayer::UpdatePosition(glm::vec3 newPosition)
+{
     m_Position = newPosition;
 }
 
-void FirstPersonPlayer::PreCollisionUpdate() {
+void FirstPersonPlayer::PreCollisionUpdate()
+{
 
     double        dt          = GetDeltaTime();
     static double accumulator = 0.0;
     accumulator += dt;
 
-    if ( m_PrevCollisionState == ES_ON_GROUND ) {
-        if ( m_WantsToJump ) {
+    if ( m_PrevCollisionState == ES_ON_GROUND )
+    {
+        if ( m_WantsToJump )
+        {
             printf("Jumping....\n");
             Audio::m_SfxBus.play(*m_SfxJump, -1);
             m_FlyMomentum   = m_Momentum;
@@ -63,34 +68,47 @@ void FirstPersonPlayer::PreCollisionUpdate() {
         }
     }
 
-    while ( accumulator >= DOD_FIXED_UPDATE_TIME ) {
+    while ( accumulator >= DOD_FIXED_UPDATE_TIME )
+    {
 
-        if ( m_PrevCollisionState == ES_ON_GROUND ) {
+        if ( m_PrevCollisionState == ES_ON_GROUND )
+        {
 
             glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
 
-            if ( m_IsMoving ) {
+            if ( m_IsMoving )
+            {
                 m_Momentum += (float)DOD_FIXED_UPDATE_TIME * m_Dir * GROUND_RESISTANCE;
-                if ( glm::length(horizontalMomentum) > m_MovementSpeed ) {
+                if ( glm::length(horizontalMomentum) > m_MovementSpeed )
+                {
                     m_Momentum = m_MovementSpeed * glm::normalize(m_Momentum);
                 }
-            } else {
-                if ( glm::length(horizontalMomentum) > 0.0f ) {
+            }
+            else
+            {
+                if ( glm::length(horizontalMomentum) > 0.0f )
+                {
                     glm::vec3 frictionForce
                         = (float)DOD_FIXED_UPDATE_TIME * -glm::normalize(horizontalMomentum) * GROUND_FRICTION;
-                    if ( glm::length(frictionForce) > glm::length(horizontalMomentum) ) {
+                    if ( glm::length(frictionForce) > glm::length(horizontalMomentum) )
+                    {
                         m_Momentum.x = 0.0f;
                         m_Momentum.y = 0.0f;
-                    } else {
+                    }
+                    else
+                    {
                         m_Momentum.x += frictionForce.x;
                         m_Momentum.y += frictionForce.y;
                     }
                 }
             }
-        } else if ( m_PrevCollisionState == ES_IN_AIR ) {
+        }
+        else if ( m_PrevCollisionState == ES_IN_AIR )
+        {
             glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
             m_Momentum += (float)DOD_FIXED_UPDATE_TIME * (1.0f - IN_AIR_FRICTION) * m_Dir * GROUND_RESISTANCE;
-            if ( glm::length(horizontalMomentum) > m_MovementSpeed ) {
+            if ( glm::length(horizontalMomentum) > m_MovementSpeed )
+            {
                 m_Momentum = m_MovementSpeed * glm::normalize(m_Momentum);
             }
             // If in air, apply some downward gravity acceleration.
@@ -117,32 +135,46 @@ void FirstPersonPlayer::PreCollisionUpdate() {
     m_Velocity = m_Momentum + m_FlyMomentum;
 }
 
-void FirstPersonPlayer::PostCollisionUpdate() {
+void FirstPersonPlayer::PostCollisionUpdate()
+{
 
     double dt = GetDeltaTime();
 
     ImGui::Begin("FPS Player Info");
-    if ( m_CollisionState == ES_IN_AIR ) {
+    if ( m_CollisionState == ES_IN_AIR )
+    {
         ImGui::Text("flying!\n");
-    } else {
+    }
+    else
+    {
         ImGui::Text("on ground!\n");
     }
     ImGui::Text("m_Velocity.z: %f", m_Velocity.z);
     ImGui::Text("m_Momentum.xyz: %f, %f, %f", m_Momentum.x, m_Momentum.y, m_Momentum.z);
     ImGui::End();
 
-    if ( m_PrevCollisionState == ES_ON_GROUND && m_CollisionState == ES_IN_AIR ) {
+    if ( m_PrevCollisionState == ES_ON_GROUND && m_CollisionState == ES_IN_AIR )
+    {
         printf("switched from on ground to in air.\n");
-    } else if ( m_PrevCollisionState == ES_IN_AIR && m_CollisionState == ES_ON_GROUND ) {
+        // If the footsteps are playing, turn them off now!
+        // TODO: Is it ok to not check if the handle is even valid before calling stop()?
+        Audio::m_Soloud.stop(m_FootstepsHandle);
+    }
+    else if ( m_PrevCollisionState == ES_IN_AIR && m_CollisionState == ES_ON_GROUND )
+    {
         printf("switched from in air to on ground.\n");
+
         m_FlyMomentum = glm::vec3(0.0f);
     }
 
     m_PrevCollisionState = m_CollisionState;
 
-    if ( KeyPressed(SDLK_w) ) {
+    if ( KeyPressed(SDLK_w) )
+    {
         m_pStateMachine->ChangeState(FirstPersonPlayerRunning::Instance());
-    } else {
+    }
+    else
+    {
         m_pStateMachine->ChangeState(FirstPersonPlayerIdle::Instance());
     }
 
@@ -157,7 +189,8 @@ void FirstPersonPlayer::PostCollisionUpdate() {
     m_pStateMachine->Update();
 }
 
-void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition) {
+void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition)
+{
     // Load IQM Model
     IQMModel iqmModel = LoadIQM(path);
 
@@ -168,7 +201,8 @@ void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition) {
     m_Model.isRigidBody = false;
     m_Model.scale       = glm::vec3(30.0f);
 
-    for ( int i = 0; i < m_Model.animations.size(); i++ ) {
+    for ( int i = 0; i < m_Model.animations.size(); i++ )
+    {
         EllipsoidCollider* ec = &m_Model.ellipsoidColliders[ i ];
         ec->radiusA *= m_Model.scale.x;
         ec->radiusB *= m_Model.scale.z;
@@ -196,7 +230,8 @@ void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition) {
 // We leave it here anyways, because this shows how it could be done
 // if it turns out that camera-entities are dumb (I don't think so
 // but still...).
-void FirstPersonPlayer::UpdateCamera(Camera* camera) {
+void FirstPersonPlayer::UpdateCamera(Camera* camera)
+{
     // Fix camera position
     //camera->m_Pos.x = m_Model.position.x;
     //camera->m_Pos.y = m_Model.position.y;
@@ -208,7 +243,8 @@ void FirstPersonPlayer::UpdateCamera(Camera* camera) {
     //}
 }
 
-void FirstPersonPlayer::UpdatePlayerModel() {
+void FirstPersonPlayer::UpdatePlayerModel()
+{
 
     ButtonState forward   = CHECK_ACTION("forward");
     ButtonState back      = CHECK_ACTION("back");
@@ -224,7 +260,8 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     double dt = GetDeltaTime();
 
     glm::quat qYaw = glm::angleAxis(glm::radians(-m_Yaw), DOD_WORLD_UP);
-    if ( mouseLook == ButtonState::MOVED ) {
+    if ( mouseLook == ButtonState::MOVED )
+    {
         const MouseMotion mouseMotion = GetMouseMotion();
         m_MouseX                      = mouseMotion.current.xrel;
         m_MouseY                      = mouseMotion.current.yrel;
@@ -254,61 +291,88 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     m_Side    = glm::cross(m_Forward, m_Up);
 
     m_MovementSpeed = RUN_VELOCITY;
-    if ( KeyPressed(SDLK_LSHIFT) ) {
+    if ( KeyPressed(SDLK_LSHIFT) )
+    {
         m_MovementSpeed *= WALK_FACTOR;
     }
-    AnimState playerAnimState = ANIM_STATE_IDLE;
-    m_Dir                     = glm::vec3(0.0f);
-    if ( forward == ButtonState::PRESSED ) {
+    m_AnimState = ANIM_STATE_IDLE;
+    m_Dir       = glm::vec3(0.0f);
+    if ( forward == ButtonState::PRESSED )
+    {
         m_Dir += m_Forward;
-        playerAnimState = ANIM_STATE_RUN;
+        m_AnimState = ANIM_STATE_RUN;
     }
-    if ( back == ButtonState::PRESSED ) {
+    if ( back == ButtonState::PRESSED )
+    {
         m_Dir -= m_Forward;
-        playerAnimState = ANIM_STATE_RUN;
+        m_AnimState = ANIM_STATE_RUN;
     }
-    if ( right == ButtonState::PRESSED ) {
+    if ( right == ButtonState::PRESSED )
+    {
         m_Dir += m_Side;
-        playerAnimState = ANIM_STATE_RUN;
+        m_AnimState = ANIM_STATE_RUN;
     }
-    if ( left == ButtonState::PRESSED ) {
+    if ( left == ButtonState::PRESSED )
+    {
         m_Dir -= m_Side;
-        playerAnimState = ANIM_STATE_RUN;
+        m_AnimState = ANIM_STATE_RUN;
     }
 
     // Make sure we don't get faster when going both
     // forward and to the side for example.
     float inputLength = glm::length(m_Dir);
-    if ( inputLength > 0.0f ) { // This is neccessary to not divide by 0 in glm::normalize
+    if ( inputLength > 0.0f )
+    { // This is neccessary to not divide by 0 in glm::normalize
         m_Dir = glm::normalize(m_Dir);
     }
 
     m_IsMoving    = inputLength > 0.0f;
     m_WantsToJump = jump == ButtonState::WENT_DOWN;
 
-    if ( playerAnimState == ANIM_STATE_RUN ) {
-        if ( !Audio::m_Soloud.isValidVoiceHandle(m_FootstepsHandle) ) {
-            m_FootstepsHandle = Audio::m_SfxBus.play(*m_SfxFootsteps);
+    if ( m_AnimState == ANIM_STATE_RUN )
+    {
+
+        if ( speed == ButtonState::PRESSED )
+        {
+            m_AnimState = ANIM_STATE_WALK;
         }
-        if ( speed == ButtonState::PRESSED ) {
-            playerAnimState = ANIM_STATE_WALK;
-            Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.6f);
-            Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume * 0.4f);
-        } else {
-            // adjust sample speed to better match animation
-            Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.9f);
-            Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume);
+
+        if ( m_PrevCollisionState == ES_ON_GROUND )
+        {
+            // Get the handle if not already created.
+            if ( !Audio::m_Soloud.isValidVoiceHandle(m_FootstepsHandle) )
+            {
+                m_FootstepsHandle = Audio::m_SfxBus.play(*m_SfxFootsteps);
+            }
+
+            if ( m_AnimState == ANIM_STATE_RUN )
+            {
+                Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.9f);
+                Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume);
+            }
+            else if ( m_AnimState == ANIM_STATE_WALK )
+            {
+                Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.6f);
+                Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume * 0.4f);
+            }
         }
-    } else {
+    }
+    else
+    {
+        // TODO: Is it ok to not check if the handle is even valid before calling stop()?
         Audio::m_Soloud.stop(m_FootstepsHandle);
     }
 
+    // TODO: Move this code into a weapon struct/class
+    // where a cooldown is specified. A machine gun
+    // has a higher repeat rate than a shotgun.
     fire = CHECK_ACTION("fire");
-    if ( fire == ButtonState::WENT_DOWN ) {
+    if ( fire == ButtonState::WENT_DOWN )
+    {
         Audio::m_SfxBus.play(*m_SfxGunshot);
     }
 
-    SetAnimState(&m_Model, playerAnimState);
+    SetAnimState(&m_Model, m_AnimState);
 
     // TODO: This *must* only be in *one* entity that gets updated. Otherwise
     // the sound 'jumps' from position to positon. We could actually
@@ -321,22 +385,27 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     Audio::m_Soloud.update3dAudio();
 }
 
-EllipsoidCollider* FirstPersonPlayer::GetEllipsoidColliderPtr() {
+EllipsoidCollider* FirstPersonPlayer::GetEllipsoidColliderPtr()
+{
     //return m_Model.ellipsoidColliders[ m_Model.currentAnimIdx ];
     return &m_Model.ellipsoidColliders[ 0 ];
 }
 
-HKD_Model* FirstPersonPlayer::GetModel() {
+HKD_Model* FirstPersonPlayer::GetModel()
+{
     return &m_Model;
 }
 
-bool FirstPersonPlayer::HandleMessage(const Telegram& telegram) {
+bool FirstPersonPlayer::HandleMessage(const Telegram& telegram)
+{
     return m_pStateMachine->HandleMessage(telegram);
 }
 
-void FirstPersonPlayer::HandleInput() {
+void FirstPersonPlayer::HandleInput()
+{
     ButtonState captainState = CHECK_ACTION("set_captain");
-    if ( captainState == ButtonState::WENT_DOWN ) {
+    if ( captainState == ButtonState::WENT_DOWN )
+    {
         printf("FirstPersonPlayer: I am the captain!\n");
     }
     UpdatePlayerModel();
