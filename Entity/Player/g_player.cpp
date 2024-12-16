@@ -200,11 +200,13 @@ void Player::UpdatePlayerModel() {
     SetAnimState(&m_Model, playerAnimState);
 
     // only update listener position in the active input delegate (other player (or camera) instances mustn't interfere with the actual (active) listener)
+    /*
     Audio::m_Soloud.set3dListenerPosition(m_Position.x, m_Position.y, m_Position.z);
     Audio::m_Soloud.set3dListenerAt(m_Forward.x, m_Forward.y, m_Forward.z);
     Audio::m_Soloud.set3dListenerVelocity(m_Velocity.x, m_Velocity.y, m_Velocity.z);
     Audio::m_Soloud.set3dListenerUp(DOD_WORLD_UP.x, DOD_WORLD_UP.y, DOD_WORLD_UP.z);
     Audio::m_Soloud.update3dAudio();
+    */
 
     // UpdateModel(&m_Model, (float)dt);
 }

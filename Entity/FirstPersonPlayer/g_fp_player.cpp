@@ -11,6 +11,7 @@
 #include "../../dependencies/glm/glm.hpp"
 #include "../../dependencies/glm/gtx/quaternion.hpp"
 
+#include "../../Audio/Audio.h"
 #include "../../globals.h"
 #include "../../input.h"
 #include "../../input_handler.h"
@@ -290,6 +291,16 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     }
 
     SetAnimState(&m_Model, playerAnimState);
+
+    // TODO: This *must* only be in *one* entity that gets updated. Otherwise
+    // the sound 'jumps' from position to positon. We could actually
+    // move this code out of the entity class and attach it to a specific
+    // entity at a higher level in code.
+    Audio::m_Soloud.set3dListenerPosition(m_Position.x, m_Position.y, m_Position.z);
+    Audio::m_Soloud.set3dListenerAt(m_Forward.x, m_Forward.y, m_Forward.z);
+    Audio::m_Soloud.set3dListenerVelocity(m_Velocity.x, m_Velocity.y, m_Velocity.z);
+    Audio::m_Soloud.set3dListenerUp(DOD_WORLD_UP.x, DOD_WORLD_UP.y, DOD_WORLD_UP.z);
+    Audio::m_Soloud.update3dAudio();
 }
 
 EllipsoidCollider* FirstPersonPlayer::GetEllipsoidColliderPtr() {
