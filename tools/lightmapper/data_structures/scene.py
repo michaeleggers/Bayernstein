@@ -228,6 +228,9 @@ class Scene:
 
             compiled_triangles.append(compiled_triangle)
 
+        # Ensure the directory exists
+        binary_path.parent.mkdir(parents=True, exist_ok=True)
+
         # Write to binary file
         with open(binary_path, 'wb') as f:
             for triangle in compiled_triangles:
