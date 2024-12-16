@@ -304,7 +304,7 @@ void FirstPersonPlayer::UpdatePlayerModel() {
     }
 
     fire = CHECK_ACTION("fire");
-    if ( fire == ButtonState::PRESSED ) {
+    if ( fire == ButtonState::WENT_DOWN ) {
         Audio::m_SfxBus.play(*m_SfxGunshot);
     }
 
