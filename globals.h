@@ -4,8 +4,8 @@
 #include "soloud.h"
 
 #define GLM_FORCE_RADIANS
-#include "../../dependencies/glm/glm.hpp"
 #include "../../dependencies/glm/ext.hpp"
+#include "../../dependencies/glm/glm.hpp"
 #include "../../dependencies/glm/gtx/quaternion.hpp"
 
 constexpr glm::vec3 DOD_WORLD_UP(0.0f, 0.0f, 1.0f);
@@ -18,12 +18,20 @@ constexpr glm::vec3 DOD_WORLD_RIGHT(1.0f, 0.0f, 0.0f);
  */
 constexpr float DOD_COORD_UNIT_FACTOR = 37.65f;
 
-constexpr float DOD_AUDIO_SOUNDSPEED = 343.0f * DOD_COORD_UNIT_FACTOR; // speed of sound in air (m/s) converted to game units
-constexpr SoLoud::AudioSource::ATTENUATION_MODELS DOD_AUDIO_ATTENUATION_MODEL = SoLoud::AudioSource::INVERSE_DISTANCE;
-constexpr float DOD_AUDIO_ATTENUATION_ROLLOFF = 0.1f;
-constexpr float DOD_AUDIO_MIN_DISTANCE = 1.0f * DOD_COORD_UNIT_FACTOR;
-constexpr float DOD_AUDIO_MAX_DISTANCE = 1000000.0f * DOD_COORD_UNIT_FACTOR;
+// speed of sound in air (m/s) converted to game units
+constexpr float DOD_AUDIO_SOUNDSPEED = 343.0f * DOD_COORD_UNIT_FACTOR;
+
+constexpr SoLoud::AudioSource::ATTENUATION_MODELS DOD_AUDIO_ATTENUATION_MODEL   = SoLoud::AudioSource::INVERSE_DISTANCE;
+constexpr float                                   DOD_AUDIO_ATTENUATION_ROLLOFF = 0.1f;
+constexpr float                                   DOD_AUDIO_MIN_DISTANCE        = 1.0f * DOD_COORD_UNIT_FACTOR;
+constexpr float                                   DOD_AUDIO_MAX_DISTANCE        = 1000000.0f * DOD_COORD_UNIT_FACTOR;
+
+// Update collisions at 60Hz tickrate.
+constexpr double DOD_FIXED_UPDATE_TIME = 1000.0 / 60.0;
+
+// What is considered to be a pretty short distance for the
+// collision test in 'collision.cpp'
+// NOTE: This distance depends very much on the size of the level geometry!
+constexpr float DOD_VERY_CLOSE_DIST = 0.01f; // TODO: Collision with double precision?
 
 #endif
-
-

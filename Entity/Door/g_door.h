@@ -11,14 +11,13 @@
 #include "../../Clock/clock.h"
 #include "../../FSM/state_machine.h"
 #include "../../Message/message_dispatcher.h"
-#include "../base_game_entity.h"
 #include "../../map_parser.h"
 #include "../../r_common.h"
 #include "../../r_model.h"
+#include "../base_game_entity.h"
 
 class Door : public BaseGameEntity {
-private:
-
+  private:
     StateMachine<Door>* m_pStateMachine;
 
     // TODO: I don't think that a door should hold on
@@ -33,11 +32,10 @@ private:
 
     HKD_Model m_Model;
 
-public:
-
+  public:
     explicit Door(const std::vector<Property>& properties, const std::vector<Brush>& brushes);
-    
-    void Update() override;
+
+    void PostCollisionUpdate() override;
 
     ~Door() override {
         delete m_pStateMachine;
@@ -88,4 +86,3 @@ public:
 };
 
 #endif // _DOOR_H_
-

@@ -4,26 +4,25 @@
 #include "command.h"
 
 class JumpCmd : public Command {
-public:
+  public:
     static JumpCmd* Instance();
 
     void Execute() override;
 
-private:
-    JumpCmd() = default;
+  private:
+    JumpCmd()  = default;
     ~JumpCmd() = default;
 };
 
 class UseCmd : public Command {
-public:
+  public:
     static UseCmd* Instance();
 
     void Execute() override;
 
-private:
-    UseCmd() = default;
+  private:
+    UseCmd()  = default;
     ~UseCmd() = default;
 };
 
 #endif
-

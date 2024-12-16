@@ -4,6 +4,8 @@
 
 **/.DS_Store
 **/.vscode/**
+**/.zed/**
+**/.cache/**
 
 **/*.o/
 
@@ -26,6 +28,8 @@ tools/lightmapper/temp/lightmap.hdr
 **/assets/maps/**
 **/assets/textures/**
 **/assets/blender/**
+**/assets/photos/**
+**/assets/audio/**
 **/logs/**
 
 **/*.zip

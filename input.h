@@ -14,7 +14,7 @@ struct MouseMotion {
 struct MouseWheel {
     SDL_MouseWheelEvent current;
     SDL_MouseWheelEvent prev;
-    bool updated;
+    bool                updated;
 };
 
 void HandleInput(void);
@@ -29,18 +29,18 @@ bool KeyWentDown(SDL_Keycode keyCode);
 */
 bool KeyWentDownUnbuffered(SDL_Keycode keyCode);
 
-bool KeyWentUp(SDL_Keycode keyCode);
-bool KeyPressed(SDL_Keycode keyCode);
-bool MouseWentDown(int button);
-bool MouseWentUp(int button);
-bool MousePressed(int button);
-bool RightMouseWentDown(void);
+bool              KeyWentUp(SDL_Keycode keyCode);
+bool              KeyPressed(SDL_Keycode keyCode);
+bool              MouseWentDown(int button);
+bool              MouseWentUp(int button);
+bool              MousePressed(int button);
+bool              RightMouseWentDown(void);
 const MouseMotion GetMouseMotion(void);
-const MouseWheel GetMouseWheel(void);
-bool ShouldClose(void);
+bool              MouseMoved(int event);
+const MouseWheel  GetMouseWheel(void);
+bool              ShouldClose(void);
 
-const std::string&  TextInput();
-void                ClearTextInput();
+const std::string& TextInput();
+void               ClearTextInput();
 
 #endif
-

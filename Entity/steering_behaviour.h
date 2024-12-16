@@ -31,8 +31,6 @@ class SteeringBehaviour {
             return;
         }
         m_pPath = pPath;
-        // FollowWaypointsOn();
-        // FollowPathOn();
     }
 
   public:
@@ -115,6 +113,12 @@ class SteeringBehaviour {
         // offset_pursuit = 0x20000,
     };
 
+  public:
+    float     m_WanderJitter;
+    float     m_WanderRadius;
+    float     m_WanderDistance;
+    glm::vec3 m_WanderTarget;
+
   private:
     MovingEntity* m_pEntity;
     //the steering force created by the combined effect of all
@@ -127,12 +131,8 @@ class SteeringBehaviour {
 
     //the current position on the wander circle the agent is
     //attempting to steer towards
-    glm::vec3 m_WanderTarget;
 
     //explained above
-    float m_WanderJitter;
-    float m_WanderRadius;
-    float m_WanderDistance;
     //multipliers. These can be adjusted to effect strength of the
     //appropriate behavior. Useful to get flocking the way you require
     //for example.

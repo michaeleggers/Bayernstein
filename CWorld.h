@@ -6,36 +6,35 @@
 #define _CWORLD_H_
 
 #define GLM_FORCE_RADIANS
-#include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/ext.hpp"
+#include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/gtx/quaternion.hpp"
 
-#include <vector>
 #include <stdint.h>
 #include <unordered_map>
+#include <vector>
 
-#include "soloud.h"
-
-#include "r_common.h"
 #include "./Entity/base_game_entity.h"
 #include "Entity/Door/g_door.h"
 #include "Entity/Enemy/g_enemy.h"
-#include "Entity/Player/g_player.h"
-#include "Entity/FollowCamera/g_follow_camera.h"
+#include "Entity/FirstPersonPlayer/g_fp_player.h"
 #include "Entity/FlyCamera/g_fly_camera.h"
+#include "Entity/FollowCamera/g_follow_camera.h"
 #include "Entity/entity_manager.h"
 #include "Path/path.h"
 #include "map_parser.h"
 #include "polysoup.h"
+#include "r_common.h"
 #include "r_model.h"
+#include "soloud.h"
 
 class CWorld {
-public:
+  public:
     static CWorld* Instance();
-    void        InitWorldFromMap(const Map& map);
-    void        CollideEntitiesWithWorld();
-    void        CollideEntities();
-    
+    void           InitWorldFromMap(const Map& map);
+    void           CollideEntitiesWithWorld();
+    void           CollideEntities();
+
     /*
     * Easier to understand in code when only the number of
     * static tris is needed.
@@ -44,7 +43,7 @@ public:
         return m_StaticGeometryCount;
     }
 
-    Player* PlayerEntity() {
+    FirstPersonPlayer* PlayerEntity() {
         return m_pPlayerEntity;
     }
 
@@ -53,42 +52,50 @@ public:
     }
 
     std::vector<HKD_Model*>& GetModelPtrs() {
-        return m_Models;
+        return m_pModels;
     }
 
     std::vector<HKD_Model*>& GetBrushModelPtrs() {
-        return m_BrushModels;
+        return m_pBrushModels;
     }
 
-    static glm::vec3            GetOrigin(const Entity* entity);
-    static Waypoint             GetWaypoint(const Entity* entity);
-    static std::vector<MapTri>  CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys);
-    
-    std::vector<MapTri>          m_MapTris;
-    glm::vec3                    m_Gravity;
+    static glm::vec3           GetOrigin(const Entity* entity);
+    static Waypoint            GetWaypoint(const Entity* entity);
+    static std::vector<MapTri> CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys);
+
+    std::vector<MapTri> m_MapTris;
+    glm::vec3           m_Gravity;
     // FIX: Where to put paths? Shouldn't they also be entities themselves??
     std::unordered_map<std::string, Waypoint> m_NameToWaypoint;
-    std::vector<PatrolPath>      m_Paths;
+    std::vector<PatrolPath>                   m_Paths;
 
-private:
-    CWorld() = default;
+  private:
+    CWorld()  = default;
     ~CWorld() = default;
 
-    uint64_t                             m_StaticGeometryCount;
-    // FIX: Does the player really *always* have to exist?
-    Player*                              m_pPlayerEntity = nullptr;
-    std::vector<HKD_Model*>              m_Models; 
-    std::vector<HKD_Model*>              m_BrushModels;
-    // Keep references to brush entities' map tris
-    std::vector< std::vector<MapTri>* >  m_pBrushMapTris;
+    uint64_t m_StaticGeometryCount;
 
+    // Audio for ambience and music which are playing constantly
+    // in a loop.
+    // TODO: Those could be loaded through a property in the
+    // 'worldspawn' entity in the MAP file.
     SoLoud::AudioSource* m_MusicIdle;
     SoLoud::handle       m_MusicIdleHandle = 0;
     SoLoud::AudioSource* m_Ambience;
     SoLoud::handle       m_AmbienceHandle = 0;
+
+    // FIX: Does the player really *always* have to exist?
+    FirstPersonPlayer* m_pPlayerEntity = nullptr;
+
+    // Model entities that are defined via an IQM model.
+    std::vector<HKD_Model*> m_pModels;
+
+    // Models for brush entities.
+    std::vector<HKD_Model*> m_pBrushModels;
+
+    // Keep references to brush entities' map tris so we
+    // can easily collide against brush entities as well.
+    std::vector<std::vector<MapTri>*> m_pBrushMapTris;
 };
 
-
-
 #endif // _CWORLD_H_
-

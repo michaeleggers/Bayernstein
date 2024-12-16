@@ -6,12 +6,12 @@
 #include <string>
 #include <unordered_map>
 
-#include "r_itexture.h"
 #include "r_font.h"
+#include "r_itexture.h"
 
 class GLTexture : public ITexture {
-public:
-    GLTexture(std::string filename); 
+  public:
+    GLTexture(std::string filename);
     GLTexture(CFont* font);
 
     // TODO: (Michael) Nuke texture from GPU memory
@@ -19,7 +19,5 @@ public:
     GLuint         m_gl_Handle;
     unsigned char* m_Pixeldata;
 };
-
-
 
 #endif

@@ -5,9 +5,9 @@
 #include "g_door_states.h"
 
 #include "../../Audio/Audio.h"
-#include "../../utils/utils.h"
-#include "../../r_model.h"
 #include "../../CWorld.h"
+#include "../../r_model.h"
+#include "../../utils/utils.h"
 #include "../Message/message_type.h"
 #include <stdio.h>
 
@@ -71,16 +71,15 @@ void DoorOpening::Execute(Door* pDoor) {
     // to variations of the deltaTime and floating
     // point rounding errors.
 
-    double distance = glm::clamp(pDoor->m_Speed * GetDeltaTime() / 1000.0,
-                                0.0, pDoor->m_Distance);
+    double distance = glm::clamp(pDoor->m_Speed * GetDeltaTime() / 1000.0, 0.0, pDoor->m_Distance);
 
     // Open the door.
-    
+
     // Move the render representation.
     HKD_Model* doorModel = pDoor->GetModel();
-    glm::vec3 travel =  (float)distance * pDoor->m_Direction;
+    glm::vec3  travel    = (float)distance * pDoor->m_Direction;
     doorModel->position += travel;
-  
+
     // Move the CPU side representation for collision.
     std::vector<MapTri>& mapTris = pDoor->MapTris();
     for ( int i = 0; i < mapTris.size(); i++ ) {
@@ -90,7 +89,7 @@ void DoorOpening::Execute(Door* pDoor) {
             v.pos += travel;
         }
     }
-    
+
     // Check if door has reached its opened state.
     // If so switch to the opened state.
     pDoor->m_CurrentDistance += distance;

@@ -55,18 +55,23 @@ void EntityManager::RemoveEntity(const BaseGameEntity* pEntity) {
     m_EntityMap.erase(m_EntityMap.find(pEntity->ID()));
 }
 
-void EntityManager::UpdateEntities() {
+void EntityManager::UpdateEntitiesPreCollision() {
     for ( auto [ id, entity ] : m_EntityMap ) {
-        entity->Update();
+        entity->PreCollisionUpdate();
+    }
+}
+
+void EntityManager::UpdateEntitiesPostCollision() {
+    for ( auto [ id, entity ] : m_EntityMap ) {
+        entity->PostCollisionUpdate();
     }
 }
 
 std::vector<BaseGameEntity*> EntityManager::Entities() {
     std::vector<BaseGameEntity*> entities{};
     for ( auto [ id, entity ] : m_EntityMap ) {
-        entities.push_back( entity );
+        entities.push_back(entity);
     }
 
     return entities;
 }
-

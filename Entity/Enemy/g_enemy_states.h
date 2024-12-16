@@ -5,88 +5,114 @@
 #ifndef ENEMYSTATES_H
 #define ENEMYSTATES_H
 #include "../FSM/istate.h"
-#include "g_enemy.h"
+
+class Enemy;
+class Telegram;
 
 class EnemyIdle : public State<Enemy> {
   private:
-	EnemyIdle() = default;
-	// copy ctor and assignment should be private
-	EnemyIdle(const EnemyIdle&);
-	EnemyIdle& operator=(const EnemyIdle&);
+    EnemyIdle() = default;
+    // copy ctor and assignment should be private
+    EnemyIdle(const EnemyIdle&);
+    EnemyIdle& operator=(const EnemyIdle&);
 
   public:
-	// this is a singleton
-	static EnemyIdle* Instance();
+    // this is a singleton
+    static EnemyIdle* Instance();
 
-	void Enter(Enemy* pEnemy) override;
+    void Enter(Enemy* pEnemy) override;
 
-	void Execute(Enemy* pEnemy) override;
+    void Execute(Enemy* pEnemy) override;
 
-	void Exit(Enemy* pEnemy) override;
+    void Exit(Enemy* pEnemy) override;
 
-	bool OnMessage(Enemy* agent, const Telegram& telegram) override;
-};
-
-class EnemyRunning : public State<Enemy> {
-  private:
-	EnemyRunning() = default;
-	// copy ctor and assignment should be private
-	EnemyRunning(const EnemyRunning&);
-	EnemyRunning& operator=(const EnemyRunning&);
-
-  public:
-	// this is a singleton
-	static EnemyRunning* Instance();
-
-	void Enter(Enemy* pEnemy) override;
-
-	void Execute(Enemy* pEnemy) override;
-
-	void Exit(Enemy* pEnemy) override;
-
-	bool OnMessage(Enemy* agent, const Telegram& telegram) override;
+    bool OnMessage(Enemy* agent, const Telegram& telegram) override;
 };
 
 class EnemyAttacking : public State<Enemy> {
   private:
-	EnemyAttacking() = default;
-	// copy ctor and assignment should be private
-	EnemyAttacking(const EnemyAttacking&);
-	EnemyAttacking& operator=(const EnemyAttacking&);
+    EnemyAttacking() = default;
+    // copy ctor and assignment should be private
+    EnemyAttacking(const EnemyAttacking&);
+    EnemyAttacking& operator=(const EnemyAttacking&);
 
   public:
-	// this is a singleton
-	static EnemyAttacking* Instance();
+    // this is a singleton
+    static EnemyAttacking* Instance();
 
-	void Enter(Enemy* pEnemy) override;
+    void Enter(Enemy* pEnemy) override;
 
-	void Execute(Enemy* pEnemy) override;
+    void Execute(Enemy* pEnemy) override;
 
-	void Exit(Enemy* pEnemy) override;
+    void Exit(Enemy* pEnemy) override;
 
-	bool OnMessage(Enemy* agent, const Telegram& telegram) override;
+    bool OnMessage(Enemy* agent, const Telegram& telegram) override;
 };
 
 class EnemyDead : public State<Enemy> {
   private:
-	EnemyDead() = default;
+    EnemyDead() = default;
 
-	// copy ctor and assignment should be private
-	EnemyDead(const EnemyDead&);
-	EnemyDead& operator=(const EnemyDead&);
+    // copy ctor and assignment should be private
+    EnemyDead(const EnemyDead&);
+    EnemyDead& operator=(const EnemyDead&);
 
   public:
-	// copy ctor and assignment should be private
-	// this is a singleton
-	static EnemyDead* Instance();
+    // copy ctor and assignment should be private
+    // this is a singleton
+    static EnemyDead* Instance();
 
-	void Enter(Enemy* pEnemy) override;
+    void Enter(Enemy* pEnemy) override;
 
-	void Execute(Enemy* pEnemy) override;
+    void Execute(Enemy* pEnemy) override;
 
-	void Exit(Enemy* pEnemy) override;
+    void Exit(Enemy* pEnemy) override;
 
-	bool OnMessage(Enemy* agent, const Telegram& telegram) override;
+    bool OnMessage(Enemy* agent, const Telegram& telegram) override;
+};
+
+class EnemyWander : public State<Enemy> {
+  private:
+    EnemyWander() = default;
+
+    // copy ctor and assignment should be private
+    EnemyWander(const EnemyWander&);
+    EnemyWander& operator=(const EnemyWander&);
+
+  public:
+    // copy ctor and assignment should be private
+    // this is a singleton
+    static EnemyWander* Instance();
+
+    void Enter(Enemy* pEnemy) override;
+
+    void Execute(Enemy* pEnemy) override;
+
+    void Exit(Enemy* pEnemy) override;
+
+    bool OnMessage(Enemy* agent, const Telegram& telegram) override;
+};
+
+class EnemyPatrol : public State<Enemy> {
+  private:
+    EnemyPatrol() = default;
+
+    // copy ctor and assignment should be private
+    EnemyPatrol(const EnemyPatrol&);
+    EnemyPatrol& operator=(const EnemyPatrol&);
+
+  public:
+    // copy ctor and assignment should be private
+    // this is a singleton
+    static EnemyPatrol* Instance();
+
+    void Enter(Enemy* pEnemy) override;
+
+    void Execute(Enemy* pEnemy) override;
+
+    void Exit(Enemy* pEnemy) override;
+
+    bool OnMessage(Enemy* agent, const Telegram& telegram) override;
 };
 
 #endif // ENEMYSTATES_H

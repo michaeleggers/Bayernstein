@@ -23,21 +23,19 @@
 */
 class CFollowCamera : public BaseGameEntity {
 
-public:
+  public:
     CFollowCamera(BaseGameEntity* target = nullptr);
     ~CFollowCamera();
 
-    void Update() override;
+    void PostCollisionUpdate() override;
     bool HandleMessage(const Telegram& telegram) override;
 
     void SetTarget(BaseGameEntity* target);
 
     Camera m_Camera;
 
-private:
+  private:
     BaseGameEntity* m_Target = nullptr;
 };
 
 #endif
-
-
