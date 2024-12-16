@@ -253,7 +253,7 @@ bool GLRender::Init(void) {
 
     // Init TextureManager
 
-    m_TextureManager = GLTextureManager::Instance();
+    m_ITextureManager = GLTextureManager::Instance();
 
     // Setup Imgui
 
@@ -331,7 +331,7 @@ int GLRender::RegisterModel(HKD_Model* model) {
 
     for ( int i = 0; i < model->meshes.size(); i++ ) {
         HKD_Mesh*  mesh    = &model->meshes[ i ];
-        GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(mesh->textureFileName);
+        GLTexture* texture = (GLTexture*)m_ITextureManager->CreateTexture(mesh->textureFileName);
         GLMesh     gl_mesh
             = { .triOffset = offset / 3 + (int)mesh->firstTri, .triCount = (int)mesh->numTris, .texture = texture };
         gl_model.meshes.push_back(gl_mesh);
@@ -352,7 +352,7 @@ int GLRender::RegisterBrush(HKD_Model* model) {
 
     for ( int i = 0; i < model->meshes.size(); i++ ) {
         HKD_Mesh*  mesh    = &model->meshes[ i ];
-        GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(mesh->textureFileName);
+        GLTexture* texture = (GLTexture*)m_ITextureManager->CreateTexture(mesh->textureFileName);
         GLMesh     gl_mesh
             = { .triOffset = offset / 3 + (int)mesh->firstTri, .triCount = (int)mesh->numTris, .texture = texture };
         gl_model.meshes.push_back(gl_mesh);
@@ -367,7 +367,7 @@ int GLRender::RegisterBrush(HKD_Model* model) {
 }
 
 void GLRender::RegisterFont(CFont* font) {
-    GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(font);
+    GLTexture* texture = (GLTexture*)m_ITextureManager->CreateTexture(font);
 }
 
 void GLRender::RegisterWorld(CWorld* world) {
@@ -407,7 +407,7 @@ void GLRender::RegisterWorld(CWorld* world) {
 
 // Returns the CPU handle
 uint64_t GLRender::RegisterTextureGetHandle(std::string name) {
-    return m_TextureManager->CreateTextureGetHandle(name);
+    return m_ITextureManager->CreateTextureGetHandle(name);
 }
 
 void GLRender::SetActiveCamera(Camera* camera) {
@@ -443,7 +443,7 @@ std::vector<ITexture*> GLRender::ModelTextures(int gpuModelHandle) {
 
 std::vector<ITexture*> GLRender::Textures(void) {
     std::vector<ITexture*> result;
-    for ( auto& elem : m_TextureManager->m_NameToTexture ) {
+    for ( auto& elem : m_ITextureManager->m_NameToTexture ) {
         result.push_back(elem.second);
     }
 
@@ -917,7 +917,7 @@ void GLRender::SetFont(CFont* font, glm::vec4 color) {
 
     m_FontShader->Activate();
 
-    ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
+    ITexture* fontTexture = m_ITextureManager->GetTexture(font->m_Filename);
     glBindTexture(GL_TEXTURE_2D, (GLuint)fontTexture->m_hGPU);
 
     FontUB fontShaderData = {
@@ -1356,4 +1356,8 @@ void GLRender::SetWindowTitle(char* windowTitle) {
 
 glm::vec2 GLRender::GetWindowDimensions() {
     return glm::vec2(m_WindowWidth, m_WindowHeight);
+}
+
+ITextureManager* GLRender::GetTextureManager() {
+    return m_ITextureManager;
 }

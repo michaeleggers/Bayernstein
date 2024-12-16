@@ -56,6 +56,7 @@ add_executable(Game
     iqm_loader.cpp
     irender.h
     r_itexture.h
+    r_itexture_mgr.h
     r_gl.h
     r_gl.cpp
     r_model.h

@@ -19,6 +19,7 @@
 #include "r_common.h"
 #include "r_font.h"
 #include "r_itexture.h"
+#include "r_itexture_mgr.h"
 #include "r_model.h"
 
 enum DrawMode {
@@ -87,12 +88,13 @@ class IRender {
     virtual void
     Render(Camera* camera, HKD_Model** models, uint32_t numModels, HKD_Model** brushModels, uint32_t numBrushModels)
         = 0;
-    virtual void        RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
-    virtual void        RenderConsole(Console* console, CFont* font)                            = 0;
-    virtual void        RenderEnd(void)                                                         = 0;
-    virtual void        SetWindowTitle(char* windowTitle)                                       = 0;
-    virtual glm::vec2   GetWindowDimensions()                                                   = 0;
-    virtual SDL_Window* GetWindow()                                                             = 0;
+    virtual void             RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
+    virtual void             RenderConsole(Console* console, CFont* font)                            = 0;
+    virtual void             RenderEnd(void)                                                         = 0;
+    virtual void             SetWindowTitle(char* windowTitle)                                       = 0;
+    virtual glm::vec2        GetWindowDimensions()                                                   = 0;
+    virtual SDL_Window*      GetWindow()                                                             = 0;
+    virtual ITextureManager* GetTextureManager()                                                     = 0;
 
   private:
 };

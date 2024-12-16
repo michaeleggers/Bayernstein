@@ -11,7 +11,7 @@
 #include "collision.h"
 #include "hkd_interface.h"
 #include "irender.h"
-#include "r_gl_texture_mgr.h"
+#include "r_itexture_mgr.h"
 #include "r_model.h"
 
 void RotateTri(Tri* tri, glm::vec3 axis, float angle) {
@@ -411,8 +411,8 @@ Plane CreatePlaneFromTri(Tri tri) {
 // TODO: Maybe pass a CImage instead of textureFilename and store ref to that image
 // in case we need data like image size, etc. again.
 Sprite CreateSprite(const std::string& textureFilename, const glm::vec2& topLeft, const glm::vec2& bottomRight) {
-    GLTextureManager* textureManager = GLTextureManager::Instance();
-    ITexture*         spriteTexture  = textureManager->CreateTexture(textureFilename);
+    ITextureManager* textureManager = GetRenderer()->GetTextureManager();
+    ITexture*        spriteTexture  = textureManager->CreateTexture(textureFilename);
 
     float textureWidth  = (float)spriteTexture->m_Width;
     float textureHeight = (float)spriteTexture->m_Height;

@@ -8,16 +8,17 @@
 
 #include "r_font.h"
 #include "r_itexture.h"
+#include "r_itexture_mgr.h"
 
-class GLTextureManager {
+class GLTextureManager : public ITextureManager {
   public:
     static GLTextureManager* Instance();
 
-    ITexture* CreateTexture(std::string filename);
-    uint64_t  CreateTextureGetHandle(std::string filename);
-    ITexture* CreateTexture(CFont* font);
-    ITexture* GetTexture(std::string filename);
-    ITexture* GetTexture(uint64_t handle);
+    ITexture* CreateTexture(std::string filename) override;
+    uint64_t  CreateTextureGetHandle(std::string filename) override;
+    ITexture* CreateTexture(CFont* font) override;
+    ITexture* GetTexture(std::string filename) override;
+    ITexture* GetTexture(uint64_t handle) override;
 
     // TODO: Shutdown methods
 

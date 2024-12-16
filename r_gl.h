@@ -16,6 +16,7 @@
 #include "r_gl_shader.h"
 #include "r_gl_texture.h"
 #include "r_gl_texture_mgr.h"
+#include "r_itexture_mgr.h"
 #include "r_model.h"
 
 struct GLMesh {
@@ -87,7 +88,8 @@ class GLRender : public IRender {
     virtual SDL_Window* GetWindow() override {
         return m_Window;
     };
-    virtual glm::vec2 GetWindowDimensions() override;
+    virtual glm::vec2        GetWindowDimensions() override;
+    virtual ITextureManager* GetTextureManager() override;
 
     void           ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType);
     void           InitShaders();
@@ -99,7 +101,7 @@ class GLRender : public IRender {
     SDL_Window*   m_Window;
     SDL_GLContext m_SDL_GL_Conext;
 
-    GLTextureManager* m_TextureManager;
+    GLTextureManager* m_ITextureManager;
 
     Camera* m_ActiveCamera;
 
