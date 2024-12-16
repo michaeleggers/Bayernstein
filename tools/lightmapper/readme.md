@@ -172,15 +172,24 @@ cmake -DSDL_INCLUDE_DIR="/usr/local/include/SDL2" -DSDL_LIBRARIES_DIR="/usr/loca
 make
 ```
 
-### Building Souper (Fedora):
+### Building Souper (Unix/Linux):
+
+#### Install SDL2 devel (Debian):
+```bash
+sudo apt-get install libsdl2-dev
+```
+#### Install SDL2 devel (Fedora):
 ```bash
 sudo dnf install SDL2-devel
+```
 
+```bash
 cd tools/lightmapper/souper
 mkdir build
 cd build
 
-cmake -DSDL_INCLUDE_DIR="/usr/include/SDL2" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
+cmake -DSDL_INCLUDE_DIR="/usr/include/SDL2" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .. # Fedora
+cmake -DSDL_INCLUDE_DIR="/usr/local/include/SDL2" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .. # Ubuntu
 make
 ```
 
