@@ -150,6 +150,7 @@ int main(int argc, char** argv) {
     std::vector<PointLight> lights      = extractPointLights(map);
 
     // TODO: Fabi makes this work :)
+    /*
     std::vector<BrushEntity> brushEntities{};
     for ( auto& entity : map.entities ) {
         std::vector<Brush>&     brushes   = entity.brushes;
@@ -158,6 +159,7 @@ int main(int argc, char** argv) {
         std::vector<MapPolygon> doorTris  = triangulate(doorPolys);
         brushEntities.push_back({ entity.properties, doorTris });
     }
+    */
 
 // Print UV coordinates for debugging
 #if 0
