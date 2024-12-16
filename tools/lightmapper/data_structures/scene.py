@@ -87,8 +87,7 @@ class Scene:
             texture_path = f"{assets_path}/textures/{texture_name}.tga"
             if not Path(texture_path).exists():                
                 print(f'(load_from_json): Cannot load texture path: {texture_path}')
-                texture_name = "default"
-                texture_path = f"{assets_path}/textures/{texture_name}.tga"
+                texture_path = f"{assets_path}/textures/default.png"
 
             # Cache texture size if not already cached
             if texture_name not in texture_dimensions_cache:
