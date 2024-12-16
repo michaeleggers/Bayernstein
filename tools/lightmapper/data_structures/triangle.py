@@ -8,6 +8,7 @@ from data_structures.line_segment import LineSegment
 class Triangle:
     vertices: Tuple[Vector3f, Vector3f, Vector3f]
     bounding_box: BoundingBox = field(init=False)
+    normal: Vector3f = field(init=False)
 
     def __post_init__(self):
         """Initialize the bounding box for the triangle."""
@@ -19,6 +20,8 @@ class Triangle:
             max=Vector3f(max(xs), max(ys), max(zs))
         )
 
+        self.normal = self.calculate_normal()
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Triangle):
             return False
@@ -29,12 +32,10 @@ class Triangle:
 
         return self_vertices == other_vertices
     
-    def normal(self) -> Vector3f:
+    def calculate_normal(self) -> Vector3f:
         """Compute the normal vector of the triangle."""
         v0, v1, v2 = self.vertices
-        #TODO: fix triangle winding order
         normal = (v1 - v0).cross(v2 - v0).normalize()
-        #normal = Vector3f(-normal.x, -normal.y, -normal.z)
         return normal
     
     def get_edges(self) -> Tuple[LineSegment, LineSegment, LineSegment]:
@@ -51,3 +52,31 @@ class Triangle:
         center_y = (v1.y + v2.y + v3.y) / 3
         center_z = (v1.z + v2.z + v3.z) / 3
         return Vector3f(center_x, center_y, center_z)
+    
+    def intersect_ray(self, ray_origin: Vector3f, ray_direction: Vector3f) -> Optional[float]:
+        v0, v1, v2 = self.vertices
+        edge1 = v1 - v0
+        edge2 = v2 - v0
+        h = ray_direction.cross(edge2)
+        a = edge1.dot(h)
+
+        if abs(a) < 1e-6:  # Ray is parallel to the triangle
+            return None
+
+        if a < 0:  # Backface hit
+            return None
+
+        f = 1.0 / a
+        s = ray_origin - v0
+        u = f * s.dot(h)
+        if u < 0.0 or u > 1.0:
+            return None
+
+        q = s.cross(edge1)
+        v = f * ray_direction.dot(q)
+        if v < 0.0 or u + v > 1.0:
+            return None
+
+        t = f * edge2.dot(q)
+        epsilon = 1e-6  # Threshold for valid intersections
+        return t if t > epsilon else None

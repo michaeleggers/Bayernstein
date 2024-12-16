@@ -2,6 +2,7 @@ import sys
 from OpenGL.GL import *
 from OpenGL.GL.shaders import compileProgram, compileShader
 from pathlib import Path
+from typing import List
 import pyrr
 import numpy as np
 import glfw
@@ -41,7 +42,7 @@ class Renderer:
         # Initialize GLFW, OpenGL, and assets
         self._initialize_glfw(width=width, height=height, lightmap_mode=lightmap_mode)
         self._initialize_opengl(clear_color=atmosphere_color)
-        self._initialize_assets(scene=scene, light_map_path=light_map_path)
+        self._initialize_assets(scene=scene)
         if self.lightmap_mode:
             self._initialize_fbo(width=width, height=height)
         self._initialize_uniforms(fov)
@@ -107,10 +108,19 @@ class Renderer:
         glClearColor(clear_color.r, clear_color.g, clear_color.b, 1)
         glEnable(GL_DEPTH_TEST)
 
-    def _initialize_assets(self, scene: Scene, light_map_path: Path) -> None:
+
+    # Initialize assets
+
+    def _initialize_assets(self, scene: Scene) -> None:
         """Initialize OpenGL buffers, textures, and shaders."""
-        
-        # Vertex Buffer Object (VBO) and Vertex Array Object (VAO)
+        self._initialize_geometry_buffers(scene)
+        #self._initialize_line_buffers(scene)
+        self._initialize_texture_array(scene)
+        self._initialize_lightmap(scene)
+        self._initialize_shaders()
+
+    def _initialize_geometry_buffers(self, scene: Scene) -> None:
+        """Initialize buffers for the scene geometry (triangles)."""
         self.vao = glGenVertexArrays(1)
         glBindVertexArray(self.vao)
 
@@ -118,55 +128,7 @@ class Renderer:
         glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
         glBufferData(GL_ARRAY_BUFFER, scene.vertex_array.nbytes, scene.vertex_array, GL_STATIC_DRAW)
 
-        # Texture Array Setup
-        texture_array = self.scene.texture_array
-        num_layers, max_height, max_width, _ = texture_array.shape
-
-        # Create and bind the texture array
-        self.texture_array_id = glGenTextures(1)
-        glActiveTexture(GL_TEXTURE0)  # Ensure GL_TEXTURE0 is active for the texture array
-        glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_array_id)
-        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, max_width, max_height, num_layers, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_array)
-
-        # Set texture parameters for the texture array
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glGenerateMipmap(GL_TEXTURE_2D_ARRAY)
-
-        # Lightmap Setup
-        lightmap = self.scene.light_map
-        lightmap_width, lightmap_height = lightmap.shape[:2]
-        self.lightmap_texture_id = glGenTextures(1)
-
-        # Create and bind the lightmap texture
-        glActiveTexture(GL_TEXTURE1)  # Use GL_TEXTURE1 for the lightmap
-        glBindTexture(GL_TEXTURE_2D, self.lightmap_texture_id)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, lightmap_width, lightmap_height, 0, GL_RGB, GL_FLOAT, lightmap)
-
-        # Texture parameters for lightmap
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-
-        # Compile and link shaders
-        self.shader = shader.create_shader(
-            vertex_filepath=self.base_path / 'shaders/vertex.txt',
-            fragment_filepath=self.base_path / 'shaders/fragment.txt'
-        )
-
-        # Now the shader is available, we can set the uniforms
-        glUseProgram(self.shader)
-
-        # Set uniform for the diffuse texture array
-        glUniform1i(glGetUniformLocation(self.shader, "diffuseTextureArray"), 0)
-
-        # Set uniform for the lightmap texture
-        glUniform1i(glGetUniformLocation(self.shader, "lightmapTexture"), 1)
-
-        # Set vertex attributes (Position, UVs, Texture index)
+        """Set vertex attributes for the geometry buffers."""
         glEnableVertexAttribArray(0)  # Position (x, y, z)
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(0))
 
@@ -178,6 +140,74 @@ class Renderer:
 
         glEnableVertexAttribArray(3)  # Texture index
         glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(28))
+
+    def _initialize_line_buffers(self, scene: Scene) -> None:
+        """Initialize buffers for the lines in the scene."""
+        # Generate and bind VAO for lines
+        self.line_vao = glGenVertexArrays(1)
+        glBindVertexArray(self.line_vao)
+
+        # Generate and bind VBO for line data (positions and colors)
+        self.line_vbo = glGenBuffers(1)
+        glBindBuffer(GL_ARRAY_BUFFER, self.line_vbo)
+        glBufferData(GL_ARRAY_BUFFER, scene.line_array.nbytes, scene.line_array, GL_STATIC_DRAW)
+
+        # Set vertex attributes for the line buffers
+        # 0: Position (x, y, z) - each line has 2 points
+        glEnableVertexAttribArray(0)  # Position
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 24, ctypes.c_void_p(0))  # 3 floats for position
+
+        # 1: Color (r, g, b) - each point has a color
+        glEnableVertexAttribArray(1)  # Color
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 24, ctypes.c_void_p(12))  # 3 floats for color (offset by 12 bytes)
+
+        glBindVertexArray(0)  # Unbind VAO
+
+    def _initialize_texture_array(self, scene: Scene) -> None:
+        """Initialize the texture array for the scene."""
+        texture_array = self.scene.texture_array
+        num_layers, max_height, max_width, _ = texture_array.shape
+
+        self.texture_array_id = glGenTextures(1)
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_array_id)
+        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, max_width, max_height, num_layers, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_array)
+
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glGenerateMipmap(GL_TEXTURE_2D_ARRAY)
+
+    def _initialize_lightmap(self, scene: Scene) -> None:
+        """Initialize the lightmap texture for the scene."""
+        lightmap = self.scene.light_map
+        lightmap_width, lightmap_height = lightmap.shape[:2]
+        
+        self.lightmap_texture_id = glGenTextures(1)
+
+        glActiveTexture(GL_TEXTURE1)
+        glBindTexture(GL_TEXTURE_2D, self.lightmap_texture_id)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, lightmap_width, lightmap_height, 0, GL_RGB, GL_FLOAT, lightmap)
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+    def _initialize_shaders(self) -> None:
+        """Compile and link shaders for the scene."""
+        # Compile and link the main shader
+        self.shader = shader.create_shader(
+            vertex_filepath=self.base_path / 'shaders/vertex.txt',
+            fragment_filepath=self.base_path / 'shaders/fragment.txt',
+        )
+
+        # Compile and link the line shader
+        #self.shader_line = shader.create_shader(
+        #    vertex_filepath=self.base_path / 'shaders/lineVertex.txt',
+        #    fragment_filepath=self.base_path / 'shaders/lineFragment.txt'
+        #)
 
     def _initialize_fbo(self, width: int, height: int) -> None:
         """Initialize FBO and texture for rendering."""
@@ -203,27 +233,34 @@ class Renderer:
     def _initialize_uniforms(self, fov=90) -> None:
         """Initialize uniforms for the shader program."""
         
-        # Use the shader program
-        glUseProgram(self.shader)
-
-        # Set the exposure uniform
-        glUniform1f(glGetUniformLocation(self.shader, "exposure"), self.emission_strength)
-
         # Set up the projection matrix
         width, height = glfw.get_window_size(self.window)
         projection = pyrr.matrix44.create_perspective_projection(
             fovy=fov, aspect=width / height, near=0.1, far=4000.0, dtype=np.float32
         )
-        glUniformMatrix4fv(glGetUniformLocation(self.shader, "projection"), 1, GL_FALSE, projection)
+
+        # Use the shader program
+        glUseProgram(self.shader)
 
         # Store uniform locations for model, view, and exposure
         self.modelMatrixLocation = glGetUniformLocation(self.shader, "model")
         self.viewMatrixLocation = glGetUniformLocation(self.shader, "view")
+        self.projectionMatrixLocation = glGetUniformLocation(self.shader, "projection")
         self.exposureLocation = glGetUniformLocation(self.shader, "exposure")
 
+        glUniformMatrix4fv(self.projectionMatrixLocation, 1, GL_FALSE, projection)
+        glUniform1f(self.exposureLocation, self.emission_strength)
         # Bind texture samplers to their respective texture units
         glUniform1i(glGetUniformLocation(self.shader, "diffuseTextureArray"), 0)  # GL_TEXTURE0
         glUniform1i(glGetUniformLocation(self.shader, "lightmapTexture"), 1)      # GL_TEXTURE1
+
+
+
+        #glUseProgram(self.shader_line)
+        #self.viewMatrixLocation_line = glGetUniformLocation(self.shader_line, "view")
+        #self.projectionMatrixLocation_line = glGetUniformLocation(self.shader_line, "projection")
+
+        #glUniformMatrix4fv(self.projectionMatrixLocation_line, 1, GL_FALSE, projection)
 
 
     def _initialize_camera(self) -> None:
@@ -255,39 +292,40 @@ class Renderer:
         # Initialize the texture
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
-    def render_single_image(self, position: Vector3f, direction: np.ndarray, camera_up: np.ndarray) -> np.ndarray:
-        """Render a single image using the pre-initialized FBO."""
-        # Update the view matrix
-        self.update_view_matrix(position.to_array(), direction, camera_up)
-
-        # Bind the FBO and render the scene
+    def render_batch_images(self, positions: List[Vector3f], directions: List[np.ndarray], camera_ups: List[np.ndarray]) -> List[np.ndarray]:
+        """Render multiple images in one pass if possible."""
+        images = []
         glBindFramebuffer(GL_FRAMEBUFFER, self.fbo)
-        self.render_scene()
+        
+        for position, direction, camera_up in zip(positions, directions, camera_ups):
+            # Update only the view matrix for each frame
+            self.update_view_matrix(position.to_array(), direction, camera_up)
+            self.render_scene()
 
-        glFlush()
-        glFinish()
-
-        # Dimensions of the framebuffer
-        width, height = glfw.get_window_size(self.window)
-
-        # Read pixels from the FBO
-        glPixelStorei(GL_PACK_ALIGNMENT, 1)
-        image_data = glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT)
-        image_array = np.frombuffer(image_data, dtype=np.float32).reshape(height, width, 3)
-        image_array = np.flipud(image_array)
-
-        # Unbind the framebuffer
+            # Read pixels
+            width, height = glfw.get_window_size(self.window)
+            image_array = np.empty((height, width, 3), dtype=np.float32)
+            glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, image_array)
+            images.append(np.flipud(image_array))  # Flip once per frame
+        
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
-
-        return image_array
+        return images
 
     
     def update_view_matrix(self, camera_pos, camera_direction, camera_up) -> None:
+        
         view_matrix = self._get_view_matrix(camera_pos, camera_direction, camera_up)
+
+        glUseProgram(self.shader)
         glUniformMatrix4fv(self.viewMatrixLocation, 1, GL_FALSE, view_matrix)
+
+        #glUseProgram(self.shader_line)
+        #glUniformMatrix4fv(self.viewMatrixLocation_line, 1, GL_FALSE, view_matrix)
+
+        #glUseProgram(self.shader)
 
     def _get_view_matrix(self, camera_pos, camera_direction, camera_up) -> np.ndarray:
         camera_target = camera_pos + camera_direction
@@ -299,18 +337,30 @@ class Renderer:
         )
     
     def render_scene(self) -> None:
+        """Render the entire scene, including geometry and lines."""
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        
+        # Render geometry (triangles)
+        self._render_geometry()
+
+        # Render lines
+        #self._render_lines()
+
+        # Reset shader
+        #glUseProgram(self.shader)
+
+    def _render_geometry(self) -> None:
+        """Render the scene geometry using the main shader."""
         glUseProgram(self.shader)
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
         glFrontFace(GL_CCW)
 
-        # Set shader uniforms
+        # Set shader uniforms for geometry
         glUniform1f(self.exposureLocation, self.emission_strength)
-        # TODO: caan be removed as model_transform is identity
         glUniformMatrix4fv(self.modelMatrixLocation, 1, GL_FALSE, self.scene.get_model_transform())
 
-        # Bind textures once for the atlas and lightmap
+        # Bind the texture array and lightmap texture for geometry
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D_ARRAY, self.texture_array_id)
         glUniform1i(glGetUniformLocation(self.shader, "diffuseTexture"), 0)  # Texture atlas bound to unit 0
@@ -319,15 +369,22 @@ class Renderer:
         glBindTexture(GL_TEXTURE_2D, self.lightmap_texture_id)
         glUniform1i(glGetUniformLocation(self.shader, "lightmapTexture"), 1)  # Lightmap bound to unit 1
 
-        # Prepare to draw
-        self.arm_for_drawing()
-        self.draw()
-
-    def arm_for_drawing(self):
+        # Prepare to draw the geometry
         glBindVertexArray(self.vao)
-
-    def draw(self):
         glDrawArrays(GL_TRIANGLES, 0, len(self.scene.vertex_array) // 3)
+
+    def _render_lines(self) -> None:
+        """Render the scene lines using the line shader."""
+        glUseProgram(self.shader_line)  # Use the line shader
+
+        # Set any line-specific uniforms here (e.g., line color)
+        glUniform3f(glGetUniformLocation(self.shader_line, "lineColor"), 1.0, 0.0, 0.0)  # Red 
+
+        # Bind the line VAO and prepare for line rendering
+        glBindVertexArray(self.line_vao)
+        
+        # Draw the lines with GL_LINES
+        glDrawArrays(GL_LINES, 0, self.scene.line_count * 2)
 
     def run(self) -> None:
         while not glfw.window_should_close(self.window):
@@ -387,7 +444,7 @@ class Renderer:
         glDeleteTextures(1, (self.texture_array_id,))
         glDeleteTextures(1, (self.lightmap_texture_id,))
         if self.lightmap_mode:
-            glDeleteTextures(1, (self.fbo_texture))
+            glDeleteTextures(1, (self.fbo_texture,))
 
         # Delete shader program
         glDeleteProgram(self.shader)

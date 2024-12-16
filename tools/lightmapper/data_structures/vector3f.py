@@ -24,6 +24,9 @@ class Vector3f:
     def __mul__(self, scalar: float) -> 'Vector3f':
         """Multiplies the vector by a scalar."""
         return Vector3f(self.x * scalar, self.y * scalar, self.z * scalar)
+    
+    def __neg__(self) -> 'Vector3f':
+        return Vector3f(-self.x, -self.y, -self.z)
 
     def cross(self, other: 'Vector3f') -> 'Vector3f':
         return Vector3f(
@@ -38,6 +41,9 @@ class Vector3f:
     def normalize(self) -> 'Vector3f':
         length = np.sqrt(self.x**2 + self.y**2 + self.z**2)
         return Vector3f(self.x / length, self.y / length, self.z / length)
+    
+    def magnitude(self) -> float:
+        return (self.x**2 + self.y**2 + self.z**2)**0.5
 
     def to_tuple(self) -> tuple[float, float, float]:
         """Convert the vector to a tuple.

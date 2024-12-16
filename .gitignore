@@ -27,6 +27,8 @@
 **/assets/audio/**
 **/assets/blender/**
 **/assets/photos/**
+# explicitly include default.png as this texture will be used if the target thexture is not found
+!**/assets/textures/default.png
 
 # Logfiles
 **/logs/**
