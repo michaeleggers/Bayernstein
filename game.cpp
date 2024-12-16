@@ -66,7 +66,7 @@ void Game::Init() {
 #ifdef _WIN32
     std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/temple6.map");
 #elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/room.map");
+    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/lightmap_test.map");
 #endif
 
     size_t inputLength = mapData.length();
@@ -76,7 +76,7 @@ void Game::Init() {
 
     // Load lightmap triangles and lightmap texture
 
-    m_World->InitWorldFromMap(map, "room");
+    m_World->InitWorldFromMap(map, "lightmap_test");
     m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.
