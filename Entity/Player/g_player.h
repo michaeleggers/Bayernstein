@@ -9,6 +9,8 @@
 #include "../../dependencies/glm/ext.hpp"
 #include "../../dependencies/glm/glm.hpp"
 
+#include "soloud.h"
+
 #include "../../Clock/clock.h"
 #include "../../FSM/state_machine.h"
 #include "../../Message/message_dispatcher.h"
@@ -55,6 +57,12 @@ class Player : public MovingEntity, public IInputReceiver {
     StateMachine<Player>* m_pStateMachine;
     double                m_AttackDelay = 100;
     double                m_LastAttack  = 0;
+
+    SoLoud::AudioSource* m_SfxGunshot;
+    SoLoud::AudioSource* m_SfxJump;
+
+    SoLoud::AudioSource* m_SfxFootsteps;
+    SoLoud::handle       m_FootstepsHandle = 0;
 
     HKD_Model m_Model;
     // moving members

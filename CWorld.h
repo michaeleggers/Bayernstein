@@ -20,13 +20,13 @@
 #include "Entity/FirstPersonPlayer/g_fp_player.h"
 #include "Entity/FlyCamera/g_fly_camera.h"
 #include "Entity/FollowCamera/g_follow_camera.h"
-#include "Entity/Player/g_player.h"
 #include "Entity/entity_manager.h"
 #include "Path/path.h"
 #include "map_parser.h"
 #include "polysoup.h"
 #include "r_common.h"
 #include "r_model.h"
+#include "soloud.h"
 
 class CWorld {
   public:
@@ -74,6 +74,16 @@ class CWorld {
     ~CWorld() = default;
 
     uint64_t m_StaticGeometryCount;
+
+    // Audio for ambience and music which are playing constantly
+    // in a loop.
+    // TODO: Those could be loaded through a property in the
+    // 'worldspawn' entity in the MAP file.
+    SoLoud::AudioSource* m_MusicIdle;
+    SoLoud::handle       m_MusicIdleHandle = 0;
+    SoLoud::AudioSource* m_Ambience;
+    SoLoud::handle       m_AmbienceHandle = 0;
+
     // FIX: Does the player really *always* have to exist?
     FirstPersonPlayer* m_pPlayerEntity = nullptr;
 

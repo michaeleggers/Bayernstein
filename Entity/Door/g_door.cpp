@@ -11,6 +11,7 @@
 #include "../../dependencies/glm/glm.hpp"
 #include "../../dependencies/glm/gtx/quaternion.hpp"
 
+#include "../../Audio/Audio.h"
 #include "../../globals.h"
 #include "../../hkd_interface.h"
 #include "../../map_parser.h"
@@ -98,6 +99,17 @@ Door::Door(const std::vector<Property>& properties, const std::vector<Brush>& br
     glm::vec3 minsToMaxs     = maxs - mins;
     glm::vec3 directedLength = m_Direction * minsToMaxs;
     m_Distance               = glm::length(directedLength) - (double)m_Lip;
+
+    // Compute center of audio emitter and create dynamic sound
+    // for moving stone against each other.
+    // TODO: Sound samples could be loaded through a property which
+    // can be set in TrenchBroom.
+    glm::vec3 doorCenter = mins + minsToMaxs / 2.0f;
+    m_SoundEmitterPos    = doorCenter + directedLength / 2.0f;
+
+    auto sfxLoop  = Audio::LoadSource("sfx/sonniss/Door - Stone Long 02 LOOP.wav", 1.2f, true);
+    auto sfxEnd   = Audio::LoadSource("sfx/sonniss/Async_Impact2.wav");
+    m_SfxMovement = new DynamicSound(sfxLoop, sfxEnd);
 }
 
 bool Door::HandleMessage(const Telegram& telegram) {

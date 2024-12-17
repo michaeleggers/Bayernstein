@@ -5,6 +5,8 @@
 #ifndef ENEMY_H
 #define ENEMY_H
 
+#include "soloud.h"
+
 #include "../../FSM/state_machine.h"
 #include "../../collision.h"
 #include "../../input_receiver.h"
@@ -72,6 +74,9 @@ class Enemy : public MovingEntity {
   private:
     StateMachine<Enemy>* m_pStateMachine;
     double               m_Health = 100;
+
+    SoLoud::AudioSource* m_SfxFootsteps;
+    SoLoud::handle       m_FootstepsHandle = 0;
 
     // FIX: Those should be components for next milestone.
     HKD_Model   m_Model;

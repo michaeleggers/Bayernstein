@@ -15,6 +15,8 @@
 #include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/gtx/quaternion.hpp"
 
+#include "Audio/Audio.h"
+#include "Entity/FirstPersonPlayer/g_fp_player.h"
 #include "Entity/base_game_entity.h"
 #include "Message/message_type.h"
 #include "hkd_interface.h"
@@ -162,6 +164,13 @@ void CWorld::InitWorldFromMap(const Map& map) {
             }
         }
     }
+
+    m_MusicIdle       = Audio::LoadSource("music/GranVals_Placeholder.wav", 0.15f, true, true);
+    m_MusicIdleHandle = Audio::m_MusicBus.play(*m_MusicIdle, -1);
+
+    m_Ambience = Audio::LoadSource(
+        "ambience/sonniss/DSGNDron_EMF_Designed_Drone_Ambience_Forbidden_Cave.wav", 0.15f, true, true);
+    m_AmbienceHandle = Audio::m_AmbienceBus.play(*m_Ambience, -1);
 }
 
 void CWorld::CollideEntitiesWithWorld() {
@@ -195,7 +204,7 @@ void CWorld::CollideEntitiesWithWorld() {
                 // FIX: Again. Components could fix this.
                 HKD_Model* model = nullptr;
                 if ( pEntity->Type() == ET_PLAYER ) {
-                    model = ((Player*)pEntity)->GetModel();
+                    model = ((FirstPersonPlayer*)pEntity)->GetModel();
                 } else if ( pEntity->Type() == ET_ENEMY ) {
                     model = ((Enemy*)pEntity)->GetModel();
                 }

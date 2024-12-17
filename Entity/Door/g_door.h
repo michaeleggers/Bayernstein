@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "../../Audio/DynamicSound.h"
 #include "../../Clock/clock.h"
 #include "../../FSM/state_machine.h"
 #include "../../Message/message_dispatcher.h"
@@ -79,6 +80,9 @@ class Door : public BaseGameEntity {
 
     glm::vec3 m_Mins = glm::vec3(0.0f);
     glm::vec3 m_Maxs = glm::vec3(0.0f);
+
+    glm::vec3 m_SoundEmitterPos;
+    DynamicSound* m_SfxMovement;
 };
 
 #endif // _DOOR_H_
