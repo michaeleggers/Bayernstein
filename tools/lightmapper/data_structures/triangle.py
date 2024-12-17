@@ -30,7 +30,7 @@ class Triangle:
         self_vertices = set(self.vertices)
         other_vertices = set(other.vertices)
 
-        return self_vertices == other_vertices
+        return self_vertices == other_vertices and self.normal == other.normal
     
     def calculate_normal(self) -> Vector3f:
         """Compute the normal vector of the triangle."""

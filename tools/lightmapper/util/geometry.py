@@ -530,7 +530,7 @@ def closest_plane_intersection(point: Vector3f, normal: Vector3f, triangles: Lis
 
     return closest_distance if closest_distance != float('inf') else None
 
-def point_is_covered_by_triangle(point: Vector3f, normal: Vector3f, triangles: List[Triangle], threshold=1e-8):
+def point_is_covered_by_triangle(point: Vector3f, normal: Vector3f, triangles: List[Triangle], threshold=1e-6):
     for triangle in triangles:
         if is_triangle_on_plane(triangle, point, normal, threshold=threshold):
             if is_point_in_triangle(point, triangle):
@@ -550,16 +550,22 @@ def point_is_covered_by_triangle(point: Vector3f, normal: Vector3f, triangles: L
     return False
 
 def point_to_plane_distance(p: Vector3f, point: Vector3f, normal: Vector3f) -> float:
-    return abs((p.x - point.x) * normal.x + (p.y - point.y) * normal.y + (p.z - point.z) * normal.z)
+    """Calculate the perpendicular distance of a point to a plane."""
+    normalized_normal = normal.normalize()  # Ensure the normal vector has unit length
+    return abs((p.x - point.x) * normalized_normal.x + 
+               (p.y - point.y) * normalized_normal.y + 
+               (p.z - point.z) * normalized_normal.z)
 
 def is_triangle_on_plane(triangle: Triangle, point: Vector3f, normal: Vector3f, threshold: float) -> bool:
-
+    """Check if a triangle is approximately on a plane."""
     v0, v1, v2 = triangle.vertices
 
+    # Calculate distances from triangle vertices to the plane
     d0 = point_to_plane_distance(v0, point, normal)
     d1 = point_to_plane_distance(v1, point, normal)
     d2 = point_to_plane_distance(v2, point, normal)
 
+    # Check if the maximum distance is within the given threshold
     return max(d0, d1, d2) <= threshold
 
 def distance_to_closest_triangle_facing_away(point: Vector3f, plane_normal: Vector3f, intersection_segments: List[LineSegment], intersection_normals: List[Vector3f]) -> float:
@@ -578,7 +584,7 @@ def distance_to_closest_triangle_facing_away(point: Vector3f, plane_normal: Vect
             dot_product = origin_to_projection_vector.dot(projected_intersection_normal)
             distance = distance_between_points(point, line_segment_projection)
             # if a traingle covers a patch, the origin_to_projection_vector will be close to the triangles normal 
-            if dot_product > 0.999 or distance < 0.01:
+            if dot_product > 0.99 or distance < 0.01:
                 closest_distance = min(closest_distance, distance)
         else:
             # as with snapped geometry this may be quite often the case: 
@@ -750,7 +756,7 @@ def is_point_in_triangle_2d(
 def is_point_on_triangle_edge(
     point: Tuple[float, float], 
     triangle: Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]], 
-    tolerance: float = 1e-8
+    tolerance: float = 1e-6
 ) -> bool:
     """Check if a 2D point lies on the edge of a 2D triangle.
 
@@ -889,6 +895,5 @@ def project_vector_onto_plane(vector: Vector3f, plane_normal: Vector3f) -> Vecto
     # Subtract the parallel component from the original vector to get the projection onto the plane
     projected_vector = vector - parallel_component
     return projected_vector
-
 
 
