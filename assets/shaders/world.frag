@@ -31,6 +31,7 @@ const uint SHADER_LINEMODE          = 0x00000001 << 1;
 const uint SHADER_ANIMATED          = 0x00000001 << 2;
 const uint SHADER_IS_TEXTURED       = 0x00000001 << 3;
 const uint SHADER_USE_LIGHTMAP      = 0x00000001 << 4;
+const uint SHADER_LIGHTMAP_ONLY     = 0x00000001 << 5;
 
 void main() {
 
@@ -63,7 +64,14 @@ void main() {
     }
 
     vec4 diffuseColor = texture( diffuseTexture, uv );
-    
-    out_Color = vec4( diffuseColor.rgb * lightmapColor.rgb, 1.0f );
+   
+    vec4 finalOutputColor = vec4( diffuseColor.rgb * lightmapColor.rgb, 1.0f );
+
+    if ( (shaderSettingBits & SHADER_LIGHTMAP_ONLY) == SHADER_LIGHTMAP_ONLY ) {
+        lightmapColor = texture( lightmapTexture, uvLightmap );
+        finalOutputColor = vec4(lightmapColor.rgb, 1.0f);
+    }
+
+    out_Color = finalOutputColor;
 
 }

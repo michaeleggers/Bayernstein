@@ -38,7 +38,8 @@ ConsoleVariable scr_consize      = { "scr_consize", 0.45f };
 ConsoleVariable scr_conopacity   = { "scr_conopacity", 0.95f };
 ConsoleVariable scr_conwraplines = { "scr_conwraplines", 1 };
 
-ConsoleVariable r_lightmaps = { "r_lightmaps", 1 };
+ConsoleVariable r_lightmaps      = { "r_lightmaps", 1 };
+ConsoleVariable r_lightmaps_only = { "r_lightmaps_only", 0 };
 
 void GLAPIENTRY OpenGLDebugCallback(GLenum        source,
                                     GLenum        type,
@@ -320,6 +321,7 @@ bool GLRender::Init(void) {
     VariableManager::Register(&scr_conwraplines);
 
     VariableManager::Register(&r_lightmaps);
+    VariableManager::Register(&r_lightmaps_only);
 
     return true;
 }
@@ -770,13 +772,21 @@ void GLRender::Render(
     m_WorldShader->Activate();
     m_WorldShader->SetViewProjMatrices(view, proj);
 
-    if ( m_UseLightmap && r_lightmaps.value ) {
-        m_WorldShader->SetShaderSettingBits(SHADER_USE_LIGHTMAP);
+    if ( m_UseLightmap ) {
         // Bind lightmap texture to texture slot 1.
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, m_hLightmapTexture);
-    } else {
-        m_WorldShader->ResetShaderSettingBits(SHADER_USE_LIGHTMAP);
+        if ( r_lightmaps.value ) {
+            m_WorldShader->SetShaderSettingBits(SHADER_USE_LIGHTMAP);
+        } else {
+            m_WorldShader->ResetShaderSettingBits(SHADER_USE_LIGHTMAP);
+        }
+
+        if ( r_lightmaps_only.value ) {
+            m_WorldShader->SetShaderSettingBits(SHADER_LIGHTMAP_ONLY);
+        } else {
+            m_WorldShader->ResetShaderSettingBits(SHADER_LIGHTMAP_ONLY);
+        }
     }
 
     for ( auto const& [ texHandle, drawCmd ] : m_TexHandleToWorldDrawCmd ) {
