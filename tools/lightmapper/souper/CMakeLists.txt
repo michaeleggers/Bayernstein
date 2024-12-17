@@ -51,10 +51,13 @@ target_include_directories(souper
     PUBLIC ../../../dependencies/
     PUBLIC ${SDL2_include_dir}
 )
-
-target_link_directories(souper PUBLIC
-    ${SDL2_libs_dir} 
-)
+if (MSVC)
+    set (SDL2_libs_dir "${SDL_LIBS_DIR}")
+    message("SDL2 libs dir is set to: ${SDL2_libs_dir}")
+    target_link_directories(souper PUBLIC
+        ${SDL2_libs_dir} 
+    )
+endif()
 
 target_link_libraries(souper PUBLIC
     SDL2
