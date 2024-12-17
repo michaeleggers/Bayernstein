@@ -292,24 +292,29 @@ class Frame:
             # Check if point is inside the triangle but not on edges
             return u > tolerance and v > tolerance and (u + v) < (1 - tolerance)
 
-        def edge_intersects_segment(edge_start: Vector3f, edge_end: Vector3f, seg_start: Vector3f, seg_end: Vector3f) -> bool:
-            """Check if a segment intersects a triangle edge, excluding overlaps."""
+        def edge_intersects_segment(edge_start: Vector3f, edge_end: Vector3f, seg_start: Vector3f, seg_end: Vector3f, tolerance: float = 1e-6) -> bool:
+            """Check if a segment intersects a triangle edge, excluding overlaps, robustly."""
             edge_dir = edge_end - edge_start
             seg_dir = seg_end - seg_start
             cross = edge_dir.cross(seg_dir)
-            cross_mag = cross.magnitude()
-
-            # If cross product is small, lines are parallel
-            if cross_mag < tolerance:
+            cross_mag_squared = cross.dot(cross)  # Avoid unnecessary square root for magnitude
+            
+            # If cross product is very small, lines are parallel or nearly so
+            if cross_mag_squared < tolerance**2:
                 return False
 
-            # Solve for intersection parameters
-            t = (seg_start - edge_start).cross(seg_dir).dot(cross) / cross_mag
-            u = (seg_start - edge_start).cross(edge_dir).dot(cross) / cross_mag
+            # Solve for intersection parameters (t, u) using the cross product
+            edge_to_seg_start = seg_start - edge_start
+            t_numerator = edge_to_seg_start.cross(seg_dir).dot(cross)
+            u_numerator = edge_to_seg_start.cross(edge_dir).dot(cross)
 
-            # Ensure intersection lies strictly between segment and edge endpoints
-            return (t > tolerance and t < 1 - tolerance and 
-                    u > tolerance and u < 1 - tolerance)
+            # Normalize by the magnitude of the cross product squared
+            t = t_numerator / cross_mag_squared
+            u = u_numerator / cross_mag_squared
+
+            # Check intersection lies strictly between segment and edge endpoints
+            return (t > -tolerance and t < 1 + tolerance and 
+                    u > -tolerance and u < 1 + tolerance)
 
         # Extract vertices
         v0, v1, v2 = triangle.vertices
@@ -368,7 +373,7 @@ class Frame:
                     )
 
                     # Check if patch is covered by triangle on the same plane
-                    if geometry.point_is_covered_by_triangle(worldspace_position, self.frame_normal, self.close_triangles, 1e-8):
+                    if geometry.point_is_covered_by_triangle(worldspace_position, self.frame_normal, self.close_triangles, 1e-6):
                         self.illegal_pixels.append((u_pixel, v_pixel))
                         continue
                     

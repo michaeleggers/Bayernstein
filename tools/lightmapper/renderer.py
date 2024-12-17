@@ -210,7 +210,7 @@ class Renderer:
         #)
 
     def _initialize_fbo(self, width: int, height: int) -> None:
-        """Initialize FBO and texture for rendering."""
+        """Initialize FBO with a high-precision texture and a depth buffer for rendering."""
         # Create high-precision texture for FBO
         self.fbo_texture = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, self.fbo_texture)
@@ -222,6 +222,12 @@ class Renderer:
         self.fbo = glGenFramebuffers(1)
         glBindFramebuffer(GL_FRAMEBUFFER, self.fbo)
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self.fbo_texture, 0)
+
+        # Create a depth renderbuffer
+        self.depth_renderbuffer = glGenRenderbuffers(1)
+        glBindRenderbuffer(GL_RENDERBUFFER, self.depth_renderbuffer)
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height)
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, self.depth_renderbuffer)
 
         # Ensure the framebuffer is complete
         if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE:

@@ -85,7 +85,7 @@ def generate_lightmaps(
     scene.save_to_json(output_path / f'{map_name}/{map_name}.json', assets_path)   
 
     # Create the renderer
-    lightmap_renderer = Renderer(width=32, height=32, scene=scene, atmosphere_color=atmospheric_color, lightmap_mode=True)
+    lightmap_renderer = Renderer(width=128, height=128, scene=scene, atmosphere_color=atmospheric_color, lightmap_mode=True)
 
     # Initialize the lightmapper
     lightmapper = Lightmapper(scene=scene, renderer=lightmap_renderer)
