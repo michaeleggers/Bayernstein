@@ -38,6 +38,8 @@ ConsoleVariable scr_consize      = { "scr_consize", 0.45f };
 ConsoleVariable scr_conopacity   = { "scr_conopacity", 0.95f };
 ConsoleVariable scr_conwraplines = { "scr_conwraplines", 1 };
 
+ConsoleVariable r_lightmaps = { "r_lightmaps", 1 };
+
 void GLAPIENTRY OpenGLDebugCallback(GLenum        source,
                                     GLenum        type,
                                     GLuint        id,
@@ -316,6 +318,8 @@ bool GLRender::Init(void) {
     VariableManager::Register(&scr_consize);
     VariableManager::Register(&scr_conopacity);
     VariableManager::Register(&scr_conwraplines);
+
+    VariableManager::Register(&r_lightmaps);
 
     return true;
 }
@@ -761,20 +765,25 @@ void GLRender::Render(
     glEnable(GL_DEPTH_TEST);
 
     // Draw World Tris
+
     m_WorldBatch->Bind();
     m_WorldShader->Activate();
     m_WorldShader->SetViewProjMatrices(view, proj);
-    // Bind diffuse texture to texture slot 0
+
+    if ( m_UseLightmap && r_lightmaps.value ) {
+        m_WorldShader->SetShaderSettingBits(SHADER_USE_LIGHTMAP);
+        // Bind lightmap texture to texture slot 1.
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_hLightmapTexture);
+    } else {
+        m_WorldShader->ResetShaderSettingBits(SHADER_USE_LIGHTMAP);
+    }
+
     for ( auto const& [ texHandle, drawCmd ] : m_TexHandleToWorldDrawCmd ) {
         std::vector<GLBatchDrawCmd> drawCmds{ drawCmd };
+        // Bind diffuse texture to texture slot 0
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texHandle);
-        if ( m_UseLightmap ) {
-            m_WorldShader->SetShaderSettingBits(SHADER_USE_LIGHTMAP);
-            // Bind lightmap texture to texture slot 1.
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, m_hLightmapTexture);
-        }
         ExecuteDrawCmds(drawCmds, GEOM_TYPE_VERTEX_ONLY);
     }
     glBindTexture(GL_TEXTURE_2D, 0);

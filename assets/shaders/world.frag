@@ -57,7 +57,7 @@ void main() {
         finalColor = clamp(ambient + Color.rgb*lightColor.rgb*lightContribution, 0.0f, 1.0f);
     }
 
-    vec4 lightmapColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    vec4 lightmapColor = vec4(1.0f);
     if ( (shaderSettingBits & SHADER_USE_LIGHTMAP) == SHADER_USE_LIGHTMAP ) {
         lightmapColor = texture( lightmapTexture, uvLightmap );
     }
