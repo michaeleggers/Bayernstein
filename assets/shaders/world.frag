@@ -35,6 +35,11 @@ const uint SHADER_LIGHTMAP_ONLY     = 0x00000001 << 5;
 
 void main() {
 
+// TODO: Wireframe rendering (at the moment turned off, the stuff
+//       below is legacy code.
+//
+
+/*
     vec4 lightColor = vec4(1.0, .9, 0.3, 1.0);
     vec4 lightPos = ViewMat * ViewPosWorldSpace;
     //vec4 lightPos = ViewMat * vec4(0.0f, -200.0f, 10.0f, 1.0f);
@@ -57,21 +62,22 @@ void main() {
         vec3 ambient = 0.3*Color.rgb;
         finalColor = clamp(ambient + Color.rgb*lightColor.rgb*lightContribution, 0.0f, 1.0f);
     }
-
-    vec4 lightmapColor = vec4(1.0f);
-    if ( (shaderSettingBits & SHADER_USE_LIGHTMAP) == SHADER_USE_LIGHTMAP ) {
-        lightmapColor = texture( lightmapTexture, uvLightmap );
-    }
+*/
 
     vec4 diffuseColor = texture( diffuseTexture, uv );
-   
+
+    vec4 lightmapColor = vec4(1.0f);
+    if ( ((shaderSettingBits & SHADER_USE_LIGHTMAP) == SHADER_USE_LIGHTMAP) ||
+         ((shaderSettingBits & SHADER_LIGHTMAP_ONLY) == SHADER_LIGHTMAP_ONLY) ) 
+    {
+        lightmapColor = texture( lightmapTexture, uvLightmap );
+    }
+    
     vec4 finalOutputColor = vec4( diffuseColor.rgb * lightmapColor.rgb, 1.0f );
 
     if ( (shaderSettingBits & SHADER_LIGHTMAP_ONLY) == SHADER_LIGHTMAP_ONLY ) {
-        lightmapColor = texture( lightmapTexture, uvLightmap );
         finalOutputColor = vec4(lightmapColor.rgb, 1.0f);
     }
-
+    
     out_Color = finalOutputColor;
-
 }
