@@ -1,9 +1,11 @@
 ---
 # You can also start simply with 'default'
 theme: seriph
+colorSchema: dark
+canvasWidth: 680
 # random image from a curated Unsplash collection by Anthony
 # like them? see https://unsplash.com/collections/94734566/slidev
-background: #fff
+# background: #fff
 # some information about your slides (markdown enabled)
 title: Games Engineering
 titleTemplate: "%s"
@@ -80,9 +82,6 @@ level: 2
 # Agenda
 
 <Toc maxDepth="1"/>
----
-src: ./pages/michi.md
----
 
 ---
 src: ./pages/nico.md
