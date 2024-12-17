@@ -195,17 +195,19 @@ make
 
 ### Building Souper (Windows):
 Download the SDL2 development libs: https://github.com/libsdl-org/SDL/releases/download/release-2.30.10/SDL2-devel-2.30.10-VC.zip and extract its contents to a folder called `SDL2` (or anything that you can remember). The folder structure should look like this:
+```
 souper
 ...
 build
 ...
-└───SDL2
+└───SDL2\
     ├───cmake
     ├───docs
     ├───include
     └───lib
         ├───x64
         └───x86
+```
 
 In the souper directory make a `build` folder and `cd` into it.
 Then run CMake:
