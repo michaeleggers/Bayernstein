@@ -10,6 +10,8 @@
 
 #include <SDL.h>
 
+#include "dependencies/glm/glm.hpp"
+
 #include "CWorld.h"
 #include "Console/Console.h"
 #include "camera.h"
@@ -17,6 +19,7 @@
 #include "r_common.h"
 #include "r_font.h"
 #include "r_itexture.h"
+#include "r_itexture_mgr.h"
 #include "r_model.h"
 
 enum DrawMode {
@@ -69,21 +72,29 @@ class IRender {
     virtual void DrawWorldTris()                                                                                = 0;
     virtual void Begin2D()                                                                                      = 0;
     virtual void End2D()                                                                                        = 0;
-    virtual void SetFont(CFont* font, glm::vec4 color = glm::vec4(1.0f))                                        = 0;
-    virtual void SetShapeColor(glm::vec4 color = glm::vec4(1.0f))                                               = 0;
-    virtual void FlushFonts()                                                                                   = 0;
-    virtual void FlushShapes()                                                                                  = 0;
-    virtual void R_DrawText(const std::string& text, float x, float y, ScreenSpaceCoordMode = COORD_MODE_REL)   = 0;
+    virtual void DrawSprite(const Sprite*        sprite,
+                            const glm::vec2&     pos,
+                            const glm::vec2&     scaleXY,
+                            ScreenSpaceCoordMode coordMode = COORD_MODE_REL)
+        = 0;
+    virtual void SetFont(CFont* font, glm::vec4 color = glm::vec4(1.0f)) = 0;
+    virtual void SetShapeColor(glm::vec4 color = glm::vec4(1.0f))        = 0;
+    virtual void FlushFonts()                                            = 0;
+    virtual void FlushShapes()                                           = 0;
+    virtual void R_DrawText(const std::string& text, float x, float y, ScreenSpaceCoordMode coordMode = COORD_MODE_REL)
+        = 0;
     virtual void DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode = COORD_MODE_REL)
         = 0;
     virtual void
     Render(Camera* camera, HKD_Model** models, uint32_t numModels, HKD_Model** brushModels, uint32_t numBrushModels)
         = 0;
-    virtual void        RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
-    virtual void        RenderConsole(Console* console, CFont* font)                            = 0;
-    virtual void        RenderEnd(void)                                                         = 0;
-    virtual void        SetWindowTitle(char* windowTitle)                                       = 0;
-    virtual SDL_Window* GetWindow()                                                             = 0;
+    virtual void             RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
+    virtual void             RenderConsole(Console* console, CFont* font)                            = 0;
+    virtual void             RenderEnd(void)                                                         = 0;
+    virtual void             SetWindowTitle(char* windowTitle)                                       = 0;
+    virtual glm::vec2        GetWindowDimensions()                                                   = 0;
+    virtual SDL_Window*      GetWindow()                                                             = 0;
+    virtual ITextureManager* GetTextureManager()                                                     = 0;
 
   private:
 };

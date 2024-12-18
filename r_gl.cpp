@@ -172,6 +172,9 @@ void GLRender::Shutdown(void) {
     m_ImPrimitivesShader->Unload();
     delete m_ImPrimitivesShader;
 
+    m_SpriteShader->Unload();
+    delete m_SpriteShader;
+
     // Destroy FBOs
     delete m_2dFBO;
     delete m_3dFBO;
@@ -242,7 +245,7 @@ bool GLRender::Init(void) {
     SDL_ShowWindow(m_Window);
 
     // GL Vsync on
-    if ( SDL_GL_SetSwapInterval(0) != 0 ) {
+    if ( SDL_GL_SetSwapInterval(1) != 0 ) {
         SDL_Log("Failed to enable vsync!\n");
     } else {
         SDL_Log("vsync enabled\n");
@@ -250,7 +253,7 @@ bool GLRender::Init(void) {
 
     // Init TextureManager
 
-    m_TextureManager = GLTextureManager::Instance();
+    m_ITextureManager = GLTextureManager::Instance();
 
     // Setup Imgui
 
@@ -328,7 +331,7 @@ int GLRender::RegisterModel(HKD_Model* model) {
 
     for ( int i = 0; i < model->meshes.size(); i++ ) {
         HKD_Mesh*  mesh    = &model->meshes[ i ];
-        GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(mesh->textureFileName);
+        GLTexture* texture = (GLTexture*)m_ITextureManager->CreateTexture(mesh->textureFileName);
         GLMesh     gl_mesh
             = { .triOffset = offset / 3 + (int)mesh->firstTri, .triCount = (int)mesh->numTris, .texture = texture };
         gl_model.meshes.push_back(gl_mesh);
@@ -349,7 +352,7 @@ int GLRender::RegisterBrush(HKD_Model* model) {
 
     for ( int i = 0; i < model->meshes.size(); i++ ) {
         HKD_Mesh*  mesh    = &model->meshes[ i ];
-        GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(mesh->textureFileName);
+        GLTexture* texture = (GLTexture*)m_ITextureManager->CreateTexture(mesh->textureFileName);
         GLMesh     gl_mesh
             = { .triOffset = offset / 3 + (int)mesh->firstTri, .triCount = (int)mesh->numTris, .texture = texture };
         gl_model.meshes.push_back(gl_mesh);
@@ -364,7 +367,7 @@ int GLRender::RegisterBrush(HKD_Model* model) {
 }
 
 void GLRender::RegisterFont(CFont* font) {
-    GLTexture* texture = (GLTexture*)m_TextureManager->CreateTexture(font);
+    GLTexture* texture = (GLTexture*)m_ITextureManager->CreateTexture(font);
 }
 
 void GLRender::RegisterWorld(CWorld* world) {
@@ -404,7 +407,7 @@ void GLRender::RegisterWorld(CWorld* world) {
 
 // Returns the CPU handle
 uint64_t GLRender::RegisterTextureGetHandle(std::string name) {
-    return m_TextureManager->CreateTextureGetHandle(name);
+    return m_ITextureManager->CreateTextureGetHandle(name);
 }
 
 void GLRender::SetActiveCamera(Camera* camera) {
@@ -440,7 +443,7 @@ std::vector<ITexture*> GLRender::ModelTextures(int gpuModelHandle) {
 
 std::vector<ITexture*> GLRender::Textures(void) {
     std::vector<ITexture*> result;
-    for ( auto& elem : m_TextureManager->m_NameToTexture ) {
+    for ( auto& elem : m_ITextureManager->m_NameToTexture ) {
         result.push_back(elem.second);
     }
 
@@ -886,11 +889,35 @@ void GLRender::End2D() {
     // TODO: (Michael): Unbind bound (font-)textures?
 }
 
+void GLRender::DrawSprite(const Sprite*        sprite,
+                          const glm::vec2&     pos,
+                          const glm::vec2&     scale,
+                          ScreenSpaceCoordMode coordMode) {
+
+    float posX = pos.x;
+    float posY = pos.y;
+    if ( coordMode == COORD_MODE_REL ) {
+        posX *= m_WindowWidth;
+        posY *= m_WindowHeight;
+    }
+
+    m_SpriteShader->Activate();
+
+    SpriteUB spriteShaderData
+        = { glm::vec2(posX, posY), sprite->size, scale, sprite->uvTopLeft, sprite->uvBottomRight };
+    glBindBuffer(GL_UNIFORM_BUFFER, m_SpriteShader->m_SpriteUBO);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(SpriteUB), (void*)&spriteShaderData);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glBindTexture(GL_TEXTURE_2D, (GLuint)sprite->hTexture);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
 void GLRender::SetFont(CFont* font, glm::vec4 color) {
 
     m_FontShader->Activate();
 
-    ITexture* fontTexture = m_TextureManager->GetTexture(font->m_Filename);
+    ITexture* fontTexture = m_ITextureManager->GetTexture(font->m_Filename);
     glBindTexture(GL_TEXTURE_2D, (GLuint)fontTexture->m_hGPU);
 
     FontUB fontShaderData = {
@@ -1315,8 +1342,22 @@ void GLRender::InitShaders() {
     if ( !m_BrushShader->Load("shaders/brush.vert", "shaders/brush.frag") ) {
         printf("Problems initializing brush shader!\n");
     }
+
+    m_SpriteShader = new Shader();
+    if ( !m_SpriteShader->Load("shaders/sprite.vert", "shaders/sprite.frag") ) {
+        printf("Problems initializing sprite shader!\n");
+    }
+    m_SpriteShader->InitializeSpriteUniforms();
 }
 
 void GLRender::SetWindowTitle(char* windowTitle) {
     SDL_SetWindowTitle(m_Window, windowTitle);
+}
+
+glm::vec2 GLRender::GetWindowDimensions() {
+    return glm::vec2(m_WindowWidth, m_WindowHeight);
+}
+
+ITextureManager* GLRender::GetTextureManager() {
+    return m_ITextureManager;
 }

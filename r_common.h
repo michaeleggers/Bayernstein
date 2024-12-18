@@ -9,6 +9,29 @@
 #include "dependencies/glm/ext.hpp"
 #include "dependencies/glm/glm.hpp"
 
+// Vertex Attribute Layout
+
+#define VERT_POS_OFFSET 0
+#define VERT_UV_OFFSET (VERT_POS_OFFSET + sizeof(glm::vec3))
+#define VERT_UV_LIGHTMAP_OFFSET (VERT_UV_OFFSET + sizeof(glm::vec2))
+#define VERT_BC_OFFSET (VERT_UV_LIGHTMAP_OFFSET + sizeof(glm::vec2))
+#define VERT_NORMAL_OFFSET (VERT_BC_OFFSET + sizeof(glm::vec3))
+#define VERT_COLOR_OFFSET (VERT_NORMAL_OFFSET + sizeof(glm::vec3))
+#define VERT_BLENDINDICES_OFFSET (VERT_COLOR_OFFSET + sizeof(glm::vec4))
+#define VERT_BLENDWEIGHTS_OFFSET (VERT_BLENDINDICES_OFFSET + 4 * sizeof(uint32_t))
+
+// Global shader settings
+
+#define SHADER_WIREFRAME_ON_MESH (0x00000001 << 0)
+#define SHADER_LINEMODE (0x00000001 << 1)
+#define SHADER_ANIMATED (0x00000001 << 2)
+#define SHADER_IS_TEXTURED (0x00000001 << 3)
+
+#define GOLDEN_RATIO 1.618033988749
+#define HKD_PI 3.14159265359
+#define HKD_EPSILON 0.000000001f
+#define ELLIPSOID_VERT_COUNT 32
+
 enum ScreenSpaceCoordMode {
     COORD_MODE_ABS,
     COORD_MODE_REL
@@ -43,28 +66,11 @@ struct StaticVertex {
     glm::vec3 color;
 };
 
-// Vertex Attribute Layout
-
-#define VERT_POS_OFFSET 0
-#define VERT_UV_OFFSET (VERT_POS_OFFSET + sizeof(glm::vec3))
-#define VERT_UV_LIGHTMAP_OFFSET (VERT_UV_OFFSET + sizeof(glm::vec2))
-#define VERT_BC_OFFSET (VERT_UV_LIGHTMAP_OFFSET + sizeof(glm::vec2))
-#define VERT_NORMAL_OFFSET (VERT_BC_OFFSET + sizeof(glm::vec3))
-#define VERT_COLOR_OFFSET (VERT_NORMAL_OFFSET + sizeof(glm::vec3))
-#define VERT_BLENDINDICES_OFFSET (VERT_COLOR_OFFSET + sizeof(glm::vec4))
-#define VERT_BLENDWEIGHTS_OFFSET (VERT_BLENDINDICES_OFFSET + 4 * sizeof(uint32_t))
-
-// Global shader settings
-
-#define SHADER_WIREFRAME_ON_MESH (0x00000001 << 0)
-#define SHADER_LINEMODE (0x00000001 << 1)
-#define SHADER_ANIMATED (0x00000001 << 2)
-#define SHADER_IS_TEXTURED (0x00000001 << 3)
-
-#define GOLDEN_RATIO 1.618033988749
-#define HKD_PI 3.14159265359
-#define HKD_EPSILON 0.000000001f
-#define ELLIPSOID_VERT_COUNT 32
+struct Vertex2D {
+    glm::vec3 pos;
+    glm::vec2 uv;
+    glm::vec4 color;
+};
 
 struct ShaderSettings {
     glm::uvec4 u32bitMasks; // TODO: This is just to make the Shader happy (Wants 16 bytes by default, not only 4).
@@ -78,6 +84,14 @@ struct FontUB {
 struct ShapesUB {
     glm::vec4 color;
     glm::vec4 scale;
+};
+
+struct SpriteUB {
+    glm::vec2 pos;
+    glm::vec2 size;
+    glm::vec2 scale;
+    glm::vec2 uvTopLeft;
+    glm::vec2 uvBottomRight;
 };
 
 struct Tri {
@@ -184,6 +198,17 @@ struct MeshEllipsoid {
     std::vector<Tri> tris;
 };
 
+struct Sprite {
+    // Size in pixels.
+    glm::vec2 size;
+    // uv coordinates at top left of sprite texture.
+    glm::vec2 uvTopLeft;
+    // uv coordinates at the bottom right of the texture.
+    glm::vec2 uvBottomRight;
+    // Resource on the GPU
+    uint64_t hTexture;
+};
+
 void RotateTri(Tri* tri, glm::vec3 axis, float angle);
 void TranslateTri(Tri* tri, glm::vec3 t);
 void TransformTri(Tri* tri, glm::mat4 modelMatrix);
@@ -217,5 +242,8 @@ MeshEllipsoid CreateUnitEllipsoid(uint32_t numSubdivs);
 void          TransformEllipsoid(Ellipsoid* ellipsoid, glm::mat4 modelMatrix);
 NBox          CreateNBox(glm::vec3 scale, uint32_t numSubdivs);
 Plane         CreatePlaneFromTri(Tri tri);
+Sprite        CreateSprite(const std::string& textureFilename,
+                           const glm::vec2&   topLeft,    // top left of texture in pixel coordinates
+                           const glm::vec2&   bottomRight); // bottom right of texture in pixel coordinates
 
 #endif
