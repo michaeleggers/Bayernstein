@@ -4,174 +4,79 @@ layout: center
 
 # Gegner KI
 
-
 ---
-level: 2
----
-
-# Gegner KI
-
-Was ist passiert?
-
-- Random Walk
-- Seek, Flee, Arrive
-- Follow Path, Follow Waypoints
-
-
----
-level: 2
+hideInToc: true
 ---
 
-# Das ist passiert
-
-<video controls class="h-[90%]">
-  <source src="/img/bene/steering-behaviours.webm" type="video/webm">
-  Your browser does not support the video tag.
-</video>
-
-<!-- 
-- seek 
-- flee
-- arrive
-- follow waypoints
-    -> folgt nur punkten, ohne pfad dazwischen
-- waypoints & path
-    -> versucht zurück zum pfad 
- -->
----
-level: 2
----
-
-# Steering Behaviours
-
-Craig Reynolds beschreibt 3 Layer [@Reynolds1987]
-
-- Action Selection
-- Steering
-- Locomotion
-
-<!--
-- action selection -> state machine
-- steering behaviours
-- locomotion -> wie man von a nach b kommt. vgl auto vs laufen
-
--->
----
-level: 2
----
-
-# Steering Force
-
-Vereinfachtes Model um Steering Force zu berechnen:
-
-<div class="flex justify-center">
-<div>
-
-$\mathbf{steeringForce} = \mathbf{desiredVelocity} - \mathbf{currentVelocity}$
-</div>
-</div>
+# Wie nehmen wir unsere Umgebung wahr?
+- Organismen interagieren mit der Welt durch ihre **Sinne**.
+- Die Sinne helfen uns 
+   - zu überleben
+   - uns anzupassen
+   - und Entscheidungen zu treffen
 
 ---
-level: 2
+hideInToc: true
 ---
 
-# Wie wird Kraft zu Bewegung
+# Wie nehmen wir unsere Umgebung wahr?
+- Interne und Externe Sinne (z.B. Hunger und Sicht)
+- Fun fact: Es gibt Schlangenarten die Infrarot sehen können. <Cite bref="PhysRevLett97" />
+- **Frage**: Wie würde unser Leben aussehen wenn wir Infrarot sehen könnten?
 
-2. Newtonsches Gesetz wird abgeleitet zu:
-
-<div class="flex justify-center">
-<div>
-
-$\bf{f} = m\bf{a}$
-
-$\bf{a} = \frac{\bf{f}}{m}$
-
-$\rightarrow \bf{v_{new}} = \bf{v_{old}} + \bf{a}$
-
-</div>
-</div>
 
 ---
-level: 2
+hideInToc: true
 ---
 
-## Steering Force
-
-<v-switch>
-<template #0>
-
-![Steering Prämisse](/img/bene/05_steering_2.webp)
-
-</template>
-<template #1>
-
-![Gewünschte Geschwindigkeit](/img/bene/05_steering_3.webp)
-
-</template>
-
-<template #2>
-
-![Maximale Geschwindigkeit](/img/bene/05_steering_4.webp)
-
-</template>
-
-
-<template #3>
-
-![Neue Kraft](/img/bene/05_steering_5.webp)
-
-</template>
-</v-switch>
-
+![Dune - Giedi Prime](/img/bene/dune-2-austin-butler-feyd-rautha-black-white-explained.avif)
 
 <footer class="absolute bottom-0 left-0 right-0 p-2">
     <small>
-        Bildquelle: <a href="https://natureofcode.com/autonomous-agents/">https://natureofcode.com/autonomous-agents/</a>[@shiffman24]
-    </small>
-</footer>
-
-
----
-level: 2
----
-
-## Pfad Verfolgung
-
-![Pfand Verfolgung](/img/bene/05_steering_21.webp)
-
-<footer class="absolute bottom-0 left-0 right-0 p-2">
-    <small>
-        Bildquelle: <a href="https://natureofcode.com/autonomous-agents/">https://natureofcode.com/autonomous-agents/</a>
-    </small>
-</footer>
-
-<!--
-- aktuelle richtung + offset
-- projektion auf pfad
-- segment start + projektion + offset
--->
-
----
-level: 2
-hide: true
----
-
-## Multi Segment Pfad
-
-![Welches Segment ist das Richtige](/img/bene/05_steering_33.webp)
-
-<footer class="absolute bottom-0 left-0 right-0 p-2">
-    <small>
-        Bildquelle: <a href="https://natureofcode.com/autonomous-agents/">https://natureofcode.com/autonomous-agents/</a>
+        Bildquelle: <a href="https://screenrant.com/dune-2-austin-butler-feyd-rautha-black-white-explained/">
+https://screenrant.com/dune-2-austin-butler-feyd-rautha-black-white-explained/
+</a>
     </small>
 </footer>
 
 ---
-level: 2
+hideInToc: true
 ---
 
-# Ausblick Gegner KI
+# Wie funktioniert Sehen überhaupt?
+- Sicht beinhaltet das wahrnehmen und umwandeln von Licht in Information.
+- Stäbchen und Zapfen auf der Netzhaut
+- Wie modelliert man Sicht aber nun performant?
 
-- Bug Fixing
-- State Machine & Steerign Behaviours zusammen bringen
-- weitere State Machines (Verhalten) bauen
+
+---
+hideInToc: true
+---
+
+# Unser Sicht Modell
+
+**Was nimmt die Entity wahr?**
+- **Distanz**: Wie weit ist ein Objekt entfernt?  
+- Die **Z-Position** des Objekts im Raum.  
+- **Winkel**: Relative Ausrichtung des Objekts zur Sichtlinie.
+
+
+ später noch: **Verdeckung** durch Level Geometrie
+
+---
+layout: center
+---
+
+# Demo
+
+---
+hideInToc: true
+---
+
+# Aussicht - Weitere Sinne
+
+- Hören -> Impuls der alles in einem Radius benachrichtigt
+- Riechen -> Gerüche in Halflife sind quasi Sounds mit einem Flag
+- Fühlen -> physics system mit collision detection
+
+
