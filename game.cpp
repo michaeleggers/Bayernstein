@@ -64,7 +64,7 @@ void Game::Init() {
 
     // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
 #ifdef _WIN32
-    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/temple6.map");
+    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/lightmap_test.map");
 #elif __LINUX__
     std::string mapData = loadTextFile(m_ExePath + "../assets/maps/lightmap_test.map");
 #endif

@@ -44,7 +44,14 @@ void CWorld::InitWorldFromMap(const Map& map, const std::string& plyFilename) {
     if ( !plyFilename.empty() ) {
         HKD_File    plyFile;
         std::string exePath     = hkd_GetExePath();
-        std::string fullPlyPath = exePath + "../assets/maps/" + plyFilename + ".ply";
+
+        // TODO: Fix file loading
+#ifdef _WIN32        
+        std::string fullPlyPath = exePath + "../../assets/maps/" + plyFilename + ".ply";
+#elif __LINUX__
+        std::string fullPlyPath = exePath + "../assets/maps/" + plyFilename + ".ply";        
+#endif
+
         if ( hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS ) {
             m_MapTris           = CWorld::CreateMapFromLightmapTrisFile(plyFile);
             m_hLightmapTexture  = renderer->RegisterTextureGetHandle(plyFilename + ".png");
