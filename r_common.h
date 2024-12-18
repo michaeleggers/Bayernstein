@@ -60,6 +60,8 @@ struct StaticVertex {
 #define SHADER_LINEMODE (0x00000001 << 1)
 #define SHADER_ANIMATED (0x00000001 << 2)
 #define SHADER_IS_TEXTURED (0x00000001 << 3)
+#define SHADER_USE_LIGHTMAP (0x00000001 << 4)
+#define SHADER_LIGHTMAP_ONLY (0x00000001 << 5)
 
 #define GOLDEN_RATIO 1.618033988749
 #define HKD_PI 3.14159265359
@@ -96,6 +98,13 @@ struct MapTri {
     std::string textureName;
     std::string lightmap;
     uint64_t    hTexture; // GPU handle set by renderer.
+};
+
+struct MapTriLightmapper {
+    StaticVertex vertices[ 3 ];
+    char         textureName[ 256 ];
+    uint64_t     surfaceFlags;
+    uint64_t     contentFlags;
 };
 
 struct Line {

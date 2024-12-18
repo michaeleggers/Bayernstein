@@ -22,6 +22,7 @@
 #include "hkd_interface.h"
 #include "irender.h"
 #include "map_parser.h"
+#include "platform.h"
 #include "utils/utils.h"
 
 CWorld* CWorld::Instance() {
@@ -30,7 +31,7 @@ CWorld* CWorld::Instance() {
     return &m_World;
 }
 
-void CWorld::InitWorldFromMap(const Map& map) {
+void CWorld::InitWorldFromMap(const Map& map, const std::string& plyFilename) {
     // Get some subsystems
     EntityManager* m_pEntityManager = EntityManager::Instance();
     IRender*       renderer         = GetRenderer();
@@ -38,10 +39,36 @@ void CWorld::InitWorldFromMap(const Map& map) {
     // TODO: Init via .MAP property.
     m_Gravity = glm::vec3(0.0f, 0.0f, -200.0f);
 
-    // Get static geometry from map
-    std::vector<MapPolygon> polysoup = createPolysoup(map);
     // Convert to tris
-    m_MapTris = CWorld::CreateMapTrisFromMapPolys(polysoup);
+
+    // Check if a lightmap is available
+    m_LightmapAvailable = false;
+    if ( !plyFilename.empty() ) {
+        HKD_File    plyFile;
+        std::string exePath     = hkd_GetExePath();
+
+        // TODO: Fix file loading
+#ifdef _WIN32        
+        std::string fullPlyPath = exePath + "../../assets/maps/" + plyFilename + ".ply";
+#elif __LINUX__
+        std::string fullPlyPath = exePath + "../assets/maps/" + plyFilename + ".ply";        
+#endif
+
+        if ( hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS ) {
+            m_MapTris           = CWorld::CreateMapFromLightmapTrisFile(plyFile);
+            m_hLightmapTexture  = renderer->RegisterTextureGetHandle(plyFilename + ".png");
+            m_LightmapAvailable = true;
+        } else {
+            printf("Warning (CWorld): Lightmap file '%s' could not be loaded!\n", plyFilename.c_str());
+        }
+    }
+    // No lightmap provided or found. It's fine. The world can be initialized
+    // from the ASCII MAP file as well. But everything will be bright.
+    if ( !m_LightmapAvailable ) {
+        // Get static geometry from map
+        std::vector<MapPolygon> polysoup = createPolysoup(map);
+        m_MapTris                        = CWorld::CreateMapTrisFromMapPolys(polysoup);
+    }
 
     m_StaticGeometryCount = m_MapTris.size();
 
@@ -375,4 +402,57 @@ Waypoint CWorld::GetWaypoint(const Entity* entity) {
     }
 
     return waypoint;
+}
+
+Vertex CWorld::StaticVertexToVertex(StaticVertex staticVertex) {
+    Vertex result{ staticVertex.pos, staticVertex.uv, staticVertex.uvLightmap, staticVertex.bc, staticVertex.normal };
+
+    return result;
+}
+
+std::vector<MapTri> CWorld::CreateMapFromLightmapTrisFile(HKD_File lightmapTrisFile) {
+    /*
+struct MapTriLightmapper {
+    StaticVertex vertices[ 3 ];
+    char         textureName[ 64 ];
+    uint64_t     surfaceFlags;
+    uint64_t     contentFlags;
+};
+
+struct MapTri {
+    Tri         tri;
+    std::string textureName;
+    std::string lightmap;
+    uint64_t    hTexture; // GPU handle set by renderer.
+};
+*/
+    // Get the renderer to register the textures
+    IRender* renderer = GetRenderer();
+
+    MapTriLightmapper*             currentLightmapTri;
+    std::vector<MapTriLightmapper> lightmapperTris{};
+    std::vector<MapTri>            mapTris{};
+
+    size_t numLightmapTris = lightmapTrisFile.size / sizeof(MapTriLightmapper);
+    mapTris.resize(numLightmapTris);
+
+    currentLightmapTri = (MapTriLightmapper*)lightmapTrisFile.data;
+    for ( int i = 0; i < numLightmapTris; i++ ) {
+        MapTri mapTri{};
+        Vertex vertices[ 3 ];
+        vertices[ 0 ] = StaticVertexToVertex(currentLightmapTri->vertices[ 0 ]);
+        vertices[ 1 ] = StaticVertexToVertex(currentLightmapTri->vertices[ 1 ]);
+        vertices[ 2 ] = StaticVertexToVertex(currentLightmapTri->vertices[ 2 ]);
+
+        memcpy(mapTri.tri.vertices, vertices, 3 * sizeof(Vertex));
+
+        mapTri.textureName = std::string(currentLightmapTri->textureName);
+        mapTri.hTexture    = renderer->RegisterTextureGetHandle(mapTri.textureName + ".tga");
+
+        mapTris[ i ] = mapTri;
+
+        currentLightmapTri++;
+    }
+
+    return mapTris;
 }

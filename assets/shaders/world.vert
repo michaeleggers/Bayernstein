@@ -31,6 +31,7 @@ out vec4 ViewPosWorldSpace;
 out vec4 Pos;
 out mat4 ViewMat;
 out vec2 uv;
+out vec2 uvLightmap;
 
 void main() {
     vec4 v = vec4(in_pos, 1.0);    
@@ -45,5 +46,6 @@ void main() {
     Pos = view * vec4(in_pos, 1.0);
     ViewMat = view;
     uv = in_uv;
+	uvLightmap = in_uvLightmap;
 }
 

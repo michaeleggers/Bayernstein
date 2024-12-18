@@ -72,6 +72,13 @@ struct Brush {
     std::vector<Face> faces;
 };
 
+struct PointLight {
+    std::string origin;  
+    float intensity;
+    std::string color;
+    float range;
+};
+
 struct Property {
     std::string key;
     std::string value;
