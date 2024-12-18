@@ -68,31 +68,31 @@ hideInToc: true
 
 <template #0>
 
-![Alt text](/img/fabian/img_hemicube_placement.png){width=90% height=90%}
+![Alt text](/img/fabian/img_hemicube_placement.png){width=100% height=100%}
 </template>
 
 <template #1>
 
-![Alt text](/img/fabian/pic1.png){width=90% height=90%}
+![Alt text](/img/fabian/pic1.png){width=100% height=100%}
 </template>
 <template #2>
 
-![Alt text](/img/fabian/pic2.png){width=90% height=90%}
+![Alt text](/img/fabian/pic2.png){width=100% height=100%}
 </template>
 
 <template #3>
 
-![Alt text](/img/fabian/pic4.png){width=90% height=90%}
+![Alt text](/img/fabian/pic4.png){width=100% height=100%}
 </template>
 
 <template #4>
 
-![Alt text](/img/fabian/pic5.png){width=90% height=90%}
+![Alt text](/img/fabian/pic5.png){width=100% height=100%}
 </template>
 
 <template #5>
 
-![Alt text](/img/fabian/pic8.png){width=90% height=90%}
+![Alt text](/img/fabian/pic8.png){width=100% height=100%}
 </template>
 
 </v-switch>
@@ -105,17 +105,23 @@ hideInToc: true
 <v-switch>
 <template #0>
 
-![Alt text](/img/fabian/img_hemicube_placement.png){width=90% height=90%}
+![Alt text](/img/fabian/img_hemicube_placement.png){width=100% height=100%}
 </template>
 <template #1>
 
-![Alt text](/img/fabian/lm_no_tex.png){width=90% height=90%}
+![Alt text](/img/fabian/lm_no_tex.png){width=100% height=100%}
 </template>
 
 <template #2>
 
-![Alt text](/img/fabian/lm_tex.png){width=90% height=90%}
+![Alt text](/img/fabian/lm_tex.png){width=100% height=100%}
 </template>
+
+<template #3>
+
+![Alt text](/img/fabian/green_room.png){width=100% height=100%}
+</template>
+
 </v-switch>
 
 ---
