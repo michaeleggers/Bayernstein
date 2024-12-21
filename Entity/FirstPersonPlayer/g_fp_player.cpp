@@ -20,18 +20,18 @@
 #include "g_fp_player_states.h"
 #include "imgui.h"
 
-FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
+FirstPersonPlayer::FirstPersonPlayer(const std::vector<Property>& properties)
     : MovingEntity(ET_PLAYER),
       m_pStateMachine(nullptr),
       m_AnimState(ANIM_STATE_IDLE)
 {
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(FirstPersonPlayerIdle::Instance());
-    LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
-    m_Position     = initialPosition;
-    m_PrevPosition = initialPosition;
+    BaseGameEntity::GetProperty<glm::vec3>(properties, "origin", &m_Position);
+    LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
+    m_PrevPosition = m_Position;
     //m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
-    m_Camera = Camera(initialPosition);
+    m_Camera = Camera(m_Position);
     //m_Camera.RotateAroundSide(-60.0f);
     m_PrevCollisionState = ES_UNDEFINED;
     m_Momentum           = glm::vec3(0.0f);

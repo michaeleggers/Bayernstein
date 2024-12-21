@@ -18,7 +18,8 @@
 #include "../../r_model.h"
 #include "../moving_entity.h"
 
-class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
+class FirstPersonPlayer : public MovingEntity, public IInputReceiver
+{
 
   public:
     // Movement related values
@@ -42,9 +43,10 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
     static constexpr float GROUND_RESISTANCE = 3.0f;
     static constexpr float GROUND_FRICTION   = 0.9f;
 
-    explicit FirstPersonPlayer(glm::vec3 initialPosition);
+    explicit FirstPersonPlayer(const std::vector<Property>& properties);
 
-    ~FirstPersonPlayer() override {
+    ~FirstPersonPlayer() override
+    {
         delete m_pStateMachine;
     }
 
@@ -56,7 +58,8 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
     void UpdateCamera(Camera* camera);
     void UpdatePosition(glm::vec3 newPosition) override;
 
-    [[nodiscard]] StateMachine<FirstPersonPlayer>* GetFSM() const {
+    [[nodiscard]] StateMachine<FirstPersonPlayer>* GetFSM() const
+    {
         return m_pStateMachine;
     }
 
@@ -65,16 +68,19 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
     HKD_Model* GetModel();
 
   public:
-    bool CanAttack() {
+    bool CanAttack()
+    {
         double currentTime = Clock->GetTime();
-        if ( currentTime >= m_LastAttack + m_AttackDelay ) {
+        if ( currentTime >= m_LastAttack + m_AttackDelay )
+        {
             m_LastAttack = currentTime;
             return true;
         }
         return false;
     }
 
-    Camera& GetCamera() {
+    Camera& GetCamera()
+    {
         return m_Camera;
     }
 

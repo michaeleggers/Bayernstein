@@ -23,7 +23,8 @@
 
 Enemy::Enemy(const std::vector<Property>& properties)
     : MovingEntity(ET_ENEMY),
-      m_AnimationState(ANIM_STATE_IDLE) {
+      m_AnimationState(ANIM_STATE_IDLE)
+{
 
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(EnemyIdle::Instance());
@@ -39,13 +40,15 @@ Enemy::Enemy(const std::vector<Property>& properties)
     m_PrevPosition       = GetEllipsoidColliderPtr()->center;
     m_Position           = m_PrevPosition;
     m_pSteeringBehaviour = new SteeringBehaviour(this);
+    m_pPath              = nullptr;
     // m_pSteeringBehaviour->WanderOn();
 
     m_SfxFootsteps
         = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
 }
 
-void Enemy::PreCollisionUpdate() {
+void Enemy::PreCollisionUpdate()
+{
 
     float     dt           = (float)GetDeltaTime();
     glm::vec3 force        = m_pSteeringBehaviour->Calculate();
@@ -54,7 +57,8 @@ void Enemy::PreCollisionUpdate() {
     //m_Velocity += acceleration * 1000.0f;
     m_Velocity += acceleration * dt / 1000.0f;
     m_Velocity = math::TruncateVec3(m_Velocity, m_MaxSpeed);
-    if ( Speed() > 0.001 ) {
+    if ( Speed() > 0.001 )
+    {
 
         // Calculate the new forward direction
         glm::vec3 newForward = glm::normalize(m_Velocity);
@@ -68,46 +72,64 @@ void Enemy::PreCollisionUpdate() {
         m_Forward = newForward;
         m_Side    = glm::cross(m_Forward, m_Up);
 
-        if ( Audio::m_Soloud.isValidVoiceHandle(m_FootstepsHandle) ) {
+        if ( Audio::m_Soloud.isValidVoiceHandle(m_FootstepsHandle) )
+        {
             Audio::m_Soloud.set3dSourcePosition(m_FootstepsHandle, m_Position.x, m_Position.y, m_Position.z);
             Audio::m_Soloud.set3dSourceVelocity(m_FootstepsHandle, m_Velocity.x, m_Velocity.y, m_Velocity.z);
             Audio::m_Soloud.update3dAudio();
-        } else {
+        }
+        else
+        {
             m_FootstepsHandle = Audio::m_SfxBus.play3d(
                 *m_SfxFootsteps, m_Position.x, m_Position.y, m_Position.z, m_Velocity.x, m_Velocity.y, m_Velocity.z);
         }
     }
 
-    if ( Speed() >= 0.00001f ) {
+    if ( Speed() >= 0.00001f )
+    {
         m_AnimationState = ANIM_STATE_WALK;
         Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.6f);
         Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume * 0.4f);
-    } else if ( Speed() > m_MaxSpeed * 0.5f ) { // FIXME: will this condition ever happen
+    }
+    else if ( Speed() > m_MaxSpeed * 0.5f )
+    { // FIXME: will this condition ever happen
         m_AnimationState = ANIM_STATE_RUN;
         Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.9f); // adjust sample speed to better match animation
         Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume);
-    } else {
+    }
+    else
+    {
         m_AnimationState = ANIM_STATE_IDLE;
         Audio::m_Soloud.stop(m_FootstepsHandle);
     }
 }
 
-void Enemy::PostCollisionUpdate() {
+void Enemy::PostCollisionUpdate()
+{
     double dt = GetDeltaTime();
     m_pStateMachine->Update();
     SetAnimState(&m_Model, m_AnimationState);
     UpdateModel(&m_Model, (float)dt);
 
-    if ( GetDebugSettings()->patrol ) {
-        this->Patrol();
-    } else if ( GetDebugSettings()->wander ) {
+    if ( GetDebugSettings()->patrol )
+    {
+        if ( m_pPath != nullptr && !m_Target.empty() )
+        {
+            this->Patrol();
+        }
+    }
+    else if ( GetDebugSettings()->wander )
+    {
         this->Wander();
-    } else {
+    }
+    else
+    {
         this->Idle();
     }
 }
 
-void Enemy::LoadModel(const char* path, glm::vec3 initialPosition) {
+void Enemy::LoadModel(const char* path, glm::vec3 initialPosition)
+{
     // Load IQM Model
     IQMModel iqmModel = LoadIQM(path);
 
@@ -117,7 +139,8 @@ void Enemy::LoadModel(const char* path, glm::vec3 initialPosition) {
     m_Model.renderFlags = MODEL_RENDER_FLAG_NONE;
     m_Model.scale       = glm::vec3(22.0f);
 
-    for ( int i = 0; i < m_Model.animations.size(); i++ ) {
+    for ( int i = 0; i < m_Model.animations.size(); i++ )
+    {
         EllipsoidCollider* ec = &m_Model.ellipsoidColliders[ i ];
         ec->radiusA *= m_Model.scale.x;
         ec->radiusB *= m_Model.scale.z;
@@ -134,18 +157,22 @@ void Enemy::LoadModel(const char* path, glm::vec3 initialPosition) {
     SetAnimState(&m_Model, ANIM_STATE_WALK);
 }
 
-EllipsoidCollider* Enemy::GetEllipsoidColliderPtr() {
+EllipsoidCollider* Enemy::GetEllipsoidColliderPtr()
+{
     return &m_Model.ellipsoidColliders[ m_Model.currentAnimIdx ];
 }
 
-HKD_Model* Enemy::GetModel() {
+HKD_Model* Enemy::GetModel()
+{
     return &m_Model;
 }
 
-void Enemy::UpdatePosition(glm::vec3 newPosition) {
+void Enemy::UpdatePosition(glm::vec3 newPosition)
+{
     m_Position = newPosition;
 }
 
-bool Enemy::HandleMessage(const Telegram& telegram) {
+bool Enemy::HandleMessage(const Telegram& telegram)
+{
     return m_pStateMachine->HandleMessage(telegram);
 }
