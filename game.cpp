@@ -22,6 +22,7 @@
 #include "input_delegate.h"
 #include "input_handler.h"
 #include "physics.h"
+#include "platform.h"
 #include "polysoup.h"
 #include "r_font.h"
 #include "r_itexture.h"
@@ -59,20 +60,13 @@ void Game::Init() {
     // Load world triangles from Quake .MAP file
 
     //std::vector<MapTri> worldTris{};
-    MapVersion mapVersion = VALVE_220; // TODO: Change to MAP_TYPE_QUAKE
 
-    // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
-#ifdef _WIN32
-    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/temple6.map");
-#elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/temple6.map");
-#endif
-
-    size_t inputLength = mapData.length();
-    Map    map         = getMap(&mapData[ 0 ], inputLength, mapVersion);
 
     m_World = CWorld::Instance();
-    m_World->InitWorldFromMap(map);
+
+    // Load lightmap triangles and lightmap texture
+
+    m_World->InitWorld("lightmap_test");
     m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.

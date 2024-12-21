@@ -37,6 +37,7 @@ endif ()
 
 add_subdirectory(dependencies/SDL2.28.4)
 
+set(SOLOUD_SRC_PATH dependencies/soloud/src)
 
 # add_executable(Game
 #   ${SRC_FILES}
@@ -115,6 +116,10 @@ add_executable(Game
     Body.h
     Intersections.cpp
     Intersections.h
+    Audio/Audio.cpp
+    Audio/Audio.h
+    Audio/DynamicSound.cpp
+    Audio/DynamicSound.h
     CircularBuffer.cpp
     CircularBuffer.h
     Console/Console.cpp
@@ -193,6 +198,60 @@ add_executable(Game
 
     dependencies/glad/src/glad.c
     
+    # Core
+    ${SOLOUD_SRC_PATH}/core/soloud.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_audiosource.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_bus.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_core_3d.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_core_basicops.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_core_faderops.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_core_filterops.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_core_getters.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_core_setters.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_core_voicegroup.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_core_voiceops.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_fader.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_fft.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_fft_lut.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_file.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_filter.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_misc.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_queue.cpp
+    ${SOLOUD_SRC_PATH}/core/soloud_thread.cpp
+    # Audiosources
+    ${SOLOUD_SRC_PATH}/audiosource/monotone/soloud_monotone.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/noise/soloud_noise.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/openmpt/soloud_openmpt.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/openmpt/soloud_openmpt_dll.c
+    ${SOLOUD_SRC_PATH}/audiosource/sfxr/soloud_sfxr.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/speech/darray.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/speech/klatt.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/speech/resonator.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/speech/soloud_speech.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/speech/tts.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/tedsid/sid.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/tedsid/soloud_tedsid.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/tedsid/ted.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/vic/soloud_vic.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/vizsn/soloud_vizsn.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/wav/dr_impl.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/wav/soloud_wav.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/wav/soloud_wavstream.cpp
+    ${SOLOUD_SRC_PATH}/audiosource/wav/stb_vorbis.c
+    # Backends
+    ${SOLOUD_SRC_PATH}/backend/miniaudio/soloud_miniaudio.cpp
+    # Filters
+    ${SOLOUD_SRC_PATH}/filter/soloud_bassboostfilter.cpp
+    ${SOLOUD_SRC_PATH}/filter/soloud_biquadresonantfilter.cpp
+    ${SOLOUD_SRC_PATH}/filter/soloud_dcremovalfilter.cpp
+    ${SOLOUD_SRC_PATH}/filter/soloud_echofilter.cpp
+    ${SOLOUD_SRC_PATH}/filter/soloud_fftfilter.cpp
+    ${SOLOUD_SRC_PATH}/filter/soloud_flangerfilter.cpp
+    ${SOLOUD_SRC_PATH}/filter/soloud_freeverbfilter.cpp
+    ${SOLOUD_SRC_PATH}/filter/soloud_lofifilter.cpp
+    ${SOLOUD_SRC_PATH}/filter/soloud_robotizefilter.cpp
+    ${SOLOUD_SRC_PATH}/filter/soloud_waveshaperfilter.cpp
+
     ${RESOURCE_FILES}
 )
 
@@ -201,8 +260,10 @@ target_include_directories(Game
     PUBLIC dependencies/glad/include
     PUBLIC dependencies/imgui
     PUBLIC dependencies/SDL2.28.4/include
+    PUBLIC dependencies/soloud/include
 )
 
+add_definitions(-DWITH_MINIAUDIO) # enable soloud miniaudio backend
 
 target_link_libraries(Game PUBLIC
     SDL2

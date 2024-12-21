@@ -38,6 +38,9 @@ ConsoleVariable scr_consize      = { "scr_consize", 0.45f };
 ConsoleVariable scr_conopacity   = { "scr_conopacity", 0.95f };
 ConsoleVariable scr_conwraplines = { "scr_conwraplines", 1 };
 
+ConsoleVariable r_lightmaps      = { "r_lightmaps", 1 };
+ConsoleVariable r_lightmaps_only = { "r_lightmaps_only", 0 };
+
 void GLAPIENTRY OpenGLDebugCallback(GLenum        source,
                                     GLenum        type,
                                     GLuint        id,
@@ -320,6 +323,9 @@ bool GLRender::Init(void) {
     VariableManager::Register(&scr_conopacity);
     VariableManager::Register(&scr_conwraplines);
 
+    VariableManager::Register(&r_lightmaps);
+    VariableManager::Register(&r_lightmaps_only);
+
     return true;
 }
 
@@ -402,6 +408,12 @@ void GLRender::RegisterWorld(CWorld* world) {
                                    true,               // Cull back faces
                                    DRAW_MODE_SOLID };
         m_TexHandleToWorldDrawCmd.insert({ texHandle, drawCmd });
+    }
+
+    // Check if lightmap available
+    if ( world->IsLightmapAvailable() ) {
+        m_UseLightmap      = true;
+        m_hLightmapTexture = world->GetLightmapTextureHandle();
     }
 }
 
@@ -758,15 +770,37 @@ void GLRender::Render(
     glEnable(GL_DEPTH_TEST);
 
     // Draw World Tris
+
     m_WorldBatch->Bind();
     m_WorldShader->Activate();
     m_WorldShader->SetViewProjMatrices(view, proj);
 
+    if ( m_UseLightmap ) {
+        // Bind lightmap texture to texture slot 1.
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_hLightmapTexture);
+        if ( r_lightmaps.value ) {
+            m_WorldShader->SetShaderSettingBits(SHADER_USE_LIGHTMAP);
+        } else {
+            m_WorldShader->ResetShaderSettingBits(SHADER_USE_LIGHTMAP);
+        }
+
+        if ( r_lightmaps_only.value ) {
+            m_WorldShader->SetShaderSettingBits(SHADER_LIGHTMAP_ONLY);
+        } else {
+            m_WorldShader->ResetShaderSettingBits(SHADER_LIGHTMAP_ONLY);
+        }
+    }
+
     for ( auto const& [ texHandle, drawCmd ] : m_TexHandleToWorldDrawCmd ) {
         std::vector<GLBatchDrawCmd> drawCmds{ drawCmd };
+        // Bind diffuse texture to texture slot 0
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texHandle);
         ExecuteDrawCmds(drawCmds, GEOM_TYPE_VERTEX_ONLY);
     }
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE0);
 
     /*for (auto const& [ texHandle, batch ] : m_TexHandleToWorldBatch) {*/
     /*    batch->Bind();*/
@@ -802,7 +836,6 @@ void GLRender::Render(
         m_ModelShader->ResetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
     }
     for ( int i = 0; i < numModels; i++ ) {
-
         HKD_Model* hkdModel = models[ i ];
 
         if ( hkdModel->renderFlags & MODEL_RENDER_FLAG_IGNORE ) {

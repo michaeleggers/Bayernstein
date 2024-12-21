@@ -88,7 +88,7 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
 
   private:
     glm::vec3            m_Forward, m_Side;
-    AnimState            m_AnimationState;
+    AnimState            m_AnimState;
     Camera               m_Camera;
     float                m_Pitch         = 0.0f; // The thing when the camera rotates around its side axis
     float                m_Yaw           = 0.0f; // The thing when the camera rotates around the world up axis
@@ -104,6 +104,12 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
     glm::vec3            m_Dir           = glm::vec3(0.0f);
     glm::vec3            m_FlyMomentum   = glm::vec3(0.0f);
     EntityCollisionState m_PrevCollisionState;
+
+    // Audio
+    SoLoud::AudioSource* m_SfxGunshot;
+    SoLoud::AudioSource* m_SfxJump;
+    SoLoud::AudioSource* m_SfxFootsteps;
+    SoLoud::handle       m_FootstepsHandle = 0;
 
     void LoadModel(const char* path, glm::vec3 initialPosition);
     void UpdatePlayerModel();

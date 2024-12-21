@@ -3,6 +3,7 @@
 
 #if WIN32
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <Windows.h>
 #endif
 
@@ -29,6 +30,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+#include "Audio/Audio.h"
 #include "Console/VariableManager.h"
 #include "TestClass.h"
 #include "game.h"
@@ -98,6 +100,11 @@ int main(int argc, char** argv) {
     VariableManager::Init();
     Console* console = Console::Create(100, 32);
 
+    if ( !Audio::Init() ) {
+        SDL_Log("Could not initialize audio engine.\n");
+        return -1;
+    }
+
     // Init the game
 
     Game game(exePath, &interface);
@@ -163,6 +170,8 @@ int main(int argc, char** argv) {
 
         endCounter = SDL_GetPerformanceCounter();
     }
+
+    Audio::Deinit();
 
     game.Shutdown();
 
