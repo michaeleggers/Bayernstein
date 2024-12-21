@@ -20,6 +20,7 @@
 #include "hkd_interface.h"
 #include "irender.h"
 #include "map_parser.h"
+#include "polysoup.h"
 #include "platform.h"
 #include "utils/utils.h"
 
@@ -29,10 +30,24 @@ CWorld* CWorld::Instance() {
     return &m_World;
 }
 
-void CWorld::InitWorldFromMap(const Map& map, const std::string& plyFilename) {
+void CWorld::InitWorld(const std::string& mapName) {
     // Get some subsystems
     EntityManager* m_pEntityManager = EntityManager::Instance();
     IRender*       renderer         = GetRenderer();
+
+    std::string exePath = hkd_GetExePath();
+    
+
+    // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
+#ifdef _WIN32
+    std::string mapData = loadTextFile(exePath + "../../assets/maps/" + mapName + ".map");
+#elif __LINUX__
+    std::string mapData = loadTextFile(exePath + "../assets/maps/" + mapName + ".map");
+#endif
+    
+    MapVersion mapVersion = VALVE_220;
+    size_t inputLength = mapData.length();
+    Map    map         = getMap(&mapData[ 0 ], inputLength, mapVersion);
 
     // TODO: Init via .MAP property.
     m_Gravity = glm::vec3(0.0f, 0.0f, -200.0f);
@@ -41,18 +56,16 @@ void CWorld::InitWorldFromMap(const Map& map, const std::string& plyFilename) {
 
     // Check if a lightmap is available
     m_LightmapAvailable = false;
-    if ( !plyFilename.empty() ) {
-        HKD_File    plyFile;
-        std::string exePath     = hkd_GetExePath();
-        std::string fullPlyPath = exePath + "../assets/maps/" + plyFilename + ".ply";
-        if ( hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS ) {
-            m_MapTris           = CWorld::CreateMapFromLightmapTrisFile(plyFile);
-            m_hLightmapTexture  = renderer->RegisterTextureGetHandle(plyFilename + ".png");
-            m_LightmapAvailable = true;
-        } else {
-            printf("Warning (CWorld): Lightmap file '%s' could not be loaded!\n", plyFilename.c_str());
-        }
+    HKD_File    plyFile;
+    std::string fullPlyPath = exePath + "../assets/maps/" + mapName + ".ply";
+    if ( hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS ) {
+        m_MapTris           = CWorld::CreateMapFromLightmapTrisFile(plyFile);
+        m_hLightmapTexture  = renderer->RegisterTextureGetHandle(mapName + ".png");
+        m_LightmapAvailable = true;
+    } else {
+        printf("Warning (CWorld): Lightmap file '%s' could not be loaded!\n", mapName.c_str());
     }
+
     // No lightmap provided or found. It's fine. The world can be initialized
     // from the ASCII MAP file as well. But everything will be bright.
     if ( !m_LightmapAvailable ) {
