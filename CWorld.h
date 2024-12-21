@@ -23,6 +23,7 @@
 #include "Entity/entity_manager.h"
 #include "Path/path.h"
 #include "map_parser.h"
+#include "platform.h"
 #include "polysoup.h"
 #include "r_common.h"
 #include "r_model.h"
@@ -31,7 +32,7 @@
 class CWorld {
   public:
     static CWorld* Instance();
-    void           InitWorldFromMap(const Map& map);
+    void           InitWorld(const std::string& mapName);
     void           CollideEntitiesWithWorld();
     void           CollideEntities();
 
@@ -59,9 +60,19 @@ class CWorld {
         return m_pBrushModels;
     }
 
+    bool IsLightmapAvailable() {
+        return m_LightmapAvailable;
+    }
+
+    uint64_t GetLightmapTextureHandle() {
+        return m_hLightmapTexture;
+    }
+
     static glm::vec3           GetOrigin(const Entity* entity);
     static Waypoint            GetWaypoint(const Entity* entity);
     static std::vector<MapTri> CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys);
+    static std::vector<MapTri> CreateMapFromLightmapTrisFile(HKD_File lightmapTrisFile);
+    static Vertex              StaticVertexToVertex(StaticVertex staticVertex);
 
     std::vector<MapTri> m_MapTris;
     glm::vec3           m_Gravity;
@@ -96,6 +107,11 @@ class CWorld {
     // Keep references to brush entities' map tris so we
     // can easily collide against brush entities as well.
     std::vector<std::vector<MapTri>*> m_pBrushMapTris;
+
+    // If a lightmap is loaded, this handle stores
+    // the texture handle on the GPU.
+    uint64_t m_hLightmapTexture;
+    bool     m_LightmapAvailable;
 };
 
 #endif // _CWORLD_H_

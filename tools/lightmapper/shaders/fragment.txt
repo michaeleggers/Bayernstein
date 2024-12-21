@@ -1,35 +1,35 @@
 #version 330 core
 
-in vec2 fragmentTexCoord;
-in vec2 lightmapTexCoord;
+in vec2 diffuseUV;
+in vec2 lightmapUV;
+flat in float texIndex;
 
 out vec4 color;
 
 uniform sampler2DArray diffuseTextureArray;  // Texture array for diffuse textures
-uniform sampler2D lightmapTexture;            // Global lightmap texture
-uniform float exposure;                        // Tone-mapping exposure
-uniform int textureLayer;                      // Texture layer index to sample from
+uniform sampler2D lightmapTexture;           // Global lightmap texture
+uniform float exposure;                      // Tone-mapping exposure
 
 void main()
 {
-    // Sample the diffuse texture from the texture array
-    vec4 texColor = texture(diffuseTextureArray, vec3(fragmentTexCoord, textureLayer));
+    // Sample the diffuse texture from the texture array using the texture index
+    vec4 texColor = texture(diffuseTextureArray, vec3(diffuseUV, texIndex));
 
-    // Sample the lightmap texture
-    vec4 lightmapColor = texture(lightmapTexture, lightmapTexCoord);
+    // Sample the lightmap texture using the lightmap UV coordinates
+    vec4 lightmapColor = texture(lightmapTexture, lightmapUV);
 
-    // Combine texture with lightmap color
+    // Combine diffuse texture color with the lightmap color
     vec3 combinedColor = texColor.rgb * lightmapColor.rgb;
 
-    // Apply exposure-based tone mapping
+    // Apply exposure-based tone mapping if exposure is greater than 0
     vec3 mappedColor;
     if (exposure > 0.0) {
         mappedColor = vec3(1.0) - exp(-combinedColor * exposure);
-        mappedColor = pow(mappedColor, vec3(1.0 / 2.2));
+        mappedColor = pow(mappedColor, vec3(1.0 / 2.2)); // Gamma correction
     } else {
         mappedColor = combinedColor;
     }
 
-    // Output final color with alpha set to 1.0
+    // Output the final color with alpha set to 1.0
     color = vec4(mappedColor, 1.0);
 }
