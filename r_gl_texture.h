@@ -4,7 +4,6 @@
 #include <glad/glad.h>
 
 #include <string>
-#include <unordered_map>
 
 #include "r_font.h"
 #include "r_itexture.h"

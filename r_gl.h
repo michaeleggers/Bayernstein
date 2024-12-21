@@ -17,6 +17,7 @@
 #include "r_gl_shader.h"
 #include "r_gl_texture.h"
 #include "r_gl_texture_mgr.h"
+#include "r_itexture_mgr.h"
 #include "r_model.h"
 
 struct GLMesh {
@@ -71,6 +72,10 @@ class GLRender : public IRender {
     virtual void DrawWorldTris() override;
     virtual void Begin2D() override;
     virtual void End2D() override;
+    virtual void DrawSprite(const Sprite*        sprite,
+                            const glm::vec2&     pos,
+                            const glm::vec2&     scale,
+                            ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
     virtual void SetFont(CFont* font, glm::vec4 color = glm::vec4(1.0f)) override;
     virtual void SetShapeColor(glm::vec4 color = glm::vec4(1.0f)) override;
     virtual void
@@ -84,6 +89,8 @@ class GLRender : public IRender {
     virtual SDL_Window* GetWindow() override {
         return m_Window;
     };
+    virtual glm::vec2        GetWindowDimensions() override;
+    virtual ITextureManager* GetTextureManager() override;
 
     void           ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType);
     void           InitShaders();
@@ -95,7 +102,7 @@ class GLRender : public IRender {
     SDL_Window*   m_Window;
     SDL_GLContext m_SDL_GL_Conext;
 
-    GLTextureManager* m_TextureManager;
+    GLTextureManager* m_ITextureManager;
 
     Camera* m_ActiveCamera;
 
@@ -130,6 +137,8 @@ class GLRender : public IRender {
     Shader* m_CompositeShader;
     Shader* m_FontShader;
     Shader* m_ShapesShader;
+    Shader* m_SpriteShader;
+
     // Offsets into collider batch
     GLBatchDrawCmd m_EllipsoidColliderDrawCmd;
 
