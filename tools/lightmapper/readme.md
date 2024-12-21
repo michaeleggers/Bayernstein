@@ -193,6 +193,31 @@ cmake -DSDL_INCLUDE_DIR="/usr/local/include/SDL2" -DCMAKE_C_COMPILER=clang -DCMA
 make
 ```
 
+### Building Souper (Windows):
+Download the SDL2 development libs: https://github.com/libsdl-org/SDL/releases/download/release-2.30.10/SDL2-devel-2.30.10-VC.zip and extract its contents to a folder called `SDL2` (or anything that you can remember). The folder structure should look like this:
+```
+souper
+...
+build
+...
+└───SDL2\
+    ├───cmake
+    ├───docs
+    ├───include
+    └───lib
+        ├───x64
+        └───x86
+```
+
+In the souper directory make a `build` folder and `cd` into it.
+Then run CMake:
+```bash
+cmake -DSDL_INCLUDE_DIR=SDL2\include -DSDL_LIBS_DIR=SDL2\lib\x64 ..
+```
+It will create a Visual Studio Solution that you can use to build souper with.
+The generated exe will be in `souper/bin/Release` or `souper/bin/Debug`. Make sure
+to copy the `SDL2.dll` from `SDL2/lib/x64/` alongside the `souper.exe`.
+
 ### Running Python File on Unix
 if: Failed to create GLFW window"
 then do:
