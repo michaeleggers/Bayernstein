@@ -66,12 +66,6 @@ struct StaticVertex {
     glm::vec3 color;
 };
 
-struct Vertex2D {
-    glm::vec3 pos;
-    glm::vec2 uv;
-    glm::vec4 color;
-};
-
 // Vertex Attribute Layout
 
 #define VERT_POS_OFFSET 0
