@@ -26,6 +26,8 @@
 #include "platform.h"
 #include "utils/utils.h"
 
+extern std::string g_GameDir;
+
 CWorld* CWorld::Instance() {
     static CWorld m_World;
 
@@ -40,13 +42,7 @@ void CWorld::InitWorld(const std::string& mapName) {
     std::string exePath = hkd_GetExePath();
     
 
-    // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
-#ifdef _WIN32
-    std::string mapData = loadTextFile(exePath + "../../assets/maps/" + mapName + ".map");
-#elif __LINUX__
-    std::string mapData = loadTextFile(exePath + "../assets/maps/" + mapName + ".map");
-#endif
-    
+    std::string mapData = loadTextFile(g_GameDir + "maps/" + mapName + ".map");
     MapVersion mapVersion = VALVE_220;
     size_t inputLength = mapData.length();
     Map    map         = getMap(&mapData[ 0 ], inputLength, mapVersion);
@@ -60,13 +56,7 @@ void CWorld::InitWorld(const std::string& mapName) {
     m_LightmapAvailable = false;
     HKD_File    plyFile;
 
-    // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
-#ifdef _WIN32
-    std::string fullPlyPath = exePath + "../../assets/maps/" + mapName + ".ply";
-#elif __LINUX__
-    std::string fullPlyPath = exePath + "../assets/maps/" + mapName + ".ply";
-#endif
-
+    std::string fullPlyPath = g_GameDir + "maps/" + mapName + ".ply";
     if ( hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS ) {
         m_MapTris           = CWorld::CreateMapFromLightmapTrisFile(plyFile);
         m_hLightmapTexture  = renderer->RegisterTextureGetHandle(mapName + ".png");
