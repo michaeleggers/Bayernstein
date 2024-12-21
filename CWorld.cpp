@@ -59,7 +59,14 @@ void CWorld::InitWorld(const std::string& mapName) {
     // Check if a lightmap is available
     m_LightmapAvailable = false;
     HKD_File    plyFile;
+
+    // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
+#ifdef _WIN32
+    std::string fullPlyPath = exePath + "../../assets/maps/" + mapName + ".ply";
+#elif __LINUX__
     std::string fullPlyPath = exePath + "../assets/maps/" + mapName + ".ply";
+#endif
+
     if ( hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS ) {
         m_MapTris           = CWorld::CreateMapFromLightmapTrisFile(plyFile);
         m_hLightmapTexture  = renderer->RegisterTextureGetHandle(mapName + ".png");
