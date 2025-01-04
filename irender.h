@@ -22,13 +22,15 @@
 #include "r_itexture_mgr.h"
 #include "r_model.h"
 
-enum DrawMode {
+enum DrawMode
+{
     DRAW_MODE_SOLID,
     DRAW_MODE_WIREFRAME,
     DRAW_MODE_LINES
 };
 
-struct GLBatchDrawCmd {   // TODO: Rename
+struct GLBatchDrawCmd
+{                         // TODO: Rename
     int      offset;      // offset into vertex buffer (VBO)
     int      indexOffset; // offset into index buffer (iVBO)
     uint32_t numVerts;
@@ -37,7 +39,8 @@ struct GLBatchDrawCmd {   // TODO: Rename
     DrawMode drawMode;
 };
 
-class IRender {
+class IRender
+{
   public:
     virtual bool                   Init(void)                                                                       = 0;
     virtual void                   Shutdown(void)                                                                   = 0;
@@ -88,6 +91,8 @@ class IRender {
     virtual void
     Render(Camera* camera, HKD_Model** models, uint32_t numModels, HKD_Model** brushModels, uint32_t numBrushModels)
         = 0;
+
+    virtual void             RenderModel(Camera* camera, const HKD_Model* model)                     = 0;
     virtual void             RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
     virtual void             RenderConsole(Console* console, CFont* font)                            = 0;
     virtual void             RenderEnd(void)                                                         = 0;

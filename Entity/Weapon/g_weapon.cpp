@@ -68,7 +68,7 @@ EllipsoidCollider* Weapon::GetEllipsoidColliderPtr()
     return &m_Model.ellipsoidColliders[ 0 ];
 }
 
-HKD_Model* Weapon::GetModel()
+const HKD_Model* Weapon::GetModel() const
 {
     return &m_Model;
 }

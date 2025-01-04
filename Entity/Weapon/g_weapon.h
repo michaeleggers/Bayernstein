@@ -29,7 +29,7 @@ class Weapon : public BaseGameEntity
 
     EllipsoidCollider* GetEllipsoidColliderPtr() override;
 
-    HKD_Model* GetModel();
+    const HKD_Model* GetModel() const;
 
   public:
   private:

@@ -32,18 +32,21 @@
 ConsoleVariable dbg_show_wander         = { "dbg_show_wander", 0 };
 ConsoleVariable dbg_show_enemy_velocity = { "dbg_show_enemy_velocity", 0 };
 
-static int hkd_Clamp(int val, int clamp) {
+static int hkd_Clamp(int val, int clamp)
+{
     if ( val > clamp || val < clamp ) return clamp;
     return val;
 }
 
-Game::Game(std::string exePath, hkdInterface* pInterface) {
+Game::Game(std::string exePath, hkdInterface* pInterface)
+{
     m_pInterface     = pInterface;
     m_ExePath        = exePath;
     m_pEntityManager = EntityManager::Instance();
 }
 
-void Game::Init() {
+void Game::Init()
+{
     m_AccumTime = 0.0f;
 
     VariableManager::Register(&dbg_show_wander);
@@ -60,7 +63,6 @@ void Game::Init() {
     // Load world triangles from Quake .MAP file
 
     //std::vector<MapTri> worldTris{};
-
 
     m_World = CWorld::Instance();
 
@@ -146,7 +148,8 @@ void Game::Init() {
     SDL_ShowCursor(SDL_DISABLE);
 }
 
-static void DrawCoordinateSystem(IRender* renderer) {
+static void DrawCoordinateSystem(IRender* renderer)
+{
     Vertex origin = { glm::vec3(0.0f) };
     origin.color  = glm::vec4(1.0f);
     Vertex X      = { glm::vec3(100.0f, 0.0f, 0.0f) };
@@ -163,14 +166,16 @@ static void DrawCoordinateSystem(IRender* renderer) {
     renderer->ImDrawLines(OZ, 2);
 }
 
-bool Game::RunFrame(double dt) {
+bool Game::RunFrame(double dt)
+{
 
     m_AccumTime += dt;
 
     IRender* renderer = GetRenderer();
 
     // Want to quit on ESCAPE
-    if ( KeyPressed(SDLK_ESCAPE) ) {
+    if ( KeyPressed(SDLK_ESCAPE) )
+    {
         m_pInterface->QuitGame();
     }
 
@@ -181,19 +186,23 @@ bool Game::RunFrame(double dt) {
 
     // Toggle receivers
     static int receiverToggle = 0;
-    if ( KeyWentDown(SDLK_u) ) {
+    if ( KeyWentDown(SDLK_u) )
+    {
         printf("Switching to receiver num: %d\n", receiverToggle);
         receiverToggle = ++receiverToggle % 2;
         CInputDelegate::Instance()->SetReceiver(receivers[ receiverToggle ]);
         m_pFollowCameraEntity->SetTarget(entities[ receiverToggle ]);
         renderCam = &m_pPlayerEntity->GetCamera();
-        if ( entities[ receiverToggle ]->Type() == ET_FLY_CAMERA ) {
+        if ( entities[ receiverToggle ]->Type() == ET_FLY_CAMERA )
+        {
             SDL_SetRelativeMouseMode(SDL_FALSE);
             SDL_SetWindowGrab(renderer->GetWindow(), SDL_FALSE);
             SDL_ShowCursor(SDL_ENABLE);
             CFlyCamera* flyCamEnt = (CFlyCamera*)entities[ receiverToggle ];
             renderCam             = &flyCamEnt->m_Camera;
-        } else {
+        }
+        else
+        {
             SDL_SetRelativeMouseMode(SDL_TRUE);
             SDL_SetWindowGrab(renderer->GetWindow(), SDL_TRUE);
             SDL_ShowCursor(SDL_DISABLE);
@@ -241,7 +250,8 @@ bool Game::RunFrame(double dt) {
     {
         renderer->Begin3D();
 
-        if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 ) {
+        if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 )
+        {
 
             Enemy*            enemy   = m_pEntityManager->GetFirstEnemy();
             EllipsoidCollider ecEnemy = *(enemy->GetEllipsoidColliderPtr());
@@ -265,7 +275,8 @@ bool Game::RunFrame(double dt) {
         DrawCoordinateSystem(renderer);
 
 #if 1 // debug paths
-        for ( int i = 0; i < m_World->m_Paths.size(); i++ ) {
+        for ( int i = 0; i < m_World->m_Paths.size(); i++ )
+        {
 
             PatrolPath path = m_World->m_Paths[ i ];
 
@@ -280,9 +291,10 @@ bool Game::RunFrame(double dt) {
                          m_World->GetModelPtrs().size(),
                          m_World->GetBrushModelPtrs().data(),
                          m_World->GetBrushModelPtrs().size());
-#endif
 
-        // auto type = enemy->m_Type;
+        renderer->RenderModel(renderCam, m_pPlayerEntity->GetWeapon()->GetModel());
+
+#endif
 
 #if 0
         if ( collisionInfo.didCollide ) {
@@ -301,9 +313,11 @@ bool Game::RunFrame(double dt) {
         renderer->SetActiveCamera(renderCam);
         HKD_Model*                   playerColliderModel[] = { m_pPlayerEntity->GetModel() };
         std::vector<BaseGameEntity*> pAllEntities          = m_pEntityManager->Entities();
-        for ( int i = 0; i < pAllEntities.size(); i++ ) {
+        for ( int i = 0; i < pAllEntities.size(); i++ )
+        {
             BaseGameEntity* pEntity = pAllEntities[ i ];
-            if ( pEntity->Type() == ET_ENEMY ) {
+            if ( pEntity->Type() == ET_ENEMY )
+            {
                 Enemy*     pEnemy = (Enemy*)pEntity;
                 HKD_Model* pModel = pEnemy->GetModel();
                 assert(pModel != nullptr && "Enemy entity must have a model");
@@ -362,7 +376,8 @@ bool Game::RunFrame(double dt) {
     return true;
 }
 
-void Game::Shutdown() {
+void Game::Shutdown()
+{
 
     // NOTE: m_pEntityManager is static memory and cannot deleted with delete
     // (it never was heap allocated with 'new'). The entities have to

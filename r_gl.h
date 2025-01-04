@@ -20,17 +20,20 @@
 #include "r_itexture_mgr.h"
 #include "r_model.h"
 
-struct GLMesh {
+struct GLMesh
+{
     int        triOffset, triCount; // Offsets into VBO of tris
     GLTexture* texture;
 };
 
 // Models for entities (Players, Monsters, Pickup Items...)
-struct GLModel {
+struct GLModel
+{
     std::vector<GLMesh> meshes;
 };
 
-class GLRender : public IRender {
+class GLRender : public IRender
+{
   public:
     virtual bool                   Init(void) override;
     virtual void                   Shutdown(void) override;
@@ -65,6 +68,7 @@ class GLRender : public IRender {
                         uint32_t    numModels,
                         HKD_Model** brushModels,
                         uint32_t    numBrushModels) override;
+    virtual void RenderModel(Camera* camera, const HKD_Model* model) override;
     virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) override;
     virtual void RenderConsole(Console* console, CFont* font) override;
     virtual void Begin3D() override;
@@ -86,7 +90,8 @@ class GLRender : public IRender {
     DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
     virtual void        RenderEnd(void) override;
     virtual void        SetWindowTitle(char* windowTitle) override;
-    virtual SDL_Window* GetWindow() override {
+    virtual SDL_Window* GetWindow() override
+    {
         return m_Window;
     };
     virtual glm::vec2        GetWindowDimensions() override;

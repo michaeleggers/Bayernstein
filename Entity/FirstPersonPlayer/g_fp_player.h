@@ -85,6 +85,11 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver
         return m_Camera;
     }
 
+    const Weapon* GetWeapon() const
+    {
+        return m_Weapon;
+    }
+
   private:
     StateMachine<FirstPersonPlayer>* m_pStateMachine;
     double                           m_AttackDelay = 100;
