@@ -92,7 +92,7 @@ class IRender
     Render(Camera* camera, HKD_Model** models, uint32_t numModels, HKD_Model** brushModels, uint32_t numBrushModels)
         = 0;
 
-    virtual void             RenderFirstPersonView(Camera* camera, const HKD_Model* model)           = 0;
+    virtual void             RenderFirstPersonView(Camera* camera, HKD_Model* model)                 = 0;
     virtual void             RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
     virtual void             RenderConsole(Console* console, CFont* font)                            = 0;
     virtual void             RenderEnd(void)                                                         = 0;

@@ -68,7 +68,7 @@ class GLRender : public IRender
                         uint32_t    numModels,
                         HKD_Model** brushModels,
                         uint32_t    numBrushModels) override;
-    virtual void RenderFirstPersonView(Camera* camera, const HKD_Model* model) override;
+    virtual void RenderFirstPersonView(Camera* camera, HKD_Model* model) override;
     virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) override;
     virtual void RenderConsole(Console* console, CFont* font) override;
     virtual void Begin3D() override;
@@ -159,6 +159,8 @@ class GLRender : public IRender
     // Lightmap
     bool     m_UseLightmap = false;
     uint64_t m_hLightmapTexture;
+
+    uint32_t m_DrawWireframe = 0;
 };
 
 #endif

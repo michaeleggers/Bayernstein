@@ -13,6 +13,7 @@
 
 #include "../../Audio/Audio.h"
 #include "../../globals.h"
+#include "../../hkd_interface.h"
 #include "../../input.h"
 #include "../../input_handler.h"
 #include "../../input_receiver.h"
@@ -42,7 +43,9 @@ FirstPersonPlayer::FirstPersonPlayer(const std::vector<Property>& properties)
     m_SfxFootsteps
         = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
 
-    m_Weapon = new Weapon(properties);
+    m_Weapon              = new Weapon(properties);
+    IRender* renderer     = GetRenderer();
+    int      hWeaponModel = renderer->RegisterModel(m_Weapon->GetModel());
 }
 
 // FIX: At the moment called by the game itself.
@@ -188,6 +191,13 @@ void FirstPersonPlayer::PostCollisionUpdate()
     // Adjust the camera so it is roughly at the top of the model's head.
     m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, GetEllipsoidColliderPtr()->radiusB - 24.0f);
     //m_Camera.Pan( -100.0f * m_Camera.m_Forward );
+
+    // Adjust the Weapon model
+    glm::vec3 weaponPos = m_Position;
+    weaponPos.z += 15.0f;
+    weaponPos.x += 5.0f;
+    weaponPos.y += 23.0f;
+    m_Weapon->UpdatePosition(weaponPos);
 
     m_pStateMachine->Update();
 }

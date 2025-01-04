@@ -292,7 +292,7 @@ bool Game::RunFrame(double dt)
                          m_World->GetBrushModelPtrs().data(),
                          m_World->GetBrushModelPtrs().size());
 
-        //renderer->RenderFirstPersonView(&m_pPlayerEntity->GetCamera(), m_pPlayerEntity->GetWeapon()->GetModel());
+        renderer->RenderFirstPersonView(&m_pPlayerEntity->GetCamera(), m_pPlayerEntity->GetWeapon()->GetModel());
 
 #endif
 

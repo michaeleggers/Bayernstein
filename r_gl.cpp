@@ -711,6 +711,15 @@ void GLRender::RenderBegin(void)
 
 void GLRender::Begin3D(void)
 {
+    ImGui::Begin("Render settings");
+    ImGui::Checkbox("wireframe", (bool*)&m_DrawWireframe);
+    ImGui::End();
+
+    if ( KeyWentDown(SDLK_r) )
+    { // WARNING: TAB key also triggers slider-values in ImGui Window.
+        m_DrawWireframe ^= 1;
+    }
+
     // Render into the 3D scene FBO
     m_3dFBO->Bind();
     SDL_GL_GetDrawableSize(m_Window, &m_WindowWidth, &m_WindowHeight);
@@ -790,22 +799,12 @@ void GLRender::ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryTy
 void GLRender::Render(
     Camera* camera, HKD_Model** models, uint32_t numModels, HKD_Model** brushModels, uint32_t numBrushModels)
 {
-    // Camera and render settings
 
-    static uint32_t drawWireframe = 0;
-
-    if ( KeyWentDown(SDLK_r) )
-    { // WARNING: TAB key also triggers slider-values in ImGui Window.
-        drawWireframe ^= 1;
-    }
-
-    ImGui::Begin("controlls");
+    ImGui::Begin("Controlls");
     ImGui::Text("Cam position:");
     ImGui::SliderFloat("x", &camera->m_Pos.x, -500.0f, 500.0f);
     ImGui::SliderFloat("y", &camera->m_Pos.y, -500.0f, 500.0f);
     ImGui::SliderFloat("z", &camera->m_Pos.z, -500.0f, 500.0f);
-    ImGui::Text("Render settings:");
-    ImGui::Checkbox("wireframe", (bool*)&drawWireframe);
     ImGui::End();
 
     glm::mat4 view = camera->ViewMatrix();
@@ -819,7 +818,7 @@ void GLRender::Render(
 
     m_ImPrimitiveBatch->Bind();
     m_ImPrimitivesShader->Activate();
-    m_ImPrimitivesShader->DrawWireframe((uint32_t)drawWireframe);
+    m_ImPrimitivesShader->DrawWireframe((uint32_t)m_DrawWireframe);
     m_ImPrimitivesShader->SetViewProjMatrices(view, proj);
     m_ImPrimitivesShader->SetMat4("model", glm::mat4(1));
     m_ImPrimitivesShader->SetVec3("viewPos", camera->m_Pos);
@@ -910,7 +909,7 @@ void GLRender::Render(
     m_ModelBatch->Bind();
     m_ModelShader->Activate();
     m_ModelShader->SetViewProjMatrices(view, proj);
-    if ( drawWireframe )
+    if ( m_DrawWireframe )
     {
         m_ModelShader->SetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
     }
@@ -978,7 +977,64 @@ void GLRender::Render(
     //glDrawArrays(GL_TRIANGLES, 0, 3*m_ModelBatch->TriCount());
 }
 
-void GLRender::RenderFirstPersonView(Camera* camera, const HKD_Model* model) {}
+void GLRender::RenderFirstPersonView(Camera* camera, HKD_Model* model)
+{
+    glm::mat4 view = camera->ViewMatrix();
+    // TODO: Global Setting for perspective values
+    glm::mat4 proj
+        = glm::perspective(glm::radians(45.0f), (float)m_WindowWidth / (float)m_WindowHeight, 0.1f, 10000.0f);
+
+    m_ModelBatch->Bind();
+    m_ModelShader->Activate();
+    m_ModelShader->SetViewProjMatrices(view, proj);
+    if ( m_DrawWireframe )
+    {
+        m_ModelShader->SetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
+    }
+    else
+    {
+        m_ModelShader->ResetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
+    }
+
+    if ( model->renderFlags & MODEL_RENDER_FLAG_IGNORE )
+    {
+        return;
+    }
+
+    // For now, no animation for weapons.
+    m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
+
+    GLModel gpuModel = m_Models[ model->gpuModelHandle ];
+
+    BaseGameEntity* pOwner           = model->pOwner;
+    glm::vec3       ownerPos         = glm::vec3(0.0f);
+    glm::quat       ownerOrientation = glm::angleAxis(0.0f, DOD_WORLD_FORWARD);
+    if ( pOwner != nullptr )
+    {
+        ownerPos         = pOwner->m_Position;
+        ownerOrientation = pOwner->m_Orientation;
+    }
+    glm::vec3 position    = ownerPos + model->position;
+    glm::quat orientation = ownerOrientation * model->orientation;
+    glm::vec3 scale       = model->scale;
+    glm::mat4 modelMatrix = CreateModelMatrix(position, orientation, scale);
+    m_ModelShader->SetMat4("model", modelMatrix);
+
+    for ( int j = 0; j < gpuModel.meshes.size(); j++ )
+    {
+        GLMesh* mesh = &gpuModel.meshes[ j ];
+        if ( !mesh->texture->m_Filename.empty() )
+        { // TODO: Checking string of empty is not great.
+            m_ModelShader->SetShaderSettingBits(SHADER_IS_TEXTURED);
+            glBindTexture(GL_TEXTURE_2D, mesh->texture->m_gl_Handle);
+        }
+        else
+        {
+            m_ModelShader->ResetShaderSettingBits(SHADER_IS_TEXTURED);
+        }
+        glDrawArrays(GL_TRIANGLES, 3 * mesh->triOffset, 3 * mesh->triCount);
+    }
+}
 
 void GLRender::DrawWorldTris()
 {

@@ -9,7 +9,6 @@
 #include "../../dependencies/glm/glm.hpp"
 #include "../../dependencies/glm/gtx/quaternion.hpp"
 
-#include "../../Audio/Audio.h"
 #include "../../globals.h"
 #include "../../utils/utils.h"
 #include "g_weapon.h"
@@ -38,7 +37,7 @@ void Weapon::LoadModel(const char* path, glm::vec3 initialPosition)
     m_Model.pOwner = this;
     //m_Model.renderFlags |= MODEL_RENDER_FLAG_IGNORE;
     m_Model.isRigidBody = false;
-    m_Model.scale       = glm::vec3(30.0f);
+    m_Model.scale       = glm::vec3(1.0f);
 
     for ( int i = 0; i < m_Model.animations.size(); i++ )
     {
@@ -68,7 +67,7 @@ EllipsoidCollider* Weapon::GetEllipsoidColliderPtr()
     return &m_Model.ellipsoidColliders[ 0 ];
 }
 
-const HKD_Model* Weapon::GetModel() const
+HKD_Model* Weapon::GetModel()
 {
     return &m_Model;
 }

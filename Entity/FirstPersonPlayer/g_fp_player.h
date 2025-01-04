@@ -85,7 +85,7 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver
         return m_Camera;
     }
 
-    const Weapon* GetWeapon() const
+    Weapon* GetWeapon()
     {
         return m_Weapon;
     }
