@@ -1,8 +1,6 @@
 //
-// Created by me on 10/14/24.
+// Created by me on 04/01/25.
 //
-
-#include "g_fp_player.h"
 
 #include <SDL.h>
 
@@ -14,173 +12,20 @@
 #include "../../Audio/Audio.h"
 #include "../../globals.h"
 #include "../../utils/utils.h"
+#include "g_weapon.h"
 
 Weapon::Weapon(const std::vector<Property>& properties)
-    : BaseGameEntity
+    : BaseGameEntity(ET_WEAPON)
 {
-    m_pStateMachine = new StateMachine(this);
-    m_pStateMachine->SetCurrentState(WeaponIdle::Instance());
     BaseGameEntity::GetProperty<glm::vec3>(properties, "origin", &m_Position);
-    LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
-    //LoadModel("models/double_barrel_shotgun/db_shotgun.iqm", m_Position);
-    m_PrevPosition = m_Position;
-    //m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
-    m_Camera = Camera(m_Position);
-    //m_Camera.RotateAroundSide(-60.0f);
-    m_PrevCollisionState = ES_UNDEFINED;
-    m_Momentum           = glm::vec3(0.0f);
 
-    m_SfxJump    = Audio::LoadSource("sfx/jump_01.wav", 0.5f);
-    m_SfxGunshot = Audio::LoadSource("sfx/sonniss/PM_SFG_VOL1_WEAPON_8_2_GUN_GUNSHOT_FUTURISTIC.wav");
-    m_SfxFootsteps
-        = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
+    // TODO: Load the type of the model from properties.
+    LoadModel("models/double_barrel_shotgun/db_shotgun.iqm", m_Position);
 }
 
-// FIX: At the moment called by the game itself.
-// Must be called before entity system updates entities.
-// (Calls ::Update() on Entities).
 void Weapon::UpdatePosition(glm::vec3 newPosition)
 {
     m_Position = newPosition;
-}
-
-void Weapon::PreCollisionUpdate()
-{
-
-    double        dt          = GetDeltaTime();
-    static double accumulator = 0.0;
-    accumulator += dt;
-
-    if ( m_PrevCollisionState == ES_ON_GROUND )
-    {
-        if ( m_WantsToJump )
-        {
-            printf("Jumping....\n");
-            Audio::m_SfxBus.play(*m_SfxJump, -1);
-            m_FlyMomentum   = m_Momentum;
-            m_FlyMomentum.z = JUMPING_MOMENTUM;
-        }
-    }
-
-    while ( accumulator >= DOD_FIXED_UPDATE_TIME )
-    {
-
-        if ( m_PrevCollisionState == ES_ON_GROUND )
-        {
-
-            glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
-
-            if ( m_IsMoving )
-            {
-                m_Momentum += (float)DOD_FIXED_UPDATE_TIME * m_Dir * GROUND_RESISTANCE;
-                if ( glm::length(horizontalMomentum) > m_MovementSpeed )
-                {
-                    m_Momentum = m_MovementSpeed * glm::normalize(m_Momentum);
-                }
-            }
-            else
-            {
-                if ( glm::length(horizontalMomentum) > 0.0f )
-                {
-                    glm::vec3 frictionForce
-                        = (float)DOD_FIXED_UPDATE_TIME * -glm::normalize(horizontalMomentum) * GROUND_FRICTION;
-                    if ( glm::length(frictionForce) > glm::length(horizontalMomentum) )
-                    {
-                        m_Momentum.x = 0.0f;
-                        m_Momentum.y = 0.0f;
-                    }
-                    else
-                    {
-                        m_Momentum.x += frictionForce.x;
-                        m_Momentum.y += frictionForce.y;
-                    }
-                }
-            }
-        }
-        else if ( m_PrevCollisionState == ES_IN_AIR )
-        {
-            glm::vec3 horizontalMomentum = glm::vec3(m_Momentum.x, m_Momentum.y, 0.0f);
-            m_Momentum += (float)DOD_FIXED_UPDATE_TIME * (1.0f - IN_AIR_FRICTION) * m_Dir * GROUND_RESISTANCE;
-            if ( glm::length(horizontalMomentum) > m_MovementSpeed )
-            {
-                m_Momentum = m_MovementSpeed * glm::normalize(m_Momentum);
-            }
-            // If in air, apply some downward gravity acceleration.
-            m_FlyMomentum.z += (float)DOD_FIXED_UPDATE_TIME * (-GRAVITY_ACCELERATION);
-        }
-
-        // NOTE: It *can* make sense to restrict further
-        // downward gravity in certain cases, eg. when
-        // the gravity is set to something pretty extrem
-        // and it would cause the player to fall so quickly
-        // that after a few frames the numeric precision gets
-        // exhausted (yes, this can happen ;) ). Usually  this
-        // is not needed, though.
-        /*
-        if (glm::length(m_FlyMomentum) > JUMPING_MOMENTUM) {
-            m_FlyMomentum = JUMPING_MOMENTUM * glm::normalize(m_FlyMomentum);
-        } 
-        */
-
-        m_Momentum.z = glm::clamp(m_Momentum.z, 0.0f, JUMPING_MOMENTUM);
-
-        accumulator -= DOD_FIXED_UPDATE_TIME;
-    } // while accumulator > DOD_FIXED_UPDATE_TIME
-    m_Velocity = m_Momentum + m_FlyMomentum;
-}
-
-void Weapon::PostCollisionUpdate()
-{
-
-    double dt = GetDeltaTime();
-
-    ImGui::Begin("FPS Player Info");
-    if ( m_CollisionState == ES_IN_AIR )
-    {
-        ImGui::Text("flying!\n");
-    }
-    else
-    {
-        ImGui::Text("on ground!\n");
-    }
-    ImGui::Text("m_Velocity.z: %f", m_Velocity.z);
-    ImGui::Text("m_Momentum.xyz: %f, %f, %f", m_Momentum.x, m_Momentum.y, m_Momentum.z);
-    ImGui::End();
-
-    if ( m_PrevCollisionState == ES_ON_GROUND && m_CollisionState == ES_IN_AIR )
-    {
-        printf("switched from on ground to in air.\n");
-        // If the footsteps are playing, turn them off now!
-        // TODO: Is it ok to not check if the handle is even valid before calling stop()?
-        Audio::m_Soloud.stop(m_FootstepsHandle);
-    }
-    else if ( m_PrevCollisionState == ES_IN_AIR && m_CollisionState == ES_ON_GROUND )
-    {
-        printf("switched from in air to on ground.\n");
-
-        m_FlyMomentum = glm::vec3(0.0f);
-    }
-
-    m_PrevCollisionState = m_CollisionState;
-
-    if ( KeyPressed(SDLK_w) )
-    {
-        m_pStateMachine->ChangeState(WeaponRunning::Instance());
-    }
-    else
-    {
-        m_pStateMachine->ChangeState(WeaponIdle::Instance());
-    }
-
-    UpdateModel(&m_Model, (float)dt);
-
-    //m_Position = m_Model.position;
-    m_Camera.m_Pos = m_Position;
-    // Adjust the camera so it is roughly at the top of the model's head.
-    m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, GetEllipsoidColliderPtr()->radiusB - 24.0f);
-    //m_Camera.Pan( -100.0f * m_Camera.m_Forward );
-
-    m_pStateMachine->Update();
 }
 
 void Weapon::LoadModel(const char* path, glm::vec3 initialPosition)
@@ -215,168 +60,6 @@ void Weapon::LoadModel(const char* path, glm::vec3 initialPosition)
     // So, we rotate the model initially by 180 degrees.
     glm::quat modelForwardFix = glm::angleAxis(glm::radians(180.0f), DOD_WORLD_UP);
     m_Model.orientation       = modelForwardFix;
-
-    SetAnimState(&m_Model, ANIM_STATE_WALK);
-}
-
-// NOTE: This is not being used now as the entity should not own
-// and/or update a camera by itself. The camera is an entity itself.
-// We leave it here anyways, because this shows how it could be done
-// if it turns out that camera-entities are dumb (I don't think so
-// but still...).
-void Weapon::UpdateCamera(Camera* camera)
-{
-    // Fix camera position
-    //camera->m_Pos.x = m_Model.position.x;
-    //camera->m_Pos.y = m_Model.position.y;
-    //camera->m_Pos.z = m_Model.position.z + 70.0f;
-    //camera->m_Pos += (-m_Forward * 80.0f);
-    //// m_RotationAngle should already have the information about if we want to move left or right
-    //if (KeyPressed(SDLK_RIGHT) || KeyPressed(SDLK_LEFT)) {
-    //    camera->RotateAroundUp(m_RotationAngle);
-    //}
-}
-
-void Weapon::UpdatePlayerModel()
-{
-
-    ButtonState forward   = CHECK_ACTION("forward");
-    ButtonState back      = CHECK_ACTION("back");
-    ButtonState left      = CHECK_ACTION("left");
-    ButtonState right     = CHECK_ACTION("right");
-    ButtonState speed     = CHECK_ACTION("speed");
-    ButtonState fire      = CHECK_ACTION("fire");
-    ButtonState jump      = CHECK_ACTION("jump");
-    ButtonState turnLeft  = CHECK_ACTION("turn_left");
-    ButtonState turnRight = CHECK_ACTION("turn_right");
-    ButtonState mouseLook = CHECK_ACTION("mlook");
-
-    double dt = GetDeltaTime();
-
-    glm::quat qYaw = glm::angleAxis(glm::radians(-m_Yaw), DOD_WORLD_UP);
-    if ( mouseLook == ButtonState::MOVED )
-    {
-        const MouseMotion mouseMotion = GetMouseMotion();
-        m_MouseX                      = mouseMotion.current.xrel;
-        m_MouseY                      = mouseMotion.current.yrel;
-
-        // Compute rotation angles based on mouse input
-        float rotAngleUp   = dt / 1000.0f * m_LookSpeed * (float)m_MouseX;
-        float rotAngleSide = dt / 1000.0f * m_LookSpeed * (float)m_MouseY;
-
-        m_Pitch += rotAngleSide;
-        m_Yaw += rotAngleUp;
-
-        m_Pitch          = glm::clamp(m_Pitch, -MAX_MOUSE_LOOK_DEGREES, MAX_MOUSE_LOOK_DEGREES);
-        glm::quat qPitch = glm::angleAxis(glm::radians(-m_Pitch), DOD_WORLD_RIGHT);
-        qYaw             = glm::angleAxis(glm::radians(-m_Yaw), DOD_WORLD_UP);
-        glm::quat qTotal = qYaw * qPitch;
-
-        m_Camera.m_Forward     = glm::rotate(qTotal, DOD_WORLD_FORWARD);
-        m_Camera.m_Up          = glm::rotate(qTotal, DOD_WORLD_UP);
-        m_Camera.m_Side        = glm::rotate(qTotal, DOD_WORLD_RIGHT);
-        m_Camera.m_Orientation = qTotal;
-
-        // Don't forget the entity's own rotation.
-        m_Orientation = qYaw;
-    }
-
-    m_Forward = glm::rotate(m_Orientation, DOD_WORLD_FORWARD);
-    m_Side    = glm::cross(m_Forward, m_Up);
-
-    m_MovementSpeed = RUN_VELOCITY;
-    if ( KeyPressed(SDLK_LSHIFT) )
-    {
-        m_MovementSpeed *= WALK_FACTOR;
-    }
-    m_AnimState = ANIM_STATE_IDLE;
-    m_Dir       = glm::vec3(0.0f);
-    if ( forward == ButtonState::PRESSED )
-    {
-        m_Dir += m_Forward;
-        m_AnimState = ANIM_STATE_RUN;
-    }
-    if ( back == ButtonState::PRESSED )
-    {
-        m_Dir -= m_Forward;
-        m_AnimState = ANIM_STATE_RUN;
-    }
-    if ( right == ButtonState::PRESSED )
-    {
-        m_Dir += m_Side;
-        m_AnimState = ANIM_STATE_RUN;
-    }
-    if ( left == ButtonState::PRESSED )
-    {
-        m_Dir -= m_Side;
-        m_AnimState = ANIM_STATE_RUN;
-    }
-
-    // Make sure we don't get faster when going both
-    // forward and to the side for example.
-    float inputLength = glm::length(m_Dir);
-    if ( inputLength > 0.0f )
-    { // This is neccessary to not divide by 0 in glm::normalize
-        m_Dir = glm::normalize(m_Dir);
-    }
-
-    m_IsMoving    = inputLength > 0.0f;
-    m_WantsToJump = jump == ButtonState::WENT_DOWN;
-
-    if ( m_AnimState == ANIM_STATE_RUN )
-    {
-
-        if ( speed == ButtonState::PRESSED )
-        {
-            m_AnimState = ANIM_STATE_WALK;
-        }
-
-        if ( m_PrevCollisionState == ES_ON_GROUND )
-        {
-            // Get the handle if not already created.
-            if ( !Audio::m_Soloud.isValidVoiceHandle(m_FootstepsHandle) )
-            {
-                m_FootstepsHandle = Audio::m_SfxBus.play(*m_SfxFootsteps);
-            }
-
-            if ( m_AnimState == ANIM_STATE_RUN )
-            {
-                Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.9f);
-                Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume);
-            }
-            else if ( m_AnimState == ANIM_STATE_WALK )
-            {
-                Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.6f);
-                Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume * 0.4f);
-            }
-        }
-    }
-    else
-    {
-        // TODO: Is it ok to not check if the handle is even valid before calling stop()?
-        Audio::m_Soloud.stop(m_FootstepsHandle);
-    }
-
-    // TODO: Move this code into a weapon struct/class
-    // where a cooldown is specified. A machine gun
-    // has a higher repeat rate than a shotgun.
-    fire = CHECK_ACTION("fire");
-    if ( fire == ButtonState::WENT_DOWN )
-    {
-        Audio::m_SfxBus.play(*m_SfxGunshot);
-    }
-
-    SetAnimState(&m_Model, m_AnimState);
-
-    // TODO: This *must* only be in *one* entity that gets updated. Otherwise
-    // the sound 'jumps' from position to positon. We could actually
-    // move this code out of the entity class and attach it to a specific
-    // entity at a higher level in code.
-    Audio::m_Soloud.set3dListenerPosition(m_Position.x, m_Position.y, m_Position.z);
-    Audio::m_Soloud.set3dListenerAt(m_Forward.x, m_Forward.y, m_Forward.z);
-    Audio::m_Soloud.set3dListenerVelocity(m_Velocity.x, m_Velocity.y, m_Velocity.z);
-    Audio::m_Soloud.set3dListenerUp(DOD_WORLD_UP.x, DOD_WORLD_UP.y, DOD_WORLD_UP.z);
-    Audio::m_Soloud.update3dAudio();
 }
 
 EllipsoidCollider* Weapon::GetEllipsoidColliderPtr()
@@ -392,15 +75,5 @@ HKD_Model* Weapon::GetModel()
 
 bool Weapon::HandleMessage(const Telegram& telegram)
 {
-    return m_pStateMachine->HandleMessage(telegram);
-}
-
-void Weapon::HandleInput()
-{
-    ButtonState captainState = CHECK_ACTION("set_captain");
-    if ( captainState == ButtonState::WENT_DOWN )
-    {
-        printf("Weapon: I am the captain!\n");
-    }
-    UpdatePlayerModel();
+    return true;
 }

@@ -16,6 +16,7 @@
 #include "../../collision.h"
 #include "../../input_receiver.h"
 #include "../../r_model.h"
+#include "../Weapon/g_weapon.h"
 #include "../moving_entity.h"
 
 class FirstPersonPlayer : public MovingEntity, public IInputReceiver
@@ -117,6 +118,10 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver
     SoLoud::AudioSource* m_SfxFootsteps;
     SoLoud::handle       m_FootstepsHandle = 0;
 
+    // Weapon model
+    Weapon* m_Weapon;
+
+    // Some local functions
     void LoadModel(const char* path, glm::vec3 initialPosition);
     void UpdatePlayerModel();
 };

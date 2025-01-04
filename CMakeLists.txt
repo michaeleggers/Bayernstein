@@ -170,6 +170,8 @@ add_executable(Game
     Entity/FollowCamera/g_follow_camera.cpp
     Entity/FlyCamera/g_fly_camera.h
     Entity/FlyCamera/g_fly_camera.cpp
+    Entity/Weapon/g_weapon.h
+    Entity/Weapon/g_weapon.cpp
 
     dependencies/stb_image.h
     dependencies/stb_image_write.h

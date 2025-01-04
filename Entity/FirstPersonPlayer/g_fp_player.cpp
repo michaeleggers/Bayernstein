@@ -17,6 +17,7 @@
 #include "../../input_handler.h"
 #include "../../input_receiver.h"
 #include "../../utils/utils.h"
+#include "../Weapon/g_weapon.h"
 #include "g_fp_player_states.h"
 #include "imgui.h"
 
@@ -29,7 +30,6 @@ FirstPersonPlayer::FirstPersonPlayer(const std::vector<Property>& properties)
     m_pStateMachine->SetCurrentState(FirstPersonPlayerIdle::Instance());
     BaseGameEntity::GetProperty<glm::vec3>(properties, "origin", &m_Position);
     LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
-    //LoadModel("models/double_barrel_shotgun/db_shotgun.iqm", m_Position);
     m_PrevPosition = m_Position;
     //m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
     m_Camera = Camera(m_Position);
@@ -41,6 +41,8 @@ FirstPersonPlayer::FirstPersonPlayer(const std::vector<Property>& properties)
     m_SfxGunshot = Audio::LoadSource("sfx/sonniss/PM_SFG_VOL1_WEAPON_8_2_GUN_GUNSHOT_FUTURISTIC.wav");
     m_SfxFootsteps
         = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
+
+    m_Weapon = new Weapon(properties);
 }
 
 // FIX: At the moment called by the game itself.
