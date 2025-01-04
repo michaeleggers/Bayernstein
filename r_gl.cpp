@@ -978,7 +978,7 @@ void GLRender::Render(
     //glDrawArrays(GL_TRIANGLES, 0, 3*m_ModelBatch->TriCount());
 }
 
-void GLRender::RenderModel(Camera* camera, const HKD_Model* model) {}
+void GLRender::RenderFirstPersonView(Camera* camera, const HKD_Model* model) {}
 
 void GLRender::DrawWorldTris()
 {
