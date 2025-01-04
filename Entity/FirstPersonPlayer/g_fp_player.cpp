@@ -29,6 +29,7 @@ FirstPersonPlayer::FirstPersonPlayer(const std::vector<Property>& properties)
     m_pStateMachine->SetCurrentState(FirstPersonPlayerIdle::Instance());
     BaseGameEntity::GetProperty<glm::vec3>(properties, "origin", &m_Position);
     LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
+    //LoadModel("models/double_barrel_shotgun/db_shotgun.iqm", m_Position);
     m_PrevPosition = m_Position;
     //m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
     m_Camera = Camera(m_Position);
