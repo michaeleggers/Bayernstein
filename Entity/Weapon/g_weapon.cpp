@@ -53,7 +53,7 @@ void Weapon::LoadModel(const char* path, glm::vec3 initialPosition)
     }
 
     // Model is defined with origin at its feet. Move it down to be at the ground.
-    m_Model.position.z -= GetEllipsoidColliderPtr()->radiusB;
+    //m_Model.position.z -= GetEllipsoidColliderPtr()->radiusB;
 
     // The model was modeled with -y = forward, but we use +y = forward.
     // So, we rotate the model initially by 180 degrees.

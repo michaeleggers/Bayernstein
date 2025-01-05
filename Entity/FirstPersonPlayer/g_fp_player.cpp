@@ -193,11 +193,16 @@ void FirstPersonPlayer::PostCollisionUpdate()
     //m_Camera.Pan( -100.0f * m_Camera.m_Forward );
 
     // Adjust the Weapon model
-    glm::vec3 weaponPos = m_Position;
-    weaponPos.z += 15.0f;
-    weaponPos.x += 5.0f;
-    weaponPos.y += 23.0f;
+    glm::vec3 weaponPos = m_Camera.m_Pos;
+    //weaponPos           = glm::rotate(m_Camera.m_Orientation, weaponPos);
+    //weaponPos.z -= 5.0f;
+    //weaponPos.x += 5.0f;
+    weaponPos += 20.0f * m_Camera.m_Forward;
+    weaponPos += 4.0f * m_Camera.m_Side;
+    weaponPos += -2.0f * m_Camera.m_Up;
+    //m_Weapon->UpdatePosition(glm::vec3(viewSpaceWeaponPos.x, viewSpaceWeaponPos.y, viewSpaceWeaponPos.z));
     m_Weapon->UpdatePosition(weaponPos);
+    m_Weapon->m_Orientation = m_Camera.m_Orientation;
 
     m_pStateMachine->Update();
 }
