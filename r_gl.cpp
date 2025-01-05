@@ -326,6 +326,10 @@ bool GLRender::Init(void)
 
     // FBO for rendering the 3d scene.
     m_3dFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    // First person weapon display
+    m_3dFirstPersonViewFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
+
     // FBO for rendering text and other 2d elements (shapes, sprites, ...)
     // on top of the 3d scene.
     m_2dFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -979,6 +983,15 @@ void GLRender::Render(
 
 void GLRender::RenderFirstPersonView(Camera* camera, HKD_Model* model)
 {
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+
+    m_3dFirstPersonViewFBO->Bind();
+    SDL_GL_GetDrawableSize(m_Window, &m_WindowWidth, &m_WindowHeight);
+    float windowAspect = (float)m_WindowWidth / (float)m_WindowHeight;
+
     glm::mat4 view = camera->ViewMatrix();
     // TODO: Global Setting for perspective values
     glm::mat4 proj
@@ -987,6 +1000,11 @@ void GLRender::RenderFirstPersonView(Camera* camera, HKD_Model* model)
     m_ModelBatch->Bind();
     m_ModelShader->Activate();
     m_ModelShader->SetViewProjMatrices(view, proj);
+
+    glViewport(0, 0, m_WindowWidth, m_WindowHeight);
+    glClearColor(0.f, 0.f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     if ( m_DrawWireframe )
     {
         m_ModelShader->SetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
@@ -1034,6 +1052,9 @@ void GLRender::RenderFirstPersonView(Camera* camera, HKD_Model* model)
         }
         glDrawArrays(GL_TRIANGLES, 3 * mesh->triOffset, 3 * mesh->triCount);
     }
+
+    m_3dFirstPersonViewFBO->Unbind();
+    m_ModelBatch->Unbind();
 }
 
 void GLRender::DrawWorldTris()
@@ -1443,11 +1464,10 @@ void GLRender::RenderEnd(void)
     // Composite all the FBOs together
     m_CompositeShader->Activate();
 
-    GLuint texLoc3d = glGetUniformLocation(m_CompositeShader->Program(), "main3dSceneTexture");
-
-    GLuint texLoc2d = glGetUniformLocation(m_CompositeShader->Program(), "screenspace2dTexture");
-
-    GLuint texLocConsole = glGetUniformLocation(m_CompositeShader->Program(), "consoleTexture");
+    GLuint texLoc3d                = glGetUniformLocation(m_CompositeShader->Program(), "main3dSceneTexture");
+    GLuint texLoc3dFirstPersonView = glGetUniformLocation(m_CompositeShader->Program(), "firstPersonViewTexture");
+    GLuint texLoc2d                = glGetUniformLocation(m_CompositeShader->Program(), "screenspace2dTexture");
+    GLuint texLocConsole           = glGetUniformLocation(m_CompositeShader->Program(), "consoleTexture");
 
     glUniform1i(texLoc3d, 0);
     // Bind the 3d scene FBO and draw it.
@@ -1455,16 +1475,21 @@ void GLRender::RenderEnd(void)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, main3dSceneTexture.m_gl_Handle);
 
-    glUniform1i(texLoc2d, 1);
+    glUniform1i(texLoc3dFirstPersonView, 1);
+    CglRenderTexture firstPersonViewTexture = m_3dFirstPersonViewFBO->m_ColorTexture;
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, firstPersonViewTexture.m_gl_Handle);
+
+    glUniform1i(texLoc2d, 2);
     // Bind the 2d screenspace FBO texture and draw on top.
     CglRenderTexture screenSpace2dTexture = m_2dFBO->m_ColorTexture;
-    glActiveTexture(GL_TEXTURE1);
+    glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, screenSpace2dTexture.m_gl_Handle);
 
-    glUniform1i(texLocConsole, 2);
+    glUniform1i(texLocConsole, 3);
     // Bind the 2d console FBO texture and draw on top.
     CglRenderTexture consoleTexture = m_ConsoleFBO->m_ColorTexture;
-    glActiveTexture(GL_TEXTURE2);
+    glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, consoleTexture.m_gl_Handle);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
