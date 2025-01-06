@@ -314,23 +314,15 @@ bool Game::RunFrame(double dt)
         // FIX: Remove later. Ugly.
 
         renderer->SetActiveCamera(renderCam);
-        HKD_Model*                   playerColliderModel[] = { m_pPlayerEntity->GetModel() };
-        Camera                       playerCamera          = m_pPlayerEntity->GetCamera();
-        std::vector<BaseGameEntity*> pAllEntities          = m_pEntityManager->Entities();
+        Camera                       playerCamera = m_pPlayerEntity->GetCamera();
+        std::vector<BaseGameEntity*> pAllEntities = m_pEntityManager->Entities();
         for ( int i = 0; i < pAllEntities.size(); i++ )
         {
             BaseGameEntity* pEntity = pAllEntities[ i ];
             if ( pEntity->Type() == ET_ENEMY )
             {
-                // Trace ray against enemy
-                Enemy*             pEnemy = (Enemy*)pEntity;
-                EllipsoidCollider* pEC    = pEnemy->GetEllipsoidColliderPtr();
-                if ( TraceRayAgainstEllipsoid(playerCamera.m_Pos, playerCamera.m_Forward, *pEC) )
-                {
-                    printf("HIT!!!!\n");
-                }
-
                 // Draw collider as wireframe
+                Enemy*     pEnemy = (Enemy*)pEntity;
                 HKD_Model* pModel = pEnemy->GetModel();
                 assert(pModel != nullptr && "Enemy entity must have a model");
                 renderer->RenderColliders(renderCam, &pModel, 1);

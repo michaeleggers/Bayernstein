@@ -7,31 +7,39 @@
 #include "g_enemy.h"
 #include <stdio.h>
 
-EnemyIdle* EnemyIdle::Instance() {
+EnemyIdle* EnemyIdle::Instance()
+{
     static EnemyIdle instance;
 
     return &instance;
 }
 
-void EnemyIdle::Enter(Enemy* pEnemy) {
+void EnemyIdle::Enter(Enemy* pEnemy)
+{
     //printf("Enemy entered Idle State\n");
 }
 
-void EnemyIdle::Execute(Enemy* pEnemy) {
+void EnemyIdle::Execute(Enemy* pEnemy)
+{
     //printf("Enemy is executing Idle State\n");
 }
 
-void EnemyIdle::Exit(Enemy* pEnemy) {
+void EnemyIdle::Exit(Enemy* pEnemy)
+{
     //printf("Enemy is exiting Idle State\n");
 }
 
-bool EnemyIdle::OnMessage(Enemy* agent, const Telegram& telegram) {
-    //printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
+bool EnemyIdle::OnMessage(Enemy* agent, const Telegram& telegram)
+{
+    printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
 
-    switch ( telegram.Message ) {
-    case message_type::Attack: {
+    switch ( telegram.Message )
+    {
+    case message_type::Attack:
+    {
         agent->DecreaseHealth(*(double*)telegram.ExtraInfo * 2.0);
-        if ( agent->IsDead() ) {
+        if ( agent->IsDead() )
+        {
             agent->GetFSM()->ChangeState(EnemyDead::Instance());
             return true;
         }
@@ -39,38 +47,62 @@ bool EnemyIdle::OnMessage(Enemy* agent, const Telegram& telegram) {
         agent->GetFSM()->ChangeState(EnemyAttacking::Instance());
 
         return true;
-    } break;
-    default: {
+    }
+    break;
+
+    case message_type::RayHit:
+    {
+        agent->DecreaseHealth(20.0f);
+        if ( agent->IsDead() )
+        {
+            agent->GetFSM()->ChangeState(EnemyDead::Instance());
+            return true;
+        }
+
+        return true;
+    }
+    break;
+
+    default:
+    {
         return false;
     }
     }
 }
 
-EnemyAttacking* EnemyAttacking::Instance() {
+EnemyAttacking* EnemyAttacking::Instance()
+{
     static EnemyAttacking instance;
 
     return &instance;
 }
 
-void EnemyAttacking::Enter(Enemy* pEnemy) {
+void EnemyAttacking::Enter(Enemy* pEnemy)
+{
     //printf("Enemy entered Attacking State\n");
 }
 
-void EnemyAttacking::Execute(Enemy* pEnemy) {
+void EnemyAttacking::Execute(Enemy* pEnemy)
+{
     //printf("Enemy is executing Attacking State\n");
 }
 
-void EnemyAttacking::Exit(Enemy* pEnemy) {
+void EnemyAttacking::Exit(Enemy* pEnemy)
+{
     //printf("Player is exiting Attacking State\n");
 }
 
-bool EnemyAttacking::OnMessage(Enemy* agent, const Telegram& telegram) {
+bool EnemyAttacking::OnMessage(Enemy* agent, const Telegram& telegram)
+{
     printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
-    switch ( telegram.Message ) {
-    case message_type::Attack: {
+    switch ( telegram.Message )
+    {
+    case message_type::Attack:
+    {
         agent->DecreaseHealth(*(double*)telegram.ExtraInfo);
 
-        if ( agent->IsDead() ) {
+        if ( agent->IsDead() )
+        {
             agent->GetFSM()->ChangeState(EnemyDead::Instance());
             return true;
         }
@@ -81,25 +113,30 @@ bool EnemyAttacking::OnMessage(Enemy* agent, const Telegram& telegram) {
         return false;
     }
 }
-EnemyDead* EnemyDead::Instance() {
+EnemyDead* EnemyDead::Instance()
+{
     static EnemyDead instance;
 
     return &instance;
 }
 
-void EnemyDead::Enter(Enemy* pEnemy) {
-    //printf("Enemy entered Dead State\n");
+void EnemyDead::Enter(Enemy* pEnemy)
+{
+    printf("Enemy entered Dead State\n");
 }
 
-void EnemyDead::Execute(Enemy* pEnemy) {
+void EnemyDead::Execute(Enemy* pEnemy)
+{
     //printf("Enemy is executing Dead State\n");
 }
 
-void EnemyDead::Exit(Enemy* pEnemy) {
+void EnemyDead::Exit(Enemy* pEnemy)
+{
     //printf("Player is exiting Dead State\n");
 }
 
-bool EnemyDead::OnMessage(Enemy* agent, const Telegram& telegram) {
+bool EnemyDead::OnMessage(Enemy* agent, const Telegram& telegram)
+{
     return false;
 }
 
@@ -108,27 +145,32 @@ bool EnemyDead::OnMessage(Enemy* agent, const Telegram& telegram) {
 // Wander State
 //
 // ---------------------------------
-EnemyWander* EnemyWander::Instance() {
+EnemyWander* EnemyWander::Instance()
+{
     static EnemyWander instance;
 
     return &instance;
 }
 
-void EnemyWander::Enter(Enemy* pEnemy) {
+void EnemyWander::Enter(Enemy* pEnemy)
+{
     printf("Enemy entered Wander State\n");
     pEnemy->m_pSteeringBehaviour->WanderOn();
 }
 
-void EnemyWander::Execute(Enemy* pEnemy) {
+void EnemyWander::Execute(Enemy* pEnemy)
+{
     //printf("Enemy is executing Wander State\n");
 }
 
-void EnemyWander::Exit(Enemy* pEnemy) {
+void EnemyWander::Exit(Enemy* pEnemy)
+{
     printf("Player is exiting Wander State\n");
     pEnemy->m_pSteeringBehaviour->WanderOff();
 }
 
-bool EnemyWander::OnMessage(Enemy* agent, const Telegram& telegram) {
+bool EnemyWander::OnMessage(Enemy* agent, const Telegram& telegram)
+{
     return false;
 }
 
@@ -137,28 +179,33 @@ bool EnemyWander::OnMessage(Enemy* agent, const Telegram& telegram) {
 // Patrol State
 //
 // ---------------------------------
-EnemyPatrol* EnemyPatrol::Instance() {
+EnemyPatrol* EnemyPatrol::Instance()
+{
     static EnemyPatrol instance;
 
     return &instance;
 }
 
-void EnemyPatrol::Enter(Enemy* pEnemy) {
+void EnemyPatrol::Enter(Enemy* pEnemy)
+{
     printf("Enemy entered Patrol State\n");
     // pEnemy->m_pSteeringBehaviour->FollowWaypointsOn();
     pEnemy->m_pSteeringBehaviour->FollowPathOn();
 }
 
-void EnemyPatrol::Execute(Enemy* pEnemy) {
+void EnemyPatrol::Execute(Enemy* pEnemy)
+{
     //printf("Enemy is executing Patrol State\n");
 }
 
-void EnemyPatrol::Exit(Enemy* pEnemy) {
+void EnemyPatrol::Exit(Enemy* pEnemy)
+{
     printf("Player is exiting Patrol State\n");
     pEnemy->m_pSteeringBehaviour->FollowPathOff();
     pEnemy->m_pSteeringBehaviour->FollowWaypointsOff();
 }
 
-bool EnemyPatrol::OnMessage(Enemy* agent, const Telegram& telegram) {
+bool EnemyPatrol::OnMessage(Enemy* agent, const Telegram& telegram)
+{
     return false;
 }

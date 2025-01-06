@@ -12,6 +12,8 @@
 #include "../../dependencies/glm/gtx/quaternion.hpp"
 
 #include "../../Audio/Audio.h"
+#include "../../Message/message_dispatcher.h"
+#include "../../Message/message_type.h"
 #include "../../globals.h"
 #include "../../hkd_interface.h"
 #include "../../input.h"
@@ -19,6 +21,7 @@
 #include "../../input_receiver.h"
 #include "../../utils/utils.h"
 #include "../Weapon/g_weapon.h"
+#include "../entity_manager.h"
 #include "g_fp_player_states.h"
 #include "imgui.h"
 
@@ -387,7 +390,27 @@ void FirstPersonPlayer::UpdatePlayerModel()
     fire = CHECK_ACTION("fire");
     if ( fire == ButtonState::WENT_DOWN )
     {
+        // Play a nice weapon sound
+
         Audio::m_SfxBus.play(*m_SfxGunshot);
+
+        // Trace ray against enemies
+
+        EntityManager*               m_pEntityManager = EntityManager::Instance();
+        std::vector<BaseGameEntity*> pAllEntities     = m_pEntityManager->Entities();
+        for ( int i = 0; i < pAllEntities.size(); i++ )
+        {
+            BaseGameEntity* pEntity = pAllEntities[ i ];
+            if ( pEntity->Type() == ET_ENEMY )
+            {
+                Enemy*             pEnemy = (Enemy*)pEntity;
+                EllipsoidCollider* pEC    = pEnemy->GetEllipsoidColliderPtr();
+                if ( TraceRayAgainstEllipsoid(m_Camera.m_Pos, m_Camera.m_Forward, *pEC) )
+                {
+                    Dispatcher->DispatchMessage(SEND_MSG_IMMEDIATELY, ID(), pEnemy->ID(), message_type::RayHit, 0);
+                }
+            }
+        }
     }
 
     SetAnimState(&m_Model, m_AnimState);

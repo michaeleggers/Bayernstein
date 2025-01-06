@@ -28,7 +28,8 @@
 
 extern std::string g_GameDir;
 
-CWorld* CWorld::Instance() {
+CWorld* CWorld::Instance()
+{
     static CWorld m_World;
 
     return &m_World;
@@ -42,10 +43,10 @@ void CWorld::InitWorld(const std::string& mapName)
 
     std::string exePath = hkd_GetExePath();
 
-    std::string mapData = loadTextFile(g_GameDir + "maps/" + mapName + ".map");
-    MapVersion mapVersion = VALVE_220;
-    size_t inputLength = mapData.length();
-    Map    map         = getMap(&mapData[ 0 ], inputLength, mapVersion);
+    std::string mapData     = loadTextFile(g_GameDir + "maps/" + mapName + ".map");
+    MapVersion  mapVersion  = VALVE_220;
+    size_t      inputLength = mapData.length();
+    Map         map         = getMap(&mapData[ 0 ], inputLength, mapVersion);
 
     // TODO: Init via .MAP property.
     m_Gravity = glm::vec3(0.0f, 0.0f, -200.0f);
@@ -56,7 +57,8 @@ void CWorld::InitWorld(const std::string& mapName)
     m_LightmapAvailable = false;
     HKD_File    plyFile;
     std::string fullPlyPath = g_GameDir + "maps/" + mapName + ".ply";
-    if ( hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS ) {
+    if ( hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS )
+    {
         m_MapTris           = CWorld::CreateMapFromLightmapTrisFile(plyFile);
         m_hLightmapTexture  = renderer->RegisterTextureGetHandle(mapName + ".png");
         m_LightmapAvailable = true;
@@ -221,7 +223,7 @@ void CWorld::InitWorld(const std::string& mapName)
         }
     }
 
-    m_MusicIdle       = Audio::LoadSource("music/GranVals_Placeholder.wav", 0.15f, true, true);
+    m_MusicIdle       = Audio::LoadSource("music/GranVals_Placeholder.wav", 0.0f, true, true);
     m_MusicIdleHandle = Audio::m_MusicBus.play(*m_MusicIdle, -1);
 
     m_Ambience = Audio::LoadSource(
