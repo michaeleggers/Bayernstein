@@ -11,14 +11,16 @@
 
 #include "r_common.h"
 
-struct EllipsoidCollider {
+struct EllipsoidCollider
+{
     glm::vec3 center;   // Pos in worldspace
     float     radiusA;  // horizontal radius
     float     radiusB;  // vertical radius
     glm::mat3 toESpace; // Maps from World to ellipsoid (unit-sphere) space
 };
 
-struct CollisionInfo {
+struct CollisionInfo
+{
     bool      didCollide;
     glm::vec3 hitPoint;
     float     nearestDistance;
@@ -26,6 +28,8 @@ struct CollisionInfo {
     glm::vec3 basePos;
 };
 
+bool              TraceRayAgainstUnitSphere(glm::vec3 rayPos, glm::vec3 rayDir, glm::vec3 sphereCenter);
+bool              TraceRayAgainstEllipsoid(glm::vec3 rayPos, glm::vec3 rayDir, EllipsoidCollider ec);
 EllipsoidCollider CreateEllipsoidColliderFromAABB(glm::vec3 mins, glm::vec3 maxs);
 void              CollideUnitSphereWithPlane(CollisionInfo* ci, glm::vec3 pos, Plane p, Tri tri);
 glm::vec3         CollideEllipsoidWithTrisRec(

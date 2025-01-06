@@ -309,16 +309,28 @@ bool Game::RunFrame(double dt)
         renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
 #endif
 
+        // Draw colliders of enemies and trace ray against them from the
+        // player's camera position. Just for testing purposes. Not final.
         // FIX: Remove later. Ugly.
+
         renderer->SetActiveCamera(renderCam);
         HKD_Model*                   playerColliderModel[] = { m_pPlayerEntity->GetModel() };
+        Camera                       playerCamera          = m_pPlayerEntity->GetCamera();
         std::vector<BaseGameEntity*> pAllEntities          = m_pEntityManager->Entities();
         for ( int i = 0; i < pAllEntities.size(); i++ )
         {
             BaseGameEntity* pEntity = pAllEntities[ i ];
             if ( pEntity->Type() == ET_ENEMY )
             {
-                Enemy*     pEnemy = (Enemy*)pEntity;
+                // Trace ray against enemy
+                Enemy*             pEnemy = (Enemy*)pEntity;
+                EllipsoidCollider* pEC    = pEnemy->GetEllipsoidColliderPtr();
+                if ( TraceRayAgainstEllipsoid(playerCamera.m_Pos, playerCamera.m_Forward, *pEC) )
+                {
+                    printf("HIT!!!!\n");
+                }
+
+                // Draw collider as wireframe
                 HKD_Model* pModel = pEnemy->GetModel();
                 assert(pModel != nullptr && "Enemy entity must have a model");
                 renderer->RenderColliders(renderCam, &pModel, 1);
@@ -368,7 +380,11 @@ bool Game::RunFrame(double dt)
     renderer->R_DrawText("Sprite Test", 0.5f, 0.0f, COORD_MODE_REL);
     glm::vec2 windowDimensions = renderer->GetWindowDimensions();
     glm::vec2 relSpriteSize    = m_CrosshairSprite.size / windowDimensions;
-    renderer->DrawSprite(&m_CrosshairSprite, glm::vec2(0.5f - relSpriteSize / 2.0f), glm::vec2(0.25f), COORD_MODE_REL);
+    float     crosshairScale   = 0.25f;
+    renderer->DrawSprite(&m_CrosshairSprite,
+                         glm::vec2(0.5f) - relSpriteSize * crosshairScale / 2.0f,
+                         glm::vec2(crosshairScale),
+                         COORD_MODE_REL);
     renderer->DrawSprite(&m_BoltSprite, glm::vec2(0.0f), glm::vec2(2.0f), COORD_MODE_REL);
 
     renderer->End2D();
