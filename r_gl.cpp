@@ -1306,6 +1306,8 @@ void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceC
 
 void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels)
 {
+    m_3dFBO->Bind();
+
     glm::mat4 view = camera->ViewMatrix();
     // TODO: Global Setting for perspective values
     glm::mat4 proj
@@ -1340,6 +1342,8 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
         //             m_EllipsoidColliderDrawCmd.offset,
         //             m_EllipsoidColliderDrawCmd.numVerts);
     }
+
+    m_3dFBO->Unbind();
 }
 
 void GLRender::RenderConsole(Console* console, CFont* font)
