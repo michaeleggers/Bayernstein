@@ -43,6 +43,15 @@ Enemy::Enemy(const std::vector<Property>& properties)
     m_pPath              = nullptr;
     // m_pSteeringBehaviour->WanderOn();
 
+    // Set viewing frustum
+    m_ProjDistance = 10.0f;
+    m_AspectRatio  = 16.0f / 4.0f;
+    m_Near         = 0.1f;
+    m_Far          = 70.0f;
+
+    glm::mat4 frustumToWorldTransform = glm::translate(glm::mat4(1.0f), m_Position);
+    m_ViewingFrustum = math::BuildFrustum(frustumToWorldTransform, m_ProjDistance, m_AspectRatio, m_Near, m_Far);
+
     m_SfxFootsteps
         = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
 }

@@ -14,7 +14,8 @@
 #include "r_itexture_mgr.h"
 #include "r_model.h"
 
-void RotateTri(Tri* tri, glm::vec3 axis, float angle) {
+void RotateTri(Tri* tri, glm::vec3 axis, float angle)
+{
     glm::quat q   = glm::angleAxis(glm::radians(angle), glm::normalize(axis));
     tri->a.pos    = glm::rotate(q, tri->a.pos);
     tri->b.pos    = glm::rotate(q, tri->b.pos);
@@ -24,25 +25,29 @@ void RotateTri(Tri* tri, glm::vec3 axis, float angle) {
     tri->c.normal = glm::rotate(q, tri->c.normal);
 }
 
-void TranslateTri(Tri* tri, glm::vec3 t) {
+void TranslateTri(Tri* tri, glm::vec3 t)
+{
     tri->a.pos += t;
     tri->b.pos += t;
     tri->c.pos += t;
 }
 
-void TransformTri(Tri* tri, glm::mat4 modelMatrix) {
+void TransformTri(Tri* tri, glm::mat4 modelMatrix)
+{
     tri->a.pos = modelMatrix * glm::vec4(tri->a.pos, 1.0f);
     tri->b.pos = modelMatrix * glm::vec4(tri->b.pos, 1.0f);
     tri->c.pos = modelMatrix * glm::vec4(tri->c.pos, 1.0f);
 }
 
-void SetTriColor(Tri* tri, glm::vec4 color) {
+void SetTriColor(Tri* tri, glm::vec4 color)
+{
     tri->a.color = color;
     tri->b.color = color;
     tri->c.color = color;
 }
 
-void SubdivTri(Tri* tri, Tri out_tris[]) {
+void SubdivTri(Tri* tri, Tri out_tris[])
+{
     glm::vec3 A = tri->a.pos;
     glm::vec3 B = tri->b.pos;
     glm::vec3 C = tri->c.pos;
@@ -90,7 +95,8 @@ void SubdivTri(Tri* tri, Tri out_tris[]) {
     out_tris[ 3 ] = t4;
 }
 
-void SubdivTri(Tri* tri, Tri out_tris[], uint32_t numIterations) {
+void SubdivTri(Tri* tri, Tri out_tris[], uint32_t numIterations)
+{
     // each iteration makes one tri to four tris -> 4 tris -> 16 tris and so on.
     // so each iteration will multiply the current tricount by 4.
 
@@ -102,8 +108,10 @@ void SubdivTri(Tri* tri, Tri out_tris[], uint32_t numIterations) {
     out_tris[ 0 ]    = *tri;
     tmp[ 0 ]         = *tri;
     uint32_t numTris = 1;
-    for ( int i = 0; i < numIterations; i++ ) {
-        for ( int j = 0; j < numTris; j++ ) {
+    for ( int i = 0; i < numIterations; i++ )
+    {
+        for ( int j = 0; j < numTris; j++ )
+        {
             SubdivTri(&out_tris[ j ], tmp + j * 4);
         }
         numTris <<= 2;
@@ -114,17 +122,16 @@ void SubdivTri(Tri* tri, Tri out_tris[], uint32_t numIterations) {
 
 // out_verts are expect to hold 6 vertices
 // out_indices are expected to hold 12 indices
-void SubdivIndexedTri(Vertex*   verts,
-                      uint32_t  numVerts,
-                      uint16_t* indices,
-                      uint32_t  numIndices,
-                      Vertex*   out_verts,
-                      uint16_t* out_indices) {
-    if ( numVerts < 3 ) {
+void SubdivIndexedTri(
+    Vertex* verts, uint32_t numVerts, uint16_t* indices, uint32_t numIndices, Vertex* out_verts, uint16_t* out_indices)
+{
+    if ( numVerts < 3 )
+    {
         return;
     }
 
-    if ( numIndices < 3 ) {
+    if ( numIndices < 3 )
+    {
         return;
     }
 
@@ -139,8 +146,10 @@ void SubdivIndexedTri(Vertex*   verts,
     // find highest index
 
     uint16_t startIndex = 0;
-    for ( int i = 0; i < numIndices; i++ ) {
-        if ( indices[ i ] > startIndex ) {
+    for ( int i = 0; i < numIndices; i++ )
+    {
+        if ( indices[ i ] > startIndex )
+        {
             startIndex = indices[ i ];
         }
     }
@@ -180,12 +189,14 @@ void SubdivIndexedTri(Vertex*   verts,
                       uint32_t  numIndices,
                       Vertex*   out_verts,
                       uint16_t* out_indices,
-                      uint32_t  numIterations) {
+                      uint32_t  numIterations)
+{
     // TODO: implement
 }
 
 // Defined in CCW.
-Quad CreateQuad(glm::vec3 pos, float width, float height, glm::vec4 color) {
+Quad CreateQuad(glm::vec3 pos, float width, float height, glm::vec4 color)
+{
     Quad result     = {};
     Tri  upperRight = {};
     Tri  lowerLeft  = {};
@@ -224,28 +235,33 @@ Quad CreateQuad(glm::vec3 pos, float width, float height, glm::vec4 color) {
     return result;
 }
 
-void RotateQuad(Quad* quad, glm::vec3 axis, float angle) {
+void RotateQuad(Quad* quad, glm::vec3 axis, float angle)
+{
     RotateTri(&quad->a, axis, angle);
     RotateTri(&quad->b, axis, angle);
 }
 
-void TranslateQuad(Quad* quad, glm::vec3 t) {
+void TranslateQuad(Quad* quad, glm::vec3 t)
+{
     TranslateTri(&quad->a, t);
     TranslateTri(&quad->b, t);
 }
 
-FaceQuad QuadToFace(Quad* quad) {
+FaceQuad QuadToFace(Quad* quad)
+{
     return { quad->tl, quad->tr, quad->br, quad->bl };
 }
 
-FaceQuad CreateFaceQuadFromVerts(Vertex* vertices) {
+FaceQuad CreateFaceQuadFromVerts(Vertex* vertices)
+{
     FaceQuad fq{};
     memcpy(fq.vertices, vertices, 4 * sizeof(Vertex));
 
     return fq;
 }
 
-void SetQuadColor(Quad* quad, glm::vec4 color) {
+void SetQuadColor(Quad* quad, glm::vec4 color)
+{
     SetTriColor(&quad->a, color);
     SetTriColor(&quad->b, color);
 }
@@ -256,7 +272,8 @@ void SetQuadColor(Quad* quad, glm::vec4 color) {
 //Quad left;
 //Quad top;
 //Quad bottom;
-Box CreateBox(glm::vec3 scale, glm::vec4 color) {
+Box CreateBox(glm::vec3 scale, glm::vec4 color)
+{
     Box result = {};
 
     float halfWidth  = scale.x / 2.0f;
@@ -295,7 +312,8 @@ Box CreateBox(glm::vec3 scale, glm::vec4 color) {
     return result;
 }
 
-Box CreateBoxFromAABB(glm::vec3 mins, glm::vec3 maxs) {
+Box CreateBoxFromAABB(glm::vec3 mins, glm::vec3 maxs)
+{
     float     width  = abs(maxs.x - mins.x);
     float     depth  = abs(maxs.y - mins.y);
     float     height = abs(maxs.z - mins.z);
@@ -306,7 +324,8 @@ Box CreateBoxFromAABB(glm::vec3 mins, glm::vec3 maxs) {
     return result;
 }
 
-Ellipsoid CreateEllipsoidFromAABB(glm::vec3 mins, glm::vec3 maxs) {
+Ellipsoid CreateEllipsoidFromAABB(glm::vec3 mins, glm::vec3 maxs)
+{
     float     width  = abs(maxs.x - mins.x);
     float     height = abs(maxs.z - mins.z);
     Ellipsoid result{};
@@ -315,7 +334,8 @@ Ellipsoid CreateEllipsoidFromAABB(glm::vec3 mins, glm::vec3 maxs) {
 
     float redIncrement = 1.0f / (float)ELLIPSOID_VERT_COUNT;
     float sliceAngle   = 2.0f * HKD_PI / (float)ELLIPSOID_VERT_COUNT;
-    for ( int i = 0; i < ELLIPSOID_VERT_COUNT; i++ ) {
+    for ( int i = 0; i < ELLIPSOID_VERT_COUNT; i++ )
+    {
         Vertex v             = {};
         v.pos.y              = 0.0f;
         v.pos.x              = result.radiusA * cosf(i * sliceAngle);
@@ -327,11 +347,13 @@ Ellipsoid CreateEllipsoidFromAABB(glm::vec3 mins, glm::vec3 maxs) {
     return result;
 }
 
-MeshEllipsoid CreateUnitEllipsoid(uint32_t numSubdivs) {
+MeshEllipsoid CreateUnitEllipsoid(uint32_t numSubdivs)
+{
     NBox unitNbox = CreateNBox(glm::vec3(1.0f), numSubdivs);
 
     // Project box vertices onto unit sphere
-    for ( int i = 0; i < unitNbox.tris.size(); i++ ) {
+    for ( int i = 0; i < unitNbox.tris.size(); i++ )
+    {
         Tri* tri   = &unitNbox.tris[ i ];
         tri->a.pos = glm::normalize(tri->a.pos);
         tri->b.pos = glm::normalize(tri->b.pos);
@@ -346,39 +368,49 @@ MeshEllipsoid CreateUnitEllipsoid(uint32_t numSubdivs) {
     return result;
 }
 
-void TranslateBox(Box* box, glm::vec3 t) {
-    for ( int i = 0; i < 6; i++ ) {
+void TranslateBox(Box* box, glm::vec3 t)
+{
+    for ( int i = 0; i < 6; i++ )
+    {
         Quad* q = &box->quads[ i ];
         TranslateQuad(q, t);
     }
 }
 
-void TransformBox(Box* box, glm::mat4 modelMatrix) {
-    for ( int i = 0; i < 6; i++ ) {
+void TransformBox(Box* box, glm::mat4 modelMatrix)
+{
+    for ( int i = 0; i < 6; i++ )
+    {
         Quad* q = &box->quads[ i ];
-        for ( int j = 0; j < 2; j++ ) {
+        for ( int j = 0; j < 2; j++ )
+        {
             TransformTri(&q->tris[ j ], modelMatrix);
         }
     }
 }
 
-void TransformEllipsoid(Ellipsoid* ellipsoid, glm::mat4 modelMatrix) {
-    for ( int i = 0; i < ELLIPSOID_VERT_COUNT; i++ ) {
+void TransformEllipsoid(Ellipsoid* ellipsoid, glm::mat4 modelMatrix)
+{
+    for ( int i = 0; i < ELLIPSOID_VERT_COUNT; i++ )
+    {
         Vertex* v = &ellipsoid->vertices[ i ];
         v->pos    = modelMatrix * glm::vec4(v->pos, 1.0f);
     }
 }
 
-NBox CreateNBox(glm::vec3 scale, uint32_t numSubidvs) {
+NBox CreateNBox(glm::vec3 scale, uint32_t numSubidvs)
+{
     NBox             result;
     Box              unitBox = CreateBox(scale, glm::vec4(1.0f));
     std::vector<Tri> currentTris;
     currentTris.resize(12);
     memcpy(currentTris.data(), unitBox.tris, 12 * sizeof(Tri));
 
-    for ( int i = 0; i < numSubidvs; i++ ) {
+    for ( int i = 0; i < numSubidvs; i++ )
+    {
         std::vector<Tri> tmp;
-        for ( int j = 0; j < currentTris.size(); j++ ) {
+        for ( int j = 0; j < currentTris.size(); j++ )
+        {
             Tri out[ 4 ];
             SubdivTri(&currentTris[ j ], out);
             tmp.push_back(out[ 0 ]);
@@ -394,7 +426,8 @@ NBox CreateNBox(glm::vec3 scale, uint32_t numSubidvs) {
     return result;
 }
 
-Plane CreatePlaneFromTri(Tri tri) {
+Plane CreatePlaneFromTri(Tri tri)
+{
     glm::vec3 AB = tri.b.pos - tri.a.pos;
     glm::vec3 AC = tri.c.pos - tri.a.pos;
 
@@ -410,7 +443,8 @@ Plane CreatePlaneFromTri(Tri tri) {
 
 // TODO: Maybe pass a CImage instead of textureFilename and store ref to that image
 // in case we need data like image size, etc. again.
-Sprite CreateSprite(const std::string& textureFilename, const glm::vec2& topLeft, const glm::vec2& bottomRight) {
+Sprite CreateSprite(const std::string& textureFilename, const glm::vec2& topLeft, const glm::vec2& bottomRight)
+{
     ITextureManager* textureManager = GetRenderer()->GetTextureManager();
     ITexture*        spriteTexture  = textureManager->CreateTexture(textureFilename);
 
@@ -432,4 +466,17 @@ Sprite CreateSprite(const std::string& textureFilename, const glm::vec2& topLeft
     sprite.hTexture      = spriteTexture->m_hGPU;
 
     return sprite;
+}
+
+Plane operator*(const glm::mat4& M, const Plane& plane)
+{
+    glm::vec3 n = plane.normal;
+    float     w = plane.d;
+
+    Plane transformedPlane = Plane(M[ 0 ][ 0 ] * n.x + M[ 1 ][ 0 ] * n.y + M[ 2 ][ 0 ] * n.z,
+                                   M[ 0 ][ 1 ] * n.x + M[ 1 ][ 1 ] * n.y + M[ 2 ][ 1 ] * n.z,
+                                   M[ 0 ][ 2 ] * n.x + M[ 1 ][ 2 ] * n.y + M[ 2 ][ 2 ] * n.z,
+                                   M[ 0 ][ 3 ] * n.x + M[ 1 ][ 3 ] * n.y + M[ 2 ][ 3 ] * n.z + w);
+
+    return Plane(transformedPlane);
 }

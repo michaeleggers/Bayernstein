@@ -403,8 +403,11 @@ void FirstPersonPlayer::UpdatePlayerModel()
             BaseGameEntity* pEntity = pAllEntities[ i ];
             if ( pEntity->Type() == ET_ENEMY )
             {
-                Enemy*             pEnemy = (Enemy*)pEntity;
-                EllipsoidCollider* pEC    = pEnemy->GetEllipsoidColliderPtr();
+                Enemy*             pEnemy   = (Enemy*)pEntity;
+                EllipsoidCollider* pEC      = pEnemy->GetEllipsoidColliderPtr();
+                glm::vec3          enemyPos = pEnemy->m_Position;
+                EllipsoidCollider  ec       = *pEC;
+                ec.center += enemyPos;
                 if ( TraceRayAgainstEllipsoid(m_Camera.m_Pos, m_Camera.m_Forward, *pEC) )
                 {
                     Dispatcher->DispatchMessage(SEND_MSG_IMMEDIATELY, ID(), pEnemy->ID(), message_type::RayHit, 0);

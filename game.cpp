@@ -250,11 +250,46 @@ bool Game::RunFrame(double dt)
     {
         renderer->Begin3D();
 
+        Enemy*            enemy   = m_pEntityManager->GetFirstEnemy();
+        EllipsoidCollider ecEnemy = *(enemy->GetEllipsoidColliderPtr());
+
+        // Draw the viewing Frustum
+        glm::mat4     enemyTransform = glm::translate(glm::mat4(1.0f), enemy->m_Position);
+        math::Frustum frustumWorld   = math::BuildFrustum(
+            enemyTransform, enemy->m_ProjDistance, enemy->m_AspectRatio, enemy->m_Near, enemy->m_Far);
+        Line frustumNormalA // right
+            = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 0 ].normal),
+                Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 0 ].normal
+                       + 10.0f * frustumWorld.planes[ 0 ].normal) };
+        frustumNormalA.a.color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
+        frustumNormalA.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        renderer->ImDrawLines(frustumNormalA.vertices, 2, false);
+
+        Line frustumNormalB
+            = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward),
+                Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward + 30.0f * frustumWorld.planes[ 1 ].normal) };
+        frustumNormalB.a.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+        frustumNormalB.b.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+        //renderer->ImDrawLines(frustumNormalB.vertices, 2, false);
+
+        Line frustumNormalC // left
+            = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 2 ].normal),
+                Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 2 ].normal
+                       + 10.0f * frustumWorld.planes[ 2 ].normal) };
+        frustumNormalC.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+        frustumNormalC.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        renderer->ImDrawLines(frustumNormalC.vertices, 2, false);
+
+        Line frustumNormalD
+            = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward),
+                Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward + 30.0f * frustumWorld.planes[ 3 ].normal) };
+        frustumNormalD.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+        frustumNormalD.b.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
+        //renderer->ImDrawLines(frustumNormalD.vertices, 2, false);
+
         if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 )
         {
 
-            Enemy*            enemy   = m_pEntityManager->GetFirstEnemy();
-            EllipsoidCollider ecEnemy = *(enemy->GetEllipsoidColliderPtr());
             // Draw Debug Circle for enemy
             glm::vec3 center = enemy->m_Position + enemy->m_Forward * enemy->m_pSteeringBehaviour->m_WanderDistance;
             renderer->ImDrawCircle(center, enemy->m_pSteeringBehaviour->m_WanderRadius, DOD_WORLD_UP);

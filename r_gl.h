@@ -19,6 +19,7 @@
 #include "r_gl_texture_mgr.h"
 #include "r_itexture_mgr.h"
 #include "r_model.h"
+#include "utils/quick_math.h"
 
 struct GLMesh
 {
@@ -96,6 +97,8 @@ class GLRender : public IRender
     };
     virtual glm::vec2        GetWindowDimensions() override;
     virtual ITextureManager* GetTextureManager() override;
+
+    void DrawFrustum(const math::Frustum& frustum);
 
     void           ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType);
     void           InitShaders();

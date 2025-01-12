@@ -12,6 +12,7 @@
 #include "../../input_receiver.h"
 #include "../../map_parser.h"
 #include "../../r_model.h"
+#include "../../utils/quick_math.h"
 #include "../Path/path.h"
 #include "../base_game_entity.h"
 #include "../moving_entity.h"
@@ -89,6 +90,12 @@ class Enemy : public MovingEntity
     }
     SteeringBehaviour* m_pSteeringBehaviour;
 
+    math::Frustum m_ViewingFrustum;
+    float         m_ProjDistance;
+    float         m_AspectRatio;
+    float         m_Near;
+    float         m_Far;
+
   private:
     StateMachine<Enemy>* m_pStateMachine;
     double               m_Health = 100;
@@ -99,7 +106,6 @@ class Enemy : public MovingEntity
     // FIX: Those should be components for next milestone.
     HKD_Model   m_Model;
     PatrolPath* m_pPath;
-    // moving members
 
   private:
     AnimState m_AnimationState;

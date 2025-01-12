@@ -32,17 +32,20 @@
 #define HKD_EPSILON 0.000000001f
 #define ELLIPSOID_VERT_COUNT 32
 
-enum ScreenSpaceCoordMode {
+enum ScreenSpaceCoordMode
+{
     COORD_MODE_ABS,
     COORD_MODE_REL
 };
 
-enum GeometryType {
+enum GeometryType
+{
     GEOM_TYPE_VERTEX_ONLY,
     GEOM_TYPE_INDEXED
 };
 
-struct Vertex {
+struct Vertex
+{
     glm::vec3 pos;
     glm::vec2 uv;
     glm::vec2 uvLightmap;
@@ -56,7 +59,8 @@ struct Vertex {
 
 // TODO: Make union Vertex that combines Vertex and
 // StativVertex.
-struct StaticVertex {
+struct StaticVertex
+{
     glm::vec3 pos;
     glm::vec2 uv;
     glm::vec2 uvLightmap;
@@ -91,21 +95,25 @@ struct StaticVertex {
 #define HKD_EPSILON 0.000000001f
 #define ELLIPSOID_VERT_COUNT 32
 
-struct ShaderSettings {
+struct ShaderSettings
+{
     glm::uvec4 u32bitMasks; // TODO: This is just to make the Shader happy (Wants 16 bytes by default, not only 4).
 };
 
-struct FontUB {
+struct FontUB
+{
     glm::vec4 color;
     glm::vec4 size;
 };
 
-struct ShapesUB {
+struct ShapesUB
+{
     glm::vec4 color;
     glm::vec4 scale;
 };
 
-struct SpriteUB {
+struct SpriteUB
+{
     glm::vec2 pos;
     glm::vec2 size;
     glm::vec2 scale;
@@ -113,9 +121,12 @@ struct SpriteUB {
     glm::vec2 uvBottomRight;
 };
 
-struct Tri {
-    union {
-        struct {
+struct Tri
+{
+    union
+    {
+        struct
+        {
             Vertex a;
             Vertex b;
             Vertex c;
@@ -124,23 +135,28 @@ struct Tri {
     };
 };
 
-struct MapTri {
+struct MapTri
+{
     Tri         tri;
     std::string textureName;
     std::string lightmap;
     uint64_t    hTexture; // GPU handle set by renderer.
 };
 
-struct MapTriLightmapper {
+struct MapTriLightmapper
+{
     StaticVertex vertices[ 3 ];
     char         textureName[ 256 ];
     uint64_t     surfaceFlags;
     uint64_t     contentFlags;
 };
 
-struct Line {
-    union {
-        struct {
+struct Line
+{
+    union
+    {
+        struct
+        {
             Vertex a;
             Vertex b;
         };
@@ -148,26 +164,56 @@ struct Line {
     };
 };
 
-struct Plane {
+struct Plane
+{
     glm::vec3 normal;
     float     d; // distance to origin
-    glm::vec3 p; // point on plane (for convencience)
+
+    // TODO: It is easy to forget to track this point.
+    glm::vec3 p; // point on plane (for convenience)
+
+    Plane() = default;
+
+    Plane(glm::vec3 n, float distance)
+    {
+        normal = glm::normalize(n);
+        d      = distance;
+        p      = distance * n;
+    }
+
+    Plane(float x, float y, float z, float w)
+    {
+        normal = glm::vec3(x, y, z);
+        d      = w;
+    }
+
+    Plane(glm::vec4 hPlane)
+    {
+        normal = glm::vec3(hPlane.x, hPlane.y, hPlane.z);
+        d      = hPlane.w;
+        p      = d * normal;
+    }
 };
 
-struct TriPlane {
+struct TriPlane
+{
     Plane plane;
     Tri   tri;
 };
 
-struct Quad {
-    union {
-        struct {
+struct Quad
+{
+    union
+    {
+        struct
+        {
             Tri a; // top right
             Tri b; // bottom left
         };
         Tri    tris[ 2 ];
         Vertex vertices[ 6 ];
-        struct { // This just makes access to individual vertices easier.
+        struct
+        { // This just makes access to individual vertices easier.
             Vertex tl;
             Vertex tr;
             Vertex br;
@@ -179,9 +225,12 @@ struct Quad {
 };
 
 // Representation of a Quad but only stores the four cornerpoints, not whole tris.
-struct FaceQuad {
-    union {
-        struct {
+struct FaceQuad
+{
+    union
+    {
+        struct
+        {
             Vertex a;
             Vertex b;
             Vertex c;
@@ -191,9 +240,12 @@ struct FaceQuad {
     };
 };
 
-struct Box {
-    union {
-        struct {
+struct Box
+{
+    union
+    {
+        struct
+        {
             Quad front;
             Quad right;
             Quad back;
@@ -207,24 +259,28 @@ struct Box {
 };
 
 // As Box but with more than 2 tris per side.
-struct NBox {
+struct NBox
+{
     std::vector<Tri> tris;
 };
 
-struct Ellipsoid {
+struct Ellipsoid
+{
     glm::vec3 center;
     float     radiusA; // horizontal radius
     float     radiusB; // vertical radius
     Vertex    vertices[ ELLIPSOID_VERT_COUNT ];
 };
 
-struct MeshEllipsoid {
+struct MeshEllipsoid
+{
     float            radiusA;
     float            radiusB;
     std::vector<Tri> tris;
 };
 
-struct Sprite {
+struct Sprite
+{
     // Size in pixels.
     glm::vec2 size;
     // uv coordinates at top left of sprite texture.
@@ -271,5 +327,7 @@ Plane         CreatePlaneFromTri(Tri tri);
 Sprite        CreateSprite(const std::string& textureFilename,
                            const glm::vec2&   topLeft,    // top left of texture in pixel coordinates
                            const glm::vec2&   bottomRight); // bottom right of texture in pixel coordinates
+
+Plane operator*(const glm::mat4& M, const Plane& plane);
 
 #endif

@@ -30,6 +30,7 @@
 #include "r_gl_texture.h"
 #include "r_gl_texture_mgr.h"
 #include "r_itexture.h"
+#include "utils/quick_math.h"
 
 const int WINDOW_WIDTH  = 1920;
 const int WINDOW_HEIGHT = 1080;
@@ -258,7 +259,7 @@ bool GLRender::Init(void)
     SDL_ShowWindow(m_Window);
 
     // GL Vsync on
-    if ( SDL_GL_SetSwapInterval(0) != 0 )
+    if ( SDL_GL_SetSwapInterval(1) != 0 )
     {
         SDL_Log("Failed to enable vsync!\n");
     }
@@ -461,7 +462,7 @@ void GLRender::RegisterColliderModels()
 {
     // Generate vertices for a circle. Used for ellipsoid colliders.
 
-    MeshEllipsoid unitEllipsoid = CreateUnitEllipsoid(2);
+    MeshEllipsoid unitEllipsoid = CreateUnitEllipsoid(2); // FIX: Broken for values other than 1 and 2!
 
     m_EllipsoidColliderDrawCmd = AddTrisToBatch(
         m_ColliderBatch, unitEllipsoid.tris.data(), unitEllipsoid.tris.size(), false, DRAW_MODE_WIREFRAME);
@@ -1620,3 +1621,5 @@ ITextureManager* GLRender::GetTextureManager()
 {
     return m_ITextureManager;
 }
+
+void DrawFrustum(const math::Frustum& frustum) {}
