@@ -260,7 +260,9 @@ bool Game::RunFrame(double dt)
 
         // Draw the viewing Frustum
         // Normals
-        glm::mat4 enemyTransform   = glm::translate(glm::mat4(1.0f), enemy->m_Position);
+        glm::vec3 enemyFrustumPosition = enemy->m_Position;
+        enemyFrustumPosition.z += enemy->GetEllipsoidColliderPtr()->radiusB;
+        glm::mat4 enemyTransform   = glm::translate(glm::mat4(1.0f), enemyFrustumPosition);
         glm::mat4 enemyRotation    = glm::toMat4(enemy->m_Orientation);
         enemyTransform             = enemyTransform * enemyRotation;
         math::Frustum frustumWorld = math::BuildFrustum(
@@ -306,6 +308,7 @@ bool Game::RunFrame(double dt)
         renderer->ImDrawLines(frustumSideB.vertices, 2, false);
         renderer->ImDrawLines(frustumSideC.vertices, 2, false);
         renderer->ImDrawLines(frustumSideD.vertices, 2, false);
+        renderer->ImDrawLines(frustumWorld.vertices + 4, 4, true);
 
         if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 )
         {
