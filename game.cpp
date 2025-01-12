@@ -259,6 +259,7 @@ bool Game::RunFrame(double dt)
         EllipsoidCollider ecEnemy = *(enemy->GetEllipsoidColliderPtr());
 
         // Draw the viewing Frustum
+        // Normals
         glm::mat4 enemyTransform   = glm::translate(glm::mat4(1.0f), enemy->m_Position);
         glm::mat4 enemyRotation    = glm::toMat4(enemy->m_Orientation);
         enemyTransform             = enemyTransform * enemyRotation;
@@ -295,6 +296,16 @@ bool Game::RunFrame(double dt)
         frustumNormalD.a.color = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
         frustumNormalD.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         renderer->ImDrawLines(frustumNormalD.vertices, 2, false);
+
+        // Near and far planes
+        Line frustumSideA = { frustumWorld.vertices[ 0 ], frustumWorld.vertices[ 4 ] };
+        Line frustumSideB = { frustumWorld.vertices[ 1 ], frustumWorld.vertices[ 5 ] };
+        Line frustumSideC = { frustumWorld.vertices[ 2 ], frustumWorld.vertices[ 6 ] };
+        Line frustumSideD = { frustumWorld.vertices[ 3 ], frustumWorld.vertices[ 7 ] };
+        renderer->ImDrawLines(frustumSideA.vertices, 2, false);
+        renderer->ImDrawLines(frustumSideB.vertices, 2, false);
+        renderer->ImDrawLines(frustumSideC.vertices, 2, false);
+        renderer->ImDrawLines(frustumSideD.vertices, 2, false);
 
         if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 )
         {

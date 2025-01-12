@@ -7,7 +7,8 @@ namespace math
 
 struct Frustum
 {
-    Plane planes[ 6 ];
+    Plane  planes[ 6 ];
+    Vertex vertices[ 8 ];
 };
 
 glm::vec3 TruncateVec3(const glm::vec3& vector, float max);

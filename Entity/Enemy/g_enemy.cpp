@@ -44,10 +44,10 @@ Enemy::Enemy(const std::vector<Property>& properties)
     // m_pSteeringBehaviour->WanderOn();
 
     // Set viewing frustum
-    m_ProjDistance = 10.0f;
-    m_AspectRatio  = 16.0f / 4.0f;
+    m_ProjDistance = 5.0f;
+    m_AspectRatio  = 3.35f;
     m_Near         = 0.1f;
-    m_Far          = 70.0f;
+    m_Far          = 500.0f;
 
     glm::mat4 frustumToWorldTransform = glm::translate(glm::mat4(1.0f), m_Position);
     m_ViewingFrustum = math::BuildFrustum(frustumToWorldTransform, m_ProjDistance, m_AspectRatio, m_Near, m_Far);

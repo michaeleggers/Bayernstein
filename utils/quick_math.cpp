@@ -73,17 +73,37 @@ bool InSegmentRange(glm::vec3 point, glm::vec3 start, glm::vec3 end)
 // Mcam: transform of camera in object space to worldspace.
 Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
 {
+    Frustum frustum{};
+
+    // Create vertices for near plane
+    float z               = n / g;
+    float x               = z * s;
+    frustum.vertices[ 0 ] = { Mcam * glm::vec4(x, n, z, 1.0f) };
+    frustum.vertices[ 1 ] = { Mcam * glm::vec4(x, n, -z, 1.0f) };
+    frustum.vertices[ 2 ] = { Mcam * glm::vec4(-x, n, -z, 1.0f) };
+    frustum.vertices[ 3 ] = { Mcam * glm::vec4(-x, n, z, 1.0f) };
+
+    // Create vertices for far plane
+    z                     = f / g;
+    x                     = z * s;
+    frustum.vertices[ 4 ] = { Mcam * glm::vec4(x, f, z, 1.0f) };
+    frustum.vertices[ 5 ] = { Mcam * glm::vec4(x, f, -z, 1.0f) };
+    frustum.vertices[ 6 ] = { Mcam * glm::vec4(-x, f, -z, 1.0f) };
+    frustum.vertices[ 7 ] = { Mcam * glm::vec4(-x, f, z, 1.0f) };
+
+    // Create the frustum's planes
     glm::mat4 toWorldSpace = glm::inverse(Mcam);
 
     float mx = 1.0f / glm::sqrt(g * g + s * s);
     float my = 1.0f / glm::sqrt(g * g + 1.0f);
 
-    Frustum frustum{};
+    // Original code from Lengyel (he uses y down, z into screen, x right)
     //frustum.planes[ 0 ] = toWorldSpace * Plane(glm::vec3(-g * mx, 0.0f, s * mx), 0.0f); // right
     //frustum.planes[ 1 ] = toWorldSpace * Plane(glm::vec3(0.0f, g * my, my), 0.0f);
     //frustum.planes[ 2 ] = toWorldSpace * Plane(glm::vec3(g * mx, 0.0f, s * mx), 0.0f);
     //frustum.planes[ 3 ] = toWorldSpace * Plane(glm::vec3(0.0f, -g * my, my), 0.0f);
 
+    // Lengyel's code change to our coord system:
     frustum.planes[ 0 ] = toWorldSpace * Plane(glm::vec3(-g * mx, s * mx, 0.0f), 0.0f); // right
     frustum.planes[ 1 ] = toWorldSpace * Plane(glm::vec3(0.0f, my, -g * my), 0.0f);     //top
     frustum.planes[ 2 ] = toWorldSpace * Plane(glm::vec3(g * mx, s * mx, 0.0f), 0.0f);  // left
