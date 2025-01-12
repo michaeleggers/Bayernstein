@@ -2,6 +2,11 @@
 #define MAP_PARSER_IMPLEMENTATION
 #include "map_parser.h"
 
+#define GLM_FORCE_RADIANS
+#include "dependencies/glm/ext.hpp"
+#include "dependencies/glm/glm.hpp"
+#include "dependencies/glm/gtx/quaternion.hpp"
+
 #include "game.h"
 
 #include <SDL.h>
@@ -68,7 +73,7 @@ void Game::Init()
 
     // Load lightmap triangles and lightmap texture
 
-    m_World->InitWorld("lightmap_test");
+    m_World->InitWorld("arena");
     m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.
@@ -254,38 +259,42 @@ bool Game::RunFrame(double dt)
         EllipsoidCollider ecEnemy = *(enemy->GetEllipsoidColliderPtr());
 
         // Draw the viewing Frustum
-        glm::mat4     enemyTransform = glm::translate(glm::mat4(1.0f), enemy->m_Position);
-        math::Frustum frustumWorld   = math::BuildFrustum(
+        glm::mat4 enemyTransform   = glm::translate(glm::mat4(1.0f), enemy->m_Position);
+        glm::mat4 enemyRotation    = glm::toMat4(enemy->m_Orientation);
+        enemyTransform             = enemyTransform * enemyRotation;
+        math::Frustum frustumWorld = math::BuildFrustum(
             enemyTransform, enemy->m_ProjDistance, enemy->m_AspectRatio, enemy->m_Near, enemy->m_Far);
         Line frustumNormalA // right
             = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 0 ].normal),
                 Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 0 ].normal
-                       + 10.0f * frustumWorld.planes[ 0 ].normal) };
+                       + 30.0f * frustumWorld.planes[ 0 ].normal) };
         frustumNormalA.a.color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
         frustumNormalA.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         renderer->ImDrawLines(frustumNormalA.vertices, 2, false);
 
-        Line frustumNormalB
-            = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward),
-                Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward + 30.0f * frustumWorld.planes[ 1 ].normal) };
+        Line frustumNormalB // top
+            = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 1 ].normal),
+                Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 1 ].normal
+                       + 30.0f * frustumWorld.planes[ 1 ].normal) };
         frustumNormalB.a.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-        frustumNormalB.b.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-        //renderer->ImDrawLines(frustumNormalB.vertices, 2, false);
+        frustumNormalB.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        renderer->ImDrawLines(frustumNormalB.vertices, 2, false);
 
         Line frustumNormalC // left
             = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 2 ].normal),
                 Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 2 ].normal
-                       + 10.0f * frustumWorld.planes[ 2 ].normal) };
+                       + 30.0f * frustumWorld.planes[ 2 ].normal) };
         frustumNormalC.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
         frustumNormalC.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         renderer->ImDrawLines(frustumNormalC.vertices, 2, false);
 
         Line frustumNormalD
-            = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward),
-                Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward + 30.0f * frustumWorld.planes[ 3 ].normal) };
-        frustumNormalD.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-        frustumNormalD.b.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-        //renderer->ImDrawLines(frustumNormalD.vertices, 2, false);
+            = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 3 ].normal),
+                Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 3 ].normal
+                       + 30.0f * frustumWorld.planes[ 3 ].normal) };
+        frustumNormalD.a.color = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+        frustumNormalD.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        renderer->ImDrawLines(frustumNormalD.vertices, 2, false);
 
         if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 )
         {

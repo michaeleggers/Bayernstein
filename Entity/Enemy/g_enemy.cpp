@@ -52,6 +52,8 @@ Enemy::Enemy(const std::vector<Property>& properties)
     glm::mat4 frustumToWorldTransform = glm::translate(glm::mat4(1.0f), m_Position);
     m_ViewingFrustum = math::BuildFrustum(frustumToWorldTransform, m_ProjDistance, m_AspectRatio, m_Near, m_Far);
 
+    m_Orientation = glm::angleAxis(glm::radians(45.0f), DOD_WORLD_UP);
+
     m_SfxFootsteps
         = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
 }

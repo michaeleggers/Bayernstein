@@ -473,10 +473,10 @@ Plane operator*(const glm::mat4& M, const Plane& plane)
     glm::vec3 n = plane.normal;
     float     w = plane.d;
 
-    Plane transformedPlane = Plane(M[ 0 ][ 0 ] * n.x + M[ 1 ][ 0 ] * n.y + M[ 2 ][ 0 ] * n.z,
-                                   M[ 0 ][ 1 ] * n.x + M[ 1 ][ 1 ] * n.y + M[ 2 ][ 1 ] * n.z,
-                                   M[ 0 ][ 2 ] * n.x + M[ 1 ][ 2 ] * n.y + M[ 2 ][ 2 ] * n.z,
-                                   M[ 0 ][ 3 ] * n.x + M[ 1 ][ 3 ] * n.y + M[ 2 ][ 3 ] * n.z + w);
+    Plane transformedPlane = Plane(M[ 0 ][ 0 ] * n.x + M[ 0 ][ 1 ] * n.y + M[ 0 ][ 2 ] * n.z,
+                                   M[ 1 ][ 0 ] * n.x + M[ 1 ][ 1 ] * n.y + M[ 1 ][ 2 ] * n.z,
+                                   M[ 2 ][ 0 ] * n.x + M[ 2 ][ 1 ] * n.y + M[ 2 ][ 2 ] * n.z,
+                                   M[ 3 ][ 0 ] * n.x + M[ 3 ][ 1 ] * n.y + M[ 3 ][ 2 ] * n.z + w);
 
     return Plane(transformedPlane);
 }

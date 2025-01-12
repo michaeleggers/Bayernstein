@@ -85,9 +85,9 @@ Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
     //frustum.planes[ 3 ] = toWorldSpace * Plane(glm::vec3(0.0f, -g * my, my), 0.0f);
 
     frustum.planes[ 0 ] = toWorldSpace * Plane(glm::vec3(-g * mx, s * mx, 0.0f), 0.0f); // right
-    frustum.planes[ 1 ] = toWorldSpace * Plane(glm::vec3(0.0f, g * my, my), 0.0f);
-    frustum.planes[ 2 ] = toWorldSpace * Plane(glm::vec3(g * mx, s * mx, 0.0f), 0.0f); // left
-    frustum.planes[ 3 ] = toWorldSpace * Plane(glm::vec3(0.0f, -g * my, my), 0.0f);
+    frustum.planes[ 1 ] = toWorldSpace * Plane(glm::vec3(0.0f, my, -g * my), 0.0f);     //top
+    frustum.planes[ 2 ] = toWorldSpace * Plane(glm::vec3(g * mx, s * mx, 0.0f), 0.0f);  // left
+    frustum.planes[ 3 ] = toWorldSpace * Plane(glm::vec3(0.0f, my, g * my), 0.0f);      // bottom
 
     // Near and Far planes
     float d             = glm::dot(Mcam[ 2 ], Mcam[ 3 ]);
