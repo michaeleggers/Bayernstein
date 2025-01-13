@@ -66,6 +66,8 @@ add_executable(Game
     r_common.cpp
     r_font.h
     r_font.cpp
+    r_draw.h
+    r_draw.cpp
 
     r_gl_batch.h
     r_gl_batch.cpp

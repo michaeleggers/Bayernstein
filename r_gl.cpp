@@ -589,14 +589,14 @@ void GLRender::ImDrawCircle(glm::vec3 center, float radius, glm::vec3 normal)
 
 // We have separate draw cmds from the batch. This function generate unneccessary many
 // draw cmds (each Add is a new one!).
-void GLRender::ImDrawLines(Vertex* verts, uint32_t numVerts, bool close)
+void GLRender::ImDrawLines(const Vertex* verts, uint32_t numVerts, bool close)
 {
     if ( numVerts < 2 )
     { // This won't work, man.
         return;
     }
 
-    Vertex* v = verts;
+    const Vertex* v = verts;
     // TODO: DRAW_MODEL_LINES doesn't do anything to the batch!
     int offset = m_ImPrimitiveBatch->Add(v, 2, false, DRAW_MODE_LINES);
     v += 1;

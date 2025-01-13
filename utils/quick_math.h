@@ -7,6 +7,11 @@ namespace math
 
 struct Frustum
 {
+    float projDistance;
+    float aspectRatio;
+    float near;
+    float far;
+
     Plane  planes[ 6 ];
     Vertex vertices[ 8 ];
 };

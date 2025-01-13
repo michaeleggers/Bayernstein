@@ -29,6 +29,7 @@
 #include "physics.h"
 #include "platform.h"
 #include "polysoup.h"
+#include "r_draw.h"
 #include "r_font.h"
 #include "r_itexture.h"
 #include "utils/utils.h"
@@ -259,56 +260,15 @@ bool Game::RunFrame(double dt)
         EllipsoidCollider ecEnemy = *(enemy->GetEllipsoidColliderPtr());
 
         // Draw the viewing Frustum
-        // Normals
         glm::vec3 enemyFrustumPosition = enemy->m_Position;
         enemyFrustumPosition.z += enemy->GetEllipsoidColliderPtr()->radiusB;
-        glm::mat4 enemyTransform   = glm::translate(glm::mat4(1.0f), enemyFrustumPosition);
-        glm::mat4 enemyRotation    = glm::toMat4(enemy->m_Orientation);
-        enemyTransform             = enemyTransform * enemyRotation;
+        glm::mat4 enemyTransform = glm::translate(glm::mat4(1.0f), enemyFrustumPosition);
+        glm::mat4 enemyRotation  = glm::toMat4(enemy->m_Orientation);
+        enemyTransform           = enemyTransform * enemyRotation;
+
         math::Frustum frustumWorld = math::BuildFrustum(
             enemyTransform, enemy->m_ProjDistance, enemy->m_AspectRatio, enemy->m_Near, enemy->m_Far);
-        Line frustumNormalA // right
-            = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 0 ].normal),
-                Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 0 ].normal
-                       + 30.0f * frustumWorld.planes[ 0 ].normal) };
-        frustumNormalA.a.color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
-        frustumNormalA.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-        renderer->ImDrawLines(frustumNormalA.vertices, 2, false);
-
-        Line frustumNormalB // top
-            = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 1 ].normal),
-                Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 1 ].normal
-                       + 30.0f * frustumWorld.planes[ 1 ].normal) };
-        frustumNormalB.a.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-        frustumNormalB.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-        renderer->ImDrawLines(frustumNormalB.vertices, 2, false);
-
-        Line frustumNormalC // left
-            = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 2 ].normal),
-                Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 2 ].normal
-                       + 30.0f * frustumWorld.planes[ 2 ].normal) };
-        frustumNormalC.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
-        frustumNormalC.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-        renderer->ImDrawLines(frustumNormalC.vertices, 2, false);
-
-        Line frustumNormalD
-            = { Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 3 ].normal),
-                Vertex(enemy->m_Position + enemy->m_Far * enemy->m_Forward - 50.0f * frustumWorld.planes[ 3 ].normal
-                       + 30.0f * frustumWorld.planes[ 3 ].normal) };
-        frustumNormalD.a.color = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
-        frustumNormalD.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-        renderer->ImDrawLines(frustumNormalD.vertices, 2, false);
-
-        // Near and far planes
-        Line frustumSideA = { frustumWorld.vertices[ 0 ], frustumWorld.vertices[ 4 ] };
-        Line frustumSideB = { frustumWorld.vertices[ 1 ], frustumWorld.vertices[ 5 ] };
-        Line frustumSideC = { frustumWorld.vertices[ 2 ], frustumWorld.vertices[ 6 ] };
-        Line frustumSideD = { frustumWorld.vertices[ 3 ], frustumWorld.vertices[ 7 ] };
-        renderer->ImDrawLines(frustumSideA.vertices, 2, false);
-        renderer->ImDrawLines(frustumSideB.vertices, 2, false);
-        renderer->ImDrawLines(frustumSideC.vertices, 2, false);
-        renderer->ImDrawLines(frustumSideD.vertices, 2, false);
-        renderer->ImDrawLines(frustumWorld.vertices + 4, 4, true);
+        r_DrawFrustum(frustumWorld);
 
         if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 )
         {

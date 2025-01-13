@@ -13,14 +13,15 @@
 #include "r_common.h"
 #include "r_gl_texture.h"
 
-class GLBatch {
+class GLBatch
+{
   public:
     GLBatch(uint32_t maxVerts);
     GLBatch(uint32_t maxVerts, uint32_t maxIndices);
 
     int  Add(Tri* tris, uint32_t numTris, bool cullFace = true, DrawMode drawMode = DRAW_MODE_SOLID);
     int  AddMapTris(MapTri* tris, uint32_t numTris, bool cullFace = true, DrawMode drawMode = DRAW_MODE_SOLID);
-    int  Add(Vertex* verts, uint32_t numVerts, bool cullFace = true, DrawMode drawMode = DRAW_MODE_LINES);
+    int  Add(const Vertex* verts, uint32_t numVerts, bool cullFace = true, DrawMode drawMode = DRAW_MODE_LINES);
     bool Add(Vertex*   verts,
              uint32_t  numVerts,
              uint16_t* indices,

@@ -66,7 +66,7 @@ class IRender
                                DrawMode  drawMode = DRAW_MODE_SOLID)
         = 0;
     virtual void ImDrawVerts(Vertex* verts, uint32_t numVerts)                                                  = 0;
-    virtual void ImDrawLines(Vertex* verts, uint32_t numVerts, bool close = false)                              = 0;
+    virtual void ImDrawLines(const Vertex* verts, uint32_t numVerts, bool close = false)                        = 0;
     virtual void ImDrawCircle(glm::vec3 center, float radius, glm::vec3 normal)                                 = 0;
     virtual void ImDrawSphere(glm::vec3 pos, float radius, glm::vec4 color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)) = 0;
     virtual void RenderBegin(void)                                                                              = 0;

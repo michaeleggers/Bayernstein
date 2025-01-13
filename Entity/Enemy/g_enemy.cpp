@@ -49,9 +49,6 @@ Enemy::Enemy(const std::vector<Property>& properties)
     m_Near         = 0.1f;
     m_Far          = 250.0f;
 
-    glm::mat4 frustumToWorldTransform = glm::translate(glm::mat4(1.0f), m_Position);
-    m_ViewingFrustum = math::BuildFrustum(frustumToWorldTransform, m_ProjDistance, m_AspectRatio, m_Near, m_Far);
-
     m_Orientation = glm::angleAxis(glm::radians(45.0f), DOD_WORLD_UP);
 
     m_SfxFootsteps

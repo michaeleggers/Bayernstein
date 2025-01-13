@@ -90,11 +90,10 @@ class Enemy : public MovingEntity
     }
     SteeringBehaviour* m_pSteeringBehaviour;
 
-    math::Frustum m_ViewingFrustum;
-    float         m_ProjDistance;
-    float         m_AspectRatio;
-    float         m_Near;
-    float         m_Far;
+    float m_ProjDistance;
+    float m_AspectRatio;
+    float m_Near;
+    float m_Far;
 
   private:
     StateMachine<Enemy>* m_pStateMachine;
