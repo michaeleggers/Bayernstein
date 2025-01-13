@@ -129,16 +129,19 @@ bool EllipsoidInFrustum(const Frustum& frustum, const EllipsoidCollider& ec)
         const Plane& p = frustum.planes[ i ];
         glm::vec3    n = glm::normalize(p.normal);
         glm::vec3    q = p.d * n;
-        n              = ec.toESpace * n;
-        q              = ec.toESpace * q;
-        glm::vec3 c    = ec.toESpace * ec.center;
-        glm::vec3 qToC = glm::normalize(c - q);
+        //n              = ec.toESpace * n;
+        //q              = ec.toESpace * q;
+        //glm::vec3 c    = ec.toESpace * ec.center;
+        glm::vec3 c    = ec.center;
+        glm::vec3 qToC = c - q;
         float     sD   = glm::dot(n, qToC);
-        if ( sD <= -1.0f )
+        if ( sD <= -ec.radiusA )
         {
             return false;
         }
     }
+
+    printf("radius player: %f\n", ec.radiusA);
 
     return true;
 }

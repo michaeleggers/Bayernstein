@@ -261,17 +261,6 @@ bool Game::RunFrame(double dt)
         Enemy*            enemy   = m_pEntityManager->GetFirstEnemy();
         EllipsoidCollider ecEnemy = *(enemy->GetEllipsoidColliderPtr());
 
-        // Draw the viewing Frustum
-        glm::vec3 enemyFrustumPosition = enemy->m_Position;
-        enemyFrustumPosition.z += enemy->GetEllipsoidColliderPtr()->radiusB;
-        glm::mat4 enemyTransform = glm::translate(glm::mat4(1.0f), enemyFrustumPosition);
-        glm::mat4 enemyRotation  = glm::toMat4(enemy->m_Orientation);
-        enemyTransform           = enemyTransform * enemyRotation;
-
-        math::Frustum frustumWorld = math::BuildFrustum(
-            enemyTransform, enemy->m_ProjDistance, enemy->m_AspectRatio, enemy->m_Near, enemy->m_Far);
-        //r_DrawFrustum(frustumWorld);
-
         if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 )
         {
 
@@ -345,6 +334,14 @@ bool Game::RunFrame(double dt)
                 Enemy*     pEnemy = (Enemy*)pEntity;
                 HKD_Model* pModel = pEnemy->GetModel();
                 assert(pModel != nullptr && "Enemy entity must have a model");
+                renderer->RenderColliders(renderCam, &pModel, 1);
+            }
+            else if ( pEntity->Type() == ET_PLAYER )
+            {
+                // Draw collider as wireframe
+                FirstPersonPlayer* pEnemy = (FirstPersonPlayer*)pEntity;
+                HKD_Model*         pModel = pEnemy->GetModel();
+                assert(pModel != nullptr && "Player entity must have a model");
                 renderer->RenderColliders(renderCam, &pModel, 1);
             }
         }

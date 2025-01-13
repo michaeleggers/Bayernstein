@@ -441,9 +441,8 @@ void CWorld::RunEnemyVision()
 
                 r_DrawFrustum(frustumWorld, pEnemy);
 
-                if ( EllipsoidInFrustum(frustumWorld, *ec) )
+                if ( math::EllipsoidInFrustum(frustumWorld, *ec) )
                 {
-                    printf("I SEE YOU!\n");
                     //Dispatcher->DispatchMessage(
                     //    SEND_MSG_IMMEDIATELY, pEnemy->ID(), pEnemy->ID(), message_type::Collision, 0);
                 }
