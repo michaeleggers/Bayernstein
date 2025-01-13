@@ -50,6 +50,7 @@ Enemy::Enemy(const std::vector<Property>& properties)
     m_Far          = 250.0f;
 
     m_Orientation = glm::angleAxis(glm::radians(45.0f), DOD_WORLD_UP);
+    m_Forward     = glm::rotate(m_Orientation, DOD_WORLD_FORWARD);
 
     m_SfxFootsteps
         = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);

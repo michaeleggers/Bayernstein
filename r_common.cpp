@@ -470,7 +470,7 @@ Sprite CreateSprite(const std::string& textureFilename, const glm::vec2& topLeft
 
 Plane operator*(const glm::mat4& M, const Plane& plane)
 {
-    glm::vec3 n = plane.normal;
+    glm::vec3 n = glm::normalize(plane.normal);
     float     w = plane.d;
 
     Plane transformedPlane = Plane(M[ 0 ][ 0 ] * n.x + M[ 0 ][ 1 ] * n.y + M[ 0 ][ 2 ] * n.z,
@@ -479,4 +479,20 @@ Plane operator*(const glm::mat4& M, const Plane& plane)
                                    M[ 3 ][ 0 ] * n.x + M[ 3 ][ 1 ] * n.y + M[ 3 ][ 2 ] * n.z + w);
 
     return Plane(transformedPlane);
+
+    /*
+    glm::vec3 n = glm::normalize(plane.normal); // Ensure the input normal is normalized
+    float     w = plane.d;
+
+    // Transform the normal using the transpose of the inverse of M
+    glm::mat3 inverseTranspose  = glm::transpose(glm::inverse(glm::mat3(M)));
+    glm::vec3 transformedNormal = glm::normalize(inverseTranspose * n);
+
+    // Extract the translation from the matrix
+    glm::vec3 translation(M[ 3 ][ 0 ], M[ 3 ][ 1 ], M[ 3 ][ 2 ]);
+
+    // Compute the new distance
+    float transformedD = w - glm::dot(translation, transformedNormal);
+    return Plane(transformedNormal, transformedD);
+*/
 }
