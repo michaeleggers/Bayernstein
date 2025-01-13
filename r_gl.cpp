@@ -309,7 +309,7 @@ bool GLRender::Init(void)
     // Batches but for different purposes
     m_ImPrimitiveBatch        = new GLBatch(1000);
     m_ImPrimitiveBatchIndexed = new GLBatch(1000, 1000);
-    m_ColliderBatch           = new GLBatch(1000);
+    m_ColliderBatch           = new GLBatch(10000);
     m_FontBatch               = new GLBatch(1000, 1000);
     m_ShapesBatch             = new GLBatch(1000, 1000);
     m_WorldBatch              = new GLBatch(100000);
@@ -462,7 +462,7 @@ void GLRender::RegisterColliderModels()
 {
     // Generate vertices for a circle. Used for ellipsoid colliders.
 
-    MeshEllipsoid unitEllipsoid = CreateUnitEllipsoid(2); // FIX: Broken for values other than 1 and 2!
+    MeshEllipsoid unitEllipsoid = CreateUnitEllipsoid(3); // FIX: Broken for values other than 1 and 2!
 
     m_EllipsoidColliderDrawCmd = AddTrisToBatch(
         m_ColliderBatch, unitEllipsoid.tris.data(), unitEllipsoid.tris.size(), false, DRAW_MODE_WIREFRAME);

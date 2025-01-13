@@ -155,6 +155,12 @@ int GLBatch::Add(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
 
 int GLBatch::AddMapTris(MapTri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
 {
+    if ( m_VertOffsetIndex + 3 * numTris > m_MaxVerts )
+    {
+        printf("No more space on GPU to upload more triangles!\nSpace available: %d\n", m_MaxVerts - m_VertOffsetIndex);
+        return -1;
+    }
+
     std::vector<Tri> rawTris{};
     rawTris.resize(numTris);
     for ( int i = 0; i < numTris; i++ )
