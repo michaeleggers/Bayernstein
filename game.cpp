@@ -228,6 +228,8 @@ bool Game::RunFrame(double dt)
     // Check if player has contacts with other entities (including brush entities such as doors).
     m_World->CollideEntities();
 
+    m_World->RunEnemyVision();
+
     // Run the message system
     m_pEntityManager->UpdateEntitiesPostCollision();
 
@@ -268,7 +270,7 @@ bool Game::RunFrame(double dt)
 
         math::Frustum frustumWorld = math::BuildFrustum(
             enemyTransform, enemy->m_ProjDistance, enemy->m_AspectRatio, enemy->m_Near, enemy->m_Far);
-        r_DrawFrustum(frustumWorld);
+        //r_DrawFrustum(frustumWorld);
 
         if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 )
         {

@@ -114,11 +114,32 @@ Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
     frustum.planes[ 3 ] = toWorldSpace * Plane(glm::vec3(0.0f, my, g * my), 0.0f);      // bottom
 
     // Near and Far planes
-    float d             = glm::dot(Mcam[ 2 ], Mcam[ 3 ]);
-    frustum.planes[ 4 ] = Plane(Mcam[ 2 ], -(d + n));
-    frustum.planes[ 5 ] = Plane(-Mcam[ 2 ], d + f);
+    float d             = glm::dot(Mcam[ 1 ], Mcam[ 3 ]);
+    frustum.planes[ 4 ] = Plane(Mcam[ 1 ], -(d + n));
+    frustum.planes[ 5 ] = Plane(-Mcam[ 1 ], d + f);
 
     return frustum;
+}
+
+bool EllipsoidInFrustum(const Frustum& frustum, const EllipsoidCollider& ec)
+{
+    for ( int i = 0; i < 6; i++ )
+    {
+        const Plane& p = frustum.planes[ i ];
+        glm::vec3    n = glm::normalize(p.normal);
+        glm::vec3    q = p.d * n;
+        n              = ec.toESpace * n;
+        q              = ec.toESpace * q;
+        glm::vec3 c    = ec.toESpace * ec.center;
+        glm::vec3 qToC = glm::normalize(c - q);
+        float     sD   = glm::dot(n, qToC);
+        if ( sD <= -1.0f )
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 } // namespace math

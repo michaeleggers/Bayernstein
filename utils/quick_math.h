@@ -2,6 +2,8 @@
 #define _UTILS_MATH_H_
 #include <glm/glm.hpp>
 
+#include "../collision.h"
+
 namespace math
 {
 
@@ -25,6 +27,7 @@ glm::vec3 ChangeOfBasis(const glm::vec3& point,
 glm::vec3 GetProjectedPoint(glm::vec3 point, glm::vec3 start, glm::vec3 end);
 bool      InSegmentRange(glm::vec3 point, glm::vec3 start, glm::vec3 end);
 Frustum   BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f);
+bool      EllipsoidInFrustum(const Frustum& frustum, const EllipsoidCollider& ec);
 
 } // namespace math
 

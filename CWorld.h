@@ -29,42 +29,51 @@
 #include "r_model.h"
 #include "soloud.h"
 
-class CWorld {
+class CWorld
+{
   public:
     static CWorld* Instance();
     void           InitWorld(const std::string& mapName);
     void           CollideEntitiesWithWorld();
     void           CollideEntities();
+    void           RunEnemyVision();
 
     /*
     * Easier to understand in code when only the number of
     * static tris is needed.
     */
-    uint64_t StaticGeometryCount() {
+    uint64_t StaticGeometryCount()
+    {
         return m_StaticGeometryCount;
     }
 
-    FirstPersonPlayer* PlayerEntity() {
+    FirstPersonPlayer* PlayerEntity()
+    {
         return m_pPlayerEntity;
     }
 
-    std::vector<MapTri>& GetMapTris() {
+    std::vector<MapTri>& GetMapTris()
+    {
         return m_MapTris;
     }
 
-    std::vector<HKD_Model*>& GetModelPtrs() {
+    std::vector<HKD_Model*>& GetModelPtrs()
+    {
         return m_pModels;
     }
 
-    std::vector<HKD_Model*>& GetBrushModelPtrs() {
+    std::vector<HKD_Model*>& GetBrushModelPtrs()
+    {
         return m_pBrushModels;
     }
 
-    bool IsLightmapAvailable() {
+    bool IsLightmapAvailable()
+    {
         return m_LightmapAvailable;
     }
 
-    uint64_t GetLightmapTextureHandle() {
+    uint64_t GetLightmapTextureHandle()
+    {
         return m_hLightmapTexture;
     }
 

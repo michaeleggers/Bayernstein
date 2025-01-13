@@ -24,6 +24,8 @@
 #include "map_parser.h"
 #include "platform.h"
 #include "polysoup.h"
+#include "r_draw.h"
+#include "utils/quick_math.h"
 #include "utils/utils.h"
 
 extern std::string g_GameDir;
@@ -393,6 +395,57 @@ void CWorld::CollideEntities()
                     printf("COLLIDED!\n");
                     Dispatcher->DispatchMessage(
                         SEND_MSG_IMMEDIATELY, pEntity->ID(), pDoor->ID(), message_type::Collision, 0);
+                }
+            }
+        }
+    }
+}
+
+void CWorld::RunEnemyVision()
+{
+    std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
+    double                       dt       = GetDeltaTime();
+
+    // Push Touch: Entity 'bumps' into other entity.
+    for ( int i = 0; i < entities.size(); i++ )
+    {
+        BaseGameEntity* pEntity = entities[ i ];
+
+        if ( pEntity->Type() == ET_ENEMY )
+        {
+            Enemy* pEnemy = (Enemy*)pEntity;
+
+            for ( int j = 0; j < entities.size(); j++ )
+            {
+
+                BaseGameEntity* pOther = entities[ j ];
+                if ( pOther->ID() == pEntity->ID() )
+                { // Don't look at ourselves
+                    continue;
+                }
+
+                EllipsoidCollider* ec = pOther->GetEllipsoidColliderPtr();
+                if ( ec == nullptr )
+                {
+                    continue;
+                }
+
+                glm::vec3 enemyFrustumPosition = pEnemy->m_Position;
+                enemyFrustumPosition.z += pEnemy->GetEllipsoidColliderPtr()->radiusB;
+                glm::mat4 enemyTransform = glm::translate(glm::mat4(1.0f), enemyFrustumPosition);
+                glm::mat4 enemyRotation  = glm::toMat4(pEnemy->m_Orientation);
+                enemyTransform           = enemyTransform * enemyRotation;
+
+                math::Frustum frustumWorld = math::BuildFrustum(
+                    enemyTransform, pEnemy->m_ProjDistance, pEnemy->m_AspectRatio, pEnemy->m_Near, pEnemy->m_Far);
+
+                r_DrawFrustum(frustumWorld, pEnemy);
+
+                if ( EllipsoidInFrustum(frustumWorld, *ec) )
+                {
+                    printf("I SEE YOU!\n");
+                    //Dispatcher->DispatchMessage(
+                    //    SEND_MSG_IMMEDIATELY, pEnemy->ID(), pEnemy->ID(), message_type::Collision, 0);
                 }
             }
         }
