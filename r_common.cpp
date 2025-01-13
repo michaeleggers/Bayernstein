@@ -470,13 +470,23 @@ Sprite CreateSprite(const std::string& textureFilename, const glm::vec2& topLeft
 
 Plane operator*(const glm::mat4& M, const Plane& plane)
 {
-    glm::vec3 n = glm::normalize(plane.normal);
-    float     w = plane.d;
+    glm::vec3 n    = glm::normalize(plane.normal);
+    float     w    = plane.d;
+    glm::vec3 q    = w * n;
+    glm::mat4 invM = glm::inverse(M);
 
-    Plane transformedPlane = Plane(M[ 0 ][ 0 ] * n.x + M[ 0 ][ 1 ] * n.y + M[ 0 ][ 2 ] * n.z,
-                                   M[ 1 ][ 0 ] * n.x + M[ 1 ][ 1 ] * n.y + M[ 1 ][ 2 ] * n.z,
-                                   M[ 2 ][ 0 ] * n.x + M[ 2 ][ 1 ] * n.y + M[ 2 ][ 2 ] * n.z,
-                                   M[ 3 ][ 0 ] * n.x + M[ 3 ][ 1 ] * n.y + M[ 3 ][ 2 ] * n.z + w);
+    Plane     transformedPlane = Plane(invM[ 0 ][ 0 ] * n.x + invM[ 0 ][ 1 ] * n.y + invM[ 0 ][ 2 ] * n.z,
+                                   invM[ 1 ][ 0 ] * n.x + invM[ 1 ][ 1 ] * n.y + invM[ 1 ][ 2 ] * n.z,
+                                   invM[ 2 ][ 0 ] * n.x + invM[ 2 ][ 1 ] * n.y + invM[ 2 ][ 2 ] * n.z,
+                                   0.0f);
+    glm::vec4 transformedQ     = M * glm::vec4(q, 1.0f);
+    transformedPlane.d         = glm::dot(transformedPlane.normal, glm::vec3(transformedQ));
+    //transformedPlane.normal = glm::normalize(transformedPlane.normal);
+
+    //glm::vec3 translation(M[ 3 ][ 0 ], M[ 3 ][ 1 ], M[ 3 ][ 2 ]);
+    //float     transformedD = w - glm::dot(translation, transformedPlane.normal);
+
+    //transformedPlane.d = 0.0f;
 
     return Plane(transformedPlane);
 

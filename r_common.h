@@ -183,7 +183,7 @@ struct Plane
 
     Plane(float x, float y, float z, float w)
     {
-        normal = glm::vec3(x, y, z);
+        normal = glm::normalize(glm::vec3(x, y, z));
         d      = w;
     }
 

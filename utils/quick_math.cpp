@@ -96,7 +96,7 @@ Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
     frustum.vertices[ 7 ] = { Mcam * glm::vec4(-x, f, z, 1.0f) };
 
     // Create the frustum's planes
-    glm::mat4 toWorldSpace = glm::inverse(Mcam);
+    glm::mat4 toWorldSpace = (Mcam);
 
     float mx = 1.0f / glm::sqrt(g * g + s * s);
     float my = 1.0f / glm::sqrt(g * g + 1.0f);
@@ -114,9 +114,10 @@ Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
     frustum.planes[ 3 ] = toWorldSpace * Plane(glm::vec3(0.0f, my, g * my), 0.0f);      // bottom
 
     // Near and Far planes
-    float d             = glm::dot(Mcam[ 1 ], Mcam[ 3 ]);
-    frustum.planes[ 4 ] = Plane(Mcam[ 1 ], -(d + n));
-    frustum.planes[ 5 ] = Plane(-Mcam[ 1 ], d + f);
+    glm::mat4 invM      = glm::inverse(Mcam);
+    float     d         = glm::dot(Mcam[ 1 ], Mcam[ 3 ]);
+    frustum.planes[ 4 ] = Plane(Mcam[ 1 ], (d + n));
+    frustum.planes[ 5 ] = Plane(-Mcam[ 1 ], -(d + f));
 
     return frustum;
 }

@@ -292,7 +292,7 @@ bool Game::RunFrame(double dt)
         //renderer->SetActiveCamera(&m_FollowCamera);
         //renderer->DrawWorldTris();
 
-        DrawCoordinateSystem(renderer);
+        //DrawCoordinateSystem(renderer);
 
 #if 1 // debug paths
         for ( int i = 0; i < m_World->m_Paths.size(); i++ )
