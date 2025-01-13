@@ -478,7 +478,7 @@ Plane operator*(const glm::mat4& M, const Plane& plane)
     Plane     transformedPlane = Plane(invM[ 0 ][ 0 ] * n.x + invM[ 0 ][ 1 ] * n.y + invM[ 0 ][ 2 ] * n.z,
                                    invM[ 1 ][ 0 ] * n.x + invM[ 1 ][ 1 ] * n.y + invM[ 1 ][ 2 ] * n.z,
                                    invM[ 2 ][ 0 ] * n.x + invM[ 2 ][ 1 ] * n.y + invM[ 2 ][ 2 ] * n.z,
-                                   0.0f);
+                                   invM[ 3 ][ 0 ] * n.x + invM[ 3 ][ 1 ] * n.y + invM[ 3 ][ 2 ] * n.z + w);
     glm::vec4 transformedQ     = M * glm::vec4(q, 1.0f);
     transformedPlane.d         = glm::dot(transformedPlane.normal, glm::vec3(transformedQ));
     //transformedPlane.normal = glm::normalize(transformedPlane.normal);

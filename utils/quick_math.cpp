@@ -111,11 +111,10 @@ Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
     frustum.planes[ 0 ] = toWorldSpace * Plane(glm::vec3(-g * mx, s * mx, 0.0f), 0.0f); // right
     frustum.planes[ 1 ] = toWorldSpace * Plane(glm::vec3(0.0f, my, -g * my), 0.0f);     //top
     frustum.planes[ 2 ] = toWorldSpace * Plane(glm::vec3(g * mx, s * mx, 0.0f), 0.0f);  // left
-    frustum.planes[ 3 ] = toWorldSpace * Plane(glm::vec3(0.0f, my, g * my), 0.0f);      // bottom
+    frustum.planes[ 3 ] = toWorldSpace * Plane(glm::vec3(0.0f, my, g * my), 1.0f);      // bottom
 
     // Near and Far planes
-    glm::mat4 invM      = glm::inverse(Mcam);
-    float     d         = glm::dot(Mcam[ 1 ], Mcam[ 3 ]);
+    float d             = glm::dot(Mcam[ 1 ], Mcam[ 3 ]);
     frustum.planes[ 4 ] = Plane(Mcam[ 1 ], (d + n));
     frustum.planes[ 5 ] = Plane(-Mcam[ 1 ], -(d + f));
 
@@ -124,14 +123,27 @@ Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
 
 bool EllipsoidInFrustum(const Frustum& frustum, const EllipsoidCollider& ec)
 {
-    for ( int i = 0; i < 6; i++ )
+    for ( int i = 0; i < 1; i++ )
     {
-        const Plane& p    = frustum.planes[ i ];
-        glm::vec3    n    = glm::normalize(p.normal);
-        glm::vec3    q    = p.d * n;
-        glm::vec3    c    = ec.center;
-        glm::vec3    qToC = c - q;
-        float        sD   = glm::dot(n, qToC);
+        const Plane& p              = frustum.planes[ i ];
+        glm::vec3    ellipsoidScale = glm::vec3(ec.radiusA, ec.radiusA, ec.radiusB);
+
+        glm::vec3 n = glm::normalize(p.normal);
+        glm::vec3 q = (p.d * p.normal);
+
+        glm::vec3 nESpace = glm::normalize(glm::inverse(ec.toESpace) * n);
+        glm::vec3 qESpace = ec.toESpace * q;
+        float     espaceD = glm::dot(nESpace, qESpace);
+        //qESpace           = espaceD * nESpace;
+
+        glm::vec3 cESpace = ec.toESpace * ec.center;
+        glm::vec3 qToC    = cESpace - qESpace;
+
+        //printf("qToC dot n: %f\n", glm::dot(qToC, n));
+        float sD = glm::dot(nESpace, qToC);
+        //sD       = glm::dot(n, ec.center);
+
+        printf("sD: %f\n", sD);
         if ( sD <= -1.0f )
         {
             return false;

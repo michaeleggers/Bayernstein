@@ -54,7 +54,7 @@ void CWorld::InitWorld(const std::string& mapName)
     m_Gravity = glm::vec3(0.0f, 0.0f, -200.0f);
 
     // Convert to tris
-
+    
     // Check if a lightmap is available
     m_LightmapAvailable = false;
     HKD_File    plyFile;

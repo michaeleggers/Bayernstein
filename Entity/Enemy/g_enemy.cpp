@@ -47,9 +47,9 @@ Enemy::Enemy(const std::vector<Property>& properties)
     m_ProjDistance = 5.0f;
     m_AspectRatio  = 3.35f;
     m_Near         = 0.1f;
-    m_Far          = 250.0f;
+    m_Far          = 500.0f;
 
-    m_Orientation = glm::angleAxis(glm::radians(60.0f), DOD_WORLD_UP);
+    m_Orientation = glm::angleAxis(glm::radians(180.0f), DOD_WORLD_UP);
     m_Forward     = glm::rotate(m_Orientation, DOD_WORLD_FORWARD);
 
     m_SfxFootsteps
