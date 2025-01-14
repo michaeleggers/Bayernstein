@@ -10,6 +10,6 @@
 #include "r_common.h"
 #include "utils/quick_math.h"
 
-void r_DrawFrustum(const math::Frustum& frustum, const Enemy* enemy);
+void r_DrawFrustum(const math::Frustum& frustum);
 
 #endif

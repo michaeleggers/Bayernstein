@@ -468,6 +468,12 @@ Sprite CreateSprite(const std::string& textureFilename, const glm::vec2& topLeft
     return sprite;
 }
 
+// TODO: According to Lengyel one can use the adjugate matrix
+// to transform a plane but this didn't work for me. So I
+// instead transformed the normal like I would for lighting
+// and recalculate the new location (distance) of the plane.
+// This works well but I want to know why Lengyel's approach
+// doesn't work.
 Plane operator*(const glm::mat4& M, const Plane& plane)
 {
     glm::vec3 n    = glm::normalize(plane.normal);
@@ -475,34 +481,14 @@ Plane operator*(const glm::mat4& M, const Plane& plane)
     glm::vec3 q    = w * n;
     glm::mat4 invM = glm::inverse(M);
 
+    // Transform normal with inverted matrix (same reason as transforming normals for lighting.)
+    // TODO: Figure out why the transpose is not needed.
     Plane     transformedPlane = Plane(invM[ 0 ][ 0 ] * n.x + invM[ 0 ][ 1 ] * n.y + invM[ 0 ][ 2 ] * n.z,
                                    invM[ 1 ][ 0 ] * n.x + invM[ 1 ][ 1 ] * n.y + invM[ 1 ][ 2 ] * n.z,
                                    invM[ 2 ][ 0 ] * n.x + invM[ 2 ][ 1 ] * n.y + invM[ 2 ][ 2 ] * n.z,
                                    invM[ 3 ][ 0 ] * n.x + invM[ 3 ][ 1 ] * n.y + invM[ 3 ][ 2 ] * n.z + w);
     glm::vec4 transformedQ     = M * glm::vec4(q, 1.0f);
     transformedPlane.d         = glm::dot(transformedPlane.normal, glm::vec3(transformedQ));
-    //transformedPlane.normal = glm::normalize(transformedPlane.normal);
-
-    //glm::vec3 translation(M[ 3 ][ 0 ], M[ 3 ][ 1 ], M[ 3 ][ 2 ]);
-    //float     transformedD = w - glm::dot(translation, transformedPlane.normal);
-
-    //transformedPlane.d = 0.0f;
 
     return Plane(transformedPlane);
-
-    /*
-    glm::vec3 n = glm::normalize(plane.normal); // Ensure the input normal is normalized
-    float     w = plane.d;
-
-    // Transform the normal using the transpose of the inverse of M
-    glm::mat3 inverseTranspose  = glm::transpose(glm::inverse(glm::mat3(M)));
-    glm::vec3 transformedNormal = glm::normalize(inverseTranspose * n);
-
-    // Extract the translation from the matrix
-    glm::vec3 translation(M[ 3 ][ 0 ], M[ 3 ][ 1 ], M[ 3 ][ 2 ]);
-
-    // Compute the new distance
-    float transformedD = w - glm::dot(translation, transformedNormal);
-    return Plane(transformedNormal, transformedD);
-*/
 }

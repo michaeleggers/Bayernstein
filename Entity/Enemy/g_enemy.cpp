@@ -49,7 +49,7 @@ Enemy::Enemy(const std::vector<Property>& properties)
     m_Near         = 0.1f;
     m_Far          = 500.0f;
 
-    m_Orientation = glm::angleAxis(glm::radians(180.0f), DOD_WORLD_UP);
+    m_Orientation = glm::angleAxis(glm::radians(80.0f), DOD_WORLD_UP);
     m_Forward     = glm::rotate(m_Orientation, DOD_WORLD_FORWARD);
 
     m_SfxFootsteps

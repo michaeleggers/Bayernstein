@@ -439,7 +439,7 @@ void CWorld::RunEnemyVision()
                 math::Frustum frustumWorld = math::BuildFrustum(
                     enemyTransform, pEnemy->m_ProjDistance, pEnemy->m_AspectRatio, pEnemy->m_Near, pEnemy->m_Far);
 
-                r_DrawFrustum(frustumWorld, pEnemy);
+                r_DrawFrustum(frustumWorld);
 
                 if ( math::EllipsoidInFrustum(frustumWorld, *ec) )
                 {

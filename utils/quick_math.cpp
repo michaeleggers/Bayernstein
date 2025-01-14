@@ -71,6 +71,10 @@ bool InSegmentRange(glm::vec3 point, glm::vec3 start, glm::vec3 end)
 }
 
 // Mcam: transform of camera in object space to worldspace.
+// g = projection distance
+// s = aspect ratio
+// n = near plane
+// f = far plane
 Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
 {
     Frustum frustum{};
@@ -96,7 +100,7 @@ Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
     frustum.vertices[ 7 ] = { Mcam * glm::vec4(-x, f, z, 1.0f) };
 
     // Create the frustum's planes
-    glm::mat4 toWorldSpace = (Mcam);
+    glm::mat4 toWorldSpace = Mcam;
 
     float mx = 1.0f / glm::sqrt(g * g + s * s);
     float my = 1.0f / glm::sqrt(g * g + 1.0f);
@@ -111,9 +115,10 @@ Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
     frustum.planes[ 0 ] = toWorldSpace * Plane(glm::vec3(-g * mx, s * mx, 0.0f), 0.0f); // right
     frustum.planes[ 1 ] = toWorldSpace * Plane(glm::vec3(0.0f, my, -g * my), 0.0f);     //top
     frustum.planes[ 2 ] = toWorldSpace * Plane(glm::vec3(g * mx, s * mx, 0.0f), 0.0f);  // left
-    frustum.planes[ 3 ] = toWorldSpace * Plane(glm::vec3(0.0f, my, g * my), 1.0f);      // bottom
+    frustum.planes[ 3 ] = toWorldSpace * Plane(glm::vec3(0.0f, my, g * my), 0.0f);      // bottom
 
-    // Near and Far planes
+    // Near and Far planes (Also implemented after Lengyel's book but transferred
+    // to match our coordinate system).
     float d             = glm::dot(Mcam[ 1 ], Mcam[ 3 ]);
     frustum.planes[ 4 ] = Plane(Mcam[ 1 ], (d + n));
     frustum.planes[ 5 ] = Plane(-Mcam[ 1 ], -(d + f));
@@ -125,28 +130,17 @@ bool EllipsoidInFrustum(const Frustum& frustum, const EllipsoidCollider& ec)
 {
     for ( int i = 0; i < 6; i++ )
     {
-        const Plane& p              = frustum.planes[ i ];
-        glm::vec3    ellipsoidScale = glm::vec3(ec.radiusA, ec.radiusA, ec.radiusB);
+        const Plane& p = frustum.planes[ i ];
 
         glm::vec3 n = glm::normalize(p.normal);
-        glm::vec3 q = (p.d * p.normal);
+        glm::vec3 q = (p.d * p.normal); // point on plane
 
-        glm::vec3 nESpace = glm::normalize(glm::inverse(ec.toESpace) * n);
+        glm::vec3 nESpace = glm::normalize(glm::transpose(glm::inverse(ec.toESpace)) * n);
         glm::vec3 qESpace = ec.toESpace * q;
-        float     espaceD = glm::dot(nESpace, qESpace);
-        //qESpace           = espaceD * nESpace;
-
         glm::vec3 cESpace = ec.toESpace * ec.center;
         glm::vec3 qToC    = cESpace - qESpace;
 
-        //printf("qToC dot n: %f\n", glm::dot(qToC, n));
         float sD = glm::dot(nESpace, qToC);
-        //sD       = glm::dot(n, ec.center);
-
-        if ( i == 3 )
-        {
-            printf("sD: %f\n", sD);
-        }
         if ( sD < -1.0f )
         {
             return false;

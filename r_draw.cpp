@@ -10,48 +10,55 @@
 #include "r_common.h"
 #include "utils/quick_math.h"
 
-void r_DrawFrustum(const math::Frustum& frustum, const Enemy* enemy)
+void r_DrawFrustum(const math::Frustum& frustum)
 {
     IRender* renderer = GetRenderer();
 
+    // Normals
     Line frustumNormalA // right
-        = { Vertex(frustum.planes[ 0 ].d * frustum.planes[ 0 ].normal),
-            Vertex(frustum.planes[ 0 ].d * frustum.planes[ 0 ].normal + 50.0f * frustum.planes[ 0 ].normal) };
+        = { Vertex(frustum.vertices[ 4 ].pos), Vertex(frustum.vertices[ 4 ].pos + 50.0f * frustum.planes[ 0 ].normal) };
     frustumNormalA.a.color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
     frustumNormalA.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     renderer->ImDrawLines(frustumNormalA.vertices, 2, false);
 
+    /*
+     * NOTE: This code would draw the normal at its actual computed plane. Sometimes
+     * usefule for debugging if the normal is correct but the plane's location is not.
+     *
     Line frustumNormalB // top
         = { Vertex(frustum.planes[ 1 ].d * frustum.planes[ 1 ].normal),
             Vertex(frustum.planes[ 1 ].d * frustum.planes[ 1 ].normal + 50.0f * frustum.planes[ 1 ].normal) };
     frustumNormalB.a.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
     frustumNormalB.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     renderer->ImDrawLines(frustumNormalB.vertices, 2, false);
+    */
+
+    Line frustumNormalB // top
+        = { Vertex(frustum.vertices[ 4 ].pos), Vertex(frustum.vertices[ 4 ].pos + 50.0f * frustum.planes[ 1 ].normal) };
+    frustumNormalB.a.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    frustumNormalB.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    renderer->ImDrawLines(frustumNormalB.vertices, 2, false);
 
     Line frustumNormalC // left
-        = { Vertex(frustum.planes[ 2 ].d * frustum.planes[ 2 ].normal),
-            Vertex(frustum.planes[ 2 ].d * frustum.planes[ 2 ].normal + 50.0f * frustum.planes[ 2 ].normal) };
+        = { Vertex(frustum.vertices[ 7 ].pos), Vertex(frustum.vertices[ 7 ].pos + 50.0f * frustum.planes[ 2 ].normal) };
     frustumNormalC.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
     frustumNormalC.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     renderer->ImDrawLines(frustumNormalC.vertices, 2, false);
 
-    Line frustumNormalD
-        = { Vertex(frustum.planes[ 3 ].d * frustum.planes[ 3 ].normal),
-            Vertex(frustum.planes[ 3 ].d * frustum.planes[ 3 ].normal + 50.0f * frustum.planes[ 3 ].normal) };
+    Line frustumNormalD // bottom
+        = { Vertex(frustum.vertices[ 6 ].pos), Vertex(frustum.vertices[ 6 ].pos + 50.0f * frustum.planes[ 3 ].normal) };
     frustumNormalD.a.color = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
     frustumNormalD.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     renderer->ImDrawLines(frustumNormalD.vertices, 2, false);
 
-    Line frustumNormalE
-        = { Vertex(frustum.planes[ 4 ].d * frustum.planes[ 4 ].normal),
-            Vertex(frustum.planes[ 4 ].d * frustum.planes[ 4 ].normal + 50.0f * frustum.planes[ 4 ].normal) };
+    Line frustumNormalE // near
+        = { Vertex(frustum.vertices[ 0 ].pos), Vertex(frustum.vertices[ 0 ].pos + 50.0f * frustum.planes[ 4 ].normal) };
     frustumNormalE.a.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
     frustumNormalE.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     renderer->ImDrawLines(frustumNormalE.vertices, 2, false);
 
-    Line frustumNormalF
-        = { Vertex(frustum.planes[ 5 ].d * frustum.planes[ 5 ].normal),
-            Vertex(frustum.planes[ 5 ].d * frustum.planes[ 5 ].normal + 50.0f * frustum.planes[ 5 ].normal) };
+    Line frustumNormalF // far
+        = { Vertex(frustum.vertices[ 4 ].pos), Vertex(frustum.vertices[ 4 ].pos + 50.0f * frustum.planes[ 5 ].normal) };
     frustumNormalF.a.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
     frustumNormalF.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     renderer->ImDrawLines(frustumNormalF.vertices, 2, false);
@@ -67,17 +74,4 @@ void r_DrawFrustum(const math::Frustum& frustum, const Enemy* enemy)
     renderer->ImDrawLines(frustumSideD.vertices, 2, false);
     renderer->ImDrawLines(frustum.vertices, 4, true);
     renderer->ImDrawLines(frustum.vertices + 4, 4, true);
-
-    // Plane normals
-    float t = 100.0f;
-    for ( int i = 0; i < 6; i++ )
-    {
-        const Plane& p           = frustum.planes[ i ];
-        glm::vec3    normalStart = enemy->m_Position + p.d * p.normal;
-        glm::vec3    normalEnd   = normalStart + (t * p.normal);
-        Line         normalLine  = { Vertex(normalStart), Vertex(normalEnd) };
-        normalLine.a.color       = glm::vec4(0.6f, 0.6f, 0.6f, 1.0f);
-        normalLine.b.color       = glm::vec4(1.0f);
-        //renderer->ImDrawLines(normalLine.vertices, 2, false);
-    }
 }
