@@ -62,20 +62,6 @@ class Frame:
         # As right now its assumed that all triangles within a frame are coplanar we can just pick the normal of any triangle
         self.frame_normal = self.triangles[0].normal
 
-        # Check the frame's aspect ratio, if width is greater than height rotate the frame. 
-        # Having all frames rotated with their larger side as height allows for a more efficient uv mapping later on
-        if frame_width > frame_height:
-            # Rotate the bounding box (flip width and height)
-            self.bounding_box_unpadded = (self.bounding_box_unpadded[0], self.bounding_box_unpadded[1], frame_height, frame_width)
-            
-            # Rotate the projected triangles (flip x and y)
-            self.projected_triangles = [[[v[1], v[0]] for v in triangle] for triangle in self.projected_triangles]
-
-            # Flip X and Y axes in the projection matrix by swapping rows 0 and 1
-            flipped_projection_matrix = self.projection_matrix.copy()
-            flipped_projection_matrix[[0, 1], :] = flipped_projection_matrix[[1, 0], :]
-            self.projection_matrix = flipped_projection_matrix
-        
         # Add padding to the bounding box to ensure no light leakage between neighbouring frames
         self.bounding_box = (
             self.bounding_box_unpadded[0] - self.patch_ws_size, 

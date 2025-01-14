@@ -79,10 +79,10 @@ def create_uv_mapping(frames: List[Frame], triangles: List[Triangle], patch_reso
         for i, projected in enumerate(packed_frame.projected_triangles):
             uvs = []
             lm_uvs_bbox_space = []
-            for v in projected:
+            for vertex in projected:
                 # Normalize within the bounding box and map to UV space
-                u = v[0] / width  # Normalize within the bounding box width
-                v = v[1] / height  # Normalize within the bounding box height
+                u = vertex[0] / width  # Normalize within the bounding box width
+                v = vertex[1] / height  # Normalize within the bounding box height
                 # Map to UV space
                 uvs.append((min_u + (u * bbox_uv_width), min_v + (v * bbox_uv_height)))
                 lm_uvs_bbox_space.append((u, v))
@@ -93,6 +93,7 @@ def create_uv_mapping(frames: List[Frame], triangles: List[Triangle], patch_reso
 
     if debug:
         __debug_uv_mapping(triangles, uv_coordinates, image_size=lightmap_resolution)
+        __debug_frame_placement(packed_frames, map_world_size, image_size=lightmap_resolution)
 
     return packed_frames, uv_coordinates, map_world_size
 
@@ -158,3 +159,46 @@ def __debug_uv_mapping(triangles, uvs, image_size=148):
 
     # Save the image
     image.save(debug_path / "debug_uv_maps.png")
+
+
+def __debug_frame_placement(frames: List[Frame], map_world_size, image_size=148):
+    """ Projects shapes onto an image based on their bbox and colors them in. """
+
+    def generate_random_color():
+        """Generate a random RGB color."""
+        return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
+    
+    def fill_bbox(image, bbox, color):
+        """Draw a triangle onto the image."""
+        draw = ImageDraw.Draw(image)
+        
+        # Loop through the bounding box and draw the triangle
+        count = 0
+        for x in range(bbox[0], bbox[0] + bbox[2]):
+            for y in range(bbox[1], bbox[1] + bbox[3]):
+                count += 1
+                draw.point((x, y), fill=color)
+        return image, count
+
+    # Create a blank image
+    image = Image.new("RGB", (image_size, image_size), (255, 255, 255))
+
+    for i, frame in enumerate(frames):
+        color = generate_random_color()
+
+        bbox = frame.bounding_box
+        uv_bounding_box = [bbox[0] / map_world_size, bbox[1] / map_world_size, bbox[2] / map_world_size, bbox[3] / map_world_size]
+        pixel_bounding_box = [int(uv_bounding_box[0] * image_size), int(uv_bounding_box[1] * image_size), int(uv_bounding_box[2] * image_size), int(uv_bounding_box[3] * image_size)]
+
+        # Fill the triangle in the image
+        _, count = fill_bbox(image, pixel_bounding_box, color)
+
+    # Define the path for the debug folder relative to the current script's location
+    debug_path = Path(__file__).resolve().parent / "debug" 
+
+    # Ensure the debug directory exists
+    debug_path.mkdir(parents=True, exist_ok=True)
+
+    # Save the image
+    image.save(debug_path / "debug_uv_maps_frames.png")
