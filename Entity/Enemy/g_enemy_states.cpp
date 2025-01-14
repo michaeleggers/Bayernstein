@@ -255,6 +255,8 @@ EnemyFollow* EnemyFollow::Instance()
 void EnemyFollow::Enter(Enemy* pEnemy)
 {
     printf("Enemy entered Follow State\n");
+    pEnemy->m_pSteeringBehaviour->SetTargetAgent(pEnemy->m_pTargetEntity);
+    pEnemy->m_pSteeringBehaviour->SeekOn();
     // pEnemy->m_pSteeringBehaviour->FollowWaypointsOn();
     //pEnemy->m_pSteeringBehaviour->FollowPathOn();
 }

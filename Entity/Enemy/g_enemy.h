@@ -104,14 +104,14 @@ class Enemy : public MovingEntity
     HKD_Model   m_Model;
     PatrolPath* m_pPath;
 
+    BaseGameEntity* m_pTargetEntity;
+
   private:
     StateMachine<Enemy>* m_pStateMachine;
     double               m_Health = 100;
 
     SoLoud::AudioSource* m_SfxFootsteps;
     SoLoud::handle       m_FootstepsHandle = 0;
-
-    BaseGameEntity* m_pTargetEntity;
 
   private:
     AnimState m_AnimationState;
