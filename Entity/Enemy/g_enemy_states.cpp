@@ -64,6 +64,19 @@ bool EnemyIdle::OnMessage(Enemy* agent, const Telegram& telegram)
     }
     break;
 
+    case message_type::SetPatrol:
+    {
+
+        if ( agent->m_pPath != nullptr && !agent->m_Target.empty() )
+        {
+
+            agent->GetFSM()->ChangeState(EnemyPatrol::Instance());
+            return true;
+        }
+        return false;
+    }
+    break;
+
     default:
     {
         return false;
@@ -208,7 +221,7 @@ void EnemyPatrol::Exit(Enemy* pEnemy)
 
 bool EnemyPatrol::OnMessage(Enemy* agent, const Telegram& telegram)
 {
-    printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
+    //printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
     switch ( telegram.Message )
     {
     case message_type::EntityInView:

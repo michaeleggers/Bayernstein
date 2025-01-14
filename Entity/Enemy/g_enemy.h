@@ -100,16 +100,16 @@ class Enemy : public MovingEntity
     float m_Near;
     float m_Far;
 
+    // FIX: Those should be components for next milestone.
+    HKD_Model   m_Model;
+    PatrolPath* m_pPath;
+
   private:
     StateMachine<Enemy>* m_pStateMachine;
     double               m_Health = 100;
 
     SoLoud::AudioSource* m_SfxFootsteps;
     SoLoud::handle       m_FootstepsHandle = 0;
-
-    // FIX: Those should be components for next milestone.
-    HKD_Model   m_Model;
-    PatrolPath* m_pPath;
 
     BaseGameEntity* m_pTargetEntity;
 

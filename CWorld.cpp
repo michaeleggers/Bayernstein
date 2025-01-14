@@ -219,6 +219,8 @@ void CWorld::InitWorld(const std::string& mapName)
                             pPathCopy->SetCurrentWaypoint(enemy->m_Target);
                             pPathCopy->SetNextWaypoint(point.target);
                             enemy->SetPatrolPath(pPathCopy);
+                            Dispatcher->DispatchMessage(
+                                SEND_MSG_IMMEDIATELY, enemy->ID(), enemy->ID(), message_type::SetPatrol, 0);
                         }
                     }
                 }

@@ -240,12 +240,22 @@ bool Game::RunFrame(double dt)
     // ImGUI stuff goes into GL default FBO
 
     // ImGui::ShowDemoWindow();
+    static bool enableDebugSettings = false;
+    static int  steering            = 0;
     ImGui::Begin("DebugSettings");
-    static int steering = 0;
-    ImGui::RadioButton("enemy::patrol", &steering, 0);
-    ImGui::RadioButton("enemy::wander", &steering, 1);
-    GetDebugSettings()->patrol = steering == 0;
-    GetDebugSettings()->wander = steering == 1;
+    ImGui::Checkbox("Enable debug settings", (bool*)&enableDebugSettings);
+    if ( enableDebugSettings )
+    {
+        ImGui::RadioButton("enemy::patrol", &steering, 0);
+        ImGui::RadioButton("enemy::wander", &steering, 1);
+        GetDebugSettings()->patrol = steering == 0;
+        GetDebugSettings()->wander = steering == 1;
+    }
+    else
+    {
+        GetDebugSettings()->patrol = false;
+        GetDebugSettings()->wander = false;
+    }
     ImGui::End();
 
     ImGui::Begin("Statistics");

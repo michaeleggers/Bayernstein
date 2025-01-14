@@ -120,6 +120,7 @@ void Enemy::PostCollisionUpdate()
     SetAnimState(&m_Model, m_AnimationState);
     UpdateModel(&m_Model, (float)dt);
 
+    /*
     if ( GetDebugSettings()->patrol )
     {
         if ( m_pPath != nullptr && !m_Target.empty() )
@@ -135,6 +136,7 @@ void Enemy::PostCollisionUpdate()
     {
         this->Idle();
     }
+    */
 }
 
 void Enemy::LoadModel(const char* path, glm::vec3 initialPosition)
