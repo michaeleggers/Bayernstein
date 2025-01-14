@@ -18,6 +18,7 @@
 #include "Audio/Audio.h"
 #include "Entity/FirstPersonPlayer/g_fp_player.h"
 #include "Entity/base_game_entity.h"
+#include "Message/g_extra_info_types.h"
 #include "Message/message_type.h"
 #include "hkd_interface.h"
 #include "irender.h"
@@ -443,8 +444,9 @@ void CWorld::RunEnemyVision()
 
                 if ( math::EllipsoidInFrustum(frustumWorld, *ec) )
                 {
-                    //Dispatcher->DispatchMessage(
-                    //    SEND_MSG_IMMEDIATELY, pEnemy->ID(), pEnemy->ID(), message_type::Collision, 0);
+                    InViewInfo inViewInfo = { pOther };
+                    Dispatcher->DispatchMessage(
+                        SEND_MSG_IMMEDIATELY, pEnemy->ID(), pEnemy->ID(), message_type::EntityInView, &inViewInfo);
                 }
             }
         }

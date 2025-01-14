@@ -3,6 +3,7 @@
 //
 
 #include "g_enemy_states.h"
+#include "../../Message/g_extra_info_types.h"
 #include "../../Message/message_type.h"
 #include "g_enemy.h"
 #include <stdio.h>
@@ -207,5 +208,64 @@ void EnemyPatrol::Exit(Enemy* pEnemy)
 
 bool EnemyPatrol::OnMessage(Enemy* agent, const Telegram& telegram)
 {
+    printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
+    switch ( telegram.Message )
+    {
+    case message_type::EntityInView:
+    {
+        //agent->DecreaseHealth(*(double*)telegram.ExtraInfo);
+        InViewInfo inViewInfo = DereferenceToType<InViewInfo>(telegram.ExtraInfo);
+        agent->SetTarget(inViewInfo.pOther);
+        agent->GetFSM()->ChangeState(EnemyFollow::Instance());
+
+        return true;
+    }
+    default:
+        return false;
+    }
+
+    return false;
+}
+
+// ---------------------------------
+//
+// Follow state
+//
+// ---------------------------------
+EnemyFollow* EnemyFollow::Instance()
+{
+    static EnemyFollow instance;
+
+    return &instance;
+}
+
+void EnemyFollow::Enter(Enemy* pEnemy)
+{
+    printf("Enemy entered Follow State\n");
+    // pEnemy->m_pSteeringBehaviour->FollowWaypointsOn();
+    //pEnemy->m_pSteeringBehaviour->FollowPathOn();
+}
+
+void EnemyFollow::Execute(Enemy* pEnemy)
+{
+    //printf("Enemy is executing Patrol State\n");
+}
+
+void EnemyFollow::Exit(Enemy* pEnemy)
+{
+    printf("Player is exiting Follow State\n");
+    //pEnemy->m_pSteeringBehaviour->FollowPathOff();
+    //pEnemy->m_pSteeringBehaviour->FollowWaypointsOff();
+}
+
+bool EnemyFollow::OnMessage(Enemy* agent, const Telegram& telegram)
+{
+    //printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
+    switch ( telegram.Message )
+    {
+    default:
+        return false;
+    }
+
     return false;
 }

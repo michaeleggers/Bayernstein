@@ -11,7 +11,8 @@ enum message_type
 {
     Attack,
     Collision,
-    RayHit
+    RayHit,
+    EntityInView
 };
 
 inline std::string MessageToString(int message)
@@ -31,6 +32,11 @@ inline std::string MessageToString(int message)
     case 2:
     {
         return "RayHit";
+    }
+    break;
+    case 3:
+    {
+        return "EntityInView";
     }
     break;
 

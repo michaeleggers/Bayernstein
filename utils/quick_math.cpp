@@ -147,8 +147,6 @@ bool EllipsoidInFrustum(const Frustum& frustum, const EllipsoidCollider& ec)
         }
     }
 
-    printf("Ellipsoid in frustum!\n");
-
     return true;
 }
 

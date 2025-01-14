@@ -77,6 +77,11 @@ class Enemy : public MovingEntity
         m_pSteeringBehaviour->SetFollowPath(m_pPath);
     }
 
+    void SetTarget(BaseGameEntity* pEntity)
+    {
+        m_pTargetEntity = pEntity;
+    }
+
   public:
     bool DecreaseHealth(double amount)
     {
@@ -105,6 +110,8 @@ class Enemy : public MovingEntity
     // FIX: Those should be components for next milestone.
     HKD_Model   m_Model;
     PatrolPath* m_pPath;
+
+    BaseGameEntity* m_pTargetEntity;
 
   private:
     AnimState m_AnimationState;
