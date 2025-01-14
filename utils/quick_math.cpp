@@ -123,7 +123,7 @@ Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
 
 bool EllipsoidInFrustum(const Frustum& frustum, const EllipsoidCollider& ec)
 {
-    for ( int i = 0; i < 1; i++ )
+    for ( int i = 0; i < 6; i++ )
     {
         const Plane& p              = frustum.planes[ i ];
         glm::vec3    ellipsoidScale = glm::vec3(ec.radiusA, ec.radiusA, ec.radiusB);
@@ -143,8 +143,11 @@ bool EllipsoidInFrustum(const Frustum& frustum, const EllipsoidCollider& ec)
         float sD = glm::dot(nESpace, qToC);
         //sD       = glm::dot(n, ec.center);
 
-        printf("sD: %f\n", sD);
-        if ( sD <= -1.0f )
+        if ( i == 3 )
+        {
+            printf("sD: %f\n", sD);
+        }
+        if ( sD < -1.0f )
         {
             return false;
         }
