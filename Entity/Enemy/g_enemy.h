@@ -68,7 +68,7 @@ class Enemy : public MovingEntity
         assert(m_pPath != nullptr && !m_Target.empty() && "Enemy has no path or target!");
         m_pStateMachine->ChangeState(EnemyPatrol::Instance());
     }
-d
+
     void SetPatrolPath(PatrolPath* path)
     {
         m_pPath = path;

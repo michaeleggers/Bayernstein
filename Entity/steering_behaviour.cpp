@@ -129,6 +129,8 @@ glm::vec3 SteeringBehaviour::Seek(glm::vec3 targetPosition)
     //
     //return (desiredVelocity - m_pEntity->m_Velocity);
 
+    desiredVelocity.z = 0.0f;
+
     return desiredVelocity;
 }
 
