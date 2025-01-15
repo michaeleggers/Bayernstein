@@ -24,8 +24,8 @@ class MovingEntity : public BaseGameEntity
           m_Side(DOD_WORLD_RIGHT),
           m_Up(DOD_WORLD_UP),
           m_Mass(1.0f),
-          m_MaxSpeed(350.0f),
-          m_MaxForce(200.5f),
+          m_MaxSpeed(250.0f),
+          m_MaxForce(500.5f),
           m_MaxTurnRate(1.0f) {};
 
     virtual ~MovingEntity() = default;

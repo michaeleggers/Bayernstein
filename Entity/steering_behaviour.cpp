@@ -77,6 +77,7 @@ glm::vec3 SteeringBehaviour::CalculateWeightedSum()
         }
     }
     return math::TruncateVec3(m_SteeringForce, m_pEntity->m_MaxForce);
+    //return m_SteeringFoce;
 }
 
 //------------------------------- None -----------------------------------
@@ -224,7 +225,7 @@ glm::vec3 SteeringBehaviour::FollowPath(PatrolPath* path)
     }
 
     // HACK: Directly go to the next waypoint.
-    glm::vec3 force = 0.3f * Seek(segmentStart);
+    glm::vec3 force = 0.2f * Seek(segmentStart);
     force.z         = 0.0f;
     return force;
 }
