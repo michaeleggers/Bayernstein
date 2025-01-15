@@ -897,3 +897,88 @@ def project_vector_onto_plane(vector: Vector3f, plane_normal: Vector3f) -> Vecto
     return projected_vector
 
 
+
+def sobel_filter_rgb(image: np.ndarray) -> np.ndarray:
+    """
+    Apply the Sobel filter to an RGB image (3D array) to compute the gradient magnitude.
+
+    Parameters:
+        image (np.ndarray): A 3D array (height x width x 3) representing an RGB image.
+
+    Returns:
+        np.ndarray: A 2D array (height x width) representing the gradient magnitude.
+    """
+    # Initialize the gradient magnitude array
+    gradient_magnitude = np.zeros(image.shape[:2], dtype=np.float32)
+
+    # Apply Sobel filter to each channel and combine the gradients
+    for channel in range(3):  # Process R, G, and B channels
+        channel_gradient = sobel_filter(image[:, :, channel])
+        gradient_magnitude += channel_gradient**2
+
+    # Compute the final gradient magnitude
+    gradient_magnitude = np.sqrt(gradient_magnitude)
+
+    return gradient_magnitude
+
+def sobel_filter(image: np.ndarray) -> np.ndarray:
+    """
+    Apply the Sobel filter to a 2D array to compute the gradient magnitude.
+
+    Parameters:
+        image (np.ndarray): A 2D array (grayscale image) to compute the gradient.
+
+    Returns:
+        np.ndarray: The gradient magnitude of the input image.
+    """
+    # Sobel kernels for x and y directions
+    sobel_x = np.array([[1, 0, -1],
+                        [2, 0, -2],
+                        [1, 0, -1]])
+
+    sobel_y = np.array([[1, 2, 1],
+                        [0, 0, 0],
+                        [-1, -2, -1]])
+
+    # Compute gradients in x and y directions
+    gradient_x = convolve2d_same(image, sobel_x)
+    gradient_y = convolve2d_same(image, sobel_y)
+
+    # Compute gradient magnitude
+    gradient_magnitude = np.sqrt(gradient_x**2 + gradient_y**2)
+
+    return gradient_magnitude
+
+def convolve2d_same(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
+    """
+    Perform a 2D convolution operation with the "same" output size as the input.
+
+    Parameters:
+        image (np.ndarray): The input 2D array (grayscale image).
+        kernel (np.ndarray): The convolution kernel.
+
+    Returns:
+        np.ndarray: The result of the convolution with the same size as the input.
+    """
+    # Flip the kernel for convolution
+    kernel = np.flipud(np.fliplr(kernel))
+
+    # Get padding sizes
+    pad_height, pad_width = kernel.shape[0] // 2, kernel.shape[1] // 2
+
+    # Pad the image to ensure output size matches input size
+    if image.ndim == 2:
+        padded_image = np.pad(image, ((pad_height, pad_height), (pad_width, pad_width)), mode='constant')
+    else:
+        raise ValueError("Input image for convolve2d_same must be 2D")
+
+    # Perform convolution
+    output = np.zeros_like(image)
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            region = padded_image[i:i + kernel.shape[0], j:j + kernel.shape[1]]
+            output[i, j] = np.sum(region * kernel)
+
+    return output
+
+

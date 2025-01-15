@@ -79,7 +79,7 @@ def generate_lightmaps(
     scene = Scene(temp_map_path, assets_path)
     scene.create_frames(patch_resolution=patch_resolution)
     scene.generate_vertex_array()
-    scene.generate_line_array()
+    #scene.generate_line_array()
     scene.save_to_binary(output_path / f'{map_name}/{map_name}.ply')
     # for now also save it as a json as it is useful for debugging purposes, can be removed later
     scene.save_to_json(output_path / f'{map_name}/{map_name}.json', assets_path)   

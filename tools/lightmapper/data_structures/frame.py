@@ -38,6 +38,10 @@ class Frame:
     legal_normals: List[Vector3f]
     illegal_pixels: List[Tuple[int, int]]
 
+    frameArrayLegality: np.ndarray
+    frameArrayPositions: np.ndarray
+    frameArrayIncommingLight: np.ndarray
+
 
 
     def __init__(
@@ -57,34 +61,30 @@ class Frame:
         # The projected triangles are used to calculate the frame's size (bbox) within its plane which is necessary for the uv mapping
         # The uv mapped frame is the basis for the patch placement
         self.projected_triangles, self.projection_matrix = self.__project_triangles_to_2d(self.triangles)
-        self.bounding_box_unpadded = self._calculate_bounding_box_2d()
-        frame_width, frame_height = self.bounding_box_unpadded[2], self.bounding_box_unpadded[3]
+        # Calculate this frame's bounding boxes
+        self.bounding_box_3d = self.__calculate_bounding_box_3d()
+        self.bounding_box_projected = self._calculate_bounding_box_2d()
         # As right now its assumed that all triangles within a frame are coplanar we can just pick the normal of any triangle
         self.frame_normal = self.triangles[0].normal
 
         # Add padding to the bounding box to ensure no light leakage between neighbouring frames
         self.bounding_box = (
-            self.bounding_box_unpadded[0] - self.patch_ws_size, 
-            self.bounding_box_unpadded[1] - self.patch_ws_size, 
-            self.bounding_box_unpadded[2] + self.patch_ws_size + self.patch_ws_size,
-            self.bounding_box_unpadded[3] + self.patch_ws_size + self.patch_ws_size
+            self.bounding_box_projected[0] - self.patch_ws_size, 
+            self.bounding_box_projected[1] - self.patch_ws_size, 
+            self.bounding_box_projected[2] + self.patch_ws_size + self.patch_ws_size,
+            self.bounding_box_projected[3] + self.patch_ws_size + self.patch_ws_size
         )
-
+        
         # Adjust projected triangles based on bounding box origin (also consider padding)
         self.projected_triangles = [
-            [[v[0] - self.bounding_box_unpadded[0] + self.patch_ws_size, v[1] - self.bounding_box_unpadded[1] + self.patch_ws_size] for v in triangle]
+            [[v[0] - self.bounding_box_projected[0] + self.patch_ws_size, v[1] - self.bounding_box_projected[1] + self.patch_ws_size] for v in triangle]
             for triangle in self.projected_triangles
         ]
 
-        # Calculate this frame's 3d bounding box
-        self.bounding_box_3d = self.__calculate_bounding_box_3d()
-
         # Initialize this frame's uv lists
-        self.tex_uvs = []
-        self.lm_uvs = []
         self.lm_uvs_bbox_space = []
-
-        
+        self.lm_uvs = []
+        self.tex_uvs = []
         self.frame_u_start = 0
         self.frame_v_start = 0
         self.frame_u_end = 0
@@ -139,7 +139,6 @@ class Frame:
 
         return projected_triangles, projection_matrix
     
-
     def __calculate_bounding_box_3d(self) -> BoundingBox:
         """
         Calculate the 3D bounding box that encompasses all the triangles ind 3D worldspace.
@@ -319,11 +318,7 @@ class Frame:
 
     def generate_patches(self, patch_resolution):
 
-        self.legal_pixels = []
-        self.legal_positions = []
-        self.legal_normals = []
-        self.legal_incoming_light = []
-        self.illegal_pixels = []
+        n = 4
 
         frame_width_ws = self.bounding_box[2]
         frame_height_ws = self.bounding_box[3]
@@ -331,6 +326,7 @@ class Frame:
         frame_origin_v_pixels = math.ceil(self.bounding_box[1] * patch_resolution)
         self.frame_width_pixels = math.ceil(frame_width_ws * patch_resolution)
         self.frame_height_pixels = math.ceil(frame_height_ws * patch_resolution)
+
 
         # The frames position within the uv map in pixels
         frame_origin_u_pixels = math.ceil(self.bounding_box[0] * patch_resolution)
@@ -344,6 +340,11 @@ class Frame:
         half_v_pixel = (1 / self.frame_height_pixels) / 2
 
         triangles_uv_space = [triangle for triangle in self.lm_uvs_bbox_space]
+
+        # create the frame array to hold the legality and positions of all the patches
+        self.frameArrayLegality = np.zeros((self.frame_height_pixels, self.frame_width_pixels), dtype=bool)
+        self.frameArrayPositions = np.zeros((self.frame_height_pixels, self.frame_width_pixels, 3), dtype=float)
+        self.frameArrayIncommingLight = np.zeros((self.frame_height_pixels, self.frame_width_pixels, 3), dtype=float)
 
         for v_pixel in range(self.frame_height_pixels):
             v = v_pixel / (self.frame_height_pixels)
@@ -360,25 +361,24 @@ class Frame:
 
                     # Check if patch is covered by triangle on the same plane
                     if geometry.point_is_covered_by_triangle(worldspace_position, self.frame_normal, self.close_triangles, 1e-6):
-                        self.illegal_pixels.append((u_pixel, v_pixel))
+                        self.frameArrayLegality[v_pixel, u_pixel] = False
                         continue
                     
                     # Check if there is a intersectin triangle which covers this patch
                     distance = geometry.distance_to_closest_triangle_facing_away(worldspace_position, self.frame_normal, self.intersection_segments, self.intersection_normals)
                     if distance < 1/patch_resolution *  2:
-                        self.illegal_pixels.append((u_pixel, v_pixel))
+                        self.frameArrayLegality[v_pixel, u_pixel] = False
                         continue
-
-                    self.legal_pixels.append((u_pixel, v_pixel))
-                    self.legal_positions.append(worldspace_position)
-                    self.legal_normals.append(self.frame_normal)
-                    self.legal_incoming_light.append(Vector3f(0, 0, 0))
+                    
+                    
+                    self.frameArrayPositions[v_pixel, u_pixel] = [worldspace_position.x, worldspace_position.y, worldspace_position.z]
+                    self.frameArrayLegality[v_pixel, u_pixel] = True
 
                 else:
-                    self.illegal_pixels.append((u_pixel, v_pixel))
+                    self.frameArrayLegality[v_pixel, u_pixel] = False
 
 
-    def interpolate_uv_to_world(self, triangle: Triangle, uv_coords: np.ndarray, uv_point: tuple[float, float]) -> tuple[np.ndarray, np.ndarray]:
+    def interpolate_uv_to_world(self, triangle: Triangle, uv_coords: np.ndarray, uv_point: tuple[float, float]) -> Vector3f:
         """
         Interpolate world coordinates and normal at a given UV point within a triangle.
 
@@ -428,14 +428,18 @@ class Frame:
         return np.array([w0, w1, w2])
     
     def calculate_incoming_light(self, lights: List[PointLight], triangles: List[Triangle]):
-        for i, patch_position in enumerate(self.legal_positions):
+        
+        legalIndices = np.argwhere(self.frameArrayLegality)
+        for i, j in legalIndices:
+
             incoming_light = Vector3f(0, 0, 0)
+            patch_position_array = self.frameArrayPositions[i, j]
+            patch_position = Vector3f(patch_position_array[0], patch_position_array[1], patch_position_array[2])
 
             for point_light in lights:
                 light_dir = point_light.origin - patch_position
                 light_distance = light_dir.magnitude()
                 light_dir = light_dir.normalize()
-
 
                 if light_distance > point_light.range:
                     continue
@@ -459,7 +463,7 @@ class Frame:
                     incoming_light_vec = Vector3f(incoming_light_x, incoming_light_y, incoming_light_z)
                     incoming_light += incoming_light_vec
 
-            self.legal_incoming_light[i] = incoming_light
+            self.frameArrayIncommingLight[i, j] = incoming_light.to_array()
 
         
 

@@ -308,7 +308,7 @@ class Renderer:
         
         for position, direction, camera_up in zip(positions, directions, camera_ups):
             # Update only the view matrix for each frame
-            self.update_view_matrix(position.to_array(), direction, camera_up)
+            self.update_view_matrix(position, direction, camera_up)
             self.render_scene()
 
             # Read pixels

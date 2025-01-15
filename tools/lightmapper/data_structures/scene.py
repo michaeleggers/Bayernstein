@@ -298,10 +298,6 @@ class Scene:
             )
         self.frames = results
 
-        self.positions = []
-        self.directions = []
-        [self.positions.extend(frame.legal_positions) for frame in self.frames]
-        [self.directions.extend(frame.legal_normals) for frame in self.frames]
 
     def calculate_intersection_for_frame(self, frame: Frame, triangles_ds):
         frame.calculate_intersections(triangles_ds)
