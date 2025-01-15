@@ -17,7 +17,7 @@ EnemyIdle* EnemyIdle::Instance()
 
 void EnemyIdle::Enter(Enemy* pEnemy)
 {
-    //printf("Enemy entered Idle State\n");
+    printf("Enemy entered Idle State\n");
 }
 
 void EnemyIdle::Execute(Enemy* pEnemy)
@@ -27,7 +27,7 @@ void EnemyIdle::Execute(Enemy* pEnemy)
 
 void EnemyIdle::Exit(Enemy* pEnemy)
 {
-    //printf("Enemy is exiting Idle State\n");
+    printf("Enemy is exiting Idle State\n");
 }
 
 bool EnemyIdle::OnMessage(Enemy* agent, const Telegram& telegram)
@@ -263,6 +263,22 @@ void EnemyFollow::Enter(Enemy* pEnemy)
 
 void EnemyFollow::Execute(Enemy* pEnemy)
 {
+    BaseGameEntity* pOther      = pEnemy->m_pTargetEntity;
+    float           otherRadius = pOther->GetEllipsoidColliderPtr()->radiusA;
+    float           selfRadius  = pEnemy->GetEllipsoidColliderPtr()->radiusA;
+    glm::vec3       otherCenter = pOther->GetEllipsoidColliderPtr()->center;
+    glm::vec3       selfCenter  = pEnemy->GetEllipsoidColliderPtr()->center;
+
+    glm::vec3 selfToTarget = otherCenter - selfCenter;
+    float     distance     = glm::length(selfToTarget);
+    printf("distance to player: %f\n", distance);
+
+    if ( distance < (otherRadius + selfRadius) )
+    {
+        pEnemy->m_pSteeringBehaviour->SeekOff();
+        pEnemy->m_pSteeringBehaviour->NoneOn();
+        pEnemy->GetFSM()->ChangeState(EnemyIdle::Instance());
+    }
     //printf("Enemy is executing Patrol State\n");
 }
 

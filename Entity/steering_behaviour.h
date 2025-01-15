@@ -41,6 +41,10 @@ class SteeringBehaviour
     }
 
   public:
+    void NoneOn()
+    {
+        m_Flags = none;
+    }
     void FleeOn()
     {
         m_Flags |= flee;
@@ -91,6 +95,10 @@ class SteeringBehaviour
         if ( On(follow_waypoints) ) m_Flags ^= follow_waypoints;
     }
 
+    bool isNoneOn()
+    {
+        return m_Flags == 0;
+    }
     bool isFleeOn()
     {
         return On(flee);
@@ -205,6 +213,7 @@ class SteeringBehaviour
     glm::vec3 Arrive(glm::vec3 targetPos, Deceleration deceleration);
 
     glm::vec3 Wander();
+    glm::vec3 None();
     glm::vec3 FollowPath(PatrolPath* path);
     glm::vec3 FollowWaypoints(PatrolPath* path);
     glm::vec3 SeekPathStart(PatrolPath* path);

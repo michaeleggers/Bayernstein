@@ -373,32 +373,38 @@ void CWorld::CollideEntities()
         {
 
             BaseGameEntity* pOther = entities[ j ];
+
             if ( pOther->ID() == pEntity->ID() )
             { // Don't collide with itself.
                 continue;
             }
 
+            EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
+            if ( ec == nullptr ) // we nned an ellipsoid collider to collide with something
+            {
+                continue;
+            }
+
+            CollisionInfo ci{};
+
             if ( pOther->Type() == ET_DOOR )
             {
-                Door*              pDoor = (Door*)pOther;
-                EllipsoidCollider* ec    = pEntity->GetEllipsoidColliderPtr();
+                Door* pDoor = (Door*)pOther;
 
-                if ( ec == nullptr )
-                {
-                    continue;
-                }
+                ci = PushTouch(*ec,
+                               (float)DOD_FIXED_UPDATE_TIME / 1000.0f * pEntity->m_Velocity,
+                               pDoor->MapTris().data(),
+                               pDoor->MapTris().size());
+            }
+            else
+            {
+            }
 
-                CollisionInfo ci = PushTouch(*ec,
-                                             (float)DOD_FIXED_UPDATE_TIME / 1000.0f * pEntity->m_Velocity,
-                                             pDoor->MapTris().data(),
-                                             pDoor->MapTris().size());
-
-                if ( ci.didCollide )
-                {
-                    printf("COLLIDED!\n");
-                    Dispatcher->DispatchMessage(
-                        SEND_MSG_IMMEDIATELY, pEntity->ID(), pDoor->ID(), message_type::Collision, 0);
-                }
+            if ( ci.didCollide )
+            {
+                printf("COLLIDED!\n");
+                Dispatcher->DispatchMessage(
+                    SEND_MSG_IMMEDIATELY, pEntity->ID(), pOther->ID(), message_type::Collision, 0);
             }
         }
     }
