@@ -5,6 +5,7 @@
 #include "g_enemy_states.h"
 #include "../../Message/g_extra_info_types.h"
 #include "../../Message/message_type.h"
+#include "../entity_manager.h"
 #include "g_enemy.h"
 #include <stdio.h>
 
@@ -261,26 +262,7 @@ void EnemyFollow::Enter(Enemy* pEnemy)
     //pEnemy->m_pSteeringBehaviour->FollowPathOn();
 }
 
-void EnemyFollow::Execute(Enemy* pEnemy)
-{
-    BaseGameEntity* pOther      = pEnemy->m_pTargetEntity;
-    float           otherRadius = pOther->GetEllipsoidColliderPtr()->radiusA;
-    float           selfRadius  = pEnemy->GetEllipsoidColliderPtr()->radiusA;
-    glm::vec3       otherCenter = pOther->GetEllipsoidColliderPtr()->center;
-    glm::vec3       selfCenter  = pEnemy->GetEllipsoidColliderPtr()->center;
-
-    glm::vec3 selfToTarget = otherCenter - selfCenter;
-    float     distance     = glm::length(selfToTarget);
-    printf("distance to player: %f\n", distance);
-
-    if ( distance < (otherRadius + selfRadius) )
-    {
-        pEnemy->m_pSteeringBehaviour->SeekOff();
-        pEnemy->m_pSteeringBehaviour->NoneOn();
-        pEnemy->GetFSM()->ChangeState(EnemyIdle::Instance());
-    }
-    //printf("Enemy is executing Patrol State\n");
-}
+void EnemyFollow::Execute(Enemy* pEnemy) {}
 
 void EnemyFollow::Exit(Enemy* pEnemy)
 {
@@ -291,9 +273,24 @@ void EnemyFollow::Exit(Enemy* pEnemy)
 
 bool EnemyFollow::OnMessage(Enemy* agent, const Telegram& telegram)
 {
-    //printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
+    printf("\nEnemyFollow: Enemy received telegram %s\n", MessageToString(telegram.Message).c_str());
     switch ( telegram.Message )
     {
+    case message_type::Collision:
+    {
+        BaseGameEntity* pSender = EntityManager::Instance()->GetEntityFromID(telegram.Sender);
+        if ( pSender->Type() == ET_PLAYER )
+        {
+            printf("Enemy hit player\n");
+            agent->m_pSteeringBehaviour->SeekOff();
+            agent->m_pSteeringBehaviour->NoneOn();
+            agent->GetFSM()->ChangeState(EnemyIdle::Instance());
+            return true;
+        }
+        return false;
+    }
+    break;
+
     default:
         return false;
     }

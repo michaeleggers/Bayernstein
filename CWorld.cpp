@@ -354,7 +354,6 @@ void CWorld::CollideEntitiesWithWorld()
 // the first entity from the outer loop is the one who 'pushes'.
 void CWorld::CollideEntities()
 {
-
     std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
     double                       dt       = GetDeltaTime();
 
@@ -387,7 +386,7 @@ void CWorld::CollideEntities()
 
             CollisionInfo ci{};
 
-            if ( pOther->Type() == ET_DOOR )
+            if ( pOther->Type() == ET_DOOR ) // Brush entities. TODO: Generalize EntityTypes!
             {
                 Door* pDoor = (Door*)pOther;
 
@@ -396,15 +395,36 @@ void CWorld::CollideEntities()
                                pDoor->MapTris().data(),
                                pDoor->MapTris().size());
             }
-            else
+            else // Point entities
             {
+                EllipsoidCollider* pOtherEC = pOther->GetEllipsoidColliderPtr();
+                if ( pOtherEC == nullptr )
+                {
+                    continue;
+                }
+
+                // TODO: This does *NOT* perform a proper continuous collision detection!
+                // Implement Ellipsoid Vs Ellipsoid CCD in collision.cpp.
+                float     otherRadius = pOther->GetEllipsoidColliderPtr()->radiusA;
+                float     selfRadius  = pEntity->GetEllipsoidColliderPtr()->radiusA;
+                glm::vec3 otherCenter = pOther->GetEllipsoidColliderPtr()->center;
+                glm::vec3 selfCenter  = pEntity->GetEllipsoidColliderPtr()->center;
+
+                glm::vec3 selfToTarget = otherCenter - selfCenter;
+                float     distance     = glm::length(selfToTarget);
+                if ( distance < (otherRadius + selfRadius) )
+                {
+                    ci.didCollide = true;
+                }
             }
 
             if ( ci.didCollide )
             {
-                printf("COLLIDED!\n");
+                // Notify each other about the collision
                 Dispatcher->DispatchMessage(
                     SEND_MSG_IMMEDIATELY, pEntity->ID(), pOther->ID(), message_type::Collision, 0);
+                Dispatcher->DispatchMessage(
+                    SEND_MSG_IMMEDIATELY, pOther->ID(), pEntity->ID(), message_type::Collision, 0);
             }
         }
     }

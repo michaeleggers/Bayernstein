@@ -40,6 +40,11 @@ inline std::string MessageToString(int message)
         return "EntityInView";
     }
     break;
+    case 4:
+    {
+        return "SetPatrol";
+    }
+    break;
 
     default:
     {
