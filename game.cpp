@@ -74,7 +74,7 @@ void Game::Init()
 
     // Load lightmap triangles and lightmap texture
 
-    m_World->InitWorld("arena");
+    m_World->InitWorld("temple5");
     m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.
