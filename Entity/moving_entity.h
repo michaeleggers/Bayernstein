@@ -14,7 +14,8 @@
 
 #include "../globals.h"
 
-class MovingEntity : public BaseGameEntity {
+class MovingEntity : public BaseGameEntity
+{
 
   public:
     MovingEntity(EntityType type)
@@ -23,19 +24,22 @@ class MovingEntity : public BaseGameEntity {
           m_Side(DOD_WORLD_RIGHT),
           m_Up(DOD_WORLD_UP),
           m_Mass(1.0f),
-          m_MaxSpeed(100.0f),
+          m_MaxSpeed(350.0f),
           m_MaxForce(200.5f),
           m_MaxTurnRate(1.0f) {};
 
     virtual ~MovingEntity() = default;
 
-    bool IsSpeedMaxedOut() const {
+    bool IsSpeedMaxedOut() const
+    {
         return glm::pow(m_MaxSpeed, 2) >= glm::pow(glm::length(m_Velocity), 2);
     }
-    float Speed() const {
+    float Speed() const
+    {
         return glm::length(m_Velocity);
     }
-    float SpeedSq() const {
+    float SpeedSq() const
+    {
         return glm::pow(glm::length(m_Velocity), 2);
     }
 

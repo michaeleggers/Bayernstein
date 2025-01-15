@@ -54,6 +54,7 @@ glm::vec3 SteeringBehaviour::CalculateWeightedSum()
 
     if ( On(follow_waypoints) )
     {
+        printf("FOLLOWING WAYPOINTS\n");
         if ( m_pPath != nullptr )
         {
             m_SteeringForce += FollowWaypoints(m_pPath) * m_WeightFollowWaypoints;
@@ -65,6 +66,7 @@ glm::vec3 SteeringBehaviour::CalculateWeightedSum()
     }
     if ( On(follow_path) )
     {
+        printf("FOLLOWING PATH\n");
         if ( m_pPath != nullptr )
         {
             m_SteeringForce += FollowPath(m_pPath) * m_WeightFollowPath;
@@ -120,7 +122,8 @@ glm::vec3 SteeringBehaviour::Seek(glm::vec3 targetPosition)
 {
     glm::vec3 desiredVelocity = glm::normalize(targetPosition - m_pEntity->m_Position) * m_pEntity->m_MaxSpeed;
 
-    return (desiredVelocity - m_pEntity->m_Velocity);
+    //return (desiredVelocity - m_pEntity->m_Velocity);
+    return desiredVelocity;
 }
 
 //----------------------------- Flee -------------------------------------
@@ -214,7 +217,7 @@ glm::vec3 SteeringBehaviour::FollowPath(PatrolPath* path)
         target = segmentEnd;
     }
 
-    glm::vec3 force = Seek(target);
+    glm::vec3 force = 0.3f * Seek(target);
     force.z         = 0.0f;
     return force;
 }

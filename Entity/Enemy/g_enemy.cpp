@@ -1,4 +1,4 @@
-//
+//enem
 // Created by benek on 10/14/24.
 //
 
@@ -58,17 +58,16 @@ Enemy::Enemy(const std::vector<Property>& properties)
 
 void Enemy::PreCollisionUpdate()
 {
-
     float     dt           = (float)GetDeltaTime();
     glm::vec3 force        = m_pSteeringBehaviour->Calculate();
     glm::vec3 acceleration = force / m_Mass;
     //update velocity
     //m_Velocity += acceleration * 1000.0f;
-    m_Velocity += acceleration * dt / 1000.0f;
-    m_Velocity = math::TruncateVec3(m_Velocity, m_MaxSpeed);
+    //m_Velocity += acceleration * dt / 1000.0f;
+    //m_Velocity = math::TruncateVec3(m_Velocity, m_MaxSpeed);
+    m_Velocity = force;
     if ( Speed() > 0.001 )
     {
-
         // Calculate the new forward direction
         glm::vec3 newForward = glm::normalize(m_Velocity);
 
@@ -99,12 +98,13 @@ void Enemy::PreCollisionUpdate()
         m_AnimationState = ANIM_STATE_WALK;
         Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.6f);
         Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume * 0.4f);
-    }
-    else if ( Speed() > m_MaxSpeed * 0.5f )
-    { // FIXME: will this condition ever happen
-        m_AnimationState = ANIM_STATE_RUN;
-        Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.9f); // adjust sample speed to better match animation
-        Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume);
+        if ( Speed() > m_MaxSpeed * 0.5f )
+        { // FIXME: will this condition ever happen
+            m_AnimationState = ANIM_STATE_RUN;
+            Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle,
+                                                 0.9f); // adjust sample speed to better match animation
+            Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume);
+        }
     }
     else
     {
