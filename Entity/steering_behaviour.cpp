@@ -122,7 +122,12 @@ glm::vec3 SteeringBehaviour::Seek(glm::vec3 targetPosition)
 {
     glm::vec3 desiredVelocity = glm::normalize(targetPosition - m_pEntity->m_Position) * m_pEntity->m_MaxSpeed;
 
+    // HACK: This just doesn't playe nicely with slopes, unfortunately.
+    // So we don't return a delta vector for now but the actual desired
+    // velocity.
+    //
     //return (desiredVelocity - m_pEntity->m_Velocity);
+
     return desiredVelocity;
 }
 
@@ -183,7 +188,8 @@ glm::vec3 SteeringBehaviour::Arrive(glm::vec3 targetPosition, Deceleration decel
 
 glm::vec3 SteeringBehaviour::FollowPath(PatrolPath* path)
 {
-    if ( path->IsEndOfSegmentReached(m_pEntity->m_Position) )
+    // HACK: Just target the current (active) waypoint
+    if ( path->IsCurrentWaypointReached(m_pEntity->m_Position) )
     {
         printf("\n\n current waypoint reached\n\n");
         path->TargetNextWaypoint();
@@ -217,7 +223,8 @@ glm::vec3 SteeringBehaviour::FollowPath(PatrolPath* path)
         target = segmentEnd;
     }
 
-    glm::vec3 force = 0.3f * Seek(target);
+    // HACK: Directly go to the next waypoint.
+    glm::vec3 force = 0.3f * Seek(segmentStart);
     force.z         = 0.0f;
     return force;
 }

@@ -61,10 +61,15 @@ void Enemy::PreCollisionUpdate()
     float     dt           = (float)GetDeltaTime();
     glm::vec3 force        = m_pSteeringBehaviour->Calculate();
     glm::vec3 acceleration = force / m_Mass;
+
+    // NOTE: There is no dynamic movement happening as it didn't
+    // play nicely with slopes and it was hard to control
+    // the speed behaviour.
+    //
     //update velocity
-    //m_Velocity += acceleration * 1000.0f;
-    //m_Velocity += acceleration * dt / 1000.0f;
+    //m_Velocity += acceleration;
     //m_Velocity = math::TruncateVec3(m_Velocity, m_MaxSpeed);
+
     m_Velocity = force;
     if ( Speed() > 0.001 )
     {
