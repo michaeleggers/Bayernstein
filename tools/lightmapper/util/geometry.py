@@ -2,6 +2,7 @@ import numpy as np
 from data_structures.triangle import Triangle
 from data_structures.line_segment import LineSegment
 from data_structures.vector3f import Vector3f
+from data_structures.bounding_box import BoundingBox
 from typing import List, Tuple, Optional
 from dataclasses import dataclass
 import math
@@ -980,5 +981,28 @@ def convolve2d_same(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
             output[i, j] = np.sum(region * kernel)
 
     return output
+
+
+def bbox_from_triangles(triangles: List["Triangle"]) -> 'BoundingBox':
+    """
+    Create a bounding box from a list of triangles.
+
+    Args:
+        triangles (List[Triangle]): List of triangles to bound.
+
+    Returns:
+        BoundingBox: Bounding box enclosing the triangles.
+    """
+    min_corner = Vector3f(
+        min(v.x for t in triangles for v in t.vertices),
+        min(v.y for t in triangles for v in t.vertices),
+        min(v.z for t in triangles for v in t.vertices)
+    )
+    max_corner = Vector3f(
+        max(v.x for t in triangles for v in t.vertices),
+        max(v.y for t in triangles for v in t.vertices),
+        max(v.z for t in triangles for v in t.vertices)
+    )
+    return BoundingBox(min_corner, max_corner)
 
 

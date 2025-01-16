@@ -7,6 +7,8 @@ from data_structures.vector3f import Vector3f
 from data_structures.line_segment import LineSegment
 from data_structures.bounding_box import BoundingBox
 from data_structures.point_light import PointLight
+from data_structures.bvh_node import BVHNode
+import data_structures.bvh_node as bvh
 from util import geometry
 
 class Frame:
@@ -427,41 +429,33 @@ class Frame:
 
         return np.array([w0, w1, w2])
     
-    def calculate_incoming_light(self, lights: List[PointLight], triangles: List[Triangle]):
-        
+    def calculate_incoming_light(self, lights: List[PointLight], bvh_root: BVHNode):
         legalIndices = np.argwhere(self.frameArrayLegality)
         for i, j in legalIndices:
-
             incoming_light = Vector3f(0, 0, 0)
             patch_position_array = self.frameArrayPositions[i, j]
-            patch_position = Vector3f(patch_position_array[0], patch_position_array[1], patch_position_array[2])
+            patch_position = Vector3f(*patch_position_array)
 
             for point_light in lights:
-                light_dir = point_light.origin - patch_position
-                light_distance = light_dir.magnitude()
-                light_dir = light_dir.normalize()
+                light_dir = (point_light.origin - patch_position).normalize()
+                light_distance = (point_light.origin - patch_position).magnitude()
 
                 if light_distance > point_light.range:
                     continue
 
-                blocked = False
+                # Use BVH for intersection testing
+                t = bvh.intersect_bvh(point_light.origin, -light_dir, bvh_root)
 
-                for triangle in triangles:
-                    if any((patch_position - v).magnitude() < 1e-6 for v in triangle.vertices):
-                        continue  # Skip the triangle the patch is on
+                if t is not None and t < light_distance - 1e-6:
+                    continue  # Light is blocked
 
-                    t = triangle.intersect_ray(point_light.origin, -light_dir)
-                    if t is not None and t < light_distance - 1e-6:
-                        blocked = True
-                        break
-
-                if not blocked:
-                    attenuation = max(0.0, float(point_light.intensity / (light_distance ** 2)))
-                    incoming_light_x = attenuation * max(0.0, light_dir.dot(self.frame_normal)) * point_light.color.x
-                    incoming_light_y = attenuation * max(0.0, light_dir.dot(self.frame_normal)) * point_light.color.y
-                    incoming_light_z = attenuation * max(0.0, light_dir.dot(self.frame_normal)) * point_light.color.z
-                    incoming_light_vec = Vector3f(incoming_light_x, incoming_light_y, incoming_light_z)
-                    incoming_light += incoming_light_vec
+                attenuation = max(0.0, float(point_light.intensity / (light_distance ** 2)))
+                dot_product = max(0.0, light_dir.dot(self.frame_normal))
+                incoming_light += Vector3f(
+                    attenuation * dot_product * point_light.color.x,
+                    attenuation * dot_product * point_light.color.y,
+                    attenuation * dot_product * point_light.color.z,
+                )
 
             self.frameArrayIncommingLight[i, j] = incoming_light.to_array()
 

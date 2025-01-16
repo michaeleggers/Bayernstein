@@ -4,6 +4,7 @@ import cv2
 import pyrr
 import math
 import json
+import time
 from PIL import Image
 from tqdm import tqdm
 from PIL import Image
@@ -19,10 +20,12 @@ from data_structures.compiled_triangle import CompiledTriangle
 from data_structures.triangle import Triangle
 from data_structures.frame import Frame
 from data_structures.point_light import PointLight
+import data_structures.bvh_node as bvh
 
 # Utility functions
 import util.uv_mapper as uv_mapper
 import util.geometry as geometry
+
 
 
 class Scene:
@@ -284,28 +287,34 @@ class Scene:
         self.light_map_resolution = math.ceil(uv_map_ws_size * patch_resolution)
         self.light_map = np.zeros((self.light_map_resolution, self.light_map_resolution, 3), dtype=np.float32)
 
+        start_preprocessing_counter = time.perf_counter()
+
         # Step 3: Precalculate geometry intersections (for illegal pixel calculations)
         print("PREPROCESSING: calculating geometry intersections")
         [frame.calculate_intersections(triangles_ds) for frame in self.frames]
 
         # Step 4: Generate Patches
         print("PREPROCESSING: generating patches")
+        bvh_root = bvh.build_bvh(self.triangles_ds)
         with Pool(processes=cpu_count()) as pool:
             # Map the frames to the worker pool, each worker will process one frame
             results = pool.starmap(
                 self.generate_patches_for_frame,  # Function to call in each worker
-                [(frame, patch_resolution) for frame in self.frames]  # Arguments for each frame
+                [(frame, patch_resolution, bvh_root) for frame in self.frames]  # Arguments for each frame
             )
         self.frames = results
 
+        end_preprocessing_counter = time.perf_counter()
+        time_preprocessing = end_preprocessing_counter - start_preprocessing_counter
+        print(f"Time spent in preprocessing: {time_preprocessing:.4f}s")
 
     def calculate_intersection_for_frame(self, frame: Frame, triangles_ds):
         frame.calculate_intersections(triangles_ds)
         return frame
     
-    def generate_patches_for_frame(self, frame: Frame, patch_resolution):
+    def generate_patches_for_frame(self, frame: Frame, patch_resolution, bvh):
         frame.generate_patches(patch_resolution)
-        frame.calculate_incoming_light(self.lights, self.triangles_ds)
+        frame.calculate_incoming_light(self.lights, bvh)
         return frame
 
 
@@ -425,6 +434,7 @@ class Scene:
             np.ndarray: The identity transformation matrix.
         """
         return pyrr.matrix44.create_identity(dtype=np.float32)
+    
 
         
     

@@ -49,14 +49,14 @@ class Lightmapper:
                 # Generate views for this frame only once
                 frame_views = hemicube.generate_hemicube_views(frame.frame_normal)
 
-                for adaptive_step in range(6):
+                for adaptive_step in range(10):
                     # Precompute lightmap statistics
                     valid_pixels = frame_light_map[frame_processed_map]
                     if valid_pixels.size > 0:
                         mean_value = np.mean(valid_pixels)
                     else:
                         mean_value = 1e-6  # Avoid divide-by-zero
-                    factor = 0.1
+                    factor = 0.5
 
                     # Collect legal pixels and their properties
                     processed_indices = np.argwhere(frame_processed_map)
@@ -66,15 +66,15 @@ class Lightmapper:
                     for i, j in zip(*np.where(legality_map & ~frame_processed_map)):
                         # Calculate probability using gradients if neighbors exist
                         if kdtree is not None:
-                            distances, indices = kdtree.query((i, j), k=min(6, len(processed_indices)))
+                            distances, indices = kdtree.query((i, j), k=min(12, len(processed_indices)))
                             neighbor_values = frame_light_map[processed_indices[indices, 0], processed_indices[indices, 1]]
-                            gradient = np.std(neighbor_values)
+                            gradient = abs(np.std(neighbor_values))
                             normalized_gradient = gradient / max(mean_value, 1e-6)
                             probability = min(normalized_gradient * factor, 1.0)
                         else:
-                            probability = 0.1
+                            probability = np.random.random() if len(legal_pixels) > 0 else 1
 
-                        if np.random.random() < probability:
+                        if probability > 0.95:
                             legal_pixels.append((i, j))
                             for view in frame_views:
                                 directions.append(view['direction'])
