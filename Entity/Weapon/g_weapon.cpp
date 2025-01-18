@@ -25,8 +25,8 @@ Weapon::Weapon(const std::vector<Property>& properties)
     m_HUDSprite = CreateSprite("shotgun_shell_icon.png", glm::vec2(0.0f), glm::vec2(64.0f));
 
     m_SfxGunshot
-        = Audio::LoadSource("sfx/TriuneFilms/Hollywood_Guns_SFX/mossberg590-12gauge-single-shot-processed-C.wav");
-    m_SfxReload = Audio::LoadSource("sfx/TriuneFilms/Gun_Foley_SFX/mossberg590-shotgun-foley-charge-5.wav");
+        = Audio::LoadSource("sfx/TriuneFilms/Hollywood_Guns_SFX/mossberg590-12gauge-single-shot-processed-C.wav", 0.5f);
+    m_SfxReload = Audio::LoadSource("sfx/TriuneFilms/Gun_Foley_SFX/mossberg590-shotgun-foley-charge-5.wav", 0.5f);
 
     m_MagSize         = 2;
     m_FireRate        = 800.0;
@@ -94,7 +94,7 @@ void Weapon::CheckReload()
     if ( m_RoundsRemaining == 0 && m_TimeElapsed > -0.3 * m_ReloadTime ) // automatic reload
     {
         m_RoundsRemaining = m_MagSize;
-        Audio::m_SfxBus.play(*m_SfxReload);
+        Audio::m_SfxBus.play(*m_SfxReload, -1);
     }
 }
 
@@ -104,7 +104,7 @@ bool Weapon::Fire()
     {
         --m_RoundsRemaining;
         m_TimeElapsed = 0.0;
-        Audio::m_SfxBus.play(*m_SfxGunshot);
+        Audio::m_SfxBus.play(*m_SfxGunshot, -1);
         if ( m_RoundsRemaining == 0 )
         {
             m_TimeElapsed -= m_ReloadTime;
