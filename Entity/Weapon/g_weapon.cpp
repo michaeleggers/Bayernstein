@@ -25,9 +25,10 @@ Weapon::Weapon(const std::vector<Property>& properties)
     m_SfxGunshot
         = Audio::LoadSource("sfx/TriuneFilms/Hollywood_Guns_SFX/mossberg590-12gauge-single-shot-processed-C.wav");
     m_SfxReload = Audio::LoadSource("sfx/TriuneFilms/Gun_Foley_SFX/mossberg590-shotgun-foley-charge-5.wav");
-    m_MagSize = 2;
-    m_FireRate = 800.0;
-    m_ReloadTime = 800.0;
+
+    m_MagSize         = 2;
+    m_FireRate        = 800.0;
+    m_ReloadTime      = 800.0;
     m_RoundsRemaining = m_MagSize;
 }
 
@@ -35,11 +36,7 @@ void Weapon::UpdatePosition(glm::vec3 newPosition)
 {
     m_Position = newPosition;
     m_TimeElapsed += GetDeltaTime();
-    if ( m_RoundsRemaining == 0 && m_TimeElapsed > -0.3 * m_ReloadTime ) // automatic reload
-    {
-        m_RoundsRemaining = m_MagSize;
-        Audio::m_SfxBus.play(*m_SfxReload);
-    } // FIXME: ^^ I dislike this being here (should be in Weapon::Fire()), but the audio needs to be triggered with a delay...
+    CheckReload();
 }
 
 void Weapon::LoadModel(const char* path, glm::vec3 initialPosition)
@@ -87,9 +84,18 @@ HKD_Model* Weapon::GetModel()
     return &m_Model;
 }
 
+void Weapon::CheckReload()
+{ // TODO: separate 'check' from actual reload, to allow manual reloading by user?
+    if ( m_RoundsRemaining == 0 && m_TimeElapsed > -0.3 * m_ReloadTime ) // automatic reload
+    {
+        m_RoundsRemaining = m_MagSize;
+        Audio::m_SfxBus.play(*m_SfxReload);
+    }
+}
+
 bool Weapon::Fire()
 {
-    if ( m_TimeElapsed >= m_FireRate )
+    if ( m_TimeElapsed >= m_FireRate && m_RoundsRemaining > 0 )
     {
         --m_RoundsRemaining;
         m_TimeElapsed = 0.0;

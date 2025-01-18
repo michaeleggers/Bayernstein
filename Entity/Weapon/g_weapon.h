@@ -57,6 +57,9 @@ class Weapon : public BaseGameEntity
 
   private:
     void LoadModel(const char* path, glm::vec3 initialPosition);
+
+    /** Checks (and eventually triggers) the reload. Separated from `Fire()` to play the sound with a delay, called from main update loop. */
+    void CheckReload();
 };
 
 #endif
