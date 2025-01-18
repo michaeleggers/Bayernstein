@@ -33,7 +33,7 @@ bool handleMessageAlive(Enemy* agent, const Telegram& telegram)
 
     case message_type::RayHit:
     {
-        agent->DecreaseHealth(20.0f);
+        agent->DecreaseHealth(*(double*)telegram.ExtraInfo);
         if ( agent->IsDead() )
         {
             agent->GetFSM()->ChangeState(EnemyDead::Instance());

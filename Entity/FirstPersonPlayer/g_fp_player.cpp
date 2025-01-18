@@ -405,7 +405,12 @@ void FirstPersonPlayer::UpdatePlayerModel()
                 ec.center += enemyPos;
                 if ( TraceRayAgainstEllipsoid(m_Camera.m_Pos, m_Camera.m_Forward, *pEC) )
                 {
-                    Dispatcher->DispatchMessage(400.0, ID(), pEnemy->ID(), message_type::RayHit, 0); // delayed to better separate sfx
+                    double* damage = new double(m_Weapon->GetDamage(glm::distance(enemyPos, m_Position)));
+                    if ( *damage > 1.0 ) // TODO: does that threshold make any sense?
+                    {
+                        Dispatcher->DispatchMessage(400.0, ID(), pEnemy->ID(), message_type::RayHit, damage);
+                        // ^^ delayed message to better separate sfx
+                    }
                 }
             }
         }

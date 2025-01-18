@@ -37,6 +37,8 @@ class Weapon : public BaseGameEntity
      */
     bool Fire();
 
+    /** Returns the damage of the weapon, accounting for the given distance (in normal game units) to the target. */
+    double GetDamage(float distance) const;
     int    GetRemainingRounds() const;
     Sprite GetHUDSprite();
 
@@ -59,6 +61,13 @@ class Weapon : public BaseGameEntity
     int m_RoundsRemaining;
     /** Counter in milliseconds to check if a shot is allowed. */
     double m_TimeElapsed = 0.0;
+
+    /** The maximum amount of damage the weapon can make. */
+    double m_MaxDamage;
+    /** The distance in meters below which each hit will be `m_MaxDamage`. */
+    float m_MinDamageDistance;
+    /** Determines how quickly the damage reduces with distance. */
+    double m_DamageFalloff;
 
   private:
     void LoadModel(const char* path, glm::vec3 initialPosition);
