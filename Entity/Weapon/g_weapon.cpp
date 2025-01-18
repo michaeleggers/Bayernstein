@@ -22,6 +22,8 @@ Weapon::Weapon(const std::vector<Property>& properties)
     // TODO: Load the type of the model from properties.
     LoadModel("models/double_barrel_shotgun/db_shotgun.iqm", m_Position);
 
+    m_HUDSprite = CreateSprite("shotgun_shell_icon.png", glm::vec2(0.0f), glm::vec2(64.0f));
+
     m_SfxGunshot
         = Audio::LoadSource("sfx/TriuneFilms/Hollywood_Guns_SFX/mossberg590-12gauge-single-shot-processed-C.wav");
     m_SfxReload = Audio::LoadSource("sfx/TriuneFilms/Gun_Foley_SFX/mossberg590-shotgun-foley-charge-5.wav");
@@ -107,6 +109,16 @@ bool Weapon::Fire()
         return true;
     }
     return false;
+}
+
+int Weapon::GetRemainingRounds() const
+{
+    return m_RoundsRemaining;
+}
+
+Sprite Weapon::GetHUDSprite()
+{
+    return m_HUDSprite;
 }
 
 bool Weapon::HandleMessage(const Telegram& telegram)

@@ -37,9 +37,14 @@ class Weapon : public BaseGameEntity
      */
     bool Fire();
 
+    int    GetRemainingRounds() const;
+    Sprite GetHUDSprite();
+
   public:
   private:
     HKD_Model m_Model;
+
+    Sprite m_HUDSprite;
 
     SoLoud::AudioSource* m_SfxGunshot;
     SoLoud::AudioSource* m_SfxReload;
