@@ -42,7 +42,6 @@ FirstPersonPlayer::FirstPersonPlayer(const std::vector<Property>& properties)
     m_Momentum           = glm::vec3(0.0f);
 
     m_SfxJump    = Audio::LoadSource("sfx/jump_01.wav", 0.5f);
-    m_SfxGunshot = Audio::LoadSource("sfx/sonniss/PM_SFG_VOL1_WEAPON_8_2_GUN_GUNSHOT_FUTURISTIC.wav");
     m_SfxFootsteps
         = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
 
@@ -386,16 +385,10 @@ void FirstPersonPlayer::UpdatePlayerModel()
         Audio::m_Soloud.stop(m_FootstepsHandle);
     }
 
-    // TODO: Move this code into a weapon struct/class
-    // where a cooldown is specified. A machine gun
-    // has a higher repeat rate than a shotgun.
-    fire = CHECK_ACTION("fire");
-    if ( fire == ButtonState::WENT_DOWN )
+
+    bool fireRequested = fire == ButtonState::WENT_DOWN || fire == ButtonState::PRESSED;
+    if ( fireRequested && m_Weapon->Fire() )
     {
-        // Play a nice weapon sound
-
-        Audio::m_SfxBus.play(*m_SfxGunshot);
-
         // Trace ray against enemies
 
         EntityManager*               m_pEntityManager = EntityManager::Instance();
