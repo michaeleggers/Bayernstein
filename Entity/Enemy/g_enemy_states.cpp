@@ -3,9 +3,59 @@
 //
 
 #include "g_enemy_states.h"
+#include "../../Audio/Audio.h"
 #include "../../Message/message_type.h"
 #include "g_enemy.h"
 #include <stdio.h>
+
+bool handleMessageAlive(Enemy* agent, const Telegram& telegram)
+{
+    printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
+
+    switch ( telegram.Message )
+    {
+    case message_type::Attack:
+    {
+        agent->DecreaseHealth(*(double*)telegram.ExtraInfo * 2.0);
+        if ( agent->IsDead() )
+        {
+            agent->GetFSM()->ChangeState(EnemyDead::Instance());
+            return true;
+        }
+
+        if (!agent->GetFSM()->IsInState(*EnemyAttacking::Instance())) {
+            agent->GetFSM()->ChangeState(EnemyAttacking::Instance());
+        }
+
+        return true;
+    }
+    break;
+
+    case message_type::RayHit:
+    {
+        agent->DecreaseHealth(20.0f);
+        if ( agent->IsDead() )
+        {
+            agent->GetFSM()->ChangeState(EnemyDead::Instance());
+            return true;
+        }
+        else
+        {
+            glm::vec3 pos = agent->m_Position;
+            glm::vec3 vel = agent->m_Velocity;
+            Audio::m_SfxBus.play3d(*agent->m_SfxHit, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, -1);
+        }
+
+        return true;
+    }
+    break;
+
+    default:
+    {
+        return false;
+    }
+    }
+}
 
 EnemyIdle* EnemyIdle::Instance()
 {
@@ -31,43 +81,7 @@ void EnemyIdle::Exit(Enemy* pEnemy)
 
 bool EnemyIdle::OnMessage(Enemy* agent, const Telegram& telegram)
 {
-    printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
-
-    switch ( telegram.Message )
-    {
-    case message_type::Attack:
-    {
-        agent->DecreaseHealth(*(double*)telegram.ExtraInfo * 2.0);
-        if ( agent->IsDead() )
-        {
-            agent->GetFSM()->ChangeState(EnemyDead::Instance());
-            return true;
-        }
-
-        agent->GetFSM()->ChangeState(EnemyAttacking::Instance());
-
-        return true;
-    }
-    break;
-
-    case message_type::RayHit:
-    {
-        agent->DecreaseHealth(20.0f);
-        if ( agent->IsDead() )
-        {
-            agent->GetFSM()->ChangeState(EnemyDead::Instance());
-            return true;
-        }
-
-        return true;
-    }
-    break;
-
-    default:
-    {
-        return false;
-    }
-    }
+    return handleMessageAlive(agent, telegram);
 }
 
 EnemyAttacking* EnemyAttacking::Instance()
@@ -94,24 +108,7 @@ void EnemyAttacking::Exit(Enemy* pEnemy)
 
 bool EnemyAttacking::OnMessage(Enemy* agent, const Telegram& telegram)
 {
-    printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
-    switch ( telegram.Message )
-    {
-    case message_type::Attack:
-    {
-        agent->DecreaseHealth(*(double*)telegram.ExtraInfo);
-
-        if ( agent->IsDead() )
-        {
-            agent->GetFSM()->ChangeState(EnemyDead::Instance());
-            return true;
-        }
-
-        return true;
-    }
-    default:
-        return false;
-    }
+    return handleMessageAlive(agent, telegram);
 }
 EnemyDead* EnemyDead::Instance()
 {
@@ -122,6 +119,9 @@ EnemyDead* EnemyDead::Instance()
 
 void EnemyDead::Enter(Enemy* pEnemy)
 {
+    glm::vec3 pos = pEnemy->m_Position;
+    glm::vec3 vel = pEnemy->m_Velocity;
+    Audio::m_SfxBus.play3d(*pEnemy->m_SfxDeath, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, -1);
     printf("Enemy entered Dead State\n");
 }
 
@@ -171,7 +171,7 @@ void EnemyWander::Exit(Enemy* pEnemy)
 
 bool EnemyWander::OnMessage(Enemy* agent, const Telegram& telegram)
 {
-    return false;
+    return handleMessageAlive(agent, telegram);
 }
 
 // ---------------------------------
@@ -207,5 +207,5 @@ void EnemyPatrol::Exit(Enemy* pEnemy)
 
 bool EnemyPatrol::OnMessage(Enemy* agent, const Telegram& telegram)
 {
-    return false;
+    return handleMessageAlive(agent, telegram);
 }

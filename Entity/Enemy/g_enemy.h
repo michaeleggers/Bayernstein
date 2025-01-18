@@ -95,6 +95,9 @@ class Enemy : public MovingEntity
     float m_Near;
     float m_Far;
 
+    SoLoud::AudioSource* m_SfxHit;
+    SoLoud::AudioSource* m_SfxDeath;
+
   private:
     StateMachine<Enemy>* m_pStateMachine;
     double               m_Health = 100;

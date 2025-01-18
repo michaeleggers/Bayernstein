@@ -405,7 +405,7 @@ void FirstPersonPlayer::UpdatePlayerModel()
                 ec.center += enemyPos;
                 if ( TraceRayAgainstEllipsoid(m_Camera.m_Pos, m_Camera.m_Forward, *pEC) )
                 {
-                    Dispatcher->DispatchMessage(SEND_MSG_IMMEDIATELY, ID(), pEnemy->ID(), message_type::RayHit, 0);
+                    Dispatcher->DispatchMessage(400.0, ID(), pEnemy->ID(), message_type::RayHit, 0); // delayed to better separate sfx
                 }
             }
         }
