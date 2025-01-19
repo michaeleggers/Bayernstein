@@ -44,6 +44,8 @@ class Frame:
     frameArrayPositions: np.ndarray
     frameArrayIncommingLight: np.ndarray
 
+    max_scaling_factor = 10
+
 
 
     def __init__(
@@ -63,6 +65,7 @@ class Frame:
         # The projected triangles are used to calculate the frame's size (bbox) within its plane which is necessary for the uv mapping
         # The uv mapped frame is the basis for the patch placement
         self.projected_triangles, self.projection_matrix = self.__project_triangles_to_2d(self.triangles)
+        self.projected_triangles = self.scale_triangles(self.projected_triangles, self.patch_ws_size*3, 100)
         # Calculate this frame's bounding boxes
         self.bounding_box_3d = self.__calculate_bounding_box_3d()
         self.bounding_box_projected = self._calculate_bounding_box_2d()
@@ -93,7 +96,55 @@ class Frame:
         self.frame_v_end = 0
         self.frame_width_pixels = 0
         self.frame_height_pixels = 0
+        
+    def scale_triangles(
+        self,
+        triangles: List[Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]],
+        patch_size: float,
+        max_scaling_factor: float = 10.0
+    ) -> List[Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]]:
+        """
+        Scales triangles such that each can enclose a square of size patch_size x patch_size.
 
+        Args:
+            triangles (List[Tuple]): List of triangles, each defined by 3 vertices ((x1, y1), (x2, y2), (x3, y3)).
+            patch_size (float): Minimum required size of the square that each triangle must enclose.
+            max_scaling_factor (float): Maximum allowed scaling factor for both X and Y.
+
+        Returns:
+            List[Tuple]: List of scaled triangles.
+        """
+        scaled_triangles = []
+
+        for triangle in triangles:
+            # Extract vertices
+            p1, p2, p3 = triangle
+
+            # Calculate bounding box
+            min_x = min(p1[0], p2[0], p3[0])
+            max_x = max(p1[0], p2[0], p3[0])
+            min_y = min(p1[1], p2[1], p3[1])
+            max_y = max(p1[1], p2[1], p3[1])
+
+            width = max_x - min_x
+            height = max_y - min_y
+
+            # Calculate scaling factors for x and y
+            scale_x = max(1, patch_size / width)
+            scale_y = max(1, patch_size / height)
+
+            # Clamp scaling factors to the maximum allowed value
+            scale_x = min(scale_x, max_scaling_factor)
+            scale_y = min(scale_y, max_scaling_factor)
+
+            # Scale the triangle
+            scaled_triangle = tuple(
+                (x * scale_x, y * scale_y)
+                for x, y in triangle
+            )
+            scaled_triangles.append(scaled_triangle)
+
+        return scaled_triangles
 
     def __project_triangles_to_2d(self, triangles: List[Triangle]) -> Tuple[List[Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]], np.ndarray]:
         """

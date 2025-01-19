@@ -56,7 +56,7 @@ class Lightmapper:
                         mean_value = np.mean(valid_pixels)
                     else:
                         mean_value = 1e-6  # Avoid divide-by-zero
-                    factor = 0.5
+                    factor = 1
 
                     # Collect legal pixels and their properties
                     processed_indices = np.argwhere(frame_processed_map)
@@ -96,6 +96,8 @@ class Lightmapper:
                             sum_rgb = np.sum(hc, axis=(0, 1)) + frame.frameArrayIncommingLight[x, y]
                             frame_light_map[x, y] = sum_rgb
                             frame_processed_map[x, y] = True
+                    #else:
+                    #    break
 
                 # Interpolate unprocessed pixels
                 legal_processed_pixels = np.argwhere(frame_processed_map & legality_map)
