@@ -6,6 +6,32 @@
 #include "CommandManager.h"
 #include "Console.h"
 
+void PrintVariableInfo(ConsoleVariable* var, const std::string& baseFmt = "Variable '%s' is %.*f") {
+    int decimals = var->value == 0 || var->value == 1 ? 0 : 2;
+    if ( var->value == var->defaultValue ) {
+        Console::Printf(baseFmt + " (default)", var->name, decimals, var->value);
+    } else {
+        int defaultDecimals = var->defaultValue == 0 || var->defaultValue == 1 ? 0 : 2;
+        Console::Printf(
+            baseFmt + " (default: %.*f)", var->name, decimals, var->value, defaultDecimals, var->defaultValue);
+    }
+}
+
+void ListVars_f(std::vector<std::string> args) {
+    if (args.size() > 2) {
+        Console::Print("Invalid number of arguments to list variables!");
+    } else {
+        std::string fmt = args.size() == 1 ? "All registered variables:" : "Registered variables matching '%s':";
+        Console::Printf(fmt, args[ 1 ]);
+        auto vars = VariableManager::GetAll();
+        for (const auto& var : vars) {
+            if (args.size() == 1 || var->name.find(args[ 1 ]) != std::string::npos) {
+                PrintVariableInfo(var, "    %s: %.*f");
+            }
+        }
+    }
+}
+
 void Reset_f(std::vector<std::string> args) {
     if ( args.size() == 2 ) {
         VariableManager::Reset(args[ 1 ]);
@@ -18,6 +44,7 @@ std::map<std::string, ConsoleVariable*> VariableManager::m_Variables;
 
 void VariableManager::Init() {
     CommandManager::Add("reset", Reset_f);
+    CommandManager::Add("list_vars", ListVars_f);
 }
 
 bool VariableManager::Register(ConsoleVariable* var) {
@@ -96,20 +123,22 @@ void VariableManager::Reset(std::string name) {
     Set(var, var->defaultValue);
 }
 
+std::vector<ConsoleVariable*> VariableManager::GetAll() {
+    std::vector<ConsoleVariable*> vars;
+    vars.reserve(m_Variables.size());
+    for (const auto& [name, var] : m_Variables) {
+        vars.push_back(var);
+    }
+    return vars;
+}
+
+
 bool VariableManager::HandleCommand(std::vector<std::string> args) {
     ConsoleVariable* var = Find(args[ 0 ]);
     if ( !var ) return false; // TODO: also match substrings and show all matching variables?
 
     if ( args.size() == 1 ) { // print variable info
-        std::string fmt      = "Variable '%s' is %.*f";
-        int         decimals = var->value == 0 || var->value == 1 ? 0 : 2;
-        if ( var->value == var->defaultValue ) {
-            Console::Printf(fmt + " (default)", args[ 0 ], decimals, var->value);
-        } else {
-            int defaultDecimals = var->defaultValue == 0 || var->defaultValue == 1 ? 0 : 2;
-            Console::Printf(
-                fmt + " (default: %.*f)", args[ 0 ], decimals, var->value, defaultDecimals, var->defaultValue);
-        }
+        PrintVariableInfo(var);
     } else if ( args.size() == 2 ) { // set variable
         std::string argString = args[ 1 ];
         if ( !IsStringFloat(argString) ) {

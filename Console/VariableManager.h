@@ -46,6 +46,8 @@ class VariableManager {
     static void Set(ConsoleVariable* var, float value);
     /** Resets the variable with the given name to its default value. */
     static void Reset(std::string name);
+    /** Gets a list of all registered variables. */
+    static std::vector<ConsoleVariable*> GetAll();
 
     /**
      * Handles the user command input (similar to a `CommandHandler` function for console commands), expecting a variable name as command.

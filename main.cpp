@@ -31,6 +31,7 @@
 #include "stb_image_write.h"
 
 #include "Audio/Audio.h"
+#include "Console/CommandManager.h"
 #include "Console/VariableManager.h"
 #include "TestClass.h"
 #include "game.h"
@@ -97,6 +98,7 @@ int main(int argc, char** argv) {
         return -1;
     }
 
+    CommandManager::Init();
     VariableManager::Init();
     Console* console = Console::Create(100, 32);
 

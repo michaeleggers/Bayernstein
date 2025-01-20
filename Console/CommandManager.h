@@ -30,6 +30,8 @@ class CommandManager {
     static std::vector<std::string> TokenizeString(const std::string& input);
 
   public:
+    /** Initialize CommandManager variables / commands. */
+    static void Init();
     /** Adds a command with the given name and the given callback to be available in the console. */
     static ConsoleCommand* Add(std::string name, CommandHandler function);
     // static void Remove(ConsoleCommand* cmd);
@@ -38,6 +40,8 @@ class CommandManager {
     static ConsoleCommand* Find(std::string name);
     /** Checks if a command with the given name is defined. */
     static bool Exists(std::string name);
+    /** Gets a list of all registered commands. */
+    static std::vector<ConsoleCommand*> GetAll();
 
     /** Parses the user input string into command arguments and executes the command's handler if available. */
     static void ExecuteString(std::string input);
