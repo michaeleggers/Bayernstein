@@ -34,7 +34,8 @@ Enemy::Enemy(const std::vector<Property>& properties)
     // FIX: Mem Leak on exit if target is not being set.
     BaseGameEntity::GetProperty<std::string>(properties, "target", &m_Target);
 
-    LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
+    //LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
+    LoadModel("models/mayan_undead_warrior/mayan_undead_warrior_idle.iqm", m_Position);
     m_Model.pOwner       = this;
     m_Velocity           = glm::vec3(0.0f, 0.0f, 0.0f);
     m_PrevPosition       = GetEllipsoidColliderPtr()->center;

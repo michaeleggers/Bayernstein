@@ -304,7 +304,7 @@ bool GLRender::Init(void)
     // With sizeof(Vertex) = 92bytes => sizeof(Tri) = 276bytes we need ~ 263MB for Models.
     // A lot for a game in the 2000s! Our models have a tri count of maybe 3000 Tris (without weapon), which
     // is not even close to 1Mio tris.
-    m_ModelBatch = new GLBatch(500 * 1000);
+    m_ModelBatch = new GLBatch(1000 * 1000);
 
     // Batches but for different purposes
     m_ImPrimitiveBatch        = new GLBatch(1000);

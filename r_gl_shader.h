@@ -11,20 +11,22 @@
 
 #include "r_model.h"
 
-#define MAX_BONES 96
+#define MAX_BONES 300
 
 #define SHADER_FEATURE_MODEL_ANIMATION_BIT (0x00000001)
 #define SHADER_FEATURE_MAX (0x00000001 << 1)
 
 // TODO: (Michael): Change classname to CglShader or something like that to make clear this is GL specific.
-class Shader {
+class Shader
+{
   public:
     bool   Load(const std::string& vertName, const std::string& fragName, uint32_t shaderFeatureBits = 0x0);
     void   Unload();
     void   Activate();
     GLuint Program() const;
 
-    bool operator==(const Shader& rhs) {
+    bool operator==(const Shader& rhs)
+    {
         return m_ShaderProgram == rhs.m_ShaderProgram;
     }
 
