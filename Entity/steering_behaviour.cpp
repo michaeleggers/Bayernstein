@@ -14,7 +14,7 @@ SteeringBehaviour::SteeringBehaviour(MovingEntity* pEntity)
       m_WeightFlee(1.0f),
       m_WeightArrive(1.0f),
       m_WeightFollowPath(1.0f),
-      m_WeightFollowWaypoints(1.5f),
+      m_WeightFollowWaypoints(1.0f),
       m_Deceleration(normal),
       m_WanderDistance(16.0f),
       m_WanderJitter(0.0f),
@@ -54,7 +54,7 @@ glm::vec3 SteeringBehaviour::CalculateWeightedSum()
 
     if ( On(follow_waypoints) )
     {
-        printf("FOLLOWING WAYPOINTS\n");
+        //printf("FOLLOWING WAYPOINTS\n");
         if ( m_pPath != nullptr )
         {
             m_SteeringForce += FollowWaypoints(m_pPath) * m_WeightFollowWaypoints;
@@ -66,7 +66,7 @@ glm::vec3 SteeringBehaviour::CalculateWeightedSum()
     }
     if ( On(follow_path) )
     {
-        printf("FOLLOWING PATH\n");
+        //printf("FOLLOWING PATH\n");
         if ( m_pPath != nullptr )
         {
             m_SteeringForce += FollowPath(m_pPath) * m_WeightFollowPath;
@@ -192,7 +192,7 @@ glm::vec3 SteeringBehaviour::Arrive(glm::vec3 targetPosition, Deceleration decel
 glm::vec3 SteeringBehaviour::FollowPath(PatrolPath* path)
 {
     // HACK: Just target the current (active) waypoint
-    if ( path->IsCurrentWaypointReached(m_pEntity->m_Position) )
+    if ( path->IsEndOfSegmentReached(m_pEntity->m_Position) )
     {
         printf("\n\n current waypoint reached\n\n");
         path->TargetNextWaypoint();
@@ -226,8 +226,7 @@ glm::vec3 SteeringBehaviour::FollowPath(PatrolPath* path)
         target = segmentEnd;
     }
 
-    // HACK: Directly go to the next waypoint.
-    glm::vec3 force = 0.2f * Seek(segmentStart);
+    glm::vec3 force = 0.2f * Seek(target);
     force.z         = 0.0f;
     return force;
 }

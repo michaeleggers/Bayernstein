@@ -13,7 +13,8 @@ enum message_type
     Collision,
     RayHit,
     EntityInView,
-    SetPatrol
+    SetPatrol,
+    Hit
 };
 
 inline std::string MessageToString(int message)

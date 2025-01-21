@@ -276,18 +276,20 @@ IQMModel LoadIQM(const char* file) {
     for ( int i = 0; i < pHeader->numAnims; i++ ) {
         IQMAnim* pAnim = pAnims + i;
 
-        printf("Animation %d, name: %s, first frame: %d, last frame: %d, num frames: %d\n",
+        printf("Animation %d, name: %s, first frame: %d, last frame: %d, num frames: %d, loop: %d\n",
                i,
                pText + pAnim->name,
                pAnim->firstFrame,
                pAnim->firstFrame + pAnim->numFrames,
-               pAnim->numFrames);
+               pAnim->numFrames,
+               pAnim->flags & 1);
 
         Anim anim       = {};
         anim.name       = std::string(pText + pAnim->name);
         anim.firstFrame = pAnim->firstFrame;
         anim.numFrames  = pAnim->numFrames;
         anim.framerate  = pAnim->framerate;
+        anim.loop       = pAnim->flags & 1;
 
         result.animations.push_back(anim);
     }

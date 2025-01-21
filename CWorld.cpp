@@ -410,9 +410,10 @@ void CWorld::CollideEntities()
                 glm::vec3 otherCenter = pOther->GetEllipsoidColliderPtr()->center;
                 glm::vec3 selfCenter  = pEntity->GetEllipsoidColliderPtr()->center;
 
-                glm::vec3 selfToTarget = otherCenter - selfCenter;
+                glm::vec3 selfToTarget = otherCenter - selfCenter;                
                 float     distance     = glm::length(selfToTarget);
-                if ( distance < (otherRadius + selfRadius) )
+                float     bias         = distance * 0.5f; // TODO: This should not be here but in gameplay defined logic.
+                if ( (distance-bias) < (otherRadius + selfRadius) )
                 {
                     ci.didCollide = true;
                 }
