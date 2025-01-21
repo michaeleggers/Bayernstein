@@ -34,7 +34,7 @@ bool FirstPersonPlayerIdle::OnMessage(FirstPersonPlayer* agent, const Telegram& 
     case message_type::Hit:
     {
         BaseGameEntity* pSender = EntityManager::Instance()->GetEntityFromID(telegram.Sender);
-        printf("Hit by enemy!\n");
+        //printf("Hit by enemy!\n");
         // TODO: Implement.
         // - before enemy sends this message it must check if its cooldown is to 0.
         // otherwise it will spam this message.

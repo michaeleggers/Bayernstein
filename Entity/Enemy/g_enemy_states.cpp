@@ -79,7 +79,7 @@ void EnemyIdle::Exit(Enemy* pEnemy)
 
 bool EnemyIdle::OnMessage(Enemy* agent, const Telegram& telegram)
 {
-    printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
+    //printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
 
     switch ( telegram.Message )
     {
@@ -179,7 +179,7 @@ void EnemyAttacking::Exit(Enemy* pEnemy)
 
 bool EnemyAttacking::OnMessage(Enemy* agent, const Telegram& telegram)
 {
-    printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
+    //printf("\nEnemy received telegram %s\n", MessageToString(telegram.Message).c_str());
     switch ( telegram.Message )
     {
 
@@ -351,7 +351,7 @@ void EnemyFollow::Exit(Enemy* pEnemy)
 
 bool EnemyFollow::OnMessage(Enemy* agent, const Telegram& telegram)
 {
-    printf("\nEnemyFollow: Enemy received telegram %s\n", MessageToString(telegram.Message).c_str());
+    //printf("\nEnemyFollow: Enemy received telegram %s\n", MessageToString(telegram.Message).c_str());
     switch ( telegram.Message )
     {
     case message_type::Collision:
@@ -359,7 +359,7 @@ bool EnemyFollow::OnMessage(Enemy* agent, const Telegram& telegram)
         BaseGameEntity* pSender = EntityManager::Instance()->GetEntityFromID(telegram.Sender);
         if ( pSender->Type() == ET_PLAYER )
         {
-            printf("Enemy hit player\n");
+            //printf("Enemy hit player\n");
             agent->m_pSteeringBehaviour->SeekOff();
             agent->m_pSteeringBehaviour->NoneOn();
             agent->GetFSM()->ChangeState(EnemyAttacking::Instance());
