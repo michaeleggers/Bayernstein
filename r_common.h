@@ -174,7 +174,7 @@ struct Plane
 
     Plane() = default;
 
-    Plane(glm::vec3 n, float distance)
+    Plane(const glm::vec3& n, float distance)
     {
         normal = glm::normalize(n);
         d      = distance;
@@ -185,9 +185,10 @@ struct Plane
     {
         normal = glm::normalize(glm::vec3(x, y, z));
         d      = w;
+        p      = d * normal;
     }
 
-    Plane(glm::vec4 hPlane)
+    Plane(const glm::vec4& hPlane)
     {
         normal = glm::vec3(hPlane.x, hPlane.y, hPlane.z);
         d      = hPlane.w;

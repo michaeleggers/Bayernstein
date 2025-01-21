@@ -74,7 +74,7 @@ void main() {
     }
     
     vec4 finalOutputColor = vec4( diffuseColor.rgb * lightmapColor.rgb, 1.0f );
-
+    finalOutputColor.rgb = pow(finalOutputColor.rgb, vec3(1.0f/1.2f));
     if ( (shaderSettingBits & SHADER_LIGHTMAP_ONLY) == SHADER_LIGHTMAP_ONLY ) {
         finalOutputColor = vec4(lightmapColor.rgb, 1.0f);
     }
