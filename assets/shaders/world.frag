@@ -20,11 +20,6 @@ layout (std140) uniform Settings {
     uint shaderSettingBits;
 };
 
-float edgeFactor(){
-    vec3 d = fwidth(BaryCentricCoords);
-    vec3 a3 = smoothstep(vec3(0.0), d, BaryCentricCoords);
-    return min(min(a3.x, a3.y), a3.z);
-}
 
 const uint SHADER_WIREFRAME_ON_MESH = 0x00000001 << 0;
 const uint SHADER_LINEMODE          = 0x00000001 << 1;
@@ -32,6 +27,16 @@ const uint SHADER_ANIMATED          = 0x00000001 << 2;
 const uint SHADER_IS_TEXTURED       = 0x00000001 << 3;
 const uint SHADER_USE_LIGHTMAP      = 0x00000001 << 4;
 const uint SHADER_LIGHTMAP_ONLY     = 0x00000001 << 5;
+
+// Scaling factor used during PNG generation
+const float gamma = 2.2;
+const float scaling_factor = 1.6953125; // Replace with the printed scaling factor from the Python code
+
+float edgeFactor(){
+    vec3 d = fwidth(BaryCentricCoords);
+    vec3 a3 = smoothstep(vec3(0.0), d, BaryCentricCoords);
+    return min(min(a3.x, a3.y), a3.z);
+}
 
 void main() {
 
@@ -71,10 +76,21 @@ void main() {
          ((shaderSettingBits & SHADER_LIGHTMAP_ONLY) == SHADER_LIGHTMAP_ONLY) ) 
     {
         lightmapColor = texture( lightmapTexture, uvLightmap );
+
+        // Reverse gamma correction
+        vec3 linearLightmap = pow(lightmapColor.rgb, vec3(gamma));
+
+        // Reverse logarithmic compression
+        vec3 hdrLightmap = exp2(log2(1.0 + linearLightmap) * scaling_factor) - 1.0;
+
+                // Rescale back to the HDR range using the scaling factor
+        lightmapColor.rgb = hdrLightmap * scaling_factor;
+
+
     }
     
     vec4 finalOutputColor = vec4( diffuseColor.rgb * lightmapColor.rgb, 1.0f );
-    finalOutputColor.rgb = pow(finalOutputColor.rgb, vec3(1.0f/1.2f));
+    //finalOutputColor.rgb = pow(finalOutputColor.rgb, vec3(1.0f/1.2f));
     if ( (shaderSettingBits & SHADER_LIGHTMAP_ONLY) == SHADER_LIGHTMAP_ONLY ) {
         finalOutputColor = vec4(lightmapColor.rgb, 1.0f);
     }
