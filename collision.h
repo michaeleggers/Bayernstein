@@ -31,7 +31,7 @@ struct CollisionInfo
 bool              TraceRayAgainstUnitSphere(glm::vec3 rayPos, glm::vec3 rayDir, glm::vec3 sphereCenter);
 bool              TraceRayAgainstEllipsoid(glm::vec3 rayPos, glm::vec3 rayDir, EllipsoidCollider ec);
 EllipsoidCollider CreateEllipsoidColliderFromAABB(glm::vec3 mins, glm::vec3 maxs);
-void              CollideUnitSphereWithPlane(CollisionInfo* ci, glm::vec3 pos, Plane p, Tri tri);
+//void              CollideUnitSphereWithPlane(CollisionInfo* ci, glm::vec3 pos, Plane p, Tri tri);
 glm::vec3         CollideEllipsoidWithTrisRec(
             CollisionInfo* ci, glm::vec3 esBasePos, glm::vec3 velocity, Tri* tris, int triCount, int depth, int maxDepth);
 CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider                 ec,
@@ -41,7 +41,6 @@ CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider                 ec,
                                           int                               triCount,
                                           std::vector<std::vector<MapTri>*> brushMapTris);
 Tri           TriToEllipsoidSpace(Tri tri, glm::vec3 scaleToESpace);
-Plane         CreatePlaneFromTri(Tri tri);
 bool          IsPointInTriangle(glm::vec3 point, Tri tri, glm::vec3 triNormal);
 // PushTouch will *only* trigger a collision if the ellipsoid is moving by a non-zero velocity vector.
 CollisionInfo PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapTri* tris, int triCount);

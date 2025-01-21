@@ -227,20 +227,21 @@ bool CheckSweptSphereVsLinesegment(glm::vec3  p0,
     return false;
 }
 
-void CollideUnitSphereWithTri(CollisionInfo* ci, const Tri& tri)
+static void CollideUnitSphereWithTri(CollisionInfo* ci, const Tri& tri)
 {
-    Plane     p         = CreatePlaneFromTri(tri);
-    glm::vec3 normal    = p.normal;
-    glm::vec3 ptOnPlane = p.d * normal;
+    Plane p{};
+    CreatePlaneFromTri(&p, tri);
+    //glm::vec3 normal(p.normal);
+    glm::vec3 ptOnPlane = p.d * p.normal;
     glm::vec3 basePos   = ci->basePos;
     glm::vec3 velocity  = ci->velocity;
 
-    if ( glm::dot(velocity, normal) >= 0.0f ) return;
+    if ( glm::dot(velocity, p.normal) >= 0.0f ) return;
     // Signed distance from plane to unit sphere's center
-    float sD = glm::dot(normal, basePos - ptOnPlane);
+    float sD = glm::dot(p.normal, basePos - ptOnPlane);
 
     // Project velocity along the plane normal
-    float velDotNormal = glm::dot(normal, velocity);
+    float velDotNormal = glm::dot(p.normal, velocity);
 
     bool  foundCollision  = false;
     bool  embeddedInPlane = false;
@@ -300,8 +301,8 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, const Tri& tri)
     if ( !embeddedInPlane )
     {
         // Check if the intersection is INSIDE the triangle.
-        glm::vec3 intersectionPoint = basePos + t0 * velocity - normal;
-        if ( IsPointInTriangle(intersectionPoint, tri, normal) )
+        glm::vec3 intersectionPoint = basePos + t0 * velocity - p.normal;
+        if ( IsPointInTriangle(intersectionPoint, tri, p.normal) )
         { // TODO: Rename function!
             foundCollision = true;
             hitPoint       = intersectionPoint;
