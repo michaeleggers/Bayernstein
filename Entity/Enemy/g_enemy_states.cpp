@@ -32,7 +32,8 @@ static inline bool ReactToRayHit(Enemy* agent, BaseGameEntity* pSender)
             newForward.z                    = 0;
             newForward                      = glm::normalize(newForward);
             float     absOrientationAngle   = glm::orientedAngle(DOD_WORLD_FORWARD, newForward, DOD_WORLD_UP);
-            glm::quat newForwardOrientation = glm::angleAxis(absOrientationAngle, DOD_WORLD_UP);
+            float     randAngleBias         = RandBetween(-30.0f, 30.0f);
+            glm::quat newForwardOrientation = glm::angleAxis(absOrientationAngle + glm::radians(randAngleBias), DOD_WORLD_UP);
             agent->m_Orientation            = newForwardOrientation;
 
             agent->GetFSM()->ChangeState(EnemyDead::Instance());
