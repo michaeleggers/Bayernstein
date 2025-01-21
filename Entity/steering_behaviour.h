@@ -11,9 +11,11 @@
 #include "./base_game_entity.h"
 #include "moving_entity.h"
 
-class SteeringBehaviour {
+class SteeringBehaviour
+{
   public:
-    enum summing_method {
+    enum summing_method
+    {
         weighted_average,
         prioritized,
         dithered
@@ -22,11 +24,16 @@ class SteeringBehaviour {
   public:
     SteeringBehaviour(MovingEntity* pEntity);
     glm::vec3 Calculate();
-    void      SetTargetAgent(BaseGameEntity* pAgent) {
+
+    void SetTargetAgent(BaseGameEntity* pAgent)
+    {
         m_pTargetAgent = pAgent;
     }
-    void SetFollowPath(PatrolPath* pPath) {
-        if ( pPath == nullptr ) {
+
+    void SetFollowPath(PatrolPath* pPath)
+    {
+        if ( pPath == nullptr )
+        {
             printf("SetFollowPath: pPath is nullptr! Ignore.\n");
             return;
         }
@@ -34,65 +41,92 @@ class SteeringBehaviour {
     }
 
   public:
-    void FleeOn() {
+    void NoneOn()
+    {
+        m_Flags = none;
+    }
+    void FleeOn()
+    {
         m_Flags |= flee;
     }
-    void SeekOn() {
+    void SeekOn()
+    {
         m_Flags |= seek;
     }
-    void ArriveOn() {
+    void ArriveOn()
+    {
         m_Flags |= arrive;
     }
-    void WanderOn() {
+    void WanderOn()
+    {
         m_Flags |= wander;
     }
-    void FollowPathOn() {
+    void FollowPathOn()
+    {
         m_Flags |= follow_path;
     }
-    void FollowWaypointsOn() {
+    void FollowWaypointsOn()
+    {
         m_Flags |= follow_waypoints;
     }
 
-    void FleeOff() {
+    void FleeOff()
+    {
         if ( On(flee) ) m_Flags ^= flee;
     }
-    void SeekOff() {
+    void SeekOff()
+    {
         if ( On(seek) ) m_Flags ^= seek;
     }
-    void ArriveOff() {
+    void ArriveOff()
+    {
         if ( On(arrive) ) m_Flags ^= arrive;
     }
-    void WanderOff() {
+    void WanderOff()
+    {
         if ( On(wander) ) m_Flags ^= wander;
     }
-    void FollowPathOff() {
+    void FollowPathOff()
+    {
         if ( On(follow_path) ) m_Flags ^= follow_path;
     }
-    void FollowWaypointsOff() {
+    void FollowWaypointsOff()
+    {
         if ( On(follow_waypoints) ) m_Flags ^= follow_waypoints;
     }
 
-    bool isFleeOn() {
+    bool isNoneOn()
+    {
+        return m_Flags == 0;
+    }
+    bool isFleeOn()
+    {
         return On(flee);
     }
-    bool isSeekOn() {
+    bool isSeekOn()
+    {
         return On(seek);
     }
-    bool isArriveOn() {
+    bool isArriveOn()
+    {
         return On(arrive);
     }
-    bool isWanderOn() {
+    bool isWanderOn()
+    {
         return On(wander);
     }
-    bool isFollowPathOn() {
+    bool isFollowPathOn()
+    {
         return On(follow_path);
     }
-    bool isFollowWaypointsOn() {
+    bool isFollowWaypointsOn()
+    {
         return On(follow_waypoints);
     }
 
   private:
-    enum behavior_type {
+    enum behavior_type
+    {
         none   = 0x00000,
         seek   = 0x00002,
         flee   = 0x00004,
@@ -148,7 +182,8 @@ class SteeringBehaviour {
 
     //Arrive makes use of these to determine how quickly a vehicle
     //should decelerate to its target
-    enum Deceleration {
+    enum Deceleration
+    {
         slow   = 1,
         normal = 2,
         fast   = 3
@@ -161,7 +196,8 @@ class SteeringBehaviour {
     summing_method m_SummingMethod;
 
     //this function tests if a specific bit of m_Flags is set
-    bool On(behavior_type behaviorType) {
+    bool On(behavior_type behaviorType)
+    {
         return (m_Flags & behaviorType) == behaviorType;
     }
 
@@ -177,6 +213,7 @@ class SteeringBehaviour {
     glm::vec3 Arrive(glm::vec3 targetPos, Deceleration deceleration);
 
     glm::vec3 Wander();
+    glm::vec3 None();
     glm::vec3 FollowPath(PatrolPath* path);
     glm::vec3 FollowWaypoints(PatrolPath* path);
     glm::vec3 SeekPathStart(PatrolPath* path);

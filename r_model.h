@@ -22,6 +22,8 @@ enum AnimState
     ANIM_STATE_IDLE,
     ANIM_STATE_WALK,
     ANIM_STATE_RUN,
+    ANIM_STATE_ATTACK,
+    ANIM_STATE_DIE,
     ANIM_STATE_NONE
 };
 
@@ -62,7 +64,7 @@ struct HKD_Model
         poses; // A POSE IS JUST A LOCAL TRANSFORM FOR A SINGLE JOINT!!! IT IS NOT THE SKELETON STATE AT A CERTAIN FRAME!
     uint32_t                       currentFrame;
     uint32_t                       numFrames;
-    float                          pctFrameDone;
+    float                          pctFrameDone;    
     std::vector<glm::mat4>         invBindPoses;
     std::vector<glm::mat4>         bindPoses;
     std::vector<glm::mat4>         palette;

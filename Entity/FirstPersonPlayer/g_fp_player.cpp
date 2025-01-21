@@ -33,7 +33,7 @@ FirstPersonPlayer::FirstPersonPlayer(const std::vector<Property>& properties)
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(FirstPersonPlayerIdle::Instance());
     BaseGameEntity::GetProperty<glm::vec3>(properties, "origin", &m_Position);
-    LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
+    LoadModel("models/mayan_undead_warrior/mayan_undead_warrior.iqm", m_Position);
     m_PrevPosition = m_Position;
     //m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
     m_Camera = Camera(m_Position);
@@ -192,7 +192,7 @@ void FirstPersonPlayer::PostCollisionUpdate()
     //m_Position = m_Model.position;
     m_Camera.m_Pos = m_Position;
     // Adjust the camera so it is roughly at the top of the model's head.
-    m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, GetEllipsoidColliderPtr()->radiusB);
+    m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, GetEllipsoidColliderPtr()->radiusB) - glm::vec3(0.0f, 0.0f, 15.0f);
     //m_Camera.Pan( -100.0f * m_Camera.m_Forward );
 
     // Adjust the Weapon model
@@ -220,7 +220,7 @@ void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition)
     m_Model.pOwner = this;
     m_Model.renderFlags |= MODEL_RENDER_FLAG_IGNORE;
     m_Model.isRigidBody = false;
-    m_Model.scale       = glm::vec3(30.0f);
+    m_Model.scale       = glm::vec3(1.0f);
 
     for ( int i = 0; i < m_Model.animations.size(); i++ )
     {
@@ -444,7 +444,7 @@ HKD_Model* FirstPersonPlayer::GetModel()
 
 bool FirstPersonPlayer::HandleMessage(const Telegram& telegram)
 {
-    return m_pStateMachine->HandleMessage(telegram);
+    return m_pStateMachine->HandleMessage(telegram);    
 }
 
 void FirstPersonPlayer::HandleInput()

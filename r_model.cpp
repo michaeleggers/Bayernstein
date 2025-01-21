@@ -297,19 +297,30 @@ void UpdateModel(HKD_Model* model, float dt)
 
         // For now, we just cylce through all animations. If the current animations has reached its
         // end, we jump to the next animation.
-
+        bool animationDone = false;
         if ( currentFrame >= anim.firstFrame + anim.numFrames - 1 )
         {
+            animationDone = true;
             //model->currentAnimIdx = (model->currentAnimIdx + 1) % model->animations.size();
             anim         = model->animations[ model->currentAnimIdx ];
             currentFrame = anim.firstFrame;
         }
-        model->currentFrame = currentFrame;
-        uint32_t nextFrame  = (currentFrame + 1) % (anim.firstFrame + anim.numFrames);
+        uint32_t nextFrame = (currentFrame + 1) % (anim.firstFrame + anim.numFrames);
         if ( nextFrame < anim.firstFrame )
         {
             nextFrame = anim.firstFrame;
         }
+
+        // Check if this animation has looping turned off and the animation
+        // has already played once. If so, repeat the last frame of
+        // the animation forever...
+        if ( animationDone && !anim.loop )
+        {
+            currentFrame = anim.firstFrame + anim.numFrames - 1;
+            nextFrame = currentFrame;
+        }
+        
+        model->currentFrame = currentFrame;
 
         //printf("currentFrame: %d\n", currentFrame);
 

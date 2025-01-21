@@ -80,8 +80,8 @@ Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
     Frustum frustum{};
     frustum.projDistance = g;
     frustum.aspectRatio  = s;
-    frustum.near         = n;
-    frustum.far          = f;
+    frustum.nearPlane    = n;
+    frustum.farPlane     = f;
 
     // Create vertices for near plane
     float z               = n / g;
@@ -146,8 +146,6 @@ bool EllipsoidInFrustum(const Frustum& frustum, const EllipsoidCollider& ec)
             return false;
         }
     }
-
-    printf("Ellipsoid in frustum!\n");
 
     return true;
 }

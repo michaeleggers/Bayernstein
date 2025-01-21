@@ -66,6 +66,7 @@ struct Anim {
     std::string name;
     uint32_t    firstFrame, numFrames;
     float       framerate;
+    bool        loop;    
 };
 
 struct Frame {
