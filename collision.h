@@ -40,7 +40,7 @@ CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider                 ec,
                                           MapTri*                           tris,
                                           int                               triCount,
                                           std::vector<std::vector<MapTri>*> brushMapTris);
-Tri           TriToEllipsoidSpace(Tri tri, glm::mat3 toESPace);
+Tri           TriToEllipsoidSpace(Tri tri, glm::vec3 scaleToESpace);
 Plane         CreatePlaneFromTri(Tri tri);
 bool          IsPointInTriangle(glm::vec3 point, Tri tri, glm::vec3 triNormal);
 // PushTouch will *only* trigger a collision if the ellipsoid is moving by a non-zero velocity vector.
