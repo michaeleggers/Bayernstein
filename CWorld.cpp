@@ -15,12 +15,18 @@
 #include "dependencies/glm/glm.hpp"
 #include "dependencies/glm/gtx/quaternion.hpp"
 
+#include "Audio/Audio.h"
+#include "Entity/FirstPersonPlayer/g_fp_player.h"
 #include "Entity/base_game_entity.h"
 #include "Message/message_type.h"
 #include "hkd_interface.h"
 #include "irender.h"
 #include "map_parser.h"
+#include "polysoup.h"
+#include "platform.h"
 #include "utils/utils.h"
+
+extern std::string g_GameDir;
 
 CWorld* CWorld::Instance() {
     static CWorld m_World;
@@ -28,18 +34,44 @@ CWorld* CWorld::Instance() {
     return &m_World;
 }
 
-void CWorld::InitWorldFromMap(const Map& map) {
+void CWorld::InitWorld(const std::string& mapName) {
     // Get some subsystems
     EntityManager* m_pEntityManager = EntityManager::Instance();
     IRender*       renderer         = GetRenderer();
 
-    // TODO: Init via .MAP property.
-    m_Gravity = glm::vec3(0.0f, 0.0f, -0.5f);
+    std::string exePath = hkd_GetExePath();
+    
 
-    // Get static geometry from map
-    std::vector<MapPolygon> polysoup = createPolysoup(map);
+    std::string mapData = loadTextFile(g_GameDir + "maps/" + mapName + ".map");
+    MapVersion mapVersion = VALVE_220;
+    size_t inputLength = mapData.length();
+    Map    map         = getMap(&mapData[ 0 ], inputLength, mapVersion);
+
+    // TODO: Init via .MAP property.
+    m_Gravity = glm::vec3(0.0f, 0.0f, -200.0f);
+
     // Convert to tris
-    m_MapTris = CWorld::CreateMapTrisFromMapPolys(polysoup);
+
+    // Check if a lightmap is available
+    m_LightmapAvailable = false;
+    HKD_File    plyFile;
+
+    std::string fullPlyPath = g_GameDir + "maps/" + mapName + ".ply";
+    if ( hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS ) {
+        m_MapTris           = CWorld::CreateMapFromLightmapTrisFile(plyFile);
+        m_hLightmapTexture  = renderer->RegisterTextureGetHandle(mapName + ".png");
+        m_LightmapAvailable = true;
+    } else {
+        printf("Warning (CWorld): Lightmap file '%s' could not be loaded!\n", mapName.c_str());
+    }
+
+    // No lightmap provided or found. It's fine. The world can be initialized
+    // from the ASCII MAP file as well. But everything will be bright.
+    if ( !m_LightmapAvailable ) {
+        // Get static geometry from map
+        std::vector<MapPolygon> polysoup = createPolysoup(map);
+        m_MapTris                        = CWorld::CreateMapTrisFromMapPolys(polysoup);
+    }
 
     m_StaticGeometryCount = m_MapTris.size();
 
@@ -60,25 +92,24 @@ void CWorld::InitWorldFromMap(const Map& map) {
                     Door* door = new Door(e.properties, e.brushes);
                     m_pEntityManager->RegisterEntity(door);
                     HKD_Model* model = door->GetModel();
-                    m_BrushModels.push_back(model);
+                    m_pBrushModels.push_back(model);
                     std::vector<MapTri>& mapTris = door->MapTris();
                     m_pBrushMapTris.push_back(&mapTris);
                 } else if ( prop.value == "info_player_start" ) {
                     assert(m_pPlayerEntity == nullptr); // There can only be one
                     glm::vec3 playerStartPosition = CWorld::GetOrigin(&e);
-                    m_pPlayerEntity               = new Player(playerStartPosition);
+                    m_pPlayerEntity               = new FirstPersonPlayer(playerStartPosition);
                     m_pEntityManager->RegisterEntity(m_pPlayerEntity);
                     // Upload this model to the GPU. Not using the handle atm.
                     int hPlayerModel = renderer->RegisterModel(m_pPlayerEntity->GetModel());
-                    m_Models.push_back(m_pPlayerEntity->GetModel());
+                    m_pModels.push_back(m_pPlayerEntity->GetModel());
                 } else if ( prop.value == "monster_soldier" ) {
                     // just a placeholder entity from trenchbroom/quake
                     glm::vec3 enemyStartPosition = CWorld::GetOrigin(&e);
                     Enemy*    enemy              = new Enemy(e.properties);
                     m_pEntityManager->RegisterEntity(enemy);
-
                     int hEnemyModel = renderer->RegisterModel(enemy->GetModel());
-                    m_Models.push_back(enemy->GetModel());
+                    m_pModels.push_back(enemy->GetModel());
                 } else if ( prop.value == "path_corner" ) { // FIX: Should be an entity type as well.
                     Waypoint point = CWorld::GetWaypoint(&e);
                     m_NameToWaypoint.insert({ point.targetname, point });
@@ -163,29 +194,106 @@ void CWorld::InitWorldFromMap(const Map& map) {
             }
         }
     }
+
+    m_MusicIdle       = Audio::LoadSource("music/GranVals_Placeholder.wav", 0.15f, true, true);
+    m_MusicIdleHandle = Audio::m_MusicBus.play(*m_MusicIdle, -1);
+
+    m_Ambience = Audio::LoadSource(
+        "ambience/sonniss/DSGNDron_EMF_Designed_Drone_Ambience_Forbidden_Cave.wav", 0.15f, true, true);
+    m_AmbienceHandle = Audio::m_AmbienceBus.play(*m_Ambience, -1);
 }
 
 void CWorld::CollideEntitiesWithWorld() {
-    std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
-    double                       dt       = GetDeltaTime();
+    std::vector<BaseGameEntity*> entities    = EntityManager::Instance()->Entities();
+    double                       dt          = GetDeltaTime();
+    static double                accumulator = 0.0;
+    accumulator += dt;
+    int numUpdateSteps = 0;
+
+    while ( accumulator >= DOD_FIXED_UPDATE_TIME ) {
+        for ( int i = 0; i < entities.size(); i++ ) {
+            BaseGameEntity* pEntity = entities[ i ];
+
+            if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
+
+                EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
+                if ( ec == nullptr ) {
+                    continue;
+                }
+
+                pEntity->m_PrevPosition = ec->center; //pEntity->m_Position;
+                //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
+                CollisionInfo collisionInfo
+                    = CollideEllipsoidWithMapTris(*ec,
+                                                  (float)DOD_FIXED_UPDATE_TIME / 1000.0f * pEntity->m_Velocity,
+                                                  (float)DOD_FIXED_UPDATE_TIME / 1000.0f * m_Gravity,
+                                                  m_MapTris.data(),
+                                                  StaticGeometryCount(),
+                                                  m_pBrushMapTris);
+
+                // FIX: Again. Components could fix this.
+                HKD_Model* model = nullptr;
+                if ( pEntity->Type() == ET_PLAYER ) {
+                    model = ((FirstPersonPlayer*)pEntity)->GetModel();
+                } else if ( pEntity->Type() == ET_ENEMY ) {
+                    model = ((Enemy*)pEntity)->GetModel();
+                }
+
+                // Update the position of the collider.
+                for ( int i = 0; i < model->animations.size(); i++ ) {
+                    model->ellipsoidColliders[ i ].center = collisionInfo.basePos;
+                }
+
+            } // Check if player or enemy
+        } // Check all entities
+        accumulator -= DOD_FIXED_UPDATE_TIME;
+        numUpdateSteps++;
+    } // while (accumulator >= DOD_FIXED_UPDATE_TIME) {
+
+    // Avoid 'spiral of hell'.
+    if ( numUpdateSteps > 5 ) {
+        printf("WARNING: SPIRAL OF HELL!!!\n");
+        accumulator = 0;
+    }
+
+    // Now, update all the entities positions. But only if they are of
+    // a certain type.
+    // FIX: Dumb! We should loop over the collider components and
+    // then update their owners. Again: We need the actor-component model ;)
     for ( int i = 0; i < entities.size(); i++ ) {
         BaseGameEntity* pEntity = entities[ i ];
-
-        // FIX: Higher level entity type or entity flags (eg. FLAG_COLLIDABLE).
         if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) ) {
+            EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
 
-            EllipsoidCollider ec = pEntity->GetEllipsoidCollider();
-            //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
-            CollisionInfo collisionInfo = CollideEllipsoidWithMapTris(ec,
-                                                                      static_cast<float>(dt) * pEntity->m_Velocity,
-                                                                      static_cast<float>(dt) * m_Gravity,
-                                                                      m_MapTris.data(),
-                                                                      StaticGeometryCount(),
-                                                                      m_pBrushMapTris);
+            if ( ec == nullptr ) {
+                continue;
+            }
 
-            // Iterate over brush entities and check for collision as well...
+            double    t             = accumulator / DOD_FIXED_UPDATE_TIME;
+            glm::vec3 perTickMotion = ec->center - pEntity->m_PrevPosition;
+            pEntity->UpdatePosition(pEntity->m_PrevPosition + (float)t * perTickMotion);
 
-            pEntity->UpdatePosition(collisionInfo.basePos);
+            // Check if entity is in air.
+            CollisionInfo ci = PushTouch(*ec, -DOD_WORLD_UP * 7.0f, m_MapTris.data(), StaticGeometryCount());
+
+            if ( ci.didCollide ) {
+                pEntity->m_CollisionState = ES_ON_GROUND;
+            } else {
+                pEntity->m_CollisionState = ES_IN_AIR;
+            }
+
+            // Also check for brush entities such as doors
+            // (we could stand on top of them).
+            for ( int i = 0; i < m_pBrushMapTris.size(); i++ ) {
+                std::vector<MapTri>* brushMapTris = m_pBrushMapTris[ i ];
+
+                CollisionInfo brushCi
+                    = PushTouch(*ec, -DOD_WORLD_UP * 7.0f, brushMapTris->data(), brushMapTris->size());
+                if ( brushCi.didCollide ) {
+                    pEntity->m_CollisionState = ES_ON_GROUND;
+                    break;
+                }
+            }
         }
     }
 }
@@ -215,10 +323,18 @@ void CWorld::CollideEntities() {
             }
 
             if ( pOther->Type() == ET_DOOR ) {
-                Door*             pDoor = (Door*)pOther;
-                EllipsoidCollider ec    = pEntity->GetEllipsoidCollider();
-                CollisionInfo     ci    = PushTouch(
-                    ec, static_cast<float>(dt) * pEntity->m_Velocity, pDoor->MapTris().data(), pDoor->MapTris().size());
+                Door*              pDoor = (Door*)pOther;
+                EllipsoidCollider* ec    = pEntity->GetEllipsoidColliderPtr();
+
+                if ( ec == nullptr ) {
+                    continue;
+                }
+
+                CollisionInfo ci = PushTouch(*ec,
+                                             (float)DOD_FIXED_UPDATE_TIME / 1000.0f * pEntity->m_Velocity,
+                                             pDoor->MapTris().data(),
+                                             pDoor->MapTris().size());
+
                 if ( ci.didCollide ) {
                     printf("COLLIDED!\n");
                     Dispatcher->DispatchMessage(
@@ -289,4 +405,57 @@ Waypoint CWorld::GetWaypoint(const Entity* entity) {
     }
 
     return waypoint;
+}
+
+Vertex CWorld::StaticVertexToVertex(StaticVertex staticVertex) {
+    Vertex result{ staticVertex.pos, staticVertex.uv, staticVertex.uvLightmap, staticVertex.bc, staticVertex.normal };
+
+    return result;
+}
+
+std::vector<MapTri> CWorld::CreateMapFromLightmapTrisFile(HKD_File lightmapTrisFile) {
+    /*
+struct MapTriLightmapper {
+    StaticVertex vertices[ 3 ];
+    char         textureName[ 64 ];
+    uint64_t     surfaceFlags;
+    uint64_t     contentFlags;
+};
+
+struct MapTri {
+    Tri         tri;
+    std::string textureName;
+    std::string lightmap;
+    uint64_t    hTexture; // GPU handle set by renderer.
+};
+*/
+    // Get the renderer to register the textures
+    IRender* renderer = GetRenderer();
+
+    MapTriLightmapper*             currentLightmapTri;
+    std::vector<MapTriLightmapper> lightmapperTris{};
+    std::vector<MapTri>            mapTris{};
+
+    size_t numLightmapTris = lightmapTrisFile.size / sizeof(MapTriLightmapper);
+    mapTris.resize(numLightmapTris);
+
+    currentLightmapTri = (MapTriLightmapper*)lightmapTrisFile.data;
+    for ( int i = 0; i < numLightmapTris; i++ ) {
+        MapTri mapTri{};
+        Vertex vertices[ 3 ];
+        vertices[ 0 ] = StaticVertexToVertex(currentLightmapTri->vertices[ 0 ]);
+        vertices[ 1 ] = StaticVertexToVertex(currentLightmapTri->vertices[ 1 ]);
+        vertices[ 2 ] = StaticVertexToVertex(currentLightmapTri->vertices[ 2 ]);
+
+        memcpy(mapTri.tri.vertices, vertices, 3 * sizeof(Vertex));
+
+        mapTri.textureName = std::string(currentLightmapTri->textureName);
+        mapTri.hTexture    = renderer->RegisterTextureGetHandle(mapTri.textureName + ".tga");
+
+        mapTris[ i ] = mapTri;
+
+        currentLightmapTri++;
+    }
+
+    return mapTris;
 }

@@ -3,6 +3,7 @@
 
 #include "irender.h"
 
+#include <stdint.h>
 #include <vector>
 
 #include <SDL.h>
@@ -36,7 +37,7 @@ class GLRender : public IRender {
     virtual int                    RegisterBrush(HKD_Model* model) override;
     virtual void                   RegisterFont(CFont* font) override;
     virtual void                   RegisterWorld(CWorld* world) override;
-    virtual uint64_t               RegisterTextureGetHandle(std::string name) override;
+    virtual uint64_t               RegisterTextureGetHandle(const std::string& name) override;
     virtual void                   SetActiveCamera(Camera* camera) override;
     virtual std::vector<ITexture*> ModelTextures(int gpuModelHandle) override;
     virtual std::vector<ITexture*> Textures(void) override;
@@ -78,8 +79,11 @@ class GLRender : public IRender {
     virtual void FlushShapes() override;
     virtual void
     DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
-    virtual void RenderEnd(void) override;
-    virtual void SetWindowTitle(char* windowTitle) override;
+    virtual void        RenderEnd(void) override;
+    virtual void        SetWindowTitle(char* windowTitle) override;
+    virtual SDL_Window* GetWindow() override {
+        return m_Window;
+    };
 
     void           ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType);
     void           InitShaders();
@@ -137,6 +141,10 @@ class GLRender : public IRender {
 
     // 2D Rendering state
     CFont* m_CurrentFont;
+
+    // Lightmap
+    bool     m_UseLightmap = false;
+    uint64_t m_hLightmapTexture;
 };
 
 #endif

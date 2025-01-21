@@ -20,6 +20,8 @@
 
 #include "Console/Console.h"
 #include "Console/VariableManager.h"
+#include "Entity/base_game_entity.h"
+#include "globals.h"
 #include "input.h"
 #include "platform.h"
 #include "r_common.h"
@@ -35,6 +37,9 @@ const int WINDOW_HEIGHT = 1080;
 ConsoleVariable scr_consize      = { "scr_consize", 0.45f };
 ConsoleVariable scr_conopacity   = { "scr_conopacity", 0.95f };
 ConsoleVariable scr_conwraplines = { "scr_conwraplines", 1 };
+
+ConsoleVariable r_lightmaps      = { "r_lightmaps", 1 };
+ConsoleVariable r_lightmaps_only = { "r_lightmaps_only", 0 };
 
 void GLAPIENTRY OpenGLDebugCallback(GLenum        source,
                                     GLenum        type,
@@ -187,12 +192,7 @@ bool GLRender::Init(void) {
 */
 
     // Create an application window with the following settings:
-    m_Window = SDL_CreateWindow("HKD",
-                                SDL_WINDOWPOS_UNDEFINED,
-                                SDL_WINDOWPOS_UNDEFINED,
-                                WINDOW_WIDTH,
-                                WINDOW_HEIGHT,
-                                SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
+    m_Window = SDL_CreateWindow("HKD", 1, 1, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
 
     // BEWARE! These flags must be set AFTER SDL_CreateWindow. Otherwise SDL
     // just doesn't cate about them (at least on Linux)!
@@ -320,6 +320,9 @@ bool GLRender::Init(void) {
     VariableManager::Register(&scr_conopacity);
     VariableManager::Register(&scr_conwraplines);
 
+    VariableManager::Register(&r_lightmaps);
+    VariableManager::Register(&r_lightmaps_only);
+
     return true;
 }
 
@@ -403,10 +406,16 @@ void GLRender::RegisterWorld(CWorld* world) {
                                    DRAW_MODE_SOLID };
         m_TexHandleToWorldDrawCmd.insert({ texHandle, drawCmd });
     }
+
+    // Check if lightmap available
+    if ( world->IsLightmapAvailable() ) {
+        m_UseLightmap      = true;
+        m_hLightmapTexture = world->GetLightmapTextureHandle();
+    }
 }
 
 // Returns the CPU handle
-uint64_t GLRender::RegisterTextureGetHandle(std::string name) {
+uint64_t GLRender::RegisterTextureGetHandle(const std::string& name) {
     return m_TextureManager->CreateTextureGetHandle(name);
 }
 
@@ -758,15 +767,37 @@ void GLRender::Render(
     glEnable(GL_DEPTH_TEST);
 
     // Draw World Tris
+
     m_WorldBatch->Bind();
     m_WorldShader->Activate();
     m_WorldShader->SetViewProjMatrices(view, proj);
 
+    if ( m_UseLightmap ) {
+        // Bind lightmap texture to texture slot 1.
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_hLightmapTexture);
+        if ( r_lightmaps.value ) {
+            m_WorldShader->SetShaderSettingBits(SHADER_USE_LIGHTMAP);
+        } else {
+            m_WorldShader->ResetShaderSettingBits(SHADER_USE_LIGHTMAP);
+        }
+
+        if ( r_lightmaps_only.value ) {
+            m_WorldShader->SetShaderSettingBits(SHADER_LIGHTMAP_ONLY);
+        } else {
+            m_WorldShader->ResetShaderSettingBits(SHADER_LIGHTMAP_ONLY);
+        }
+    }
+
     for ( auto const& [ texHandle, drawCmd ] : m_TexHandleToWorldDrawCmd ) {
         std::vector<GLBatchDrawCmd> drawCmds{ drawCmd };
+        // Bind diffuse texture to texture slot 0
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texHandle);
         ExecuteDrawCmds(drawCmds, GEOM_TYPE_VERTEX_ONLY);
     }
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE0);
 
     /*for (auto const& [ texHandle, batch ] : m_TexHandleToWorldBatch) {*/
     /*    batch->Bind();*/
@@ -802,17 +833,32 @@ void GLRender::Render(
         m_ModelShader->ResetShaderSettingBits(SHADER_WIREFRAME_ON_MESH);
     }
     for ( int i = 0; i < numModels; i++ ) {
+        HKD_Model* hkdModel = models[ i ];
 
-        GLModel model = m_Models[ models[ i ]->gpuModelHandle ];
+        if ( hkdModel->renderFlags & MODEL_RENDER_FLAG_IGNORE ) {
+            continue;
+        }
 
-        if ( models[ i ]->numJoints > 0 ) {
+        GLModel model = m_Models[ hkdModel->gpuModelHandle ];
+
+        if ( hkdModel->numJoints > 0 ) {
             m_ModelShader->SetShaderSettingBits(SHADER_ANIMATED);
-            m_ModelShader->SetMatrixPalette(&models[ i ]->palette[ 0 ], models[ i ]->numJoints);
+            m_ModelShader->SetMatrixPalette(&hkdModel->palette[ 0 ], hkdModel->numJoints);
         } else {
             m_ModelShader->ResetShaderSettingBits(SHADER_ANIMATED);
         }
 
-        glm::mat4 modelMatrix = CreateModelMatrix(models[ i ]);
+        BaseGameEntity* pOwner           = hkdModel->pOwner;
+        glm::vec3       ownerPos         = glm::vec3(0.0f);
+        glm::quat       ownerOrientation = glm::angleAxis(0.0f, DOD_WORLD_FORWARD);
+        if ( pOwner != nullptr ) {
+            ownerPos         = pOwner->m_Position;
+            ownerOrientation = pOwner->m_Orientation;
+        }
+        glm::vec3 position    = ownerPos + hkdModel->position;
+        glm::quat orientation = ownerOrientation * hkdModel->orientation;
+        glm::vec3 scale       = hkdModel->scale;
+        glm::mat4 modelMatrix = CreateModelMatrix(position, orientation, scale);
         m_ModelShader->SetMat4("model", modelMatrix);
 
         for ( int j = 0; j < model.meshes.size(); j++ ) {
@@ -1055,21 +1101,27 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
 
     m_ColliderBatch->Bind();
     for ( int i = 0; i < numModels; i++ ) {
-        HKD_Model* model = models[ i ];
-        m_ColliderShader->SetVec4("uDebugColor", model->debugColor);
-        EllipsoidCollider ec    = model->ellipsoidColliders[ model->currentAnimIdx ];
+        HKD_Model* pModel   = models[ i ];
+        glm::vec3  ownerPos = glm::vec3(0.0f);
+        if ( pModel->pOwner != nullptr ) {
+            ownerPos = pModel->pOwner->m_Position;
+        }
+        m_ColliderShader->SetVec4("uDebugColor", pModel->debugColor);
+        EllipsoidCollider ec    = pModel->ellipsoidColliders[ pModel->currentAnimIdx ];
         glm::vec3         scale = glm::vec3(ec.radiusA, ec.radiusA, ec.radiusB);
 
-        glm::mat4 T = glm::translate(glm::mat4(1.0f), ec.center);
+        glm::mat4 T = glm::translate(glm::mat4(1.0f), ownerPos);
         glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
         glm::mat4 M = T * S;
         m_ColliderShader->SetMat4("model", M);
         std::vector<GLBatchDrawCmd> drawCmds = { m_EllipsoidColliderDrawCmd };
         //glDrawArrays(GL_TRIANGLES, m_EllipsoidColliderDrawCmd.offset, m_EllipsoidColliderDrawCmd.numVerts);
+        // FIX: Add to the list of draw commands and execute later? Not sure...
         ExecuteDrawCmds(drawCmds, GEOM_TYPE_VERTEX_ONLY);
-        // glDrawArrays(GL_LINES,
-        //     m_EllipsoidColliderDrawCmd.offset,
-        //     m_EllipsoidColliderDrawCmd.numVerts);
+        //m_PrimitiveDrawCmds.push_back(m_EllipsoidColliderDrawCmd);
+        //glDrawArrays(GL_LINES,
+        //             m_EllipsoidColliderDrawCmd.offset,
+        //             m_EllipsoidColliderDrawCmd.numVerts);
     }
 }
 

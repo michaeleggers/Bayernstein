@@ -8,10 +8,8 @@
 #include <glm/gtx/norm.hpp>
 
 #include "collision.h"
+#include "globals.h"
 #include "r_common.h"
-
-// NOTE: This distance depends very much on the size of the level geometry!
-#define VERY_CLOSE_DIST 0.01f
 
 EllipsoidCollider CreateEllipsoidColliderFromAABB(glm::vec3 mins, glm::vec3 maxs) {
     float             width  = glm::abs(maxs.x - mins.x);
@@ -181,7 +179,7 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri) {
     glm::vec3 basePos   = ci->basePos;
     glm::vec3 velocity  = ci->velocity;
 
-    if ( glm::dot(glm::normalize(velocity), normal) >= 0.0f ) return;
+    if ( glm::dot(velocity, normal) >= 0.0f ) return;
     // Signed distance from plane to unit sphere's center
     float sD = glm::dot(normal, basePos - ptOnPlane);
 
@@ -319,10 +317,17 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri) {
             ci->didCollide      = true;
             ci->nearestDistance = distanceToHitpoint;
             ci->hitPoint        = hitPoint;
-            if ( embeddedInPlane ) {
-                //ci->nearestDistance = -VERY_CLOSE_DIST;
-                //ci->hitPoint -= VERY_CLOSE_DIST*p.normal;
+
+            // NOTE: This could help to counter 'false positives'
+            // but as not proven to be numerically stable yet.
+            // This code is just there as a reminder that
+            // *maybe* something could be done here.
+            /*
+            if (embeddedInPlane) {
+                ci->nearestDistance = -DOD_VERY_CLOSE_DIST;
+                ci->hitPoint -= DOD_VERY_CLOSE_DIST*p.normal;
             }
+            */
         }
     }
 }
@@ -400,12 +405,12 @@ glm::vec3 CollideEllipsoidWithTrisRec(
     glm::vec3 destinationPos = esBasePos + velocity;
     glm::vec3 newBasePos     = esBasePos;
 
-    if ( ci->nearestDistance >= VERY_CLOSE_DIST ) {
+    if ( ci->nearestDistance >= DOD_VERY_CLOSE_DIST ) {
         glm::vec3 v      = velocity;
         glm::vec3 vNorm  = glm::normalize(v);
-        float     length = glm::abs(ci->nearestDistance - VERY_CLOSE_DIST); // abs should not be neccessary
+        float     length = glm::abs(ci->nearestDistance - DOD_VERY_CLOSE_DIST); // abs should not be neccessary
         newBasePos       = ci->basePos + length * vNorm;
-        ci->hitPoint -= VERY_CLOSE_DIST * vNorm;
+        ci->hitPoint -= DOD_VERY_CLOSE_DIST * vNorm;
     }
 
     Plane slidingPlane{};
@@ -416,7 +421,7 @@ glm::vec3 CollideEllipsoidWithTrisRec(
 
     glm::vec3 newVelocity = newDestinationPos - ci->hitPoint;
 
-    if ( glm::length(newVelocity) < VERY_CLOSE_DIST ) {
+    if ( glm::length(newVelocity) < DOD_VERY_CLOSE_DIST ) {
         return newBasePos;
     }
 
@@ -432,12 +437,18 @@ Tri TriToEllipsoidSpace(Tri tri, glm::mat3 toESPace) {
     return result;
 }
 
+// NOTE: This is to prevent allocating new memory every
+// time 'PushTouch' is being called. This is a temporary
+// fix. It increases the framerate on a release build
+// from around 400FPS to 2000FPS on a recent GPU.
+// However this also highly depends on the STL implementation.
+static std::vector<Tri> g_esTriMemory;
 CollisionInfo PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapTri* tris, int triCount) {
-    std::vector<Tri> esTris;
+    g_esTriMemory.clear();
     for ( int i = 0; i < triCount; i++ ) {
         Tri tri   = tris[ i ].tri;
         Tri esTri = TriToEllipsoidSpace(tri, ec.toESpace);
-        esTris.push_back(esTri);
+        g_esTriMemory.push_back(esTri);
     }
     glm::vec3 esBasePos  = ec.toESpace * ec.center;
     glm::vec3 esVelocity = ec.toESpace * velocity;
@@ -450,7 +461,7 @@ CollisionInfo PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapTri* tris, 
     ci.basePos         = esBasePos;
 
     for ( int i = 0; i < triCount; i++ ) {
-        CollideUnitSphereWithTri(&ci, esTris[ i ]);
+        CollideUnitSphereWithTri(&ci, g_esTriMemory[ i ]);
         if ( ci.didCollide ) {
             break;
         }

@@ -31,7 +31,8 @@ class EntityManager {
     // this method removes the entity from the list
     void RemoveEntity(const BaseGameEntity* pEntity);
 
-    void UpdateEntities();
+    void UpdateEntitiesPreCollision();
+    void UpdateEntitiesPostCollision();
 
     // FIX: Slow!
     std::vector<BaseGameEntity*> Entities();

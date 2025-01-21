@@ -11,6 +11,7 @@
 #include "../../dependencies/glm/glm.hpp"
 #include "../../dependencies/glm/gtx/quaternion.hpp"
 
+#include "../../Audio/Audio.h"
 #include "../../globals.h"
 #include "../../hkd_interface.h"
 #include "../../map_parser.h"
@@ -19,7 +20,7 @@
 #include "../../r_model.h"
 #include "g_door_states.h"
 
-void Door::Update() {
+void Door::PostCollisionUpdate() {
     m_pStateMachine->Update();
 }
 
@@ -41,11 +42,14 @@ Door::Door(const std::vector<Property>& properties, const std::vector<Brush>& br
     renderer->RegisterBrush(&m_Model);
 
     // Get the brush (geometry) that defines this door
-    // Assume just one brush for now... // TODO: Could be more brushes!
-    std::vector<MapPolygon> mapPolys = createPolysoup(brushes[ 0 ]);
-    std::vector<MapPolygon> mapTris  = triangulate(mapPolys);
 
-    // NOTE: Just make doors golden for now. Obviously we texture them later.
+    std::vector<MapPolygon> mapPolys{};
+    for ( int i = 0; i < brushes.size(); i++ ) {
+        std::vector<MapPolygon> polys = createPolysoup(brushes[ i ]);
+        std::copy(polys.begin(), polys.end(), std::back_inserter(mapPolys));
+    }
+    std::vector<MapPolygon> mapTris = triangulate(mapPolys);
+
     // TODO: This stuff happens quite common. Also: Maybe tris are sufficient?
     glm::vec4 triColor = glm::vec4(1.0f, 0.9f, 0.0f, 1.0f);
     glm::vec3 mins     = glm::vec3(99999.0f);
@@ -95,6 +99,17 @@ Door::Door(const std::vector<Property>& properties, const std::vector<Brush>& br
     glm::vec3 minsToMaxs     = maxs - mins;
     glm::vec3 directedLength = m_Direction * minsToMaxs;
     m_Distance               = glm::length(directedLength) - (double)m_Lip;
+
+    // Compute center of audio emitter and create dynamic sound
+    // for moving stone against each other.
+    // TODO: Sound samples could be loaded through a property which
+    // can be set in TrenchBroom.
+    glm::vec3 doorCenter = mins + minsToMaxs / 2.0f;
+    m_SoundEmitterPos    = doorCenter + directedLength / 2.0f;
+
+    auto sfxLoop  = Audio::LoadSource("sfx/sonniss/Door - Stone Long 02 LOOP.wav", 1.2f, true);
+    auto sfxEnd   = Audio::LoadSource("sfx/sonniss/Async_Impact2.wav");
+    m_SfxMovement = new DynamicSound(sfxLoop, sfxEnd);
 }
 
 bool Door::HandleMessage(const Telegram& telegram) {

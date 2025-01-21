@@ -179,7 +179,6 @@ glm::vec3 SteeringBehaviour::FollowPath(PatrolPath* path) {
 
 glm::vec3 SteeringBehaviour::FollowWaypoints(PatrolPath* pPath) {
     if ( pPath->IsCurrentWaypointReached(m_pEntity->m_Position) ) {
-        printf("current waypoint reached\n");
         pPath->TargetNextWaypoint();
     }
 

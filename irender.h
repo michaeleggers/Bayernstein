@@ -8,9 +8,12 @@
 #include <string>
 #include <vector>
 
+#include <SDL.h>
+
 #include "CWorld.h"
 #include "Console/Console.h"
 #include "camera.h"
+#include "irender.h"
 #include "r_common.h"
 #include "r_font.h"
 #include "r_itexture.h"
@@ -39,7 +42,7 @@ class IRender {
     virtual int                    RegisterBrush(HKD_Model* model)                                                  = 0;
     virtual void                   RegisterFont(CFont* font)                                                        = 0;
     virtual void                   RegisterWorld(CWorld* world)                                                     = 0;
-    virtual uint64_t               RegisterTextureGetHandle(std::string name)                                       = 0;
+    virtual uint64_t               RegisterTextureGetHandle(const std::string& name)                                = 0;
     virtual void                   SetActiveCamera(Camera* camera)                                                  = 0;
     virtual std::vector<ITexture*> ModelTextures(int gpuModelHandle)                                                = 0;
     virtual std::vector<ITexture*> Textures()                                                                       = 0;
@@ -76,10 +79,11 @@ class IRender {
     virtual void
     Render(Camera* camera, HKD_Model** models, uint32_t numModels, HKD_Model** brushModels, uint32_t numBrushModels)
         = 0;
-    virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
-    virtual void RenderConsole(Console* console, CFont* font)                            = 0;
-    virtual void RenderEnd(void)                                                         = 0;
-    virtual void SetWindowTitle(char* windowTitle)                                       = 0;
+    virtual void        RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) = 0;
+    virtual void        RenderConsole(Console* console, CFont* font)                            = 0;
+    virtual void        RenderEnd(void)                                                         = 0;
+    virtual void        SetWindowTitle(char* windowTitle)                                       = 0;
+    virtual SDL_Window* GetWindow()                                                             = 0;
 
   private:
 };

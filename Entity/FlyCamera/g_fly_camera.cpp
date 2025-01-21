@@ -14,11 +14,12 @@ CFlyCamera::CFlyCamera(glm::vec3 pos)
 
     m_Camera   = Camera(pos);
     m_Position = pos;
+    m_Camera.LookAt(glm::vec3(0.0f));
 }
 
 CFlyCamera::~CFlyCamera() {}
 
-void CFlyCamera::Update() {}
+void CFlyCamera::PostCollisionUpdate() {}
 
 bool CFlyCamera::HandleMessage(const Telegram& telegram) {
     return false;
@@ -57,8 +58,8 @@ void CFlyCamera::HandleInput() {
         m_MouseY                      = mouseMotion.current.y;
         int dX                        = m_MouseX - m_MousePrevX;
         int dY                        = m_MouseY - m_MousePrevY;
-        m_Camera.RotateAroundUp(-dt * m_LookSpeed * (float)dX);
-        m_Camera.RotateAroundSide(-dt * m_LookSpeed * (float)dY);
+        m_Camera.RotateAroundWorldUp(-m_LookSpeed * (float)dX);
+        m_Camera.RotateAroundSide(-m_LookSpeed * (float)dY);
     } else if ( look == ButtonState::WENT_UP ) {
         m_MouseX     = 0;
         m_MouseY     = 0;

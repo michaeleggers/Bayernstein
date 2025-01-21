@@ -4,6 +4,8 @@
 
 #include "g_player.h"
 
+#include "../../Audio/Audio.h"
+#include "../../globals.h"
 #include "../../input.h"
 #include "../../input_handler.h"
 #include "../../input_receiver.h"
@@ -20,6 +22,11 @@ Player::Player(glm::vec3 initialPosition)
     m_pStateMachine->SetCurrentState(PlayerIdle::Instance());
     LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
     m_Position = initialPosition;
+
+    m_SfxJump    = Audio::LoadSource("sfx/jump_01.wav", 0.5f);
+    m_SfxGunshot = Audio::LoadSource("sfx/sonniss/PM_SFG_VOL1_WEAPON_8_2_GUN_GUNSHOT_FUTURISTIC.wav");
+    m_SfxFootsteps
+        = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
 }
 
 // FIX: At the moment called by the game itself.
@@ -33,10 +40,10 @@ void Player::UpdatePosition(glm::vec3 newPosition) {
     }
     m_Model.position.x = newPosition.x;
     m_Model.position.y = newPosition.y;
-    m_Model.position.z = newPosition.z - GetEllipsoidCollider().radiusB;
+    m_Model.position.z = newPosition.z - GetEllipsoidColliderPtr()->radiusB;
 }
 
-void Player::Update() {
+void Player::PostCollisionUpdate() {
 
     if ( KeyPressed(SDLK_w) ) {
         m_pStateMachine->ChangeState(PlayerRunning::Instance());
@@ -76,7 +83,6 @@ void Player::LoadModel(const char* path, glm::vec3 initialPosition) {
     }
 
     SetAnimState(&m_Model, ANIM_STATE_WALK);
-    m_EllipsoidCollider = GetEllipsoidCollider();
 }
 
 // NOTE: This is not being used now as the entity should not own
@@ -159,19 +165,32 @@ void Player::UpdatePlayerModel() {
     }
 
     if ( playerAnimState == ANIM_STATE_RUN ) {
+        if ( !Audio::m_Soloud.isValidVoiceHandle(m_FootstepsHandle) ) {
+            m_FootstepsHandle = Audio::m_SfxBus.play(*m_SfxFootsteps);
+        }
         if ( speed == ButtonState::PRESSED ) {
             playerAnimState = ANIM_STATE_WALK;
+            Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.6f);
+            Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume * 0.4f);
+        } else {
+            // adjust sample speed to better match animation
+            Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.9f);
+            Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume);
         }
+    } else {
+        Audio::m_Soloud.stop(m_FootstepsHandle);
     }
 
     // Test the input handler here.
     ButtonState jumpState = CHECK_ACTION("jump");
-    if ( jumpState == ButtonState::PRESSED ) {
+    if ( jumpState == ButtonState::WENT_DOWN ) {
         printf("I am jumping!\n");
+        Audio::m_SfxBus.play(*m_SfxJump, -1);
     }
     ButtonState fireState = CHECK_ACTION("fire");
     if ( fireState == ButtonState::PRESSED ) {
         printf("FIRE!\n");
+        Audio::m_SfxBus.play(*m_SfxGunshot);
     }
     ButtonState prevWeapon = CHECK_ACTION("switch_to_prev_weapon");
     if ( prevWeapon == ButtonState::WENT_DOWN ) {
@@ -180,11 +199,20 @@ void Player::UpdatePlayerModel() {
 
     SetAnimState(&m_Model, playerAnimState);
 
+    // only update listener position in the active input delegate (other player (or camera) instances mustn't interfere with the actual (active) listener)
+    /*
+    Audio::m_Soloud.set3dListenerPosition(m_Position.x, m_Position.y, m_Position.z);
+    Audio::m_Soloud.set3dListenerAt(m_Forward.x, m_Forward.y, m_Forward.z);
+    Audio::m_Soloud.set3dListenerVelocity(m_Velocity.x, m_Velocity.y, m_Velocity.z);
+    Audio::m_Soloud.set3dListenerUp(DOD_WORLD_UP.x, DOD_WORLD_UP.y, DOD_WORLD_UP.z);
+    Audio::m_Soloud.update3dAudio();
+    */
+
     // UpdateModel(&m_Model, (float)dt);
 }
 
-EllipsoidCollider Player::GetEllipsoidCollider() const {
-    return m_Model.ellipsoidColliders[ m_Model.currentAnimIdx ];
+EllipsoidCollider* Player::GetEllipsoidColliderPtr() {
+    return &m_Model.ellipsoidColliders[ m_Model.currentAnimIdx ];
 }
 
 HKD_Model* Player::GetModel() {
@@ -199,6 +227,10 @@ void Player::HandleInput() {
     ButtonState captainState = CHECK_ACTION("set_captain");
     if ( captainState == ButtonState::WENT_DOWN ) {
         printf("Player: I am the captain!\n");
+    }
+    ButtonState mouseMove = CHECK_ACTION("mlook");
+    if ( mouseMove == ButtonState::MOVED ) {
+        printf("Mouse moved\n");
     }
     UpdatePlayerModel();
 }

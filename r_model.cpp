@@ -40,7 +40,9 @@ Vertex IQMVertexToVertex(IQMVertex iqmVert, glm::vec3 bc) {
 }
 
 HKD_Model CreateModelFromIQM(IQMModel* model) {
-    HKD_Model result = {};
+    HKD_Model result   = {};
+    result.pOwner      = nullptr;
+    result.renderFlags = MODEL_RENDER_FLAG_NONE;
 
     for ( int i = 0; i < model->meshes.size(); i++ ) {
         IQMMesh* iqmMesh = &model->meshes[ i ];
@@ -161,7 +163,9 @@ HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes) {
 
     // Assign sorted MapPolygons to model as meshes.
     HKD_Model model{};
-    model.type = HKD_MODEL_TYPE_STATIC;
+    model.pOwner      = nullptr;
+    model.renderFlags = MODEL_RENDER_FLAG_NONE;
+    model.type        = HKD_MODEL_TYPE_STATIC;
     model.tris.resize(totalTris);
     size_t triOffset = 0;
     for ( auto& [ textureName, mapPolys ] : texName2polygons ) {

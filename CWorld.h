@@ -17,20 +17,22 @@
 #include "./Entity/base_game_entity.h"
 #include "Entity/Door/g_door.h"
 #include "Entity/Enemy/g_enemy.h"
+#include "Entity/FirstPersonPlayer/g_fp_player.h"
 #include "Entity/FlyCamera/g_fly_camera.h"
 #include "Entity/FollowCamera/g_follow_camera.h"
-#include "Entity/Player/g_player.h"
 #include "Entity/entity_manager.h"
 #include "Path/path.h"
 #include "map_parser.h"
+#include "platform.h"
 #include "polysoup.h"
 #include "r_common.h"
 #include "r_model.h"
+#include "soloud.h"
 
 class CWorld {
   public:
     static CWorld* Instance();
-    void           InitWorldFromMap(const Map& map);
+    void           InitWorld(const std::string& mapName);
     void           CollideEntitiesWithWorld();
     void           CollideEntities();
 
@@ -42,7 +44,7 @@ class CWorld {
         return m_StaticGeometryCount;
     }
 
-    Player* PlayerEntity() {
+    FirstPersonPlayer* PlayerEntity() {
         return m_pPlayerEntity;
     }
 
@@ -51,16 +53,26 @@ class CWorld {
     }
 
     std::vector<HKD_Model*>& GetModelPtrs() {
-        return m_Models;
+        return m_pModels;
     }
 
     std::vector<HKD_Model*>& GetBrushModelPtrs() {
-        return m_BrushModels;
+        return m_pBrushModels;
+    }
+
+    bool IsLightmapAvailable() {
+        return m_LightmapAvailable;
+    }
+
+    uint64_t GetLightmapTextureHandle() {
+        return m_hLightmapTexture;
     }
 
     static glm::vec3           GetOrigin(const Entity* entity);
     static Waypoint            GetWaypoint(const Entity* entity);
     static std::vector<MapTri> CreateMapTrisFromMapPolys(const std::vector<MapPolygon>& mapPolys);
+    static std::vector<MapTri> CreateMapFromLightmapTrisFile(HKD_File lightmapTrisFile);
+    static Vertex              StaticVertexToVertex(StaticVertex staticVertex);
 
     std::vector<MapTri> m_MapTris;
     glm::vec3           m_Gravity;
@@ -73,12 +85,33 @@ class CWorld {
     ~CWorld() = default;
 
     uint64_t m_StaticGeometryCount;
+
+    // Audio for ambience and music which are playing constantly
+    // in a loop.
+    // TODO: Those could be loaded through a property in the
+    // 'worldspawn' entity in the MAP file.
+    SoLoud::AudioSource* m_MusicIdle;
+    SoLoud::handle       m_MusicIdleHandle = 0;
+    SoLoud::AudioSource* m_Ambience;
+    SoLoud::handle       m_AmbienceHandle = 0;
+
     // FIX: Does the player really *always* have to exist?
-    Player*                 m_pPlayerEntity = nullptr;
-    std::vector<HKD_Model*> m_Models;
-    std::vector<HKD_Model*> m_BrushModels;
-    // Keep references to brush entities' map tris
+    FirstPersonPlayer* m_pPlayerEntity = nullptr;
+
+    // Model entities that are defined via an IQM model.
+    std::vector<HKD_Model*> m_pModels;
+
+    // Models for brush entities.
+    std::vector<HKD_Model*> m_pBrushModels;
+
+    // Keep references to brush entities' map tris so we
+    // can easily collide against brush entities as well.
     std::vector<std::vector<MapTri>*> m_pBrushMapTris;
+
+    // If a lightmap is loaded, this handle stores
+    // the texture handle on the GPU.
+    uint64_t m_hLightmapTexture;
+    bool     m_LightmapAvailable;
 };
 
 #endif // _CWORLD_H_

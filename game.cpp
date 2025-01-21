@@ -22,6 +22,7 @@
 #include "input_delegate.h"
 #include "input_handler.h"
 #include "physics.h"
+#include "platform.h"
 #include "polysoup.h"
 #include "r_font.h"
 #include "r_itexture.h"
@@ -59,20 +60,13 @@ void Game::Init() {
     // Load world triangles from Quake .MAP file
 
     //std::vector<MapTri> worldTris{};
-    MapVersion mapVersion = VALVE_220; // TODO: Change to MAP_TYPE_QUAKE
 
-    // TODO: Sane loading of Maps to be system independent ( see other resource loading ).
-#ifdef _WIN32
-    std::string mapData = loadTextFile(m_ExePath + "../../assets/maps/enemy_test.map");
-#elif __LINUX__
-    std::string mapData = loadTextFile(m_ExePath + "../assets/maps/enemy_test.map");
-#endif
-
-    size_t inputLength = mapData.length();
-    Map    map         = getMap(&mapData[ 0 ], inputLength, mapVersion);
 
     m_World = CWorld::Instance();
-    m_World->InitWorldFromMap(map);
+
+    // Load lightmap triangles and lightmap texture
+
+    m_World->InitWorld("lightmap_test");
     m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.
@@ -84,7 +78,7 @@ void Game::Init() {
     //m_pPlayerEntity = new Player(idCounter++, m_pPlayerEntity->m_Position);
     //m_pEntityManager->RegisterEntity(m_pPlayerEntity);
 
-#if 0 // Enable second debug player
+#if 0 // Enable second debug playerz
     glm::vec3 dbgPlayerStartPos = m_pPlayerEntity->m_Position + glm::vec3(20.0f, -100.0f, 10.0f);
     m_pDebugPlayerEntity = new Player(dbgPlayerStartPos);
     printf("Debug Player Start Pos: %f, %f, %f\n", dbgPlayerStartPos.x, dbgPlayerStartPos.y, dbgPlayerStartPos.z);
@@ -93,8 +87,9 @@ void Game::Init() {
 #endif
 
     m_pFlyCameraEntity = new CFlyCamera(glm::vec3(-912, -586, 609));
-    m_pFlyCameraEntity->m_Camera.RotateAroundSide(-45.0f);
-    m_pFlyCameraEntity->m_Camera.RotateAroundUp(180.0f);
+
+    // Init fly camera to look at the player.
+    m_pFlyCameraEntity->m_Camera.LookAt(m_pPlayerEntity->m_Position);
 
     // FIX: If the follow camera is registered *before* one of the entities
     // the follow camera will lag behind one frame because it won't
@@ -133,9 +128,17 @@ void Game::Init() {
     // Mouse buttons
     inputHandler->BindInputToActionName(SDL_BUTTON_LEFT, "fire");
     inputHandler->BindInputToActionName(SDL_BUTTON_RIGHT, "look");
+    inputHandler->BindInputToActionName(SDL_MOUSEMOTION, "mlook");
 
     // Let the player receive input by default
     CInputDelegate::Instance()->SetReceiver(m_pPlayerEntity);
+
+    // Disable mouse cursor in FPS mode (initial mode)
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+    //SDL_SetWindowMouseGrab(renderer->GetWindow(),
+    //                       SDL_TRUE);
+    SDL_SetWindowGrab(renderer->GetWindow(), SDL_TRUE);
+    SDL_ShowCursor(SDL_DISABLE);
 }
 
 static void DrawCoordinateSystem(IRender* renderer) {
@@ -159,6 +162,8 @@ bool Game::RunFrame(double dt) {
 
     m_AccumTime += dt;
 
+    IRender* renderer = GetRenderer();
+
     // Want to quit on ESCAPE
     if ( KeyPressed(SDLK_ESCAPE) ) {
         m_pInterface->QuitGame();
@@ -167,7 +172,7 @@ bool Game::RunFrame(double dt) {
     // Toggle who should be controlled by the input system
     static IInputReceiver* receivers[ 2 ] = { m_pPlayerEntity, m_pFlyCameraEntity };
     static BaseGameEntity* entities[ 2 ]  = { m_pPlayerEntity, m_pFlyCameraEntity };
-    static Camera*         renderCam      = &m_pFollowCameraEntity->m_Camera;
+    static Camera*         renderCam      = &m_pPlayerEntity->GetCamera();
 
     // Toggle receivers
     static int receiverToggle = 0;
@@ -176,14 +181,26 @@ bool Game::RunFrame(double dt) {
         receiverToggle = ++receiverToggle % 2;
         CInputDelegate::Instance()->SetReceiver(receivers[ receiverToggle ]);
         m_pFollowCameraEntity->SetTarget(entities[ receiverToggle ]);
-        renderCam = &m_pFollowCameraEntity->m_Camera;
+        renderCam = &m_pPlayerEntity->GetCamera();
         if ( entities[ receiverToggle ]->Type() == ET_FLY_CAMERA ) {
+            SDL_SetRelativeMouseMode(SDL_FALSE);
+            SDL_SetWindowGrab(renderer->GetWindow(), SDL_FALSE);
+            SDL_ShowCursor(SDL_ENABLE);
             CFlyCamera* flyCamEnt = (CFlyCamera*)entities[ receiverToggle ];
             renderCam             = &flyCamEnt->m_Camera;
+        } else {
+            SDL_SetRelativeMouseMode(SDL_TRUE);
+            SDL_SetWindowGrab(renderer->GetWindow(), SDL_TRUE);
+            SDL_ShowCursor(SDL_DISABLE);
         }
     }
+
     // Handle the input
     CInputDelegate::Instance()->HandleInput();
+
+    // Apply inputs. That does not mean the entity will end up there
+    // that is determined by the collision system.
+    m_pEntityManager->UpdateEntitiesPreCollision();
 
     // Collide entities with the world geometry and bounce off of it.
     m_World->CollideEntitiesWithWorld();
@@ -192,11 +209,11 @@ bool Game::RunFrame(double dt) {
     m_World->CollideEntities();
 
     // Run the message system
-    m_pEntityManager->UpdateEntities();
+    m_pEntityManager->UpdateEntitiesPostCollision();
+
     Dispatcher->DispatchDelayedMessages();
 
     // Render stuff
-    IRender* renderer = GetRenderer();
 
     // ImGUI stuff goes into GL default FBO
 
@@ -207,8 +224,14 @@ bool Game::RunFrame(double dt) {
     ImGui::RadioButton("enemy::wander", &steering, 1);
     GetDebugSettings()->patrol = steering == 0;
     GetDebugSettings()->wander = steering == 1;
-
     ImGui::End();
+
+    ImGui::Begin("Statistics");
+    ImGui::Text("World Tri count: %d", m_World->StaticGeometryCount());
+    ImGui::Text("Brush Entity count: %d", m_World->GetModelPtrs().size());
+    ImGui::Text("Total Entity count: %d", EntityManager::Instance()->Entities().size());
+    ImGui::End();
+
     // Main 3D: This is where all the 3D rendering happens (in its own FBO)
     {
         renderer->Begin3D();
@@ -216,7 +239,7 @@ bool Game::RunFrame(double dt) {
         if ( dbg_show_enemy_velocity.value == 1 || dbg_show_wander.value == 1 ) {
 
             Enemy*            enemy   = m_pEntityManager->GetFirstEnemy();
-            EllipsoidCollider ecEnemy = enemy->GetEllipsoidCollider();
+            EllipsoidCollider ecEnemy = *(enemy->GetEllipsoidColliderPtr());
             // Draw Debug Circle for enemy
             glm::vec3 center = enemy->m_Position + enemy->m_Forward * enemy->m_pSteeringBehaviour->m_WanderDistance;
             renderer->ImDrawCircle(center, enemy->m_pSteeringBehaviour->m_WanderRadius, DOD_WORLD_UP);
@@ -269,9 +292,19 @@ bool Game::RunFrame(double dt) {
         renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
 #endif
 
-        //renderer->SetActiveCamera(&m_pFlyCameraEntity->m_Camera);
-        HKD_Model* playerColliderModel[] = { m_pPlayerEntity->GetModel() };
-        renderer->RenderColliders(renderCam, playerColliderModel, 1);
+        // FIX: Remove later. Ugly.
+        renderer->SetActiveCamera(renderCam);
+        HKD_Model*                   playerColliderModel[] = { m_pPlayerEntity->GetModel() };
+        std::vector<BaseGameEntity*> pAllEntities          = m_pEntityManager->Entities();
+        for ( int i = 0; i < pAllEntities.size(); i++ ) {
+            BaseGameEntity* pEntity = pAllEntities[ i ];
+            if ( pEntity->Type() == ET_ENEMY ) {
+                Enemy*     pEnemy = (Enemy*)pEntity;
+                HKD_Model* pModel = pEnemy->GetModel();
+                assert(pModel != nullptr && "Enemy entity must have a model");
+                renderer->RenderColliders(renderCam, &pModel, 1);
+            }
+        }
 
         renderer->End3D();
     } // End3D scope
