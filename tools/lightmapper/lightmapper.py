@@ -49,14 +49,14 @@ class Lightmapper:
                 # Generate views for this frame only once
                 frame_views = hemicube.generate_hemicube_views(frame.frame_normal)
 
-                for adaptive_step in range(10):
+                for adaptive_step in range(20):
                     # Precompute lightmap statistics
                     valid_pixels = frame_light_map[frame_processed_map]
                     if valid_pixels.size > 0:
                         mean_value = np.mean(valid_pixels)
                     else:
                         mean_value = 1e-6  # Avoid divide-by-zero
-                    factor = 1
+                    factor = 2
 
                     # Collect legal pixels and their properties
                     processed_indices = np.argwhere(frame_processed_map)
@@ -66,7 +66,7 @@ class Lightmapper:
                     for i, j in zip(*np.where(legality_map & ~frame_processed_map)):
                         # Calculate probability using gradients if neighbors exist
                         if kdtree is not None:
-                            distances, indices = kdtree.query((i, j), k=min(12, len(processed_indices)))
+                            distances, indices = kdtree.query((i, j), k=min(6, len(processed_indices)))
                             neighbor_values = frame_light_map[processed_indices[indices, 0], processed_indices[indices, 1]]
                             gradient = abs(np.std(neighbor_values))
                             normalized_gradient = gradient / max(mean_value, 1e-6)
@@ -74,7 +74,7 @@ class Lightmapper:
                         else:
                             probability = np.random.random() if len(legal_pixels) > 0 else 1
 
-                        if probability > 0.95:
+                        if probability > 0.90:
                             legal_pixels.append((i, j))
                             for view in frame_views:
                                 directions.append(view['direction'])
@@ -96,8 +96,8 @@ class Lightmapper:
                             sum_rgb = np.sum(hc, axis=(0, 1)) + frame.frameArrayIncommingLight[x, y]
                             frame_light_map[x, y] = sum_rgb
                             frame_processed_map[x, y] = True
-                    #else:
-                    #    break
+                    else:
+                        break
 
                 # Interpolate unprocessed pixels
                 legal_processed_pixels = np.argwhere(frame_processed_map & legality_map)
