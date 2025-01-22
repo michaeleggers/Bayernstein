@@ -98,48 +98,14 @@ src: ./pages/johann.md
 src: ./pages/bene.md
 ---
 
-
-
-# Herausforderungen
-
-- Collision Detection: Schlechte Performance. **Alle** Entities prüfen jedes Frame auf Kollision mit
-**gesamter Welt**. Unterteilung in Octree würde Abhilfe schaffen.
-
-- Collision Detection: Nicht framerate unabhängig.
-
-- Animtationssystem: Schlechte Performance. Das Aufbauen der aktuellen Pose ist im Moment sehr teuer.
-Wahrscheinlich schlechte Implementierung. Optimierung über Compute Shader wäre möglich.
-
-- Entity System: Wir überlegen auf ein **Actor-Component** Modell wie in Unreal Engine umzustellen,
-um den Code innerhalb einer Entity etwas aufzuräumen und identischen Code syntaktisch zu komprimieren.
-
-- Engine unterstützt ausschließlich TGA-Files für Welttexturen.
-
 ---
 hideInToc: true
+layout: center
 ---
 
-# Zu implementierende Features
+# Danke für Eure Aufmerksamkeit!
 
-- First Person Camera
-
-- HUD Rendering für Lebensanzeige und Fadenkreuz
-
-- Schießen auf Gegner
-
-- Gegner AI weiter ausbauen (Navigation durch Welt, Interaktion mit Spieler)
-
-- Eigene Gegner-Modelle
-
-- Audio
-
-- Lightmaps in Engine integrieren
-
-- Memory Manager
-
-- Virtuelles Filesystem integrieren: PhysicsFS (https://icculus.org/physfs/)
-
-
+Nun der Trailer 👀
 
 
 
