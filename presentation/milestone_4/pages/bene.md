@@ -8,75 +8,56 @@ layout: center
 hideInToc: true
 ---
 
-# Wie nehmen wir unsere Umgebung wahr?
-- Organismen interagieren mit der Welt durch ihre **Sinne**.
-- Die Sinne helfen uns 
-   - zu überleben
-   - uns anzupassen
-   - und Entscheidungen zu treffen
+# Überblick
+- **Dungeons of Danger** nutzt ein **modulares KI-System**, das Gegnern dynamisches und glaubwürdiges Verhalten verleiht.
+- **Finite State Machines (FSMs)** bilden das Herzstück:
+  - Zustände wie Idle, Attack, etc.
+- Ein **zentraler Nachrichtenaustausch** (MessageDispatcher + Telegram) ermöglicht eine schnelle Kommunikation zwischen Gegnern.
 
 ---
 hideInToc: true
 ---
 
-# Wie nehmen wir unsere Umgebung wahr?
-- Interne und Externe Sinne (z.B. Hunger und Sicht)
-- Fun fact: Es gibt Schlangenarten die Infrarot sehen können. <Cite bref="PhysRevLett97" />
-- **Frage**: Wie würde unser Leben aussehen wenn wir Infrarot sehen könnten?
-
-
----
-hideInToc: true
----
-
-![Dune - Giedi Prime](/img/bene/dune-2-austin-butler-feyd-rautha-black-white-explained.avif)
-
-<footer class="absolute bottom-0 left-0 right-0 p-2">
-    <small>
-        Bildquelle: <a href="https://screenrant.com/dune-2-austin-butler-feyd-rautha-black-white-explained/">
-https://screenrant.com/dune-2-austin-butler-feyd-rautha-black-white-explained/
-</a>
-    </small>
-</footer>
+# Kernelemente
+- **Steering Behaviors** (z. B. Seek, Flee, Pursuit, Evade):
+  - Sorgen für natürliche, flüssige Bewegungen.
+  - Kombination mehrerer Kräfte (Weighted Truncated Sum).
+- **Sensing**
 
 ---
 hideInToc: true
 ---
 
-# Wie funktioniert Sehen überhaupt?
-- Sicht beinhaltet das wahrnehmen und umwandeln von Licht in Information.
-- Stäbchen und Zapfen auf der Netzhaut
-- Wie modelliert man Sicht aber nun performant?
-
-
----
-hideInToc: true
----
-
-# Unser Sicht Modell
+# Unser Wahrnehmungs Modell
 
 **Was nimmt die Entity wahr?**
 - **Distanz**: Wie weit ist ein Objekt entfernt?  
 - Die **Z-Position** des Objekts im Raum.  
 - **Winkel**: Relative Ausrichtung des Objekts zur Sichtlinie.
 
-
- später noch: **Verdeckung** durch Level Geometrie
+---
+hideInToc: true
+---
+![Alt text](/img/bene/cake.png){width=90% height=90%}
 
 ---
-layout: center
+hideInToc: true
 ---
+# Weitere Sinne
+- Tast-Sinn über Kollisionserkennung
+- Allgmeines Wohlbefinden über Lebenspunkte
 
-# Demo
+später noch: **Verdeckung** durch Level Geometrie
 
 ---
 hideInToc: true
 ---
 
-# Aussicht - Weitere Sinne
-
-- Hören -> Impuls der alles in einem Radius benachrichtigt
-- Riechen -> Gerüche in Halflife sind quasi Sounds mit einem Flag
-- Fühlen -> physics system mit collision detection
-
-
+# Ausblick
+- **Erweiterbarkeit**: Leichtes Hinzufügen weiterer Zustände & Verhaltensweisen.
+- **Realistischeres Sensing**:
+  - Einbezug von Level-Geometrie (Wände, Hindernisse).
+  - Verfeinerung von Kollisionsabfragen.
+- **Mögliche Zusatzideen**:
+  - Team-Verhalten (z. B. Boids).
+  - Weitere Sinne (z. B. Hören, Riechen).
