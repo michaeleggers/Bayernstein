@@ -141,7 +141,7 @@ class Lightmapper:
 
         self.scene.generate_light_map(lightmap_path)
         self.save_lightmap_as_png_with_exposure(lightmap_path, 1000.0)
-        self.save_lightmap_as_png_preserving_range(lightmap_path)
+        #self.save_lightmap_as_png_preserving_range(lightmap_path)
 
         print("Theoretical sum patches:", theoretical_sum_patches)
         print("Actual sum patches:", actual_sum_patches)
