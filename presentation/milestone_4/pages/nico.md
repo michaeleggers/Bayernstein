@@ -1,68 +1,68 @@
+<!-- Folie 1 -->
 ---
-layout: center
+layout: default
+class: center
 ---
 
-# Demo in Trenchbroom
-
-
----
-layout: center
----
-<style>
-.container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-}
-
-.logo {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-
-.content {
-  flex: 2;
-  padding: 16px;
-}
-
-.content ul {
-  list-style-type: disc;
-  margin: 0;
-  padding-left: 20px;
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-  max-height: 200px;
-  object-fit: contain;
-}
-</style>
-# Vorteile von 3DCoat
-
-<div class="container">
-  <div class="logo">
-    <img src="/img/nico/3dcoat-logo.jpg" alt="3DCoat Logo" />
-  </div>
-  <div class="content">
-    <ul>
-      <li>Nahtloses Painting: Intuitiv und ohne sichtbare Nähte.</li>
-      <li>PBR-Workflow: Optimiert für realistische Texturen.</li>
-      <li>Smart Materials: Automatisch reagierende Materialien.</li>
-      <li>UV-Automatisierung: Schnelle und hochwertige UV-Layouts.</li>
-    </ul>
-  </div>
+<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+  <img src="/img/nico/Level3_1.jpg" alt="Vogelperspektive des Tempels" style="width: 75%; height: auto;">
+  <p style="position: absolute; bottom: 10px; font-size: 1.2rem; color: #666;">Vogelperspektive des Tempels mit offenem Dach</p>
 </div>
 
-
+<!-- Folie 2 -->
 ---
-layout: center
+layout: default
+class: center
 ---
 
-# Ergebnis Blender Texturierung
+<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+  <img src="/img/nico/Level3_2.jpg" alt="Vorhof des Tempels" style="width: 75%; height: auto;">
+  <p style="position: absolute; bottom: 10px; font-size: 1.2rem; color: #666;">Vorhof des Tempels</p>
+</div>
 
-## Demo in Blender
+<!-- Folie 3 -->
+---
+layout: default
+class: center
+---
+
+<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+  <img src="/img/nico/Level3_3.jpg" alt="Gebetsraum des Tempels" style="width: 75%; height: auto;">
+  <p style="position: absolute; bottom: 10px; font-size: 1.2rem; color: #666;">Gebetsraum des Tempels</p>
+</div>
+
+<!-- Folie 4 -->
+---
+layout: default
+class: center
+---
+
+<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+  <img src="/img/nico/Level3_4.jpg" alt="Opferraum des Tempels" style="width: 75%; height: auto;">
+  <p style="position: absolute; bottom: 10px; font-size: 1.2rem; color: #666;">Opferraum des Tempels</p>
+</div>
+
+<!-- Folie 5 -->
+---
+layout: default
+class: center
+---
+
+<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+  <img src="/img/nico/Level3_5.jpg" alt="Thronsaal des Tempels" style="width: 75%; height: auto;">
+  <p style="position: absolute; bottom: 10px; font-size: 1.2rem; color: #666;">Thronsaal des Tempels</p>
+</div>
+
+<!-- Folie 6 -->
+---
+class: center
+layout: default
+---
+
+<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+  <div style="display: flex; justify-content: center; align-items: center; gap: 20px;">
+    <img src="/img/nico/throne_room_door.png" alt="Throne Room Door" style="width: 32%; height: auto;">
+    <img src="/img/nico/ahuitzotl_original.jpg" alt="Ahuitzotl" style="width: 32%; height: auto;">
+  </div>
+  <p style="position: absolute; bottom: 10px; font-size: 1.2rem; color: #666;">Inspiration an der echten Azteken Kultur: der Ahuitzotl</p>
+</div>
