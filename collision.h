@@ -28,6 +28,7 @@ struct CollisionInfo
     glm::vec3 basePos;
 };
 
+void              InitMapTrisCache(size_t numTris);
 bool              TraceRayAgainstUnitSphere(glm::vec3 rayPos, glm::vec3 rayDir, glm::vec3 sphereCenter);
 bool              TraceRayAgainstEllipsoid(glm::vec3 rayPos, glm::vec3 rayDir, EllipsoidCollider ec);
 EllipsoidCollider CreateEllipsoidColliderFromAABB(glm::vec3 mins, glm::vec3 maxs);
