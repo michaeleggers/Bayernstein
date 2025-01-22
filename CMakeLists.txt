@@ -108,6 +108,8 @@ add_executable(Game
     game.h
     game.cpp
 
+    LoadingScreen.cpp
+    LoadingScreen.h
     TestClass.cpp
     TestClass.h
     Shape.cpp

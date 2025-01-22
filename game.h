@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "LoadingScreen.h"
 #include "CWorld.h"
 #include "Entity/Door/g_door.h"
 #include "Entity/Enemy/g_enemy.h"
@@ -50,6 +51,8 @@ class Game {
     // HUD
     Sprite m_CrosshairSprite;
     Sprite m_BoltSprite;
+
+    LoadingScreen* m_LoadingScreen;
 };
 
 #endif

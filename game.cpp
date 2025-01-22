@@ -55,12 +55,14 @@ void Game::Init()
 {
     m_AccumTime = 0.0f;
 
+    m_LoadingScreen = new LoadingScreen();
+
     VariableManager::Register(&dbg_show_wander);
     VariableManager::Register(&dbg_show_enemy_velocity);
 
     // Load a font file from disk
     m_ConsoleFont   = new CFont("fonts/HackNerdFont-Bold.ttf", 58);
-    m_ConsoleFont30 = new CFont("fonts/HackNerdFont-Bold.ttf", 150); // Same font at different size
+    m_ConsoleFont30 = new CFont("fonts/HackNerdFont-Bold.ttf", 30); // Same font at different size
 
     IRender* renderer = GetRenderer();
     renderer->RegisterFont(m_ConsoleFont);
@@ -183,6 +185,10 @@ bool Game::RunFrame(double dt)
     if ( KeyPressed(SDLK_ESCAPE) )
     {
         m_pInterface->QuitGame();
+    }
+
+    if (m_LoadingScreen->show(m_AccumTime, m_ConsoleFont30)) {
+        return true;
     }
 
     // Toggle who should be controlled by the input system
