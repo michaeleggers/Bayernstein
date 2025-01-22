@@ -410,10 +410,10 @@ void CWorld::CollideEntities()
                 glm::vec3 otherCenter = pOther->GetEllipsoidColliderPtr()->center;
                 glm::vec3 selfCenter  = pEntity->GetEllipsoidColliderPtr()->center;
 
-                glm::vec3 selfToTarget = otherCenter - selfCenter;                
+                glm::vec3 selfToTarget = otherCenter - selfCenter;
                 float     distance     = glm::length(selfToTarget);
-                float     bias         = distance * 0.5f; // TODO: This should not be here but in gameplay defined logic.
-                if ( (distance-bias) < (otherRadius + selfRadius) )
+                float     bias = distance * 0.5f; // TODO: This should not be here but in gameplay defined logic.
+                if ( (distance - bias) < (otherRadius + selfRadius) )
                 {
                     ci.didCollide = true;
                 }
@@ -451,6 +451,12 @@ void CWorld::RunEnemyVision()
                 BaseGameEntity* pOther = entities[ j ];
                 if ( pOther->ID() == pEntity->ID() )
                 { // Don't look at ourselves
+                    continue;
+                }
+
+                if ( pOther->Type() != ET_PLAYER )
+                {
+                    // Don't care for entities other than the player
                     continue;
                 }
 

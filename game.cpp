@@ -74,7 +74,7 @@ void Game::Init()
 
     // Load lightmap triangles and lightmap texture
 
-    m_World->InitWorld("arena");
+    m_World->InitWorld("Milestone4");
     m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.
@@ -328,6 +328,7 @@ bool Game::RunFrame(double dt)
         renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
 #endif
 
+#if 0
         // Draw colliders of enemies and trace ray against them from the
         // player's camera position. Just for testing purposes. Not final.
         // FIX: Remove later. Ugly.
@@ -355,6 +356,7 @@ bool Game::RunFrame(double dt)
                 renderer->RenderColliders(renderCam, &pModel, 1);
             }
         }
+#endif
 
         renderer->End3D();
     } // End3D scope

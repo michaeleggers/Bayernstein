@@ -33,6 +33,8 @@ Enemy::Enemy(const std::vector<Property>& properties)
     BaseGameEntity::GetProperty<glm::vec3>(properties, "origin", &m_Position);
     // FIX: Mem Leak on exit if target is not being set.
     BaseGameEntity::GetProperty<std::string>(properties, "target", &m_Target);
+    int angle = 0;
+    BaseGameEntity::GetProperty<int>(properties, "angle", &angle);
 
     //LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
     LoadModel("models/mayan_undead_warrior/mayan_undead_warrior_final.iqm", m_Position);
@@ -51,7 +53,8 @@ Enemy::Enemy(const std::vector<Property>& properties)
     m_Far          = 500.0f;
 
     // Set initial orientation in the world
-    m_Orientation = glm::angleAxis(glm::radians(80.0f), DOD_WORLD_UP);
+    // HACK: -90 degrees because some mismatch between quake editor and stuff...
+    m_Orientation = glm::angleAxis(glm::radians((float)angle - 90.0f), DOD_WORLD_UP);
     m_Forward     = glm::rotate(m_Orientation, DOD_WORLD_FORWARD);
 
     m_SfxFootsteps
@@ -120,8 +123,6 @@ void Enemy::PreCollisionUpdate()
         //m_AnimationState = ANIM_STATE_IDLE;
         Audio::m_Soloud.stop(m_FootstepsHandle);
     }
-
-
 }
 
 void Enemy::PostCollisionUpdate()
