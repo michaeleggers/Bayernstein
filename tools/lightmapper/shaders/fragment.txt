@@ -9,14 +9,18 @@ out vec4 color;
 uniform sampler2DArray diffuseTextureArray;  // Texture array for diffuse textures
 uniform sampler2D lightmapTexture;           // Global lightmap texture
 uniform float exposure;                      // Tone-mapping exposure
+uniform bool useLightmap;                    // Flag to toggle lightmap usage
 
 void main()
 {
     // Sample the diffuse texture from the texture array using the texture index
     vec4 texColor = texture(diffuseTextureArray, vec3(diffuseUV, texIndex));
 
-    // Sample the lightmap texture using the lightmap UV coordinates
+    // Initialize the lightmap color to a default value (all ones)
     vec4 lightmapColor = texture(lightmapTexture, lightmapUV);
+
+    // Sample the lightmap texture only if useLightmap is true
+
 
     // Combine diffuse texture color with the lightmap color
     vec3 combinedColor = texColor.rgb * lightmapColor.rgb;
@@ -31,5 +35,10 @@ void main()
     }
 
     // Output the final color with alpha set to 1.0
-    color = vec4(mappedColor, 1.0);
+    if (useLightmap) {
+        color = vec4(mappedColor, 1.0);
+    } else {
+        color = texColor;
+    }
+    
 }
