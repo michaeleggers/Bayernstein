@@ -80,3 +80,5 @@ class Triangle:
         t = f * edge2.dot(q)
         epsilon = 1e-6  # Threshold for valid intersections
         return t if t > epsilon else None
+    
+    

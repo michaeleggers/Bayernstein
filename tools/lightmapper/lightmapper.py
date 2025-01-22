@@ -27,85 +27,124 @@ class Lightmapper:
         self.base_path = Path(__file__).resolve().parent
 
 
-    def generate_lightmap(self,  lightmap_path: Path, iterations=5, patch_resolution=0.0625):
-
+    def generate_lightmap(self, lightmap_path: Path, iterations=5, patch_resolution=0.0625):
         lightmap_size_pixels = self.scene.light_map_resolution
-        correction_map = hemicube.generate_correction_map(self.renderer.viewport_size)
+        correction_map = hemicube.generate_correction_map(self.renderer.viewport_size)  # Precompute once
         light_map = self.scene.light_map
-        
-        for iteration in range(iterations):
 
+        for iteration in range(iterations):
             new_lightmap = light_map.copy()
             self.all_positions = []
             self.all_normals = []
 
+            actual_sum_patches = 0
+            theoretical_sum_patches = 0
+
             for frame_index, frame in enumerate(tqdm(self.scene.frames, desc="Rendering Iteration")):
-                frame_light_map = np.zeros((frame.frame_height_pixels, frame.frame_width_pixels, 3), dtype=np.float32)
+                # Initialize arrays for the frame
+                frame_light_map = np.full((frame.frame_height_pixels, frame.frame_width_pixels, 3), 0.0, dtype=np.float32)
+                frame_processed_map = np.zeros((frame.frame_height_pixels, frame.frame_width_pixels), dtype=bool)
+                legality_map = frame.frameArrayLegality
 
-                # Batch legal pixels for rendering
-                positions = []
-                directions = []
-                up_vectors = []
-                frustums = []
+                # Generate views for this frame only once
+                frame_views = hemicube.generate_hemicube_views(frame.frame_normal)
 
-                # Collect all views for batching
-                for i, normal in enumerate(frame.legal_normals):
-                    views = hemicube.generate_hemicube_views(normal)
-                    for view in views:
-                        directions.append(view['direction'])
-                        up_vectors.append(view['up_vector'])
-                        frustums.append(view['frustum'])
-                        positions.append(frame.legal_positions[i])
-                    
-                    self.all_positions.append(frame.legal_positions[i])
-                    self.all_normals.append(views[0]['direction'])
+                for adaptive_step in range(20):
+                    # Precompute lightmap statistics
+                    valid_pixels = frame_light_map[frame_processed_map]
+                    if valid_pixels.size > 0:
+                        mean_value = np.mean(valid_pixels)
+                    else:
+                        mean_value = 1e-6  # Avoid divide-by-zero
+                    factor = 2
 
-                # Render all views in a single batch
-                images = self.renderer.render_batch_images(positions, directions, up_vectors)
+                    # Collect legal pixels and their properties
+                    processed_indices = np.argwhere(frame_processed_map)
+                    kdtree = KDTree(processed_indices) if len(processed_indices) > 0 else None
+                    legal_pixels, positions, directions, up_vectors, frustums = [], [], [], [], []
 
-                # Process each legal pixel
-                for i, legal_pixel in enumerate(frame.legal_pixels):
-                    batch_index = i * len(views)
-                    cut_images = [
-                        hemicube.cut_image_with_frustum(images[batch_index + j], frustums[batch_index + j])
-                        for j in range(len(views))
-                    ]
+                    for i, j in zip(*np.where(legality_map & ~frame_processed_map)):
+                        # Calculate probability using gradients if neighbors exist
+                        if kdtree is not None:
+                            distances, indices = kdtree.query((i, j), k=min(6, len(processed_indices)))
+                            neighbor_values = frame_light_map[processed_indices[indices, 0], processed_indices[indices, 1]]
+                            gradient = abs(np.std(neighbor_values))
+                            normalized_gradient = gradient / max(mean_value, 1e-6)
+                            probability = min(normalized_gradient * factor, 1.0)
+                        else:
+                            probability = np.random.random() if len(legal_pixels) > 0 else 1
 
-                    hc = hemicube.merge_views_hemicube(*cut_images)
-                    hc_corrected = hc * correction_map
+                        if probability > 0.90:
+                            legal_pixels.append((i, j))
+                            for view in frame_views:
+                                directions.append(view['direction'])
+                                up_vectors.append(view['up_vector'])
+                                frustums.append(view['frustum'])
+                                positions.append(frame.frameArrayPositions[i, j])
 
-                    sum_r = np.sum(hc_corrected[:, :, 0])  # Sum of the Red channel
-                    sum_g = np.sum(hc_corrected[:, :, 1])  # Sum of the Green channel
-                    sum_b = np.sum(hc_corrected[:, :, 2])  # Sum of the Blue channel
+                    # Render in batches
+                    if positions:
+                        images = self.renderer.render_batch_images(positions, directions, up_vectors)
+                        for i, (x, y) in enumerate(legal_pixels):
+                            batch_index = i * len(frame_views)
+                            cut_images = [
+                                hemicube.cut_image_with_frustum(images[batch_index + j], frustums[j])
+                                for j in range(len(frame_views))
+                            ]
 
-                    sum_r += frame.legal_incoming_light[i].x
-                    sum_g += frame.legal_incoming_light[i].y
-                    sum_b += frame.legal_incoming_light[i].z
+                            hc = hemicube.merge_views_hemicube(*cut_images) * correction_map
+                            sum_rgb = np.sum(hc, axis=(0, 1)) + frame.frameArrayIncommingLight[x, y]
+                            frame_light_map[x, y] = sum_rgb
+                            frame_processed_map[x, y] = True
+                    else:
+                        break
 
-                    frame_light_map[legal_pixel[1], legal_pixel[0], 0] = sum_r
-                    frame_light_map[legal_pixel[1], legal_pixel[0], 1] = sum_g
-                    frame_light_map[legal_pixel[1], legal_pixel[0], 2] = sum_b
+                # Interpolate unprocessed pixels
+                legal_processed_pixels = np.argwhere(frame_processed_map & legality_map)
+                if len(legal_processed_pixels) > 0:
+                    kdtree = KDTree(legal_processed_pixels)
+                    unprocessed_indices = np.argwhere(~frame_processed_map & legality_map)
 
-                if len(frame.legal_pixels) > 0:
-                    # Set illegal pixels to the color of the nearest legal neighbor
-                    frame_light_map_copy = frame_light_map.copy()
-                    kdtree = KDTree(frame.legal_pixels)
-                    valid_colors = np.array([frame_light_map_copy[v, u] for u, v in frame.legal_pixels])
-                    for u_pixel, v_pixel in frame.illegal_pixels:
-                        _, idx = kdtree.query((u_pixel, v_pixel))
-                        frame_light_map[v_pixel, u_pixel, :] = valid_colors[idx]
+                    for x, y in unprocessed_indices:
+                        distances, indices = kdtree.query((x, y), k=min(4, len(legal_processed_pixels)))
+                        # Ensure indices is always a 1D array
+                        if np.isscalar(indices):
+                            indices = np.array([indices])
+                            distances = np.array([distances])
 
+                        # Normalize weights
+                        weights = 1 / (distances + 1e-6)
+                        weights /= np.sum(weights)
+
+                        # Get neighbor coordinates
+                        neighbors = legal_processed_pixels[indices]
+                        
+                        # Interpolate value
+                        frame_light_map[x, y] = np.sum(frame_light_map[neighbors[:, 0], neighbors[:, 1]] * weights[:, None], axis=0)
+
+                # Interpolate illegal pixels (nearest neighbor)
+                illegal_pixels = np.argwhere(~legality_map)
+                if len(illegal_pixels) > 0 and len(legal_processed_pixels) > 0:
+                    kdtree = KDTree(np.argwhere(legality_map))
+                    for x, y in illegal_pixels:
+                        _, nearest_index = kdtree.query((x, y))
+                        nearest_pixel = np.argwhere(legality_map)[nearest_index]
+                        frame_light_map[x, y] = frame_light_map[nearest_pixel[0], nearest_pixel[1]]
+
+                # Update global lightmap
                 new_lightmap[frame.frame_v_start:frame.frame_v_end, frame.frame_u_start:frame.frame_u_end, :] = frame_light_map
-                    
+                actual_sum_patches += len(legal_processed_pixels)
+                theoretical_sum_patches += np.sum(legality_map)
 
             self.scene.light_map = new_lightmap
             self.renderer.update_light_map()
 
         self.scene.generate_light_map(lightmap_path)
-        self.save_lightmap_as_png_with_exposure(lightmap_path, 1000.0)
+        #self.save_lightmap_as_png_with_exposure(lightmap_path, 1000)
+        self.hdr_to_png_with_gamma(lightmap_path)
 
- 
-
+        print("Theoretical sum patches:", theoretical_sum_patches)
+        print("Actual sum patches:", actual_sum_patches)
 
 
     def save_lightmap_as_png_with_exposure(self, lightmap_path: Path, exposure: float):
@@ -136,6 +175,56 @@ class Lightmapper:
         lightmap_filename = lightmap_path.stem
         output_path = lightmap_path.parent / f'{lightmap_filename}.png'
         cv2.imwrite(str(output_path), png_image_bgr)
+
+
+    def hdr_to_png_with_gamma(self, hdr_path: Path, gamma: float = 3) -> float:
+        """
+        Converts an HDR image to a PNG with gamma compression to preserve details in darker areas.
+
+        Args:
+            hdr_path (str): Path to the HDR image file.
+            gamma (float): Gamma value for compression (default is 2.2).
+
+        Returns:
+            float: The scaling factor used for the conversion.
+        """
+        # Load the HDR image
+        hdr_image = cv2.imread(str(hdr_path), cv2.IMREAD_UNCHANGED)
+        if hdr_image is None:
+            raise ValueError(f"Failed to load HDR image from {hdr_path}")
+
+        # Check if it's a 3-channel image (BGR) and convert to RGB
+        if hdr_image.ndim == 3 and hdr_image.shape[2] == 3:
+            hdr_image = cv2.cvtColor(hdr_image, cv2.COLOR_BGR2RGB)
+
+        # Ensure the image contains floating-point values
+        hdr_image = hdr_image.astype(np.float32)
+
+        # Determine the scaling factor based on the maximum value
+        max_value = np.max(hdr_image)
+        if max_value == 0:
+            raise ValueError("HDR image has no valid brightness values.")
+        scaling_factor = max_value
+
+        # Normalize the HDR image and apply gamma compression
+        normalized_image = hdr_image / scaling_factor
+        gamma_compressed_image = np.power(normalized_image, 1.0 / gamma)
+
+        # Map the gamma-compressed image to the 0-255 range and convert to 8-bit
+        png_image = (gamma_compressed_image * 255).astype(np.uint8)
+
+        # Convert back to BGR format for saving
+        png_image_bgr = cv2.cvtColor(png_image, cv2.COLOR_RGB2BGR)
+
+        # Save the PNG image
+        lightmap_filename = hdr_path.stem
+        output_path = hdr_path.parent / f'{lightmap_filename}_scaled.png'
+        cv2.imwrite(str(output_path), png_image_bgr)
+
+        # Print the scaling factor for remapping
+        print(f"Scaling factor: {scaling_factor}")
+        print(f"The original HDR values can be approximated by scaling the SDR image by {scaling_factor} and applying inverse gamma correction.")
+
 
     def quit(self):
         self.renderer.destroy()

@@ -7,6 +7,8 @@ from data_structures.vector3f import Vector3f
 from data_structures.line_segment import LineSegment
 from data_structures.bounding_box import BoundingBox
 from data_structures.point_light import PointLight
+from data_structures.bvh_node import BVHNode
+import data_structures.bvh_node as bvh
 from util import geometry
 
 class Frame:
@@ -38,6 +40,12 @@ class Frame:
     legal_normals: List[Vector3f]
     illegal_pixels: List[Tuple[int, int]]
 
+    frameArrayLegality: np.ndarray
+    frameArrayPositions: np.ndarray
+    frameArrayIncommingLight: np.ndarray
+
+    max_scaling_factor = 10
+
 
 
     def __init__(
@@ -57,55 +65,86 @@ class Frame:
         # The projected triangles are used to calculate the frame's size (bbox) within its plane which is necessary for the uv mapping
         # The uv mapped frame is the basis for the patch placement
         self.projected_triangles, self.projection_matrix = self.__project_triangles_to_2d(self.triangles)
-        self.bounding_box_unpadded = self._calculate_bounding_box_2d()
-        frame_width, frame_height = self.bounding_box_unpadded[2], self.bounding_box_unpadded[3]
+        self.projected_triangles = self.scale_triangles(self.projected_triangles, self.patch_ws_size*3, 100)
+        # Calculate this frame's bounding boxes
+        self.bounding_box_3d = self.__calculate_bounding_box_3d()
+        self.bounding_box_projected = self._calculate_bounding_box_2d()
         # As right now its assumed that all triangles within a frame are coplanar we can just pick the normal of any triangle
         self.frame_normal = self.triangles[0].normal
 
-        # Check the frame's aspect ratio, if width is greater than height rotate the frame. 
-        # Having all frames rotated with their larger side as height allows for a more efficient uv mapping later on
-        if frame_width > frame_height:
-            # Rotate the bounding box (flip width and height)
-            self.bounding_box_unpadded = (self.bounding_box_unpadded[0], self.bounding_box_unpadded[1], frame_height, frame_width)
-            
-            # Rotate the projected triangles (flip x and y)
-            self.projected_triangles = [[[v[1], v[0]] for v in triangle] for triangle in self.projected_triangles]
-
-            # Flip X and Y axes in the projection matrix by swapping rows 0 and 1
-            flipped_projection_matrix = self.projection_matrix.copy()
-            flipped_projection_matrix[[0, 1], :] = flipped_projection_matrix[[1, 0], :]
-            self.projection_matrix = flipped_projection_matrix
-        
         # Add padding to the bounding box to ensure no light leakage between neighbouring frames
         self.bounding_box = (
-            self.bounding_box_unpadded[0] - self.patch_ws_size, 
-            self.bounding_box_unpadded[1] - self.patch_ws_size, 
-            self.bounding_box_unpadded[2] + self.patch_ws_size + self.patch_ws_size,
-            self.bounding_box_unpadded[3] + self.patch_ws_size + self.patch_ws_size
+            self.bounding_box_projected[0] - self.patch_ws_size, 
+            self.bounding_box_projected[1] - self.patch_ws_size, 
+            self.bounding_box_projected[2] + self.patch_ws_size + self.patch_ws_size,
+            self.bounding_box_projected[3] + self.patch_ws_size + self.patch_ws_size
         )
-
+        
         # Adjust projected triangles based on bounding box origin (also consider padding)
         self.projected_triangles = [
-            [[v[0] - self.bounding_box_unpadded[0] + self.patch_ws_size, v[1] - self.bounding_box_unpadded[1] + self.patch_ws_size] for v in triangle]
+            [[v[0] - self.bounding_box_projected[0] + self.patch_ws_size, v[1] - self.bounding_box_projected[1] + self.patch_ws_size] for v in triangle]
             for triangle in self.projected_triangles
         ]
 
-        # Calculate this frame's 3d bounding box
-        self.bounding_box_3d = self.__calculate_bounding_box_3d()
-
         # Initialize this frame's uv lists
-        self.tex_uvs = []
-        self.lm_uvs = []
         self.lm_uvs_bbox_space = []
-
-        
+        self.lm_uvs = []
+        self.tex_uvs = []
         self.frame_u_start = 0
         self.frame_v_start = 0
         self.frame_u_end = 0
         self.frame_v_end = 0
         self.frame_width_pixels = 0
         self.frame_height_pixels = 0
+        
+    def scale_triangles(
+        self,
+        triangles: List[Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]],
+        patch_size: float,
+        max_scaling_factor: float = 10.0
+    ) -> List[Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]]:
+        """
+        Scales triangles such that each can enclose a square of size patch_size x patch_size.
 
+        Args:
+            triangles (List[Tuple]): List of triangles, each defined by 3 vertices ((x1, y1), (x2, y2), (x3, y3)).
+            patch_size (float): Minimum required size of the square that each triangle must enclose.
+            max_scaling_factor (float): Maximum allowed scaling factor for both X and Y.
+
+        Returns:
+            List[Tuple]: List of scaled triangles.
+        """
+        scaled_triangles = []
+
+        for triangle in triangles:
+            # Extract vertices
+            p1, p2, p3 = triangle
+
+            # Calculate bounding box
+            min_x = min(p1[0], p2[0], p3[0])
+            max_x = max(p1[0], p2[0], p3[0])
+            min_y = min(p1[1], p2[1], p3[1])
+            max_y = max(p1[1], p2[1], p3[1])
+
+            width = max_x - min_x
+            height = max_y - min_y
+
+            # Calculate scaling factors for x and y
+            scale_x = max(1, patch_size / width)
+            scale_y = max(1, patch_size / height)
+
+            # Clamp scaling factors to the maximum allowed value
+            scale_x = min(scale_x, max_scaling_factor)
+            scale_y = min(scale_y, max_scaling_factor)
+
+            # Scale the triangle
+            scaled_triangle = tuple(
+                (x * scale_x, y * scale_y)
+                for x, y in triangle
+            )
+            scaled_triangles.append(scaled_triangle)
+
+        return scaled_triangles
 
     def __project_triangles_to_2d(self, triangles: List[Triangle]) -> Tuple[List[Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]], np.ndarray]:
         """
@@ -153,7 +192,6 @@ class Frame:
 
         return projected_triangles, projection_matrix
     
-
     def __calculate_bounding_box_3d(self) -> BoundingBox:
         """
         Calculate the 3D bounding box that encompasses all the triangles ind 3D worldspace.
@@ -333,11 +371,7 @@ class Frame:
 
     def generate_patches(self, patch_resolution):
 
-        self.legal_pixels = []
-        self.legal_positions = []
-        self.legal_normals = []
-        self.legal_incoming_light = []
-        self.illegal_pixels = []
+        n = 4
 
         frame_width_ws = self.bounding_box[2]
         frame_height_ws = self.bounding_box[3]
@@ -345,6 +379,7 @@ class Frame:
         frame_origin_v_pixels = math.ceil(self.bounding_box[1] * patch_resolution)
         self.frame_width_pixels = math.ceil(frame_width_ws * patch_resolution)
         self.frame_height_pixels = math.ceil(frame_height_ws * patch_resolution)
+
 
         # The frames position within the uv map in pixels
         frame_origin_u_pixels = math.ceil(self.bounding_box[0] * patch_resolution)
@@ -358,6 +393,11 @@ class Frame:
         half_v_pixel = (1 / self.frame_height_pixels) / 2
 
         triangles_uv_space = [triangle for triangle in self.lm_uvs_bbox_space]
+
+        # create the frame array to hold the legality and positions of all the patches
+        self.frameArrayLegality = np.zeros((self.frame_height_pixels, self.frame_width_pixels), dtype=bool)
+        self.frameArrayPositions = np.zeros((self.frame_height_pixels, self.frame_width_pixels, 3), dtype=float)
+        self.frameArrayIncommingLight = np.zeros((self.frame_height_pixels, self.frame_width_pixels, 3), dtype=float)
 
         for v_pixel in range(self.frame_height_pixels):
             v = v_pixel / (self.frame_height_pixels)
@@ -374,25 +414,24 @@ class Frame:
 
                     # Check if patch is covered by triangle on the same plane
                     if geometry.point_is_covered_by_triangle(worldspace_position, self.frame_normal, self.close_triangles, 1e-6):
-                        self.illegal_pixels.append((u_pixel, v_pixel))
+                        self.frameArrayLegality[v_pixel, u_pixel] = False
                         continue
                     
                     # Check if there is a intersectin triangle which covers this patch
                     distance = geometry.distance_to_closest_triangle_facing_away(worldspace_position, self.frame_normal, self.intersection_segments, self.intersection_normals)
                     if distance < 1/patch_resolution *  2:
-                        self.illegal_pixels.append((u_pixel, v_pixel))
+                        self.frameArrayLegality[v_pixel, u_pixel] = False
                         continue
-
-                    self.legal_pixels.append((u_pixel, v_pixel))
-                    self.legal_positions.append(worldspace_position)
-                    self.legal_normals.append(self.frame_normal)
-                    self.legal_incoming_light.append(Vector3f(0, 0, 0))
+                    
+                    
+                    self.frameArrayPositions[v_pixel, u_pixel] = [worldspace_position.x, worldspace_position.y, worldspace_position.z]
+                    self.frameArrayLegality[v_pixel, u_pixel] = True
 
                 else:
-                    self.illegal_pixels.append((u_pixel, v_pixel))
+                    self.frameArrayLegality[v_pixel, u_pixel] = False
 
 
-    def interpolate_uv_to_world(self, triangle: Triangle, uv_coords: np.ndarray, uv_point: tuple[float, float]) -> tuple[np.ndarray, np.ndarray]:
+    def interpolate_uv_to_world(self, triangle: Triangle, uv_coords: np.ndarray, uv_point: tuple[float, float]) -> Vector3f:
         """
         Interpolate world coordinates and normal at a given UV point within a triangle.
 
@@ -441,39 +480,35 @@ class Frame:
 
         return np.array([w0, w1, w2])
     
-    def calculate_incoming_light(self, lights: List[PointLight], triangles: List[Triangle]):
-        for i, patch_position in enumerate(self.legal_positions):
+    def calculate_incoming_light(self, lights: List[PointLight], bvh_root: BVHNode):
+        legalIndices = np.argwhere(self.frameArrayLegality)
+        for i, j in legalIndices:
             incoming_light = Vector3f(0, 0, 0)
+            patch_position_array = self.frameArrayPositions[i, j]
+            patch_position = Vector3f(*patch_position_array)
 
             for point_light in lights:
-                light_dir = point_light.origin - patch_position
-                light_distance = light_dir.magnitude()
-                light_dir = light_dir.normalize()
-
+                light_dir = (point_light.origin - patch_position).normalize()
+                light_distance = (point_light.origin - patch_position).magnitude()
 
                 if light_distance > point_light.range:
                     continue
 
-                blocked = False
+                # Use BVH for intersection testing
+                t = bvh.intersect_bvh(point_light.origin, -light_dir, bvh_root)
 
-                for triangle in triangles:
-                    if any((patch_position - v).magnitude() < 1e-6 for v in triangle.vertices):
-                        continue  # Skip the triangle the patch is on
+                if t is not None and t < light_distance - 1e-6:
+                    continue  # Light is blocked
 
-                    t = triangle.intersect_ray(point_light.origin, -light_dir)
-                    if t is not None and t < light_distance - 1e-6:
-                        blocked = True
-                        break
+                attenuation = max(0.0, float(point_light.intensity / (light_distance ** 2)))
+                dot_product = max(0.0, light_dir.dot(self.frame_normal))
+                incoming_light += Vector3f(
+                    attenuation * dot_product * point_light.color.x,
+                    attenuation * dot_product * point_light.color.y,
+                    attenuation * dot_product * point_light.color.z,
+                )
 
-                if not blocked:
-                    attenuation = max(0.0, float(point_light.intensity / (light_distance ** 2)))
-                    incoming_light_x = attenuation * max(0.0, light_dir.dot(self.frame_normal)) * point_light.color.x
-                    incoming_light_y = attenuation * max(0.0, light_dir.dot(self.frame_normal)) * point_light.color.y
-                    incoming_light_z = attenuation * max(0.0, light_dir.dot(self.frame_normal)) * point_light.color.z
-                    incoming_light_vec = Vector3f(incoming_light_x, incoming_light_y, incoming_light_z)
-                    incoming_light += incoming_light_vec
-
-            self.legal_incoming_light[i] = incoming_light
+            self.frameArrayIncommingLight[i, j] = incoming_light.to_array()
 
         
 
