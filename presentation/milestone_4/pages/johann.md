@@ -9,8 +9,8 @@ hideInToc: true
 ---
 
 # In-Game Console (Recap)
-- User-Input mit bewegbarem Cursor, Löschen und Entfernen, Zeichen einfügen an der Cursor-Position
-- formattieres Printing
+- User-Input mit bewegbarem Cursor, Löschen und Entfernen, an der Cursor-Position Zeichen einfügen
+- formatiertes Printing
 - Scrolling des Logs
 - Befehls-Historie
 - blinkender Cursor
@@ -27,7 +27,7 @@ hideInToc: true
 
 <img src="/img/johann/command_help.png" style="width: 100%;">
 <div style="display: flex; gap: 80px; width: 100%;margin: 10px 0;">
-  <img src="/img/johann/command_list_vars.png" style="flex: 1;width: 40%;margin-left: 60px;">
+  <img src="/img/johann/command_list_vars.png" style="flex: 1;width: 30%;margin-left: 60px;">
   <img src="/img/johann/command_list_cmds.png" style="flex: 1;width: 30%;margin-right: 60px;">
 </div>
 Die Auflistung kann durch Übergabe eines Substring als Befehlsparameter gefiltert werden.
