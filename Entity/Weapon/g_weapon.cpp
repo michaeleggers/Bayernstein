@@ -9,6 +9,7 @@
 #include "../../dependencies/glm/glm.hpp"
 #include "../../dependencies/glm/gtx/quaternion.hpp"
 
+#include "../../Audio/Audio.h"
 #include "../../globals.h"
 #include "../../utils/utils.h"
 #include "g_weapon.h"
@@ -20,11 +21,27 @@ Weapon::Weapon(const std::vector<Property>& properties)
 
     // TODO: Load the type of the model from properties.
     LoadModel("models/double_barrel_shotgun/db_shotgun.iqm", m_Position);
+
+    m_HUDSprite = CreateSprite("shotgun_shell_icon.png", glm::vec2(0.0f), glm::vec2(64.0f));
+
+    m_SfxGunshot
+        = Audio::LoadSource("sfx/TriuneFilms/Hollywood_Guns_SFX/mossberg590-12gauge-single-shot-processed-C.wav", 0.5f);
+    m_SfxReload = Audio::LoadSource("sfx/TriuneFilms/Gun_Foley_SFX/mossberg590-shotgun-foley-charge-5.wav", 0.5f);
+
+    m_MagSize               = 2;
+    m_FireRate              = 800.0;
+    m_ReloadTime            = 800.0;
+    m_RoundsRemaining       = m_MagSize;
+    m_MaxDamage             = 100.0;
+    m_FullDamageWithinRange = 130.0f;
+    m_DamageFalloff         = 0.6f;
 }
 
 void Weapon::UpdatePosition(glm::vec3 newPosition)
 {
     m_Position = newPosition;
+    m_TimeElapsed += GetDeltaTime();
+    CheckReload();
 }
 
 void Weapon::LoadModel(const char* path, glm::vec3 initialPosition)
@@ -70,6 +87,47 @@ EllipsoidCollider* Weapon::GetEllipsoidColliderPtr()
 HKD_Model* Weapon::GetModel()
 {
     return &m_Model;
+}
+
+void Weapon::CheckReload()
+{ // TODO: separate 'check' from actual reload, to allow manual reloading by user?
+    if ( m_RoundsRemaining == 0 && m_TimeElapsed > -0.3 * m_ReloadTime ) // automatic reload
+    {
+        m_RoundsRemaining = m_MagSize;
+        Audio::m_SfxBus.play(*m_SfxReload, -1);
+    }
+}
+
+bool Weapon::Fire()
+{
+    if ( m_TimeElapsed >= m_FireRate && m_RoundsRemaining > 0 )
+    {
+        --m_RoundsRemaining;
+        m_TimeElapsed = 0.0;
+        Audio::m_SfxBus.play(*m_SfxGunshot, -1);
+        if ( m_RoundsRemaining == 0 )
+        {
+            m_TimeElapsed -= m_ReloadTime;
+        }
+        return true;
+    }
+    return false;
+}
+
+double Weapon::GetDamage(float distance) const
+{
+    float minDistance = m_FullDamageWithinRange;
+    return m_MaxDamage * std::clamp(std::pow(distance / minDistance, -m_DamageFalloff), 0.0, 1.0);
+}
+
+int Weapon::GetRemainingRounds() const
+{
+    return m_RoundsRemaining;
+}
+
+Sprite Weapon::GetHUDSprite()
+{
+    return m_HUDSprite;
 }
 
 bool Weapon::HandleMessage(const Telegram& telegram)

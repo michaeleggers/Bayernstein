@@ -56,6 +56,8 @@ Enemy::Enemy(const std::vector<Property>& properties)
 
     m_SfxFootsteps
         = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
+    m_SfxHit   = Audio::LoadSource("sfx/sonniss/Creature_Monster_Attack_09.wav");
+    m_SfxDeath = Audio::LoadSource("sfx/sonniss/Creature_Alien_Death_01.wav");
 }
 
 void Enemy::PreCollisionUpdate()

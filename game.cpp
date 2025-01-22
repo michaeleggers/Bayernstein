@@ -59,7 +59,7 @@ void Game::Init()
     VariableManager::Register(&dbg_show_enemy_velocity);
 
     // Load a font file from disk
-    m_ConsoleFont   = new CFont("fonts/HackNerdFont-Bold.ttf", 72);
+    m_ConsoleFont   = new CFont("fonts/HackNerdFont-Bold.ttf", 58);
     m_ConsoleFont30 = new CFont("fonts/HackNerdFont-Bold.ttf", 150); // Same font at different size
 
     IRender* renderer = GetRenderer();
@@ -74,7 +74,7 @@ void Game::Init()
 
     // Load lightmap triangles and lightmap texture
 
-    m_World->InitWorld("Milestone4");
+    m_World->InitWorld("arena");
     m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.
@@ -405,6 +405,15 @@ bool Game::RunFrame(double dt)
                          glm::vec2(crosshairScale),
                          COORD_MODE_REL);
     renderer->DrawSprite(&m_BoltSprite, glm::vec2(0.0f), glm::vec2(2.0f), COORD_MODE_REL);
+
+    // render weapon info
+    Weapon*   weapon          = m_pPlayerEntity->GetWeapon();
+    Sprite    icon            = weapon->GetHUDSprite();
+    int       remainingRounds = weapon->GetRemainingRounds();
+    glm::vec2 pos             = windowDimensions - icon.size - glm::vec2(icon.size.x + 10.0f, 10.0f);
+    renderer->SetFont(m_ConsoleFont);
+    renderer->R_DrawText(std::to_string(remainingRounds), pos.x + icon.size.x + 10.0f, pos.y + 8.0f, COORD_MODE_ABS);
+    renderer->DrawSprite(&icon, pos, glm::vec2(1.0f), COORD_MODE_ABS);
 
     renderer->End2D();
 

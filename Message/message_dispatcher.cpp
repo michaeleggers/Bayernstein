@@ -80,7 +80,6 @@ void MessageDispatcher::DispatchMessage(double delay, int sender, int receiver, 
                Clock->GetTime(),
                pReceiver->ID(),
                MessageToString(message).c_str());
-        Discharge(pReceiver, telegram);
     }
 }
 

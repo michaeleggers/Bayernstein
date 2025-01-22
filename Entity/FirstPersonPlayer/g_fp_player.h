@@ -118,7 +118,6 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver
     EntityCollisionState m_PrevCollisionState;
 
     // Audio
-    SoLoud::AudioSource* m_SfxGunshot;
     SoLoud::AudioSource* m_SfxJump;
     SoLoud::AudioSource* m_SfxFootsteps;
     SoLoud::handle       m_FootstepsHandle = 0;

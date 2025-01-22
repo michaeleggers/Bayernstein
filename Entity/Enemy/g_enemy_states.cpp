@@ -12,31 +12,42 @@
 #include "../../dependencies/glm/gtx/quaternion.hpp"
 #include "../../dependencies/glm/gtx/vector_angle.hpp"
 
+#include "../../Audio/Audio.h"
 #include "../../Message/g_extra_info_types.h"
-#include "../../Message/message_type.h"
 #include "../../Message/message_dispatcher.h"
+#include "../../Message/message_type.h"
 #include "../entity_manager.h"
 #include "g_enemy.h"
 
-static inline bool ReactToRayHit(Enemy* agent, BaseGameEntity* pSender)
-{    
+static inline bool ReactToRayHit(Enemy* agent, Telegram telegram)
+{
+    BaseGameEntity* pSender = EntityManager::Instance()->GetEntityFromID(telegram.Sender);
+
     if ( pSender->Type() == ET_PLAYER )
     {
-        agent->DecreaseHealth(100.0f);
+        double hitPoints = DereferenceToType<double>(telegram.ExtraInfo);
+        agent->DecreaseHealth(hitPoints);
         if ( agent->IsDead() )
         {
             // Turn agent towards its shooter
             // TODO: This code is redundant as somewhere else something like this has to be done as well.
             // So make it a member function like 'LookAt' or something like that.
-            glm::vec3 newForward            = pSender->m_Position - agent->m_Position;
-            newForward.z                    = 0;
-            newForward                      = glm::normalize(newForward);
-            float     absOrientationAngle   = glm::orientedAngle(DOD_WORLD_FORWARD, newForward, DOD_WORLD_UP);
-            float     randAngleBias         = RandBetween(-30.0f, 30.0f);
-            glm::quat newForwardOrientation = glm::angleAxis(absOrientationAngle + glm::radians(randAngleBias), DOD_WORLD_UP);
-            agent->m_Orientation            = newForwardOrientation;
+            glm::vec3 newForward          = pSender->m_Position - agent->m_Position;
+            newForward.z                  = 0;
+            newForward                    = glm::normalize(newForward);
+            float     absOrientationAngle = glm::orientedAngle(DOD_WORLD_FORWARD, newForward, DOD_WORLD_UP);
+            float     randAngleBias       = RandBetween(-30.0f, 30.0f);
+            glm::quat newForwardOrientation
+                = glm::angleAxis(absOrientationAngle + glm::radians(randAngleBias), DOD_WORLD_UP);
+            agent->m_Orientation = newForwardOrientation;
 
             agent->GetFSM()->ChangeState(EnemyDead::Instance());
+        }
+        else
+        {
+            glm::vec3 pos = agent->m_Position;
+            glm::vec3 vel = agent->m_Velocity;
+            Audio::m_SfxBus.play3d(*agent->m_SfxHit, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, -1);
         }
     }
 
@@ -106,8 +117,7 @@ bool EnemyIdle::OnMessage(Enemy* agent, const Telegram& telegram)
 
     case message_type::RayHit:
     {
-        BaseGameEntity* pSender = EntityManager::Instance()->GetEntityFromID(telegram.Sender);
-        return ReactToRayHit(agent, pSender);
+        return ReactToRayHit(agent, telegram);
     }
     break;
 
@@ -142,7 +152,6 @@ void EnemyAttacking::Enter(Enemy* pEnemy)
 {
     //printf("Enemy entered Attacking State\n");
     pEnemy->m_AnimationState = ANIM_STATE_ATTACK;
- 
 }
 
 void EnemyAttacking::Execute(Enemy* pEnemy)
@@ -185,8 +194,7 @@ bool EnemyAttacking::OnMessage(Enemy* agent, const Telegram& telegram)
 
     case message_type::RayHit:
     {
-        BaseGameEntity* pSender = EntityManager::Instance()->GetEntityFromID(telegram.Sender);
-        return ReactToRayHit(agent, pSender);
+        return ReactToRayHit(agent, telegram);
     }
     break;
 
@@ -203,6 +211,9 @@ EnemyDead* EnemyDead::Instance()
 
 void EnemyDead::Enter(Enemy* pEnemy)
 {
+    glm::vec3 pos = pEnemy->m_Position;
+    glm::vec3 vel = pEnemy->m_Velocity;
+    Audio::m_SfxBus.play3d(*pEnemy->m_SfxDeath, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, -1);
     printf("Enemy entered Dead State\n");
 
     // Make sure to turn steering off for dead bodies
@@ -258,6 +269,9 @@ void EnemyWander::Exit(Enemy* pEnemy)
 
 bool EnemyWander::OnMessage(Enemy* agent, const Telegram& telegram)
 {
+    // NOTE(Michael): Maybe do this.
+    //return handleMessageAlive(agent, telegram);
+
     return false;
 }
 
@@ -305,9 +319,8 @@ bool EnemyPatrol::OnMessage(Enemy* agent, const Telegram& telegram)
     }
 
     case message_type::RayHit:
-    {    
-        BaseGameEntity* pSender = EntityManager::Instance()->GetEntityFromID(telegram.Sender);
-        return ReactToRayHit(agent, pSender);
+    {
+        return ReactToRayHit(agent, telegram);
     }
     break;
 
@@ -371,8 +384,7 @@ bool EnemyFollow::OnMessage(Enemy* agent, const Telegram& telegram)
 
     case message_type::RayHit:
     {
-        BaseGameEntity* pSender = EntityManager::Instance()->GetEntityFromID(telegram.Sender);
-        ReactToRayHit(agent, pSender);
+        ReactToRayHit(agent, telegram);
     }
     break;
 

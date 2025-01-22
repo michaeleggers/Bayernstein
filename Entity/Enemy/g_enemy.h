@@ -108,6 +108,9 @@ class Enemy : public MovingEntity
 
     AnimState m_AnimationState;
 
+    SoLoud::AudioSource* m_SfxHit;
+    SoLoud::AudioSource* m_SfxDeath;
+
   private:
     StateMachine<Enemy>* m_pStateMachine;
     double               m_Health = 100;
@@ -116,7 +119,6 @@ class Enemy : public MovingEntity
     SoLoud::handle       m_FootstepsHandle = 0;
 
   private:
-
     void LoadModel(const char* path, glm::vec3 initialPosition);
     void UpdateEnemyModel();
 };
