@@ -140,8 +140,8 @@ class Lightmapper:
             self.renderer.update_light_map()
 
         self.scene.generate_light_map(lightmap_path)
-        self.save_lightmap_as_png_with_exposure(lightmap_path, 1000.0)
-        #self.save_lightmap_as_png_preserving_range(lightmap_path)
+        #self.save_lightmap_as_png_with_exposure(lightmap_path, 1000)
+        self.hdr_to_png_with_gamma(lightmap_path)
 
         print("Theoretical sum patches:", theoretical_sum_patches)
         print("Actual sum patches:", actual_sum_patches)
@@ -177,43 +177,48 @@ class Lightmapper:
         cv2.imwrite(str(output_path), png_image_bgr)
 
 
-    def save_lightmap_as_png_preserving_range(self, lightmap_path: Path):
-        # Load the HDR image with floating-point precision
-        hdr_image = cv2.imread(str(lightmap_path), cv2.IMREAD_UNCHANGED)
+    def hdr_to_png_with_gamma(self, hdr_path: Path, gamma: float = 3) -> float:
+        """
+        Converts an HDR image to a PNG with gamma compression to preserve details in darker areas.
 
+        Args:
+            hdr_path (str): Path to the HDR image file.
+            gamma (float): Gamma value for compression (default is 2.2).
+
+        Returns:
+            float: The scaling factor used for the conversion.
+        """
+        # Load the HDR image
+        hdr_image = cv2.imread(str(hdr_path), cv2.IMREAD_UNCHANGED)
         if hdr_image is None:
-            print(f"Failed to load image from {str(lightmap_path)}")
-            return
+            raise ValueError(f"Failed to load HDR image from {hdr_path}")
 
-        # Check if it's loaded in BGR format and convert to RGB
-        if hdr_image.shape[2] == 3:  # Only convert if it's a 3-channel image
+        # Check if it's a 3-channel image (BGR) and convert to RGB
+        if hdr_image.ndim == 3 and hdr_image.shape[2] == 3:
             hdr_image = cv2.cvtColor(hdr_image, cv2.COLOR_BGR2RGB)
 
-        # Calculate the maximum value in the HDR image
-        hdr_max = np.max(hdr_image)
-        if hdr_max == 0:
-            print("HDR image is empty or contains only black pixels.")
-            return
+        # Ensure the image contains floating-point values
+        hdr_image = hdr_image.astype(np.float32)
 
-        # Scale the HDR image to fit within SDR range [0, 1] non-linearly
-        scaling_factor = hdr_max
-        scaled_hdr_image = hdr_image / scaling_factor
+        # Determine the scaling factor based on the maximum value
+        max_value = np.max(hdr_image)
+        if max_value == 0:
+            raise ValueError("HDR image has no valid brightness values.")
+        scaling_factor = max_value
 
-        # Apply a non-linear compression (logarithmic mapping)
-        compressed_image = np.log1p(scaled_hdr_image) / np.log1p(1.0)  # Compress into SDR range
+        # Normalize the HDR image and apply gamma compression
+        normalized_image = hdr_image / scaling_factor
+        gamma_compressed_image = np.power(normalized_image, 1.0 / gamma)
 
-        # Gamma correction (assume 2.2 gamma)
-        gamma_corrected_image = np.power(compressed_image, 1.0 / 2.2)
+        # Map the gamma-compressed image to the 0-255 range and convert to 8-bit
+        png_image = (gamma_compressed_image * 255).astype(np.uint8)
 
-        # Scale the gamma-corrected image to 0-255 range and convert to 8-bit
-        png_image = np.clip(gamma_corrected_image * 255, 0, 255).astype(np.uint8)
-
-        # Convert back to BGR format for saving as PNG
+        # Convert back to BGR format for saving
         png_image_bgr = cv2.cvtColor(png_image, cv2.COLOR_RGB2BGR)
 
         # Save the PNG image
-        lightmap_filename = lightmap_path.stem
-        output_path = lightmap_path.parent / f'{lightmap_filename}_scaled.png'
+        lightmap_filename = hdr_path.stem
+        output_path = hdr_path.parent / f'{lightmap_filename}_scaled.png'
         cv2.imwrite(str(output_path), png_image_bgr)
 
         # Print the scaling factor for remapping
