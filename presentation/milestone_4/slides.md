@@ -98,15 +98,7 @@ src: ./pages/johann.md
 src: ./pages/bene.md
 ---
 
----
-layout: center
----
 
-# Ausblick
-
----
-hideInToc: true
----
 
 # Herausforderungen
 
@@ -148,11 +140,8 @@ hideInToc: true
 - Virtuelles Filesystem integrieren: PhysicsFS (https://icculus.org/physfs/)
 
 
----
 
-# Quellenangaben
 
-<BiblioList />
 
 ---
 src: ./pages/demo.md
