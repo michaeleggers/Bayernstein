@@ -74,7 +74,7 @@ void Game::Init()
 
     // Load lightmap triangles and lightmap texture
 
-    m_World->InitWorld("Milestone4");
+    m_World->InitWorld("arena");
     m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.
@@ -397,8 +397,6 @@ bool Game::RunFrame(double dt)
 
     renderer->Begin2D();
 
-    renderer->SetFont(m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-    renderer->R_DrawText("Sprite Test", 0.5f, 0.0f, COORD_MODE_REL);
     glm::vec2 windowDimensions = renderer->GetWindowDimensions();
     glm::vec2 relSpriteSize    = m_CrosshairSprite.size / windowDimensions;
     float     crosshairScale   = 0.25f;
@@ -406,7 +404,6 @@ bool Game::RunFrame(double dt)
                          glm::vec2(0.5f) - relSpriteSize * crosshairScale / 2.0f,
                          glm::vec2(crosshairScale),
                          COORD_MODE_REL);
-    renderer->DrawSprite(&m_BoltSprite, glm::vec2(0.0f), glm::vec2(2.0f), COORD_MODE_REL);
 
     // render weapon info
     Weapon*   weapon          = m_pPlayerEntity->GetWeapon();

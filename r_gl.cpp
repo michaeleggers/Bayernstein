@@ -1118,10 +1118,12 @@ void GLRender::DrawSprite(const Sprite*        sprite,
         = { glm::vec2(posX, posY), sprite->size, scale, sprite->uvTopLeft, sprite->uvBottomRight };
     glBindBuffer(GL_UNIFORM_BUFFER, m_SpriteShader->m_SpriteUBO);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(SpriteUB), (void*)&spriteShaderData);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, (GLuint)sprite->hTexture);
+    m_FontBatch->Bind(); // HACK: OpenGL needs *some* buffer to be bound even if not used!
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    m_FontBatch->Unbind();
 }
 
 void GLRender::SetFont(CFont* font, glm::vec4 color)
