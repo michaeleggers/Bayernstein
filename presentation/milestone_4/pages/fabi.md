@@ -15,28 +15,24 @@ backgroundColor: white
 <v-switch>
 <template #0>
 
-- Verbessertes UV-Mapping
-- Patch Processing Pipeline
-- Bugfix Renderer
-- Dynamic Patch Resolution
+- Performance (Dynamic Patch Resolution)
+- Bugfixes
+- Python Skript zu C++ Programm
+
 </template>
 <template #1>
 
-- <span style="color: #77dd77;">Verbessertes UV-Mapping</span>
-- <span style="color: #77dd77;">Patch Processing Pipeline</span>
-- <span style="color: #77dd77;">Bugfix Renderer</span>
-- <span style="color: #ff6961;">Dynamic Patch Resolution</span>
+- <span style="color: #77dd77;">Performance (Dynamic Patch Resolution)</span>
+- <span style="color: #77dd77;">Bugfixes</span>
+- <span style="color: #ff6961;">Python Skript zu C++ Programm</span>
 </template>
 
 <template #2>
 
-- <span style="color: #77dd77;">Verbessertes UV-Mapping</span>
-- <span style="color: #77dd77;">Patch Processing Pipeline</span>
-- <span style="color: #77dd77;">Bugfix Renderer</span>
-- <span style="color: #ff6961;">Dynamic Patch Resolution</span>
-- <span style="color: #84b6f4;">Verschiedene Bugfixes</span>
-- <span style="color: #84b6f4;">Point Lights</span>
-- <span style="color: #84b6f4;">Integration in die Engine</span>
+- <span style="color: #77dd77;">Performance (Dynamic Patch Resolution)</span>
+- <span style="color: #77dd77;">Bugfixes</span>
+- <span style="color: #ff6961;">Python Skript zu C++ Programm</span>
+- <span style="color: #84b6f4;">Beleuchtungsexperimente</span>
 </template>
 
 </v-switch>
@@ -45,55 +41,94 @@ backgroundColor: white
 hideInToc: true
 ---
 
-# UV-Mapping
+# Dynamic Patch Resolution
+
 
 <v-switch>
 <template #0>
 
-![Alt text](/img/fabian/img_uvs1.png){width=90% height=90%}
-</template>
-<template #1>
-
-![Alt text](/img/fabian/img_uvs2.png){width=90% height=90%}
+![Alt text](/img/fabian/demo_a.png){width=90% height=90%}
 </template>
 </v-switch>
+
 
 ---
 hideInToc: true
 ---
 
-# Patch Processing Pipeline: Unzulässige Patches
+# Dynamic Patch Resolution
 
 <v-switch>
-
 <template #0>
 
-![Alt text](/img/fabian/img_hemicube_placement.png){width=100% height=100%}
+![Alt text](/img/fabian/dp_a.png){width=90% height=90%}
 </template>
-
 <template #1>
 
-![Alt text](/img/fabian/pic1.png){width=100% height=100%}
+![Alt text](/img/fabian/dp_b.png){width=90% height=90%}
 </template>
+
 <template #2>
 
-![Alt text](/img/fabian/pic2.png){width=100% height=100%}
+![Alt text](/img/fabian/dp_c.png){width=90% height=90%}
 </template>
 
 <template #3>
 
-![Alt text](/img/fabian/pic4.png){width=100% height=100%}
+![Alt text](/img/fabian/dp_d.png){width=90% height=90%}
 </template>
+
 
 <template #4>
 
-![Alt text](/img/fabian/pic5.png){width=100% height=100%}
+![Alt text](/img/fabian/dp_e.png){width=90% height=90%}
 </template>
+
 
 <template #5>
 
-![Alt text](/img/fabian/pic8.png){width=100% height=100%}
+![Alt text](/img/fabian/dp_f.png){width=90% height=90%}
 </template>
+
+
+<template #6>
+
+![Alt text](/img/fabian/dp_g.png){width=90% height=90%}
+</template>
+
+<template #7>
+
+![Alt text](/img/fabian/dp_h.png){width=90% height=90%}
+</template>
+</v-switch>
+
+---
+hideInToc: true
+---
+
+# Dynamic Patch Resolution
+
+<v-switch>
+
+<template #0>
+
+![Alt text](/img/fabian/green_room.png){width=100% height=100%}
+</template>
+
+<template #1>
+
+![Alt text](/img/fabian/dp_demo_a.png){width=100% height=100%}
+</template>
+<template #2>
+
+![Alt text](/img/fabian/dp_demo_b.png){width=100% height=100%}
+</template>
+
+<template #3>
+
+![Alt text](/img/fabian/dp_demo_c.png){width=100% height=100%}
+</template>
+
 
 </v-switch>
 ---
@@ -105,21 +140,21 @@ hideInToc: true
 <v-switch>
 <template #0>
 
-![Alt text](/img/fabian/img_hemicube_placement.png){width=100% height=100%}
+![Alt text](/img/fabian/demo_a.png){width=100% height=100%}
 </template>
 <template #1>
 
-![Alt text](/img/fabian/lm_no_tex.png){width=100% height=100%}
+![Alt text](/img/fabian/demo_a.png){width=100% height=100%}
 </template>
 
 <template #2>
 
-![Alt text](/img/fabian/lm_tex.png){width=100% height=100%}
+![Alt text](/img/fabian/demo_a.png){width=100% height=100%}
 </template>
 
 <template #3>
 
-![Alt text](/img/fabian/green_room.png){width=100% height=100%}
+![Alt text](/img/fabian/demo_a.png){width=100% height=100%}
 </template>
 
 </v-switch>
