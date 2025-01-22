@@ -1,4 +1,7 @@
 <!-- Folie 1 -->
+<div style="display: flex; justify-content: center; align-items: center; height: 50%;">
+  <h1 style="color: white;">Level-Design</h1>
+</div>
 ---
 layout: default
 class: center
