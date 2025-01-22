@@ -411,33 +411,41 @@ static void CollideUnitSphereWithTri(CollisionInfo* ci, const Tri& tri)
 }
 
 static std::vector<Tri> g_MapTrisCache;
+void InitMapTrisCache(size_t numTris) 
+{
+    g_MapTrisCache.resize(numTris);
+}
+  
 CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider                 ec,
                                           glm::vec3                         velocity,
                                           glm::vec3                         gravity,
                                           MapTri*                           tris,
                                           int                               triCount,
                                           std::vector<std::vector<MapTri>*> brushMapTris)
-{
-    g_MapTrisCache.clear();
-   
+{      
     // Convert to ellipsoid space
     glm::vec3 scaleToESpace(ec.toESpace[ 0 ][ 0 ], ec.toESpace[ 1 ][ 1 ], ec.toESpace[ 2 ][ 2 ]);
+   
     for ( int i = 0; i < triCount; i++ )
     {
         Tri tri   = tris[ i ].tri;
         TriToEllipsoidSpace(&tri, scaleToESpace);
-        g_MapTrisCache.push_back(tri);
+        g_MapTrisCache[i] = tri;
     }
+    int currentTriCount = triCount;
+
+
     // Also do this for the brush tris
-    for ( int i = 0; i < brushMapTris.size(); i++ )
+    for ( int brushIndex = 0; brushIndex < brushMapTris.size(); brushIndex++ )
     {
-        std::vector<MapTri>* pMapTris = brushMapTris[ i ];
+        std::vector<MapTri>* pMapTris = brushMapTris[ brushIndex ];
         for ( int j = 0; j < pMapTris->size(); j++ )
         {
             Tri tri   = pMapTris->at(j).tri;
             TriToEllipsoidSpace(&tri, scaleToESpace);
-            g_MapTrisCache.push_back(tri);
+            g_MapTrisCache[currentTriCount + j] = tri;
         }
+        currentTriCount += pMapTris->size();
     }
 
     glm::vec3 esVelocity = scaleToESpace * velocity;
@@ -542,7 +550,7 @@ CollisionInfo           PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapT
     {
         Tri tri   = tris[ i ].tri;
         TriToEllipsoidSpace(&tri, scaleToESpace);
-        g_esTriMemory.push_back(tri);
+        g_esTriMemory.emplace_back(tri);
     }
     glm::vec3 esBasePos  = scaleToESpace * ec.center;
     glm::vec3 esVelocity = scaleToESpace * velocity;

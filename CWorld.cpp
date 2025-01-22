@@ -80,7 +80,7 @@ void CWorld::InitWorld(const std::string& mapName)
         m_MapTris                        = CWorld::CreateMapTrisFromMapPolys(polysoup);
     }
 
-    m_StaticGeometryCount = m_MapTris.size();
+    m_StaticTriCount = m_MapTris.size();
 
     // Now initialize all the entities. Those also include brush
     // entities. Those entities store their own geometry as MapTris.
@@ -106,6 +106,7 @@ void CWorld::InitWorld(const std::string& mapName)
                     m_pBrushModels.push_back(model);
                     std::vector<MapTri>& mapTris = door->MapTris();
                     m_pBrushMapTris.push_back(&mapTris);
+                    m_BrushTriCount += mapTris.size();
                 }
                 else if ( prop.value == "info_player_start" )
                 {
@@ -136,6 +137,9 @@ void CWorld::InitWorld(const std::string& mapName)
             }
         }
     }
+
+    // Set the geometry cache for collision system
+    InitMapTrisCache(m_StaticTriCount + m_BrushTriCount);
 
     // NOTE: At the moment, maps without an 'info_player_start' are not allowed.
     // FIX: (Michael): I think it should be possible to not have a player?
@@ -252,15 +256,24 @@ void CWorld::CollideEntitiesWithWorld()
 
             if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) )
             {
-
+                // No collider no party!
                 EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
                 if ( ec == nullptr )
                 {
                     continue;
                 }
 
+
+
                 pEntity->m_PrevPosition = ec->center; //pEntity->m_Position;
                 //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
+                // Don't even bother checking for collision if the entity isn't even moving.
+                if ( glm::length2(pEntity->m_Velocity) <= (DOD_VERY_CLOSE_DIST * DOD_VERY_CLOSE_DIST)
+                     && pEntity->m_CollisionState == ES_ON_GROUND )
+                {
+                    continue;
+                }
+
                 CollisionInfo collisionInfo
                     = CollideEllipsoidWithMapTris(*ec,
                                                   (float)DOD_FIXED_UPDATE_TIME / 1000.0f * pEntity->m_Velocity,

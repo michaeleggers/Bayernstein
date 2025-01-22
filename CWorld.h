@@ -44,7 +44,7 @@ class CWorld
     */
     uint64_t StaticGeometryCount()
     {
-        return m_StaticGeometryCount;
+        return m_StaticTriCount;
     }
 
     FirstPersonPlayer* PlayerEntity()
@@ -93,7 +93,8 @@ class CWorld
     CWorld()  = default;
     ~CWorld() = default;
 
-    uint64_t m_StaticGeometryCount;
+    uint64_t m_StaticTriCount = 0;
+    uint64_t m_BrushTriCount = 0;
 
     // Audio for ambience and music which are playing constantly
     // in a loop.
