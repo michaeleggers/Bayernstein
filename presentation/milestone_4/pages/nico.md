@@ -1,4 +1,7 @@
 <!-- Folie 1 -->
+<div style="display: flex; justify-content: center; align-items: center; height:100%;">
+  <h1>Level-Design</h1>
+</div>
 ---
 layout: default
 class: center
@@ -6,7 +9,7 @@ class: center
 
 <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
   <img src="/img/nico/Level3_1.jpg" alt="Vogelperspektive des Tempels" style="width: 75%; height: auto;">
-  <p style="position: absolute; bottom: 10px; font-size: 1.2rem; color: #666;">Vogelperspektive des Tempels mit offenem Dach</p>
+  <p style="position: absolute; bottom: 10px; font-size: 1.2rem;">Vogelperspektive des Tempels mit offenem Dach</p>
 </div>
 
 <!-- Folie 2 -->
@@ -17,7 +20,7 @@ class: center
 
 <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
   <img src="/img/nico/Level3_2.jpg" alt="Vorhof des Tempels" style="width: 75%; height: auto;">
-  <p style="position: absolute; bottom: 10px; font-size: 1.2rem; color: #666;">Vorhof des Tempels</p>
+  <p style="position: absolute; bottom: 10px; font-size: 1.2rem;">Vorhof des Tempels</p>
 </div>
 
 <!-- Folie 3 -->
@@ -28,7 +31,7 @@ class: center
 
 <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
   <img src="/img/nico/Level3_3.jpg" alt="Gebetsraum des Tempels" style="width: 75%; height: auto;">
-  <p style="position: absolute; bottom: 10px; font-size: 1.2rem; color: #666;">Gebetsraum des Tempels</p>
+  <p style="position: absolute; bottom: 10px; font-size: 1.2rem;">Gebetsraum des Tempels</p>
 </div>
 
 <!-- Folie 4 -->
@@ -39,7 +42,7 @@ class: center
 
 <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
   <img src="/img/nico/Level3_4.jpg" alt="Opferraum des Tempels" style="width: 75%; height: auto;">
-  <p style="position: absolute; bottom: 10px; font-size: 1.2rem; color: #666;">Opferraum des Tempels</p>
+  <p style="position: absolute; bottom: 10px; font-size: 1.2rem;">Opferraum des Tempels</p>
 </div>
 
 <!-- Folie 5 -->
@@ -50,7 +53,7 @@ class: center
 
 <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
   <img src="/img/nico/Level3_5.jpg" alt="Thronsaal des Tempels" style="width: 75%; height: auto;">
-  <p style="position: absolute; bottom: 10px; font-size: 1.2rem; color: #666;">Thronsaal des Tempels</p>
+  <p style="position: absolute; bottom: 10px; font-size: 1.2rem;">Thronsaal des Tempels</p>
 </div>
 
 <!-- Folie 6 -->
@@ -64,5 +67,5 @@ layout: default
     <img src="/img/nico/throne_room_door.png" alt="Throne Room Door" style="width: 32%; height: auto;">
     <img src="/img/nico/ahuitzotl_original.jpg" alt="Ahuitzotl" style="width: 32%; height: auto;">
   </div>
-  <p style="position: absolute; bottom: 10px; font-size: 1.2rem; color: #666;">Inspiration an der echten Azteken Kultur: der Ahuitzotl</p>
+  <p style="position: absolute; bottom: 10px; font-size: 1.2rem;">Inspiration an der echten Azteken Kultur: der Ahuitzotl</p>
 </div>
