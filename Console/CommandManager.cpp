@@ -7,7 +7,7 @@
 
 void Help_f(std::vector<std::string> args) {
     Console::Print("Use the console to show/change variables or run commands:");
-    Console::Print("  - List available variables with 'list_vars', change it by typing the name followed by the new value.");
+    Console::Print("  - List available variables with 'list_vars', show it by typing the name, change it by passing the new value after it.");
     Console::Print("  - List available commands with 'list_cmds', command specific help is not yet available.");
 }
 
