@@ -20,7 +20,8 @@
 //uint32_t  blendindices[4];
 //glm::vec4 blendweights;
 
-Vertex IQMVertexToVertex(IQMVertex iqmVert, glm::vec3 bc) {
+Vertex IQMVertexToVertex(IQMVertex iqmVert, glm::vec3 bc)
+{
     Vertex vertex = {
         .pos          = glm::vec3(iqmVert.pos[ 0 ], iqmVert.pos[ 1 ], iqmVert.pos[ 2 ]),
         .uv           = glm::vec2(iqmVert.texCoord[ 0 ], iqmVert.texCoord[ 1 ]),
@@ -39,25 +40,36 @@ Vertex IQMVertexToVertex(IQMVertex iqmVert, glm::vec3 bc) {
     return vertex;
 }
 
-HKD_Model CreateModelFromIQM(IQMModel* model) {
+HKD_Model CreateModelFromIQM(IQMModel* model)
+{
     HKD_Model result   = {};
     result.pOwner      = nullptr;
     result.renderFlags = MODEL_RENDER_FLAG_NONE;
 
-    for ( int i = 0; i < model->meshes.size(); i++ ) {
+    // Keep track of total AABB as IQM only stores AABB per frame
+    // but maybe we have 0 frames if the model is not animated.
+
+    glm::vec3 mins(99999.9f);
+    glm::vec3 maxs(-99999.9f);
+
+    for ( int i = 0; i < model->meshes.size(); i++ )
+    {
         IQMMesh* iqmMesh = &model->meshes[ i ];
         HKD_Mesh mesh    = {};
-        if ( iqmMesh->material.empty() ) {
+        if ( iqmMesh->material.empty() )
+        {
             mesh.isTextured = false;
-        } else {
+        }
+        else
+        {
             mesh.isTextured = true;
         }
 
         mesh.textureFileName = iqmMesh->material;
         mesh.firstTri        = iqmMesh->firstTri;
         mesh.numTris         = iqmMesh->numTris;
-        for ( int v = 0; v < iqmMesh->vertices.size(); v += 3 ) {
-
+        for ( int v = 0; v < iqmMesh->vertices.size(); v += 3 )
+        {
             IQMVertex iqmVertA = iqmMesh->vertices[ v + 0 ];
             IQMVertex iqmVertB = iqmMesh->vertices[ v + 1 ];
             IQMVertex iqmVertC = iqmMesh->vertices[ v + 2 ];
@@ -72,6 +84,16 @@ HKD_Model CreateModelFromIQM(IQMModel* model) {
             // the same "OpenGL" coordinate system.
             Tri tri = { vertA, vertC, vertB };
 
+            // TODO: Same code in door constructor -> Move to utils.
+            float minX = glm::min(vertA.pos.x, vertB.pos.x, vertC.pos.x);
+            float minY = glm::min(vertA.pos.y, vertB.pos.y, vertC.pos.y);
+            float minZ = glm::min(vertA.pos.z, vertB.pos.z, vertC.pos.z);
+            float maxX = glm::max(vertA.pos.x, vertB.pos.x, vertC.pos.x);
+            float maxY = glm::max(vertA.pos.y, vertB.pos.y, vertC.pos.y);
+            float maxZ = glm::max(vertA.pos.z, vertB.pos.z, vertC.pos.z);
+            mins       = glm::min(mins, glm::vec3(minX, minY, minZ));
+            maxs       = glm::max(maxs, glm::vec3(maxX, maxY, maxZ));
+
             result.tris.push_back(tri);
         }
         result.meshes.push_back(mesh);
@@ -81,7 +103,8 @@ HKD_Model CreateModelFromIQM(IQMModel* model) {
     // Might be changed later. Hopefully good enough for the start.
 
     int i = 0;
-    for ( ; i < model->animations.size(); i++ ) {
+    for ( ; i < model->animations.size(); i++ )
+    {
         Anim  a = model->animations[ i ];
         Frame f = model->frameData[ a.firstFrame ];
         result.aabbs.push_back({ f.bbmins, f.bbmins });
@@ -91,16 +114,27 @@ HKD_Model CreateModelFromIQM(IQMModel* model) {
         result.ellipsoidColliders.push_back(ec);
     }
 
-    if ( i > 0 ) {
+    if ( i > 0 )
+    {
         result.type = HKD_MODEL_TYPE_ANIMATED;
         // TODO: This is just for testing the collision detection.
         // Later we actually want to use dedicated colliders for each animation!
         EllipsoidCollider ec = result.ellipsoidColliders[ 0 ];
-        for ( int i = 0; i < result.ellipsoidColliders.size(); i++ ) {
+        for ( int i = 0; i < result.ellipsoidColliders.size(); i++ )
+        {
             result.ellipsoidColliders[ i ] = ec;
         }
-    } else {
+    }
+    else
+    {
         result.type = HKD_MODEL_TYPE_STATIC;
+
+        // Since this is a static model we use the total mins/maxs
+        // for the AABB and ellipsoid collider.
+        Box aabbBox = CreateBoxFromAABB(mins, maxs);
+        result.aabbBoxes.push_back(aabbBox);
+        EllipsoidCollider ec = CreateEllipsoidColliderFromAABB(mins, maxs);
+        result.ellipsoidColliders.push_back(ec);
     }
 
     result.position       = glm::vec3(0.0f);
@@ -122,9 +156,11 @@ HKD_Model CreateModelFromIQM(IQMModel* model) {
 }
 
 // Assume only triangles for each MapPoly.
-std::vector<Tri> CreateTrisFromMapPolys(std::vector<MapPolygon>& mapPolys) {
+std::vector<Tri> CreateTrisFromMapPolys(std::vector<MapPolygon>& mapPolys)
+{
     std::vector<Tri> tris{};
-    for ( int i = 0; i < mapPolys.size(); i++ ) {
+    for ( int i = 0; i < mapPolys.size(); i++ )
+    {
         MapPolygon& mapPoly = mapPolys[ i ];
         assert(mapPoly.vertices.size() == 3);
         Vertex A = { glm::vec3(mapPoly.vertices[ 0 ].pos.x, mapPoly.vertices[ 0 ].pos.y, mapPoly.vertices[ 0 ].pos.z),
@@ -141,21 +177,27 @@ std::vector<Tri> CreateTrisFromMapPolys(std::vector<MapPolygon>& mapPolys) {
     return tris;
 }
 
-HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes) {
+HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes)
+{
     // Convert brushes to tris and sort them according to their texture name.
     std::unordered_map<std::string, std::vector<MapPolygon>> texName2polygons{};
     size_t                                                   totalTris = 0;
-    for ( int i = 0; i < brushes.size(); i++ ) {
+    for ( int i = 0; i < brushes.size(); i++ )
+    {
         const Brush&            brush   = brushes[ i ];
         std::vector<MapPolygon> polys   = createPolysoup(brush);
         std::vector<MapPolygon> mapTris = triangulate(polys);
         totalTris += mapTris.size();
-        for ( int j = 0; j < mapTris.size(); j++ ) {
+        for ( int j = 0; j < mapTris.size(); j++ )
+        {
             MapPolygon& mapTri = mapTris[ j ];
             const auto& entry  = texName2polygons.find(mapTri.textureName);
-            if ( entry == texName2polygons.end() ) {
+            if ( entry == texName2polygons.end() )
+            {
                 texName2polygons.insert({ mapTri.textureName, { mapTri } });
-            } else {
+            }
+            else
+            {
                 entry->second.push_back(mapTri);
             }
         }
@@ -168,7 +210,8 @@ HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes) {
     model.type        = HKD_MODEL_TYPE_STATIC;
     model.tris.resize(totalTris);
     size_t triOffset = 0;
-    for ( auto& [ textureName, mapPolys ] : texName2polygons ) {
+    for ( auto& [ textureName, mapPolys ] : texName2polygons )
+    {
         HKD_Mesh mesh{};
         mesh.isTextured       = true;
         mesh.textureFileName  = textureName + ".tga"; // FIX: Check for all formats.
@@ -189,7 +232,8 @@ HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes) {
     return model;
 }
 
-static glm::mat4 PoseToMatrix(Pose pose) {
+static glm::mat4 PoseToMatrix(Pose pose)
+{
     glm::vec3 t    = glm::vec3(pose.translations.x, pose.translations.y, pose.translations.z);
     glm::mat4 tMat = glm::translate(glm::mat4(1.0f), t); // TODO: Change to translation
     glm::vec3 s    = glm::vec3(pose.scale.x, pose.scale.y, pose.scale.z);
@@ -200,21 +244,49 @@ static glm::mat4 PoseToMatrix(Pose pose) {
     return tMat * rMat * sMat;
 }
 
-static glm::mat4 InterpolatePoses(Pose a, Pose b, float pct) {
+static void InterpolatePoses(glm::mat4* out_pPoseMat, const Pose& a, const Pose& b, const float& pct)
+{
+    // NOTE(Michael): I keep the old version, because it is *guaranteed* to work.
+    // But I try to shuffle code around a bit to not make the compiler too
+    // unhappy in debug builds...
+
+    /********************/
+    /* Original version */
+    /********************/
+
+    //glm::vec3 interpTrans = (1.0f - pct) * a.translations + pct * b.translations;
+    //glm::mat4 transMat    = glm::translate(glm::mat4(1.0f), interpTrans);
+
+    //glm::vec3 interpScale = (1.0f - pct) * a.scale + pct * b.scale;
+    //glm::mat4 scaleMat    = glm::scale(glm::mat4(1.0f), interpScale);
+
+    //glm::quat interpRot = glm::slerp(a.rotation, b.rotation, pct);
+    //glm::mat4 rotMat    = glm::toMat4(interpRot);
+
+    //*out_pPoseMat = transMat * rotMat * scaleMat;
+
+
+    /********************/
+    /* Optimized version */
+    /********************/
+
     glm::vec3 interpTrans = (1.0f - pct) * a.translations + pct * b.translations;
-    glm::mat4 transMat    = glm::translate(glm::mat4(1.0f), interpTrans);
+    //glm::mat4 transMat    = glm::translate(glm::mat4(1.0f), interpTrans);
 
     glm::vec3 interpScale = (1.0f - pct) * a.scale + pct * b.scale;
-    glm::mat4 scaleMat    = glm::scale(glm::mat4(1.0f), interpScale);
+    //glm::mat4 scaleMat    = glm::scale(glm::mat4(1.0f), interpScale);
 
     glm::quat interpRot = glm::slerp(a.rotation, b.rotation, pct);
     glm::mat4 rotMat    = glm::toMat4(interpRot);
 
-    return transMat * rotMat * scaleMat;
+    *out_pPoseMat
+        = glm::translate(glm::mat4(1.0f), interpTrans) * rotMat * glm::scale(glm::mat4(1.0f), interpScale);
 }
 
-void UpdateModel(HKD_Model* model, float dt) {
-    if ( model->type == HKD_MODEL_TYPE_ANIMATED ) {
+void UpdateModel(HKD_Model* model, float dt)
+{
+    if ( model->type == HKD_MODEL_TYPE_ANIMATED )
+    {
         uint32_t currentFrame = model->currentFrame;
         uint32_t animIdx      = model->currentAnimIdx;
 
@@ -223,40 +295,57 @@ void UpdateModel(HKD_Model* model, float dt) {
 
         // If the frame took really long then we need to catch up
 
-        while ( dt > msPerFrame ) {
+        while ( dt > msPerFrame )
+        {
             dt -= msPerFrame;
             currentFrame++;
             model->pctFrameDone -= msPerFrame;
         }
 
-        if ( model->pctFrameDone < 0.0 ) {
+        if ( model->pctFrameDone < 0.0 )
+        {
             model->pctFrameDone = 0.0;
         }
 
-        if ( dt < 0.0 ) {
+        if ( dt < 0.0 )
+        {
             dt = 0.0;
         }
 
         model->pctFrameDone += dt;
 
-        if ( model->pctFrameDone > msPerFrame ) {
+        if ( model->pctFrameDone > msPerFrame )
+        {
             currentFrame++;
             model->pctFrameDone -= msPerFrame;
         }
 
         // For now, we just cylce through all animations. If the current animations has reached its
         // end, we jump to the next animation.
-
-        if ( currentFrame >= anim.firstFrame + anim.numFrames - 1 ) {
+        bool animationDone = false;
+        if ( currentFrame >= anim.firstFrame + anim.numFrames - 1 )
+        {
+            animationDone = true;
             //model->currentAnimIdx = (model->currentAnimIdx + 1) % model->animations.size();
             anim         = model->animations[ model->currentAnimIdx ];
             currentFrame = anim.firstFrame;
         }
-        model->currentFrame = currentFrame;
-        uint32_t nextFrame  = (currentFrame + 1) % (anim.firstFrame + anim.numFrames);
-        if ( nextFrame < anim.firstFrame ) {
+        uint32_t nextFrame = (currentFrame + 1) % (anim.firstFrame + anim.numFrames);
+        if ( nextFrame < anim.firstFrame )
+        {
             nextFrame = anim.firstFrame;
         }
+
+        // Check if this animation has looping turned off and the animation
+        // has already played once. If so, repeat the last frame of
+        // the animation forever...
+        if ( animationDone && !anim.loop )
+        {
+            currentFrame = anim.firstFrame + anim.numFrames - 1;
+            nextFrame = currentFrame;
+        }
+        
+        model->currentFrame = currentFrame;
 
         //printf("currentFrame: %d\n", currentFrame);
 
@@ -264,14 +353,18 @@ void UpdateModel(HKD_Model* model, float dt) {
 
         // Build the global transform for each bone for the current pose
 
-        for ( int i = 0; i < model->numJoints; i++ ) {
+        for ( int i = 0; i < model->numJoints; i++ )
+        {
             Pose      currentPoseTransform = model->poses[ currentFrame * model->numJoints + i ];
             Pose      nextPoseTransform    = model->poses[ nextFrame * model->numJoints + i ];
-            glm::mat4 poseMat
-                = InterpolatePoses(currentPoseTransform, nextPoseTransform, model->pctFrameDone / msPerFrame);
-            if ( currentPoseTransform.parent >= 0 ) {
+            glm::mat4 poseMat{};
+            InterpolatePoses(&poseMat, currentPoseTransform, nextPoseTransform, model->pctFrameDone / msPerFrame);
+            if ( currentPoseTransform.parent >= 0 )
+            {
                 model->palette[ i ] = model->palette[ currentPoseTransform.parent ] * poseMat;
-            } else {
+            }
+            else
+            {
                 model->palette[ i ] = poseMat;
             }
         }
@@ -280,7 +373,8 @@ void UpdateModel(HKD_Model* model, float dt) {
         // the vertex from bindspace to local bonespace first and then transform the
         // vertex to the currents pose global bone space.
 
-        for ( int i = 0; i < model->numJoints; i++ ) {
+        for ( int i = 0; i < model->numJoints; i++ )
+        {
             glm::mat4 invGlobalMat = model->invBindPoses[ i ];
             model->palette[ i ]    = model->palette[ i ] * invGlobalMat;
         }
@@ -298,18 +392,21 @@ void UpdateModel(HKD_Model* model, float dt) {
 
     // Update the rigid body
 
-    if ( model->isRigidBody ) {
+    if ( model->isRigidBody )
+    {
         UpdateRigidBodyTransform(model);
     }
 }
 
 void ApplyPhysicsToModel(HKD_Model* model) {}
 
-void UpdateRigidBodyTransform(HKD_Model* model) {
+void UpdateRigidBodyTransform(HKD_Model* model)
+{
     model->position = model->body.m_Position;
 }
 
-glm::mat4 CreateModelMatrix(HKD_Model* model) {
+glm::mat4 CreateModelMatrix(HKD_Model* model)
+{
     glm::mat4 transMat = glm::translate(glm::mat4(1.0f), model->position);
     glm::mat4 rotMat   = glm::toMat4(model->orientation);
     glm::mat4 scaleMat = glm::scale(glm::mat4(1.0f), model->scale);
@@ -317,7 +414,8 @@ glm::mat4 CreateModelMatrix(HKD_Model* model) {
     return transMat * rotMat * scaleMat;
 }
 
-glm::mat4 CreateModelMatrix(glm::vec3 pos, glm::quat orientation, glm::vec3 scale) {
+glm::mat4 CreateModelMatrix(glm::vec3 pos, glm::quat orientation, glm::vec3 scale)
+{
     glm::mat4 T = glm::translate(glm::mat4(1.0f), pos);
     glm::mat4 R = glm::toMat4(orientation);
     glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
@@ -325,10 +423,12 @@ glm::mat4 CreateModelMatrix(glm::vec3 pos, glm::quat orientation, glm::vec3 scal
     return T * R * S;
 }
 
-void SetAnimState(HKD_Model* model, AnimState animState) {
+void SetAnimState(HKD_Model* model, AnimState animState)
+{
     AnimState currentState = (AnimState)model->currentAnimIdx;
 
-    if ( currentState == animState ) {
+    if ( currentState == animState )
+    {
         return;
     }
 

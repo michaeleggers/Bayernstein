@@ -12,34 +12,42 @@
 #include "../../dependencies/glm/gtx/quaternion.hpp"
 
 #include "../../Audio/Audio.h"
+#include "../../Message/message_dispatcher.h"
+#include "../../Message/message_type.h"
 #include "../../globals.h"
+#include "../../hkd_interface.h"
 #include "../../input.h"
 #include "../../input_handler.h"
 #include "../../input_receiver.h"
 #include "../../utils/utils.h"
+#include "../Weapon/g_weapon.h"
+#include "../entity_manager.h"
 #include "g_fp_player_states.h"
 #include "imgui.h"
 
-FirstPersonPlayer::FirstPersonPlayer(glm::vec3 initialPosition)
+FirstPersonPlayer::FirstPersonPlayer(const std::vector<Property>& properties)
     : MovingEntity(ET_PLAYER),
       m_pStateMachine(nullptr),
       m_AnimState(ANIM_STATE_IDLE)
 {
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(FirstPersonPlayerIdle::Instance());
-    LoadModel("models/multiple_anims/multiple_anims.iqm", initialPosition);
-    m_Position     = initialPosition;
-    m_PrevPosition = initialPosition;
+    BaseGameEntity::GetProperty<glm::vec3>(properties, "origin", &m_Position);
+    LoadModel("models/mayan_undead_warrior/mayan_undead_warrior.iqm", m_Position);
+    m_PrevPosition = m_Position;
     //m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
-    m_Camera = Camera(initialPosition);
+    m_Camera = Camera(m_Position);
     //m_Camera.RotateAroundSide(-60.0f);
     m_PrevCollisionState = ES_UNDEFINED;
     m_Momentum           = glm::vec3(0.0f);
 
-    m_SfxJump    = Audio::LoadSource("sfx/jump_01.wav", 0.5f);
-    m_SfxGunshot = Audio::LoadSource("sfx/sonniss/PM_SFG_VOL1_WEAPON_8_2_GUN_GUNSHOT_FUTURISTIC.wav");
+    m_SfxJump = Audio::LoadSource("sfx/jump_01.wav", 0.5f);
     m_SfxFootsteps
         = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
+
+    m_Weapon              = new Weapon(properties);
+    IRender* renderer     = GetRenderer();
+    int      hWeaponModel = renderer->RegisterModel(m_Weapon->GetModel());
 }
 
 // FIX: At the moment called by the game itself.
@@ -183,8 +191,20 @@ void FirstPersonPlayer::PostCollisionUpdate()
     //m_Position = m_Model.position;
     m_Camera.m_Pos = m_Position;
     // Adjust the camera so it is roughly at the top of the model's head.
-    m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, GetEllipsoidColliderPtr()->radiusB - 24.0f);
+    m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, GetEllipsoidColliderPtr()->radiusB) - glm::vec3(0.0f, 0.0f, 15.0f);
     //m_Camera.Pan( -100.0f * m_Camera.m_Forward );
+
+    // Adjust the Weapon model
+    glm::vec3 weaponPos = m_Camera.m_Pos;
+    //weaponPos           = glm::rotate(m_Camera.m_Orientation, weaponPos);
+    //weaponPos.z -= 5.0f;
+    //weaponPos.x += 5.0f;
+    weaponPos += 20.0f * m_Camera.m_Forward;
+    weaponPos += 4.0f * m_Camera.m_Side;
+    weaponPos += -2.0f * m_Camera.m_Up;
+    //m_Weapon->UpdatePosition(glm::vec3(viewSpaceWeaponPos.x, viewSpaceWeaponPos.y, viewSpaceWeaponPos.z));
+    m_Weapon->UpdatePosition(weaponPos);
+    m_Weapon->m_Orientation = m_Camera.m_Orientation;
 
     m_pStateMachine->Update();
 }
@@ -197,13 +217,15 @@ void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition)
     // Convert the model to our internal format
     m_Model        = CreateModelFromIQM(&iqmModel);
     m_Model.pOwner = this;
-    //m_Model.renderFlags |= MODEL_RENDER_FLAG_IGNORE;
+    m_Model.renderFlags |= MODEL_RENDER_FLAG_IGNORE;
     m_Model.isRigidBody = false;
-    m_Model.scale       = glm::vec3(30.0f);
+    m_Model.scale       = glm::vec3(1.0f);
 
     for ( int i = 0; i < m_Model.animations.size(); i++ )
     {
         EllipsoidCollider* ec = &m_Model.ellipsoidColliders[ i ];
+        //ec->radiusA           = 2.0f;
+        //ec->radiusB           = 2.0f;
         ec->radiusA *= m_Model.scale.x;
         ec->radiusB *= m_Model.scale.z;
 
@@ -363,13 +385,31 @@ void FirstPersonPlayer::UpdatePlayerModel()
         Audio::m_Soloud.stop(m_FootstepsHandle);
     }
 
-    // TODO: Move this code into a weapon struct/class
-    // where a cooldown is specified. A machine gun
-    // has a higher repeat rate than a shotgun.
-    fire = CHECK_ACTION("fire");
-    if ( fire == ButtonState::WENT_DOWN )
+    bool fireRequested = fire == ButtonState::WENT_DOWN || fire == ButtonState::PRESSED;
+    if ( fireRequested && m_Weapon->Fire() )
     {
-        Audio::m_SfxBus.play(*m_SfxGunshot);
+        // Trace ray against enemies
+
+        EntityManager*               m_pEntityManager = EntityManager::Instance();
+        std::vector<BaseGameEntity*> pAllEntities     = m_pEntityManager->Entities();
+        for ( int i = 0; i < pAllEntities.size(); i++ )
+        {
+            BaseGameEntity* pEntity = pAllEntities[ i ];
+            if ( pEntity->Type() == ET_ENEMY )
+            {
+                Enemy*             pEnemy   = (Enemy*)pEntity;
+                EllipsoidCollider* pEC      = pEnemy->GetEllipsoidColliderPtr();
+                glm::vec3          enemyPos = pEnemy->m_Position;
+                EllipsoidCollider  ec       = *pEC;
+                ec.center += enemyPos;
+                if ( TraceRayAgainstEllipsoid(m_Camera.m_Pos, m_Camera.m_Forward, *pEC) )
+                {
+                    double damage = m_Weapon->GetDamage(glm::distance(enemyPos, m_Position));
+                    Dispatcher->DispatchMessage(
+                        SEND_MSG_IMMEDIATELY, ID(), pEnemy->ID(), message_type::RayHit, &damage);
+                }
+            }
+        }
     }
 
     SetAnimState(&m_Model, m_AnimState);

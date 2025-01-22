@@ -57,6 +57,7 @@ add_executable(Game
     iqm_loader.cpp
     irender.h
     r_itexture.h
+    r_itexture_mgr.h
     r_gl.h
     r_gl.cpp
     r_model.h
@@ -65,6 +66,8 @@ add_executable(Game
     r_common.cpp
     r_font.h
     r_font.cpp
+    r_draw.h
+    r_draw.cpp
 
     r_gl_batch.h
     r_gl_batch.cpp
@@ -169,6 +172,8 @@ add_executable(Game
     Entity/FollowCamera/g_follow_camera.cpp
     Entity/FlyCamera/g_fly_camera.h
     Entity/FlyCamera/g_fly_camera.cpp
+    Entity/Weapon/g_weapon.h
+    Entity/Weapon/g_weapon.cpp
 
     dependencies/stb_image.h
     dependencies/stb_image_write.h

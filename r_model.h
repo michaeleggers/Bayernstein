@@ -17,25 +17,31 @@
 #include "map_parser.h"
 #include "r_common.h"
 
-enum AnimState {
+enum AnimState
+{
     ANIM_STATE_IDLE,
     ANIM_STATE_WALK,
     ANIM_STATE_RUN,
+    ANIM_STATE_ATTACK,
+    ANIM_STATE_DIE,
     ANIM_STATE_NONE
 };
 
-struct HKD_Mesh {
+struct HKD_Mesh
+{
     uint32_t    firstTri, numTris;
     bool        isTextured;
     std::string textureFileName;
 };
 
-struct AABB {
+struct AABB
+{
     glm::vec3 mins;
     glm::vec3 maxs;
 };
 
-enum HKD_ModelType {
+enum HKD_ModelType
+{
     HKD_MODEL_TYPE_STATIC,
     HKD_MODEL_TYPE_ANIMATED
 };
@@ -43,7 +49,8 @@ enum HKD_ModelType {
 #define MODEL_RENDER_FLAG_NONE (0x00000001 << 0)
 #define MODEL_RENDER_FLAG_IGNORE (0x00000001 << 1)
 
-struct HKD_Model {
+struct HKD_Model
+{
     BaseGameEntity*       pOwner;
     HKD_ModelType         type;
     std::string           filename;
@@ -57,7 +64,7 @@ struct HKD_Model {
         poses; // A POSE IS JUST A LOCAL TRANSFORM FOR A SINGLE JOINT!!! IT IS NOT THE SKELETON STATE AT A CERTAIN FRAME!
     uint32_t                       currentFrame;
     uint32_t                       numFrames;
-    float                          pctFrameDone;
+    float                          pctFrameDone;    
     std::vector<glm::mat4>         invBindPoses;
     std::vector<glm::mat4>         bindPoses;
     std::vector<glm::mat4>         palette;

@@ -16,15 +16,17 @@
 #include "../../collision.h"
 #include "../../input_receiver.h"
 #include "../../r_model.h"
+#include "../Weapon/g_weapon.h"
 #include "../moving_entity.h"
 
-class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
+class FirstPersonPlayer : public MovingEntity, public IInputReceiver
+{
 
   public:
     // Movement related values
     static constexpr float MAX_VELOCITY           = 350.0f;
     static constexpr float RUN_VELOCITY           = 300.0f;
-    static constexpr float WALK_FACTOR            = 0.3f;
+    static constexpr float WALK_FACTOR            = 0.5f;
     static constexpr float MAX_MOUSE_LOOK_DEGREES = 89.0f;
 
     // TODO: What are the correct units to use?
@@ -42,9 +44,10 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
     static constexpr float GROUND_RESISTANCE = 3.0f;
     static constexpr float GROUND_FRICTION   = 0.9f;
 
-    explicit FirstPersonPlayer(glm::vec3 initialPosition);
+    explicit FirstPersonPlayer(const std::vector<Property>& properties);
 
-    ~FirstPersonPlayer() override {
+    ~FirstPersonPlayer() override
+    {
         delete m_pStateMachine;
     }
 
@@ -56,7 +59,8 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
     void UpdateCamera(Camera* camera);
     void UpdatePosition(glm::vec3 newPosition) override;
 
-    [[nodiscard]] StateMachine<FirstPersonPlayer>* GetFSM() const {
+    [[nodiscard]] StateMachine<FirstPersonPlayer>* GetFSM() const
+    {
         return m_pStateMachine;
     }
 
@@ -65,17 +69,25 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
     HKD_Model* GetModel();
 
   public:
-    bool CanAttack() {
+    bool CanAttack()
+    {
         double currentTime = Clock->GetTime();
-        if ( currentTime >= m_LastAttack + m_AttackDelay ) {
+        if ( currentTime >= m_LastAttack + m_AttackDelay )
+        {
             m_LastAttack = currentTime;
             return true;
         }
         return false;
     }
 
-    Camera& GetCamera() {
+    Camera& GetCamera()
+    {
         return m_Camera;
+    }
+
+    Weapon* GetWeapon()
+    {
+        return m_Weapon;
     }
 
   private:
@@ -106,11 +118,14 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver {
     EntityCollisionState m_PrevCollisionState;
 
     // Audio
-    SoLoud::AudioSource* m_SfxGunshot;
     SoLoud::AudioSource* m_SfxJump;
     SoLoud::AudioSource* m_SfxFootsteps;
     SoLoud::handle       m_FootstepsHandle = 0;
 
+    // Weapon model
+    Weapon* m_Weapon;
+
+    // Some local functions
     void LoadModel(const char* path, glm::vec3 initialPosition);
     void UpdatePlayerModel();
 };

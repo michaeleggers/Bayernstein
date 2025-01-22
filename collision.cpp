@@ -11,7 +11,8 @@
 #include "globals.h"
 #include "r_common.h"
 
-EllipsoidCollider CreateEllipsoidColliderFromAABB(glm::vec3 mins, glm::vec3 maxs) {
+EllipsoidCollider CreateEllipsoidColliderFromAABB(glm::vec3 mins, glm::vec3 maxs)
+{
     float             width  = glm::abs(maxs.x - mins.x);
     float             height = glm::abs(maxs.z - mins.z);
     EllipsoidCollider result{};
@@ -28,37 +29,43 @@ EllipsoidCollider CreateEllipsoidColliderFromAABB(glm::vec3 mins, glm::vec3 maxs
 }
 
 // Assumes Triangle in CCW order.
-glm::vec3 ConstructNormalToTriLineSegment(glm::vec3 a, glm::vec3 b, glm::vec3 planeNormal) {
+glm::vec3 ConstructNormalToTriLineSegment(glm::vec3 a, glm::vec3 b, glm::vec3 planeNormal)
+{
     glm::vec3 AB  = glm::normalize(b - a);
     glm::vec3 nAB = glm::normalize(glm::cross(planeNormal, AB));
 
     return nAB;
 }
 
-float SignedDistancePointToPlane(glm::vec3 pt, glm::vec3 ptOnPlane, glm::vec3 planeNormal) {
+float SignedDistancePointToPlane(glm::vec3 pt, glm::vec3 ptOnPlane, glm::vec3 planeNormal)
+{
     glm::vec3 pVec = pt - ptOnPlane;
     float     sD   = glm::dot(pVec, planeNormal);
 
     return sD;
 }
 
-bool IsPointInTriangle(glm::vec3 point, Tri tri, glm::vec3 triNormal) {
+bool IsPointInTriangle(glm::vec3 point, Tri tri, glm::vec3 triNormal)
+{
     glm::vec3 nAB       = ConstructNormalToTriLineSegment(tri.a.pos, tri.b.pos, triNormal);
     float     sdABplane = SignedDistancePointToPlane(point, tri.a.pos, nAB);
     // printf("sdABplane: %f\n", sdABplane);
-    if ( sdABplane <= 0.0f ) {
+    if ( sdABplane <= 0.0f )
+    {
         return false;
     }
 
     glm::vec3 nBC       = ConstructNormalToTriLineSegment(tri.b.pos, tri.c.pos, triNormal);
     float     sdBCplane = SignedDistancePointToPlane(point, tri.b.pos, nBC);
-    if ( sdBCplane <= 0.0f ) {
+    if ( sdBCplane <= 0.0f )
+    {
         return false;
     }
 
     glm::vec3 nCA       = ConstructNormalToTriLineSegment(tri.c.pos, tri.a.pos, triNormal);
     float     sdCAplane = SignedDistancePointToPlane(point, tri.c.pos, nCA);
-    if ( sdCAplane <= 0.0f ) {
+    if ( sdCAplane <= 0.0f )
+    {
         return false;
     }
 
@@ -67,16 +74,20 @@ bool IsPointInTriangle(glm::vec3 point, Tri tri, glm::vec3 triNormal) {
 
 // If a > b then the two will be swapped.
 // Otherwise, nothing happens.
-void SortFloats(float* a, float* b) {
-    if ( *a > *b ) {
+void SortFloats(float* a, float* b)
+{
+    if ( *a > *b )
+    {
         float tmp = *a;
         *a        = *b;
         *b        = tmp;
     }
 }
 
-void SortDoubles(double* a, double* b) {
-    if ( *a > *b ) {
+void SortDoubles(double* a, double* b)
+{
+    if ( *a > *b )
+    {
         double tmp = *a;
         *a         = *b;
         *b         = tmp;
@@ -84,13 +95,16 @@ void SortDoubles(double* a, double* b) {
 }
 
 #define SortValues(a, b, t)                                                                                            \
-    do {                                                                                                               \
+    do                                                                                                                 \
+    {                                                                                                                  \
         t(&a, &b);                                                                                                     \
     } while ( 0 );
 
-bool GetSmallestRoot(float a, float b, float c, float maxRoot, float* root) {
+bool GetSmallestRoot(float a, float b, float c, float maxRoot, float* root)
+{
     float D = b * b - 4.0f * a * c;
-    if ( D < 0.0f ) {
+    if ( D < 0.0f )
+    {
         return false;
     }
 
@@ -102,7 +116,8 @@ bool GetSmallestRoot(float a, float b, float c, float maxRoot, float* root) {
     // Make sure we have the lowest solution in r0.
     SortValues(r0, r1, SortFloats);
 
-    if ( r0 > 0.0f && r0 < maxRoot ) {
+    if ( r0 > 0.0f && r0 < maxRoot )
+    {
         *root = r0;
         return true;
     }
@@ -110,7 +125,8 @@ bool GetSmallestRoot(float a, float b, float c, float maxRoot, float* root) {
     // r0 could be a negative solution. In plain math this is ok,
     // but we are only interested in values that are between
     // 0 and maxRoot (which is 1 at maximum).
-    if ( r1 > 0.0f && r1 < maxRoot ) {
+    if ( r1 > 0.0f && r1 < maxRoot )
+    {
         *root = r1;
         return true;
     }
@@ -118,7 +134,8 @@ bool GetSmallestRoot(float a, float b, float c, float maxRoot, float* root) {
     return false;
 }
 
-bool IsPointOnLineSegment(glm::vec3 p, glm::vec3 a, glm::vec3 b) {
+bool IsPointOnLineSegment(glm::vec3 p, glm::vec3 a, glm::vec3 b)
+{
     // Check if the intersection point between sphere and plane we found
     // earlier lies on one of the 3 triangle's edges.
     // Firstly, check if the intersection point is on the line.
@@ -126,15 +143,52 @@ bool IsPointOnLineSegment(glm::vec3 p, glm::vec3 a, glm::vec3 b) {
     glm::vec3 pVec        = glm::normalize(p - a);
     float     edgeDotPVec = glm::dot(edge, pVec);
     printf("edgeDotPVec = %f\n", edgeDotPVec);
-    if ( edgeDotPVec >= HKD_EPSILON ) { // intersection point lies on line
+    if ( edgeDotPVec >= HKD_EPSILON )
+    { // intersection point lies on line
         float lenE0 = glm::length(edge);
         float lenP  = glm::length(pVec);
-        if ( lenP < lenE0 ) {
+        if ( lenP < lenE0 )
+        {
             return true;
         }
     }
 
     return false;
+}
+
+bool TraceRayAgainstUnitSphere(glm::vec3 rayPos, glm::vec3 rayDir, glm::vec3 sphereCenter)
+{
+    glm::vec3 rayPosToSphereCenter = sphereCenter - rayPos;
+    glm::vec3 normRayDir           = glm::normalize(rayDir);
+    float     projection           = glm::dot(normRayDir, rayPosToSphereCenter);
+
+    // Sphere is 'behind' raypos
+    if ( projection < 0.0f )
+    {
+        return false;
+    }
+
+    glm::vec3 rayPosToProjectedPoint  = rayPos + projection * normRayDir;
+    glm::vec3 projPointToSphereCenter = sphereCenter - rayPosToProjectedPoint;
+    float     length                  = glm::length(projPointToSphereCenter);
+
+    if ( length < 1.0f )
+    {
+        return true;
+    }
+
+    return false;
+}
+
+bool TraceRayAgainstEllipsoid(glm::vec3 rayPos, glm::vec3 rayDir, EllipsoidCollider ec)
+{
+    glm::vec3 scaleToESpace(ec.toESpace[ 0 ][ 0 ], ec.toESpace[ 1 ][ 1 ], ec.toESpace[ 2 ][ 2 ]);
+
+    glm::vec3 rayPosESpace          = scaleToESpace * rayPos;
+    glm::vec3 rayDirESpace          = scaleToESpace * rayDir;
+    glm::vec3 ellipsoidCenterESpace = scaleToESpace * ec.center;
+
+    return TraceRayAgainstUnitSphere(rayPosESpace, rayDirESpace, ellipsoidCenterESpace);
 }
 
 bool CheckSweptSphereVsLinesegment(glm::vec3  p0,
@@ -143,7 +197,8 @@ bool CheckSweptSphereVsLinesegment(glm::vec3  p0,
                                    glm::vec3  velocity,
                                    float      maxT,
                                    float*     out_newT,
-                                   glm::vec3* out_hitPoint) {
+                                   glm::vec3* out_hitPoint)
+{
     // Check sphere against tri's line-segments
 
     glm::vec3 e                = p1 - p0;
@@ -158,10 +213,12 @@ bool CheckSweptSphereVsLinesegment(glm::vec3  p0,
     float c = eSquaredLength * (1.0f - glm::length2(baseToVertex)) + eDotBaseToVertex * eDotBaseToVertex;
 
     float t;
-    if ( GetSmallestRoot(a, b, c, maxT, &t) ) {
+    if ( GetSmallestRoot(a, b, c, maxT, &t) )
+    {
         // Now check if hitpoint is withing the line segment.
         float f = (eDotVel * t - eDotBaseToVertex) / eSquaredLength;
-        if ( f >= 0.0f && f <= 1.0f ) {
+        if ( f >= 0.0f && f <= 1.0f )
+        {
             *out_newT     = t;
             *out_hitPoint = p0 + f * e;
 
@@ -172,34 +229,40 @@ bool CheckSweptSphereVsLinesegment(glm::vec3  p0,
     return false;
 }
 
-void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri) {
-    Plane     p         = CreatePlaneFromTri(tri);
-    glm::vec3 normal    = p.normal;
-    glm::vec3 ptOnPlane = p.d * normal;
+static void CollideUnitSphereWithTri(CollisionInfo* ci, const Tri& tri)
+{
+    Plane p{};
+    CreatePlaneFromTri(&p, tri);
+    //glm::vec3 normal(p.normal);
+    glm::vec3 ptOnPlane = p.d * p.normal;
     glm::vec3 basePos   = ci->basePos;
     glm::vec3 velocity  = ci->velocity;
 
-    if ( glm::dot(velocity, normal) >= 0.0f ) return;
+    if ( glm::dot(velocity, p.normal) >= 0.0f ) return;
     // Signed distance from plane to unit sphere's center
-    float sD = glm::dot(normal, basePos - ptOnPlane);
+    float sD = glm::dot(p.normal, basePos - ptOnPlane);
 
     // Project velocity along the plane normal
-    float velDotNormal = glm::dot(normal, velocity);
+    float velDotNormal = glm::dot(p.normal, velocity);
 
     bool  foundCollision  = false;
     bool  embeddedInPlane = false;
     float t0, t1;
-    if ( glm::abs(velDotNormal) == 0.0f ) { // Sphere travelling parallel to the plane or it is in the plane
+    if ( glm::abs(velDotNormal) == 0.0f )
+    { // Sphere travelling parallel to the plane or it is in the plane
 
         // Distance from unit sphere center to plane is greater than 1 => no intersection!
-        if ( glm::abs(sD) >= 1.0f ) {
+        if ( glm::abs(sD) >= 1.0f )
+        {
             return;
         }
 
         t0              = 0.0f;
         t1              = 1.0f;
         embeddedInPlane = true;
-    } else { // N Dot D not 0! There could be an intersection!
+    }
+    else
+    { // N Dot D not 0! There could be an intersection!
 
         // Calculate t0, that is the time when the unit sphere hits the
         // front face of the plane.
@@ -216,13 +279,15 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri) {
         // the sphere is, t0 might not be the smallest value.
         // But we need the smallest because it is the maximum we can
         // travel the sphere along the velocity vector before a collision happens.
-        if ( t0 > t1 ) {
+        if ( t0 > t1 )
+        {
             float tmp = t0;
             t0        = t1;
             t1        = tmp;
         }
 
-        if ( t0 > 1.0f || t1 < 0.0f ) { // No collision
+        if ( t0 > 1.0f || t1 < 0.0f )
+        { // No collision
             return;
         }
 
@@ -235,16 +300,20 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri) {
     // the plane.
     glm::vec3 hitPoint;
     float     t = 1.0f;
-    if ( !embeddedInPlane ) {
+    if ( !embeddedInPlane )
+    {
         // Check if the intersection is INSIDE the triangle.
-        glm::vec3 intersectionPoint = basePos + t0 * velocity - normal;
-        if ( IsPointInTriangle(intersectionPoint, tri, normal) ) { // TODO: Rename function!
+        glm::vec3 intersectionPoint = basePos + t0 * velocity - p.normal;
+        if ( IsPointInTriangle(intersectionPoint, tri, p.normal) )
+        { // TODO: Rename function!
             foundCollision = true;
             hitPoint       = intersectionPoint;
             //printf("Point inside tri side planes.\n");
             t = t0;
             //printf("IsPointInTriangle: true\n");
-        } else {
+        }
+        else
+        {
             //printf("Point outside tri side planes.\n");
         }
     }
@@ -257,14 +326,16 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri) {
     // where C(t) is the current pos of the sphere on its velocity vector:
     // C(t) = basePos + t * velocity
     // p is one of the vertices of the tri.
-    if ( !foundCollision ) {
+    if ( !foundCollision )
+    {
         float a = glm::length2(velocity);
         float newT;
         // Check point A
         float b = 2.0f * (glm::dot(velocity, (basePos - tri.a.pos)));
         float c = glm::distance2(tri.a.pos, basePos) - 1.0f;
         // Find smallest solution, if available
-        if ( GetSmallestRoot(a, b, c, t, &newT) ) {
+        if ( GetSmallestRoot(a, b, c, t, &newT) )
+        {
             t              = newT;
             foundCollision = true;
             hitPoint       = tri.a.pos;
@@ -274,7 +345,8 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri) {
         b = 2.0f * (glm::dot(velocity, (basePos - tri.b.pos)));
         c = glm::distance2(tri.b.pos, basePos) - 1.0f;
         // Find smallest solution, if available
-        if ( GetSmallestRoot(a, b, c, t, &newT) ) {
+        if ( GetSmallestRoot(a, b, c, t, &newT) )
+        {
             t              = newT;
             foundCollision = true;
             hitPoint       = tri.b.pos;
@@ -284,7 +356,8 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri) {
         b = 2.0f * (glm::dot(velocity, (basePos - tri.c.pos)));
         c = glm::distance2(tri.c.pos, basePos) - 1.0f;
         // Find smallest solution, if available
-        if ( GetSmallestRoot(a, b, c, t, &newT) ) {
+        if ( GetSmallestRoot(a, b, c, t, &newT) )
+        {
             t              = newT;
             foundCollision = true;
             hitPoint       = tri.c.pos;
@@ -292,28 +365,33 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri) {
 
         // Check sphere against tri's line-segments
 
-        if ( CheckSweptSphereVsLinesegment(tri.a.pos, tri.b.pos, basePos, velocity, t, &newT, &hitPoint) ) {
+        if ( CheckSweptSphereVsLinesegment(tri.a.pos, tri.b.pos, basePos, velocity, t, &newT, &hitPoint) )
+        {
             foundCollision = true;
             t              = newT;
         }
 
-        if ( CheckSweptSphereVsLinesegment(tri.b.pos, tri.c.pos, basePos, velocity, t, &newT, &hitPoint) ) {
+        if ( CheckSweptSphereVsLinesegment(tri.b.pos, tri.c.pos, basePos, velocity, t, &newT, &hitPoint) )
+        {
             foundCollision = true;
             t              = newT;
         }
 
-        if ( CheckSweptSphereVsLinesegment(tri.c.pos, tri.a.pos, basePos, velocity, t, &newT, &hitPoint) ) {
+        if ( CheckSweptSphereVsLinesegment(tri.c.pos, tri.a.pos, basePos, velocity, t, &newT, &hitPoint) )
+        {
             foundCollision = true;
             t              = newT;
         }
     }
 
-    if ( foundCollision ) {
+    if ( foundCollision )
+    {
         float distanceToHitpoint
             = t
               * glm::length(
                   velocity); // furthest the sphere can travel along its velocity vector until collision happens
-        if ( !ci->didCollide || (ci->nearestDistance > distanceToHitpoint) ) {
+        if ( !ci->didCollide || (ci->nearestDistance > distanceToHitpoint) )
+        {
             ci->didCollide      = true;
             ci->nearestDistance = distanceToHitpoint;
             ci->hitPoint        = hitPoint;
@@ -332,80 +410,101 @@ void CollideUnitSphereWithTri(CollisionInfo* ci, Tri tri) {
     }
 }
 
+static std::vector<Tri> g_MapTrisCache;
+void InitMapTrisCache(size_t numTris) 
+{
+    g_MapTrisCache.resize(numTris);
+}
+  
 CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider                 ec,
                                           glm::vec3                         velocity,
                                           glm::vec3                         gravity,
                                           MapTri*                           tris,
                                           int                               triCount,
-                                          std::vector<std::vector<MapTri>*> brushMapTris) {
+                                          std::vector<std::vector<MapTri>*> brushMapTris)
+{      
     // Convert to ellipsoid space
-    std::vector<Tri> esTris;
-    for ( int i = 0; i < triCount; i++ ) {
+    glm::vec3 scaleToESpace(ec.toESpace[ 0 ][ 0 ], ec.toESpace[ 1 ][ 1 ], ec.toESpace[ 2 ][ 2 ]);
+   
+    for ( int i = 0; i < triCount; i++ )
+    {
         Tri tri   = tris[ i ].tri;
-        Tri esTri = TriToEllipsoidSpace(tri, ec.toESpace);
-        esTris.push_back(esTri);
+        TriToEllipsoidSpace(&tri, scaleToESpace);
+        g_MapTrisCache[i] = tri;
     }
+    int currentTriCount = triCount;
+
+
     // Also do this for the brush tris
-    for ( int i = 0; i < brushMapTris.size(); i++ ) {
-        std::vector<MapTri>* pMapTris = brushMapTris[ i ];
-        for ( int j = 0; j < pMapTris->size(); j++ ) {
+    for ( int brushIndex = 0; brushIndex < brushMapTris.size(); brushIndex++ )
+    {
+        std::vector<MapTri>* pMapTris = brushMapTris[ brushIndex ];
+        for ( int j = 0; j < pMapTris->size(); j++ )
+        {
             Tri tri   = pMapTris->at(j).tri;
-            Tri esTri = TriToEllipsoidSpace(tri, ec.toESpace);
-            esTris.push_back(esTri);
+            TriToEllipsoidSpace(&tri, scaleToESpace);
+            g_MapTrisCache[currentTriCount + j] = tri;
         }
+        currentTriCount += pMapTris->size();
     }
 
-    glm::vec3 esVelocity = ec.toESpace * velocity;
-    glm::vec3 esBasePos  = ec.toESpace * ec.center;
+    glm::vec3 esVelocity = scaleToESpace * velocity;
+    glm::vec3 esBasePos  = scaleToESpace * ec.center;
 
     // From now on the Radius of the ellipsoid is 1.0 in X, Y, Z.
     // Thus, it is a unit sphere.
 
-    CollisionInfo ci;
+    CollisionInfo ci{};
     ci.didCollide      = false;
     ci.nearestDistance = 0.0f;
     ci.velocity        = esVelocity;
     ci.hitPoint        = glm::vec3(0.0f);
     ci.basePos         = esBasePos;
 
-    glm::vec3 newPos = CollideEllipsoidWithTrisRec(&ci, esBasePos, esVelocity, esTris.data(), esTris.size(), 0, 5);
+    glm::vec3 newPos
+        = CollideEllipsoidWithTrisRec(&ci, esBasePos, esVelocity, g_MapTrisCache.data(), g_MapTrisCache.size(), 0, 5);
 
-    glm::vec3 esGravity = ec.toESpace * gravity;
+    glm::vec3 esGravity = scaleToESpace * gravity;
     ci.velocity         = esGravity;
     ci.basePos          = newPos;
     ci.nearestDistance  = 0.0f;
     ci.didCollide       = false;
-    newPos              = CollideEllipsoidWithTrisRec(&ci, newPos, esGravity, esTris.data(), esTris.size(), 0, 5);
+    newPos = CollideEllipsoidWithTrisRec(&ci, newPos, esGravity, g_MapTrisCache.data(), g_MapTrisCache.size(), 0, 5);
 
-    ci.velocity = glm::inverse(ec.toESpace) * ci.velocity;
-    ci.hitPoint = glm::inverse(ec.toESpace) * ci.hitPoint;
-    ci.basePos  = glm::inverse(ec.toESpace) * newPos;
+    glm::vec3 invESpace(1.0f/scaleToESpace);
+    ci.velocity = invESpace * ci.velocity;
+    ci.hitPoint = invESpace * ci.hitPoint;
+    ci.basePos  = invESpace * newPos;
 
     return ci;
 }
 
 // Assume all data in ci to be in ellipsoid space, that is, a unit-sphere. Same goes for esBasePos.
 glm::vec3 CollideEllipsoidWithTrisRec(
-    CollisionInfo* ci, glm::vec3 esBasePos, glm::vec3 velocity, Tri* tris, int triCount, int depth, int maxDepth) {
+    CollisionInfo* ci, glm::vec3 esBasePos, glm::vec3 velocity, Tri* tris, int triCount, int depth, int maxDepth)
+{
     if ( depth > maxDepth ) return esBasePos;
 
     ci->didCollide = false;
     ci->velocity   = velocity;
     ci->basePos    = esBasePos;
 
-    for ( int i = 0; i < triCount; i++ ) {
-        Tri tri = tris[ i ];
+    for ( int i = 0; i < triCount; i++ )
+    {
+        const Tri& tri = tris[ i ];
         CollideUnitSphereWithTri(ci, tri);
     }
 
-    if ( !ci->didCollide ) {
+    if ( !ci->didCollide )
+    {
         return esBasePos + velocity;
     }
 
     glm::vec3 destinationPos = esBasePos + velocity;
     glm::vec3 newBasePos     = esBasePos;
 
-    if ( ci->nearestDistance >= DOD_VERY_CLOSE_DIST ) {
+    if ( ci->nearestDistance >= DOD_VERY_CLOSE_DIST )
+    {
         glm::vec3 v      = velocity;
         glm::vec3 vNorm  = glm::normalize(v);
         float     length = glm::abs(ci->nearestDistance - DOD_VERY_CLOSE_DIST); // abs should not be neccessary
@@ -421,20 +520,19 @@ glm::vec3 CollideEllipsoidWithTrisRec(
 
     glm::vec3 newVelocity = newDestinationPos - ci->hitPoint;
 
-    if ( glm::length(newVelocity) < DOD_VERY_CLOSE_DIST ) {
+    if ( glm::length(newVelocity) < DOD_VERY_CLOSE_DIST )
+    {
         return newBasePos;
     }
 
     return CollideEllipsoidWithTrisRec(ci, newBasePos, newVelocity, tris, triCount, depth + 1, maxDepth);
 }
 
-Tri TriToEllipsoidSpace(Tri tri, glm::mat3 toESPace) {
-    Tri result   = tri;
-    result.a.pos = toESPace * tri.a.pos;
-    result.b.pos = toESPace * tri.b.pos;
-    result.c.pos = toESPace * tri.c.pos;
-
-    return result;
+void TriToEllipsoidSpace(Tri* tri, glm::vec3 scaleToESpace)
+{
+    tri->a.pos = scaleToESpace * tri->a.pos;
+    tri->b.pos = scaleToESpace * tri->b.pos;
+    tri->c.pos = scaleToESpace * tri->c.pos;    
 }
 
 // NOTE: This is to prevent allocating new memory every
@@ -443,15 +541,19 @@ Tri TriToEllipsoidSpace(Tri tri, glm::mat3 toESPace) {
 // from around 400FPS to 2000FPS on a recent GPU.
 // However this also highly depends on the STL implementation.
 static std::vector<Tri> g_esTriMemory;
-CollisionInfo PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapTri* tris, int triCount) {
+CollisionInfo           PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapTri* tris, int triCount)
+{
     g_esTriMemory.clear();
-    for ( int i = 0; i < triCount; i++ ) {
+
+    glm::vec3 scaleToESpace(ec.toESpace[ 0 ][ 0 ], ec.toESpace[ 1 ][ 1 ], ec.toESpace[ 2 ][ 2 ]);
+    for ( int i = 0; i < triCount; i++ )
+    {
         Tri tri   = tris[ i ].tri;
-        Tri esTri = TriToEllipsoidSpace(tri, ec.toESpace);
-        g_esTriMemory.push_back(esTri);
+        TriToEllipsoidSpace(&tri, scaleToESpace);
+        g_esTriMemory.emplace_back(tri);
     }
-    glm::vec3 esBasePos  = ec.toESpace * ec.center;
-    glm::vec3 esVelocity = ec.toESpace * velocity;
+    glm::vec3 esBasePos  = scaleToESpace * ec.center;
+    glm::vec3 esVelocity = scaleToESpace * velocity;
 
     CollisionInfo ci;
     ci.didCollide      = false;
@@ -460,14 +562,16 @@ CollisionInfo PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapTri* tris, 
     ci.hitPoint        = glm::vec3(0.0f);
     ci.basePos         = esBasePos;
 
-    for ( int i = 0; i < triCount; i++ ) {
+    for ( int i = 0; i < triCount; i++ )
+    {
         CollideUnitSphereWithTri(&ci, g_esTriMemory[ i ]);
-        if ( ci.didCollide ) {
+        if ( ci.didCollide )
+        {
             break;
         }
     }
 
-    glm::mat3 invESpace = glm::inverse(ec.toESpace);
+    glm::vec3 invESpace(1.0f/scaleToESpace);
     ci.hitPoint         = invESpace * ci.hitPoint;
     ci.velocity         = invESpace * ci.velocity;
 

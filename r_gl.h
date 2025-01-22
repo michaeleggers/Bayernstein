@@ -17,19 +17,24 @@
 #include "r_gl_shader.h"
 #include "r_gl_texture.h"
 #include "r_gl_texture_mgr.h"
+#include "r_itexture_mgr.h"
 #include "r_model.h"
+#include "utils/quick_math.h"
 
-struct GLMesh {
+struct GLMesh
+{
     int        triOffset, triCount; // Offsets into VBO of tris
     GLTexture* texture;
 };
 
 // Models for entities (Players, Monsters, Pickup Items...)
-struct GLModel {
+struct GLModel
+{
     std::vector<GLMesh> meshes;
 };
 
-class GLRender : public IRender {
+class GLRender : public IRender
+{
   public:
     virtual bool                   Init(void) override;
     virtual void                   Shutdown(void) override;
@@ -54,7 +59,7 @@ class GLRender : public IRender {
                                bool      cullFace = true,
                                DrawMode  drawMode = DRAW_MODE_SOLID) override;
     virtual void ImDrawVerts(Vertex* verts, uint32_t numVerts) override;
-    virtual void ImDrawLines(Vertex* verts, uint32_t numVerts, bool close = false) override;
+    virtual void ImDrawLines(const Vertex* verts, uint32_t numVerts, bool close = false) override;
     virtual void ImDrawCircle(glm::vec3 center, float radius, glm::vec3 normal) override;
     virtual void
     ImDrawSphere(glm::vec3 pos, float radius, glm::vec4 color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)) override;
@@ -64,6 +69,7 @@ class GLRender : public IRender {
                         uint32_t    numModels,
                         HKD_Model** brushModels,
                         uint32_t    numBrushModels) override;
+    virtual void RenderFirstPersonView(Camera* camera, HKD_Model* model) override;
     virtual void RenderColliders(Camera* camera, HKD_Model** models, uint32_t numModels) override;
     virtual void RenderConsole(Console* console, CFont* font) override;
     virtual void Begin3D() override;
@@ -71,6 +77,10 @@ class GLRender : public IRender {
     virtual void DrawWorldTris() override;
     virtual void Begin2D() override;
     virtual void End2D() override;
+    virtual void DrawSprite(const Sprite*        sprite,
+                            const glm::vec2&     pos,
+                            const glm::vec2&     scale,
+                            ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
     virtual void SetFont(CFont* font, glm::vec4 color = glm::vec4(1.0f)) override;
     virtual void SetShapeColor(glm::vec4 color = glm::vec4(1.0f)) override;
     virtual void
@@ -81,9 +91,14 @@ class GLRender : public IRender {
     DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode = COORD_MODE_REL) override;
     virtual void        RenderEnd(void) override;
     virtual void        SetWindowTitle(char* windowTitle) override;
-    virtual SDL_Window* GetWindow() override {
+    virtual SDL_Window* GetWindow() override
+    {
         return m_Window;
     };
+    virtual glm::vec2        GetWindowDimensions() override;
+    virtual ITextureManager* GetTextureManager() override;
+
+    void DrawFrustum(const math::Frustum& frustum);
 
     void           ExecuteDrawCmds(std::vector<GLBatchDrawCmd>& drawCmds, GeometryType geomType);
     void           InitShaders();
@@ -95,7 +110,7 @@ class GLRender : public IRender {
     SDL_Window*   m_Window;
     SDL_GLContext m_SDL_GL_Conext;
 
-    GLTextureManager* m_TextureManager;
+    GLTextureManager* m_ITextureManager;
 
     Camera* m_ActiveCamera;
 
@@ -130,11 +145,14 @@ class GLRender : public IRender {
     Shader* m_CompositeShader;
     Shader* m_FontShader;
     Shader* m_ShapesShader;
+    Shader* m_SpriteShader;
+
     // Offsets into collider batch
     GLBatchDrawCmd m_EllipsoidColliderDrawCmd;
 
     CglFBO* m_2dFBO;
     CglFBO* m_3dFBO;
+    CglFBO* m_3dFirstPersonViewFBO;
     CglFBO* m_ConsoleFBO;
     int     m_WindowWidth;
     int     m_WindowHeight;
@@ -145,6 +163,8 @@ class GLRender : public IRender {
     // Lightmap
     bool     m_UseLightmap = false;
     uint64_t m_hLightmapTexture;
+
+    uint32_t m_DrawWireframe = 0;
 };
 
 #endif

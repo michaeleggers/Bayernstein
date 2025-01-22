@@ -11,20 +11,22 @@
 
 #include "r_model.h"
 
-#define MAX_BONES 96
+#define MAX_BONES 300
 
 #define SHADER_FEATURE_MODEL_ANIMATION_BIT (0x00000001)
 #define SHADER_FEATURE_MAX (0x00000001 << 1)
 
 // TODO: (Michael): Change classname to CglShader or something like that to make clear this is GL specific.
-class Shader {
+class Shader
+{
   public:
     bool   Load(const std::string& vertName, const std::string& fragName, uint32_t shaderFeatureBits = 0x0);
     void   Unload();
     void   Activate();
     GLuint Program() const;
 
-    bool operator==(const Shader& rhs) {
+    bool operator==(const Shader& rhs)
+    {
         return m_ShaderProgram == rhs.m_ShaderProgram;
     }
 
@@ -38,6 +40,7 @@ class Shader {
     void        ResetShaderSettingBits(uint32_t bits);
     void        InitializeFontUniforms();
     void        InitializeShapesUniforms();
+    void        InitializeSpriteUniforms();
     static void InitGlobalBuffers();
 
     // Some people would say this must be private. But I find it
@@ -45,6 +48,7 @@ class Shader {
     // a new value to this UBO handle, ok? Thanks!
     GLuint m_FontUBO;
     GLuint m_ShapesUBO;
+    GLuint m_SpriteUBO;
 
   private:
     bool CompileShader(const std::string& fileName, GLenum shaderType, GLuint& outShader);
@@ -65,6 +69,7 @@ class Shader {
     // 2d screenspace uniforms
     GLuint m_FontUniformIndex;
     GLuint m_ShapesUniformIndex;
+    GLuint m_SpriteUniformIndex;
 };
 
 #endif

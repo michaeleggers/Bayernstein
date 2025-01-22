@@ -7,25 +7,48 @@
 
 #include <string>
 
-enum message_type {
+enum message_type
+{
     Attack,
-    Hello_World,
-    Collision
+    Collision,
+    RayHit,
+    EntityInView,
+    SetPatrol,
+    Hit
 };
 
-inline std::string MessageToString(int message) {
-    switch ( message ) {
-    case 0: {
+inline std::string MessageToString(int message)
+{
+    switch ( message )
+    {
+    case 0:
+    {
         return "Attack";
-    } break;
-    case 1: {
-        return "Hello World";
-    } break;
-    case 2: {
+    }
+    break;
+    case 1:
+    {
         return "Collision";
-    } break;
+    }
+    break;
+    case 2:
+    {
+        return "RayHit";
+    }
+    break;
+    case 3:
+    {
+        return "EntityInView";
+    }
+    break;
+    case 4:
+    {
+        return "SetPatrol";
+    }
+    break;
 
-    default: {
+    default:
+    {
         return "Not recognized!";
     }
     }
