@@ -34,10 +34,9 @@ hideInToc: true
 # Games Engineering
 ## Quake-Style Shooter from Scratch
 
-<br/>
-<br/>
+<img src="/img/titlescreen.png" style="width: 280px; margin: 0 auto;">
 
-### Meilenstein 3
+### Meilenstein 4
 
 <!--
 The last comment block of each slide will be treated as slide notes. It will be visible and editable in Presenter Mode along with the slide. [Read more in the docs](https://sli.dev/guide/syntax.html#notes)
