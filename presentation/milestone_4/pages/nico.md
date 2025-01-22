@@ -9,7 +9,7 @@ class: center
 
 <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
   <img src="/img/nico/Level3_1.jpg" alt="Vogelperspektive des Tempels" style="width: 75%; height: auto;">
-  <p style="position: absolute; bottom: 10px; font-size: 1.2rem;">Vogelperspektive des Tempels mit offenem Dach</p>
+  <p style="position: absolute; bottom: 10px; font-size: 1.2rem;">Vogelperspektive des Tempels</p>
 </div>
 
 <!-- Folie 2 -->
