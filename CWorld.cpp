@@ -263,8 +263,6 @@ void CWorld::CollideEntitiesWithWorld()
                     continue;
                 }
 
-
-
                 pEntity->m_PrevPosition = ec->center; //pEntity->m_Position;
                 //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
                 // Don't even bother checking for collision if the entity isn't even moving.

@@ -134,6 +134,8 @@ add_executable(Game
     CWorld.h
     collision.cpp
     collision.h
+    CImageManager.h
+    CImageManager.cpp
     globals.h
     Clock/clock.cpp
     Clock/clock.h

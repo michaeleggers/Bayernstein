@@ -265,7 +265,6 @@ static void InterpolatePoses(glm::mat4* out_pPoseMat, const Pose& a, const Pose&
 
     //*out_pPoseMat = transMat * rotMat * scaleMat;
 
-
     /********************/
     /* Optimized version */
     /********************/
@@ -279,8 +278,7 @@ static void InterpolatePoses(glm::mat4* out_pPoseMat, const Pose& a, const Pose&
     glm::quat interpRot = glm::slerp(a.rotation, b.rotation, pct);
     glm::mat4 rotMat    = glm::toMat4(interpRot);
 
-    *out_pPoseMat
-        = glm::translate(glm::mat4(1.0f), interpTrans) * rotMat * glm::scale(glm::mat4(1.0f), interpScale);
+    *out_pPoseMat = glm::translate(glm::mat4(1.0f), interpTrans) * rotMat * glm::scale(glm::mat4(1.0f), interpScale);
 }
 
 void UpdateModel(HKD_Model* model, float dt)
@@ -342,9 +340,9 @@ void UpdateModel(HKD_Model* model, float dt)
         if ( animationDone && !anim.loop )
         {
             currentFrame = anim.firstFrame + anim.numFrames - 1;
-            nextFrame = currentFrame;
+            nextFrame    = currentFrame;
         }
-        
+
         model->currentFrame = currentFrame;
 
         //printf("currentFrame: %d\n", currentFrame);

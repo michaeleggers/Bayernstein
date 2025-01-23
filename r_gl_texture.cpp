@@ -1,49 +1,54 @@
 #include "r_gl_texture.h"
 
+#include <assert.h>
+#include <string>
+
+#include "CImageManager.h"
 #include "platform.h"
 #include "r_font.h"
 #include "r_itexture.h"
-#include "stb_image.h"
-
-#include <assert.h>
-#include <string>
 
 extern std::string g_GameDir;
 
 // TODO: This is the texture manager at the moment...
 
-GLTexture::GLTexture(std::string filename) {
-    m_Pixeldata = NULL; // TODO: (Michael): We could keep the original pixel data in
-    // the future?
+GLTexture::GLTexture(std::string filename)
+{
+    CImageManager* imageManager = CImageManager::Instance();
 
-    std::string    filePath = g_GameDir + "textures/" + filename;
-    int            x, y, n;
-    unsigned char* data = stbi_load(filePath.c_str(), &x, &y, &n, 4);
+    std::string           filePath = g_GameDir + "textures/" + filename;
+    CImageManager::Image* image    = imageManager->Create(filePath);
 
-    if ( !data ) {
-        printf("WARNING: Failed to load texture: %s\n", filename.c_str());
-        // return {}; // TODO: Load checkerboard texture instead.
-    }
+    // TODO: Load checkerboard texture if not valid.
+    assert(image->isValid && "GLTexture must have a valid image to be built!");
 
     GLuint glTextureHandle;
     glGenTextures(1, &glTextureHandle);
     glBindTexture(GL_TEXTURE_2D, glTextureHandle);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLuint)x, (GLuint)y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA,
+                 (GLuint)image->width,
+                 (GLuint)image->height,
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 image->pixeldata);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    stbi_image_free(data);
     m_Filename  = filename;
     m_gl_Handle = glTextureHandle;
-    m_Width     = x;
-    m_Height    = y;
-    m_Channels  = 4;
+    m_Width     = image->width;
+    m_Height    = image->height;
+    m_Channels  = image->channels; // must be 4 at the moment.
 
     m_hGPU = (uint64_t)glTextureHandle;
 }
 
-GLTexture::GLTexture(CFont* font) {
+GLTexture::GLTexture(CFont* font)
+{
     m_Pixeldata = NULL; // TODO: (Michael): We could keep the original pixel data in
     // the future?
 
