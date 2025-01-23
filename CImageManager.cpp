@@ -25,7 +25,7 @@ CImageManager::Image* CImageManager::Create(const std::string& filename)
     Image* image = new Image();
 
     int            x, y, n;
-    unsigned char* pixeldata = stbi_load(filename.c_str(), &x, &y, &n, 4);
+    unsigned char* pixeldata = stbi_load(filename.c_str(), &x, &y, &n, 0);
 
     // TODO: We probably should load a checkerboard texture or a
     // very obvous color (pink?) so we see it also in the game
@@ -38,7 +38,7 @@ CImageManager::Image* CImageManager::Create(const std::string& filename)
     image->isValid   = true;
     image->width     = x;
     image->height    = y;
-    image->channels  = 4;
+    image->channels  = n;
     image->pixeldata = pixeldata;
 
     m_Filename2image.insert({ filename, image });

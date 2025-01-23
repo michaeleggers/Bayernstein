@@ -56,6 +56,10 @@ void CWorld::InitWorld(const std::string& mapName)
 
     // Convert to tris
 
+    printf("----------------\n");
+    printf("INIT WORLD GEOMETRY\n");
+    printf("----------------\n");
+
     // Check if a lightmap is available
     HKD_File    plyFile;
     std::string fullPlyPath = g_GameDir + "maps/" + mapName + ".ply";
@@ -94,6 +98,10 @@ void CWorld::InitWorld(const std::string& mapName)
 
     m_StaticTriCount = m_MapTris.size();
 
+    printf("----------------\n");
+    printf("DONE\n");
+    printf("----------------\n");
+
     // Now initialize all the entities. Those also include brush
     // entities. Those entities store their own geometry as MapTris.
     // We keep pointers to those triangles as the brush entities (eg. doors)
@@ -101,6 +109,9 @@ void CWorld::InitWorld(const std::string& mapName)
     // in order to collide with the tris correctly.
 
     // Load and create all the entities
+    printf("----------------\n");
+    printf("LOADING ENTITIES\n");
+    printf("----------------\n");
     for ( int i = 0; i < map.entities.size(); i++ )
     {
         const Entity& e = map.entities[ i ];
@@ -149,6 +160,9 @@ void CWorld::InitWorld(const std::string& mapName)
             }
         }
     }
+    printf("----------------\n");
+    printf("DONE\n");
+    printf("----------------\n");
 
     // Set the geometry cache for collision system
     InitMapTrisCache(m_StaticTriCount + m_BrushTriCount);

@@ -13,7 +13,7 @@ class GLTexture : public ITexture {
 
     virtual ~GLTexture() override;
 
-    GLTexture(std::string filename);
+    GLTexture(const std::string& filename);
     GLTexture(CFont* font);
 
     // TODO: (Michael) Nuke texture from GPU memory
