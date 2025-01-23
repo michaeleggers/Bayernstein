@@ -352,7 +352,7 @@ bool GLRender::Init(void)
 int GLRender::RegisterModel(HKD_Model* model)
 {
     GLModel gl_model = {};
-    int     offset   = m_ModelBatch->Add(&model->tris[ 0 ], model->tris.size());
+    int     offset   = m_ModelBatch->AddTris(&model->tris[ 0 ], model->tris.size());
 
     for ( int i = 0; i < model->meshes.size(); i++ )
     {
@@ -375,7 +375,7 @@ int GLRender::RegisterModel(HKD_Model* model)
 int GLRender::RegisterBrush(HKD_Model* model)
 {
     GLModel gl_model = {};
-    int     offset   = m_BrushBatch->Add(&model->tris[ 0 ], model->tris.size());
+    int     offset   = m_BrushBatch->AddTris(&model->tris[ 0 ], model->tris.size());
 
     for ( int i = 0; i < model->meshes.size(); i++ )
     {
@@ -501,7 +501,7 @@ std::vector<ITexture*> GLRender::Textures(void)
 
 void GLRender::ImDrawTris(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
 {
-    int offset = m_ImPrimitiveBatch->Add(tris, numTris, cullFace, drawMode);
+    int offset = m_ImPrimitiveBatch->AddTris(tris, numTris, cullFace, drawMode);
 
     GLBatchDrawCmd drawCmd = { .offset = offset, .numVerts = 3 * numTris, .cullFace = cullFace, .drawMode = drawMode };
 
@@ -521,7 +521,7 @@ void GLRender::ImDrawTriPlanes(TriPlane* triPlanes, uint32_t numTriPlanes, bool 
 
 GLBatchDrawCmd GLRender::AddTrisToBatch(GLBatch* batch, Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
 {
-    int offset = batch->Add(tris, numTris, cullFace, drawMode);
+    int offset = batch->AddTris(tris, numTris, cullFace, drawMode);
 
     GLBatchDrawCmd drawCmd = { .offset = offset, .numVerts = 3 * numTris, .cullFace = cullFace, .drawMode = drawMode };
 
@@ -534,7 +534,7 @@ void GLRender::ImDrawIndexed(
 {
     int offset        = 0;
     int offsetIndices = 0;
-    if ( !m_ImPrimitiveBatchIndexed->Add(
+    if ( !m_ImPrimitiveBatchIndexed->AddIndexedVertices(
              verts, numVerts, indices, numIndices, &offset, &offsetIndices, cullFace, drawMode) )
     {
         return;
@@ -553,7 +553,7 @@ void GLRender::ImDrawIndexed(
 // TODO: not done
 void GLRender::ImDrawVerts(Vertex* verts, uint32_t numVerts)
 {
-    int offset = m_ImPrimitiveBatch->Add(verts, numVerts);
+    int offset = m_ImPrimitiveBatch->AddVertices(verts, numVerts);
 
     GLBatchDrawCmd drawCmd = { .offset = offset, .numVerts = numVerts, .cullFace = false, .drawMode = DRAW_MODE_SOLID };
 }
@@ -598,12 +598,12 @@ void GLRender::ImDrawLines(const Vertex* verts, uint32_t numVerts, bool close)
 
     const Vertex* v = verts;
     // TODO: DRAW_MODEL_LINES doesn't do anything to the batch!
-    int offset = m_ImPrimitiveBatch->Add(v, 2, false, DRAW_MODE_LINES);
+    int offset = m_ImPrimitiveBatch->AddVertices(v, 2, false, DRAW_MODE_LINES);
     v += 1;
     int moreVerts = 0;
     for ( int i = 2; i < numVerts; i++ )
     {
-        m_ImPrimitiveBatch->Add(v, 2, false, DRAW_MODE_LINES);
+        m_ImPrimitiveBatch->AddVertices(v, 2, false, DRAW_MODE_LINES);
         v++;
         moreVerts += 1;
     }
@@ -611,7 +611,7 @@ void GLRender::ImDrawLines(const Vertex* verts, uint32_t numVerts, bool close)
     if ( close )
     {
         Vertex endAndStart[] = { *v, verts[ 0 ] };
-        m_ImPrimitiveBatch->Add(endAndStart, 2, false, DRAW_MODE_LINES);
+        m_ImPrimitiveBatch->AddVertices(endAndStart, 2, false, DRAW_MODE_LINES);
         moreVerts += 2;
     }
 
@@ -651,12 +651,12 @@ GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t 
 
     Vertex* v = verts;
     // TODO: DRAW_MODEL_LINES doesn't do anything to the batch!
-    int offset = batch->Add(v, 2, false, DRAW_MODE_LINES);
+    int offset = batch->AddVertices(v, 2, false, DRAW_MODE_LINES);
     v += 1;
     int moreVerts = 0;
     for ( int i = 2; i < numVerts; i++ )
     {
-        batch->Add(v, 2, false, DRAW_MODE_LINES);
+        batch->AddVertices(v, 2, false, DRAW_MODE_LINES);
         v++;
         moreVerts += 1;
     }
@@ -664,7 +664,7 @@ GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t 
     if ( close )
     {
         Vertex endAndStart[] = { *v, verts[ 0 ] };
-        batch->Add(endAndStart, 2, false, DRAW_MODE_LINES);
+        batch->AddVertices(endAndStart, 2, false, DRAW_MODE_LINES);
         moreVerts += 2;
     }
 
@@ -1246,7 +1246,7 @@ void GLRender::R_DrawText(const std::string& text, float x, float y, ScreenSpace
             fq.b.uv  = { q.s0, q.t1 };
             fq.c.uv  = { q.s0, q.t0 };
             fq.d.uv  = { q.s1, q.t0 };
-            m_FontBatch->Add(
+            m_FontBatch->AddIndexedVertices(
                 fq.vertices, 4, indices, 6, &out_OffsetVertices, &out_OffsetIndices, false, DRAW_MODE_SOLID);
 
             lastIndex = iOffset + 3 + i * 4;
@@ -1293,7 +1293,7 @@ void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceC
     // of unused (and unwanted) out_* variables for now!
     int out_OffsetIndices  = 0; // TODO: Not needed here!
     int out_OffsetVertices = 0; // TODO: Not needed here!
-    m_ShapesBatch->Add(fq.vertices, 4, indices, 6, &out_OffsetVertices, &out_OffsetIndices, false, DRAW_MODE_SOLID);
+    m_ShapesBatch->AddIndexedVertices(fq.vertices, 4, indices, 6, &out_OffsetVertices, &out_OffsetIndices, false, DRAW_MODE_SOLID);
 
     m_ShapesBatch->m_LastIndex += 4;
 
