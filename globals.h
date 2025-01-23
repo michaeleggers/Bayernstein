@@ -34,4 +34,7 @@ constexpr double DOD_FIXED_UPDATE_TIME = 1000.0 / 60.0;
 // NOTE: This distance depends very much on the size of the level geometry!
 constexpr float DOD_VERY_CLOSE_DIST = 0.01f; // TODO: Collision with double precision?
 
+constexpr size_t      DOD_SUPPORTED_IMAGE_EXTENSION_COUNT = 3;
+constexpr const char* DOD_IMAGE_EXTENSION_NAMES[ DOD_SUPPORTED_IMAGE_EXTENSION_COUNT ] = { ".jpg", ".png", ".tga" };
+
 #endif

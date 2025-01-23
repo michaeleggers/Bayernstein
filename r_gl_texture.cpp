@@ -12,15 +12,24 @@ extern std::string g_GameDir;
 
 // TODO: This is the texture manager at the moment...
 
+GLTexture::~GLTexture() {
+    // TODO: Nuke Texture from GPU.
+}
+
 GLTexture::GLTexture(std::string filename)
 {
+    m_IsValid                   = false;
+
     CImageManager* imageManager = CImageManager::Instance();
 
     std::string           filePath = g_GameDir + "textures/" + filename;
     CImageManager::Image* image    = imageManager->Create(filePath);
 
     // TODO: Load checkerboard texture if not valid.
-    assert(image->isValid && "GLTexture must have a valid image to be built!");
+    if ( !image->isValid )
+    {        
+        return;
+    }
 
     GLuint glTextureHandle;
     glGenTextures(1, &glTextureHandle);
@@ -39,18 +48,18 @@ GLTexture::GLTexture(std::string filename)
     glBindTexture(GL_TEXTURE_2D, 0);
 
     m_Filename  = filename;
-    m_gl_Handle = glTextureHandle;
+    m_gl_Handle = (GLuint)glTextureHandle;
     m_Width     = image->width;
     m_Height    = image->height;
     m_Channels  = image->channels; // must be 4 at the moment.
+    m_IsValid   = true;
 
     m_hGPU = (uint64_t)glTextureHandle;
 }
 
 GLTexture::GLTexture(CFont* font)
 {
-    m_Pixeldata = NULL; // TODO: (Michael): We could keep the original pixel data in
-    // the future?
+    m_IsValid = false;
 
     assert(font->m_Bitmap != NULL && "GLTexture: Cannot create GLTexture from font, because the font-bitmap is NULL!");
 
@@ -68,6 +77,7 @@ GLTexture::GLTexture(CFont* font)
     m_Width     = x;
     m_Height    = y;
     m_Channels  = 1;
+    m_IsValid   = true;
 
     m_hGPU = (uint64_t)glTextureHandle;
 }

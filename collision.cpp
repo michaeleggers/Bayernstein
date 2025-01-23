@@ -550,7 +550,7 @@ CollisionInfo           PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapT
     {
         Tri tri   = tris[ i ].tri;
         TriToEllipsoidSpace(&tri, scaleToESpace);
-        g_esTriMemory.emplace_back(tri);
+        g_esTriMemory.push_back(tri);
     }
     glm::vec3 esBasePos  = scaleToESpace * ec.center;
     glm::vec3 esVelocity = scaleToESpace * velocity;

@@ -32,8 +32,7 @@ CImageManager::Image* CImageManager::Create(const std::string& filename)
     // when an image could not be loaded.
     if ( !pixeldata )
     {
-        printf("WARNING (%s): Failed to load image: %s\n", __FILE__, filename.c_str());
-        return image;
+        return image; // returns an image with width/height/channels = 0; pixeldata = nullptr; isValid = false;
     }
 
     image->isValid   = true;

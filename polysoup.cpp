@@ -25,6 +25,7 @@
 #include "CImageManager.h"
 #include "image.h"
 #include "platform.h"
+#include "globals.h"
 
 #define PS_FLOAT_EPSILON (0.0001)
 
@@ -222,12 +223,17 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush)
         float height      = 1.0f;
 
         // FIX: Make other fileformats possible!
-        CImageManager::Image* image = imageManager->Create(g_GameDir + "textures/" + poly.textureName + ".tga");
-
-        if ( image->isValid )
+        
+        CImageManager::Image* image; 
+        for ( int i = 0; i < DOD_SUPPORTED_IMAGE_EXTENSION_COUNT; i++ )
         {
-            width  = (float)image->width;
-            height = (float)image->height;
+            image = imageManager->Create(g_GameDir + "textures/" + poly.textureName + DOD_IMAGE_EXTENSION_NAMES[ i ]);
+            if ( image->isValid )
+            {
+                width  = (float)image->width;
+                height = (float)image->height;
+                break;                
+            }           
         }
 
         poly.normal = p0.n;

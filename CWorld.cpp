@@ -57,14 +57,26 @@ void CWorld::InitWorld(const std::string& mapName)
     // Convert to tris
 
     // Check if a lightmap is available
-    m_LightmapAvailable = false;
     HKD_File    plyFile;
     std::string fullPlyPath = g_GameDir + "maps/" + mapName + ".ply";
     if ( hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS )
     {
         m_MapTris           = CWorld::CreateMapFromLightmapTrisFile(plyFile);
-        m_hLightmapTexture  = renderer->RegisterTextureGetHandle(mapName + ".png");
-        m_LightmapAvailable = true;
+        m_LightmapAvailable = false;
+        for ( int i = 0; i < DOD_SUPPORTED_IMAGE_EXTENSION_COUNT; i++ )
+        {
+            m_LightmapAvailable = renderer->RegisterTextureGetHandle(
+                mapName + std::string(DOD_IMAGE_EXTENSION_NAMES[ i ]), &m_hLightmapTexture);
+            if ( m_LightmapAvailable )
+            {
+                break;
+            }
+        }
+        
+        if ( !m_LightmapAvailable )
+        {
+            printf("WARNING (%s): Failed to load lightmap-image: %s\n", __FILE__, mapName.c_str());
+        }
     }
     else
     {
@@ -524,8 +536,23 @@ std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolyg
         C.color         = triColor;
         MapTri tri      = { .tri = { A, B, C } };
         tri.textureName = mapPoly.textureName;
-        //FIX: Search through all supported image formats not just PNG.
-        tri.hTexture = renderer->RegisterTextureGetHandle(tri.textureName + ".tga");
+        
+        // Try to load texture from disk and create a texture.
+        bool textureFound = false;
+        for ( int i = 0; i < DOD_SUPPORTED_IMAGE_EXTENSION_COUNT; i++ )
+        {
+            if ( textureFound = renderer->RegisterTextureGetHandle(tri.textureName + std::string(DOD_IMAGE_EXTENSION_NAMES[ i ]), &tri.hTexture) )
+            {                
+                break;
+            }
+        }
+
+        if ( !textureFound )
+        {
+            printf("Texture could not be found: %s\n", tri.textureName.c_str());
+            assert(textureFound);
+        }
+        
         mapTris.push_back(tri);
     }
 
@@ -618,8 +645,23 @@ struct MapTri {
 
         memcpy(mapTri.tri.vertices, vertices, 3 * sizeof(Vertex));
 
-        mapTri.textureName = std::string(currentLightmapTri->textureName);
-        mapTri.hTexture    = renderer->RegisterTextureGetHandle(mapTri.textureName + ".tga");
+        mapTri.textureName = std::string(currentLightmapTri->textureName);        
+
+        bool textureFound = false;
+        for ( int i = 0; i < DOD_SUPPORTED_IMAGE_EXTENSION_COUNT; i++ )
+        {
+            if ( textureFound
+                 = renderer->RegisterTextureGetHandle(mapTri.textureName + std::string(DOD_IMAGE_EXTENSION_NAMES[ i ]), &mapTri.hTexture) )
+            {
+                break;
+            }
+        }
+
+        if ( !textureFound )
+        {
+            printf("Texture could not be found: %s\n", mapTri.textureName.c_str());
+            assert(textureFound);
+        }
 
         mapTris[ i ] = mapTri;
 

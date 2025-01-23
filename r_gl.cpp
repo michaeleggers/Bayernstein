@@ -448,9 +448,9 @@ void GLRender::RegisterWorld(CWorld* world)
 }
 
 // Returns the CPU handle
-uint64_t GLRender::RegisterTextureGetHandle(const std::string& name)
+bool GLRender::RegisterTextureGetHandle(const std::string& name, uint64_t* out_handle)
 {
-    return m_ITextureManager->CreateTextureGetHandle(name);
+    return m_ITextureManager->CreateTextureGetHandle(name, out_handle);    
 }
 
 void GLRender::SetActiveCamera(Camera* camera)
