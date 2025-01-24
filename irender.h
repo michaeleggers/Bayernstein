@@ -42,8 +42,8 @@ struct GLBatchDrawCmd
 class IRender
 {
   public:
-    virtual bool                   Init(void)                                                                       = 0;
-    virtual void                   Shutdown(void)                                                                   = 0;
+    virtual bool                   Init(SDL_Window* window = nullptr)                                               = 0;
+    virtual void                   Shutdown(bool deleteWindow = true)                                               = 0;
     virtual int                    RegisterModel(HKD_Model* model)                                                  = 0;
     virtual int                    RegisterBrush(HKD_Model* model)                                                  = 0;
     virtual void                   RegisterFont(CFont* font)                                                        = 0;

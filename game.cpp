@@ -66,7 +66,9 @@ void Game::Init()
 
     IRender* renderer = GetRenderer();
     renderer->RegisterFont(m_ConsoleFont);
-    renderer->RegisterFont(m_ConsoleFont30);
+    // renderer->RegisterFont(m_ConsoleFont30);
+
+    m_LoadingScreen->Start(m_ConsoleFont30);
 
     // Load world triangles from Quake .MAP file
 
@@ -154,6 +156,8 @@ void Game::Init()
     //                       SDL_TRUE);
     SDL_SetWindowGrab(renderer->GetWindow(), SDL_TRUE);
     SDL_ShowCursor(SDL_DISABLE);
+
+    m_LoadingScreen->Stop();
 }
 
 static void DrawCoordinateSystem(IRender* renderer)
@@ -187,9 +191,6 @@ bool Game::RunFrame(double dt)
         m_pInterface->QuitGame();
     }
 
-    if (m_LoadingScreen->show(m_AccumTime, m_ConsoleFont30)) {
-        return true;
-    }
 
     // Toggle who should be controlled by the input system
     static IInputReceiver* receivers[ 2 ] = { m_pPlayerEntity, m_pFlyCameraEntity };
@@ -246,19 +247,19 @@ bool Game::RunFrame(double dt)
     // ImGUI stuff goes into GL default FBO
 
     // ImGui::ShowDemoWindow();
-    ImGui::Begin("DebugSettings");
+    // ImGui::Begin("DebugSettings");
     static int steering = 0;
-    ImGui::RadioButton("enemy::patrol", &steering, 0);
-    ImGui::RadioButton("enemy::wander", &steering, 1);
+    // ImGui::RadioButton("enemy::patrol", &steering, 0);
+    // ImGui::RadioButton("enemy::wander", &steering, 1);
     GetDebugSettings()->patrol = steering == 0;
     GetDebugSettings()->wander = steering == 1;
-    ImGui::End();
+    // ImGui::End();
 
-    ImGui::Begin("Statistics");
-    ImGui::Text("World Tri count: %d", m_World->StaticGeometryCount());
-    ImGui::Text("Brush Entity count: %d", m_World->GetModelPtrs().size());
-    ImGui::Text("Total Entity count: %d", EntityManager::Instance()->Entities().size());
-    ImGui::End();
+    // ImGui::Begin("Statistics");
+    // ImGui::Text("World Tri count: %d", m_World->StaticGeometryCount());
+    // ImGui::Text("Brush Entity count: %d", m_World->GetModelPtrs().size());
+    // ImGui::Text("Total Entity count: %d", EntityManager::Instance()->Entities().size());
+    // ImGui::End();
 
     // Main 3D: This is where all the 3D rendering happens (in its own FBO)
     {

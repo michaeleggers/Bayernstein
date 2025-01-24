@@ -143,18 +143,18 @@ static void EnableOpenGLDebugCallback()
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
 }
 
-void GLRender::Shutdown(void)
+void GLRender::Shutdown(bool deleteWindow = true)
 {
     // Deinit ImGui
 
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
+    // ImGui_ImplOpenGL3_Shutdown();
+    // ImGui_ImplSDL2_Shutdown();
+    // ImGui::DestroyContext();
 
     // Close and destroy the window
 
     SDL_GL_DeleteContext(m_SDL_GL_Conext);
-    SDL_DestroyWindow(m_Window);
+    if (deleteWindow) SDL_DestroyWindow(m_Window);
 
     m_ModelBatch->Kill();
     delete m_ModelBatch;
@@ -191,7 +191,7 @@ void GLRender::Shutdown(void)
     delete m_ConsoleFBO;
 }
 
-bool GLRender::Init(void)
+bool GLRender::Init(SDL_Window* window)
 {
     SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -203,7 +203,7 @@ bool GLRender::Init(void)
 */
 
     // Create an application window with the following settings:
-    m_Window = SDL_CreateWindow("HKD", 1, 1, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
+    m_Window = window != nullptr ? window : SDL_CreateWindow("HKD", 1, 1, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
 
     // BEWARE! These flags must be set AFTER SDL_CreateWindow. Otherwise SDL
     // just doesn't cate about them (at least on Linux)!
@@ -274,14 +274,14 @@ bool GLRender::Init(void)
 
     // Setup Imgui
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui_ImplSDL2_InitForOpenGL(m_Window, m_SDL_GL_Conext);
-    ImGui_ImplOpenGL3_Init("#version 330");
+    // ImGui_CHECKVERSION();
+    // ImGui::CreateContext();
+    // ImGui_ImplSDL2_InitForOpenGL(m_Window, m_SDL_GL_Conext);
+    // ImGui_ImplOpenGL3_Init("#version 330");
 
     // ImGui Config
 
-    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    // ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     // Some OpenGL global settings
     glEnable(GL_DEPTH_TEST);
@@ -708,17 +708,17 @@ void GLRender::RenderBegin(void)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
+    // ImGui_ImplOpenGL3_NewFrame();
+    // ImGui_ImplSDL2_NewFrame();
 
-    ImGui::NewFrame();
+    // ImGui::NewFrame();
 }
 
 void GLRender::Begin3D(void)
 {
-    ImGui::Begin("Render settings");
-    ImGui::Checkbox("wireframe", (bool*)&m_DrawWireframe);
-    ImGui::End();
+    // ImGui::Begin("Render settings");
+    // ImGui::Checkbox("wireframe", (bool*)&m_DrawWireframe);
+    // ImGui::End();
 
     if ( KeyWentDown(SDLK_r) )
     { // WARNING: TAB key also triggers slider-values in ImGui Window.
@@ -805,12 +805,12 @@ void GLRender::Render(
     Camera* camera, HKD_Model** models, uint32_t numModels, HKD_Model** brushModels, uint32_t numBrushModels)
 {
 
-    ImGui::Begin("Controlls");
-    ImGui::Text("Cam position:");
-    ImGui::SliderFloat("x", &camera->m_Pos.x, -500.0f, 500.0f);
-    ImGui::SliderFloat("y", &camera->m_Pos.y, -500.0f, 500.0f);
-    ImGui::SliderFloat("z", &camera->m_Pos.z, -500.0f, 500.0f);
-    ImGui::End();
+    // ImGui::Begin("Controlls");
+    // ImGui::Text("Cam position:");
+    // ImGui::SliderFloat("x", &camera->m_Pos.x, -500.0f, 500.0f);
+    // ImGui::SliderFloat("y", &camera->m_Pos.y, -500.0f, 500.0f);
+    // ImGui::SliderFloat("z", &camera->m_Pos.z, -500.0f, 500.0f);
+    // ImGui::End();
 
     glm::mat4 view = camera->ViewMatrix();
     // TODO: Global Setting for perspective values
@@ -1511,8 +1511,8 @@ void GLRender::RenderEnd(void)
     glActiveTexture(GL_TEXTURE0);
 
     // Render ImGui Elements ontop of everything.
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    // ImGui::Render();
+    // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     SDL_GL_SwapWindow(m_Window);
 

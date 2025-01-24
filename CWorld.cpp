@@ -27,6 +27,7 @@
 #include "r_draw.h"
 #include "utils/quick_math.h"
 #include "utils/utils.h"
+#include "LoadingScreen.h"
 
 extern std::string g_GameDir;
 
@@ -44,6 +45,8 @@ void CWorld::InitWorld(const std::string& mapName)
     IRender*       renderer         = GetRenderer();
 
     std::string exePath = hkd_GetExePath();
+
+    LoadingScreen::SetHint("Loading map...");
 
     std::string mapData     = loadTextFile(g_GameDir + "maps/" + mapName + ".map");
     MapVersion  mapVersion  = VALVE_220;
@@ -90,6 +93,7 @@ void CWorld::InitWorld(const std::string& mapName)
     // Load and create all the entities
     for ( int i = 0; i < map.entities.size(); i++ )
     {
+        LoadingScreen::SetHint(std::string("Setting up entities (") + std::to_string(i) + "/" + std::to_string(map.entities.size()) + ")...");
         const Entity& e = map.entities[ i ];
         // Check the classname
         for ( int j = 0; j < e.properties.size(); j++ )
