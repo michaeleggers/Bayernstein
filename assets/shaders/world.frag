@@ -64,17 +64,41 @@ void main() {
     }
 */
 
+    // Define the scaling factor and gamma used during PNG creation
+    const float scalingFactor = 2.296875;
+    const float decodeGamma = 3.0; // Gamma used for restoring HDR values
+    const float toneMappingGamma = 2.2; // Gamma for final output
+    const float exposure = 1000; // Fixed exposure value
+
     vec4 diffuseColor = texture( diffuseTexture, uv );
 
     vec4 lightmapColor = vec4(1.0f);
+    vec4 finalOutputColor = vec4( diffuseColor.rgb * lightmapColor.rgb, 1.0f );
+
+
     if ( ((shaderSettingBits & SHADER_USE_LIGHTMAP) == SHADER_USE_LIGHTMAP) ||
          ((shaderSettingBits & SHADER_LIGHTMAP_ONLY) == SHADER_LIGHTMAP_ONLY) ) 
     {
-        lightmapColor = texture( lightmapTexture, uvLightmap );
+        // Sample the lightmap texture
+        vec4 scaledLightmapColor = texture(lightmapTexture, uvLightmap);
+        vec3 normalizedLightmapColor = scaledLightmapColor.rgb;
+
+        // Reverse the gamma compression and restore the HDR values
+        vec3 hdrLightmapColor = pow(scaledLightmapColor.rgb, vec3(decodeGamma)) * scalingFactor;
+
+
+        // Apply the scaling factor to restore the original HDR lightmap range
+        lightmapColor.rgb = hdrLightmapColor;
+
+        vec3 combinedColor = diffuseColor.rgb * hdrLightmapColor;
+        // Apply exposure-based tone mapping
+        vec3 toneMappedColor = vec3(1.0) - exp(-combinedColor * exposure);
+
+        // Apply gamma correction for final output
+        toneMappedColor = pow(toneMappedColor, vec3(1.0 / toneMappingGamma));
+        finalOutputColor = vec4(toneMappedColor, 1.0);
     }
     
-    vec4 finalOutputColor = vec4( diffuseColor.rgb * lightmapColor.rgb, 1.0f );
-
     if ( (shaderSettingBits & SHADER_LIGHTMAP_ONLY) == SHADER_LIGHTMAP_ONLY ) {
         finalOutputColor = vec4(lightmapColor.rgb, 1.0f);
     }

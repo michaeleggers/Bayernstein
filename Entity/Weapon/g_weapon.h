@@ -65,7 +65,7 @@ class Weapon : public BaseGameEntity
     /** The maximum amount of damage the weapon can make. */
     double m_MaxDamage;
     /** The distance in meters below which each hit will be `m_MaxDamage`. */
-    float m_MinDamageDistance;
+    float m_FullDamageWithinRange;
     /** Determines how quickly the damage reduces with distance. */
     double m_DamageFalloff;
 

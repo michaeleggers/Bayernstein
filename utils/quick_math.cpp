@@ -80,8 +80,8 @@ Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
     Frustum frustum{};
     frustum.projDistance = g;
     frustum.aspectRatio  = s;
-    frustum.near         = n;
-    frustum.far          = f;
+    frustum.nearPlane    = n;
+    frustum.farPlane     = f;
 
     // Create vertices for near plane
     float z               = n / g;
@@ -128,6 +128,9 @@ Frustum BuildFrustum(const glm::mat4& Mcam, float g, float s, float n, float f)
 
 bool EllipsoidInFrustum(const Frustum& frustum, const EllipsoidCollider& ec)
 {
+    glm::vec3 scaleToESpace(ec.toESpace[ 0 ][ 0 ], ec.toESpace[ 1 ][ 1 ], ec.toESpace[ 2 ][ 2 ]);
+    glm::vec3 invESpace(1.0f / scaleToESpace);
+
     for ( int i = 0; i < 6; i++ )
     {
         const Plane& p = frustum.planes[ i ];
@@ -135,9 +138,12 @@ bool EllipsoidInFrustum(const Frustum& frustum, const EllipsoidCollider& ec)
         glm::vec3 n = glm::normalize(p.normal);
         glm::vec3 q = (p.d * p.normal); // point on plane
 
-        glm::vec3 nESpace = glm::normalize(glm::transpose(glm::inverse(ec.toESpace)) * n);
-        glm::vec3 qESpace = ec.toESpace * q;
-        glm::vec3 cESpace = ec.toESpace * ec.center;
+        // NOTE: we need the transpose of the inverse of the scaleToESpace but we know
+        // that the toESpace matrix does only contain scale (the main diagonal). So
+        // Transpose( invESpace ) == invESpace
+        glm::vec3 nESpace = glm::normalize(invESpace * n);
+        glm::vec3 qESpace = scaleToESpace * q;
+        glm::vec3 cESpace = scaleToESpace * ec.center;
         glm::vec3 qToC    = cESpace - qESpace;
 
         float sD = glm::dot(nESpace, qToC);
@@ -146,8 +152,6 @@ bool EllipsoidInFrustum(const Frustum& frustum, const EllipsoidCollider& ec)
             return false;
         }
     }
-
-    printf("Ellipsoid in frustum!\n");
 
     return true;
 }

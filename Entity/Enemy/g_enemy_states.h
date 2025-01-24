@@ -9,7 +9,8 @@
 class Enemy;
 class Telegram;
 
-class EnemyIdle : public State<Enemy> {
+class EnemyIdle : public State<Enemy>
+{
   private:
     EnemyIdle() = default;
     // copy ctor and assignment should be private
@@ -29,7 +30,8 @@ class EnemyIdle : public State<Enemy> {
     bool OnMessage(Enemy* agent, const Telegram& telegram) override;
 };
 
-class EnemyAttacking : public State<Enemy> {
+class EnemyAttacking : public State<Enemy>
+{
   private:
     EnemyAttacking() = default;
     // copy ctor and assignment should be private
@@ -49,7 +51,8 @@ class EnemyAttacking : public State<Enemy> {
     bool OnMessage(Enemy* agent, const Telegram& telegram) override;
 };
 
-class EnemyDead : public State<Enemy> {
+class EnemyDead : public State<Enemy>
+{
   private:
     EnemyDead() = default;
 
@@ -71,7 +74,8 @@ class EnemyDead : public State<Enemy> {
     bool OnMessage(Enemy* agent, const Telegram& telegram) override;
 };
 
-class EnemyWander : public State<Enemy> {
+class EnemyWander : public State<Enemy>
+{
   private:
     EnemyWander() = default;
 
@@ -93,7 +97,8 @@ class EnemyWander : public State<Enemy> {
     bool OnMessage(Enemy* agent, const Telegram& telegram) override;
 };
 
-class EnemyPatrol : public State<Enemy> {
+class EnemyPatrol : public State<Enemy>
+{
   private:
     EnemyPatrol() = default;
 
@@ -115,4 +120,26 @@ class EnemyPatrol : public State<Enemy> {
     bool OnMessage(Enemy* agent, const Telegram& telegram) override;
 };
 
+class EnemyFollow : public State<Enemy>
+{
+  private:
+    EnemyFollow() = default;
+
+    // copy ctor and assignment should be private
+    EnemyFollow(const EnemyFollow&);
+    EnemyFollow& operator=(const EnemyFollow&);
+
+  public:
+    // copy ctor and assignment should be private
+    // this is a singleton
+    static EnemyFollow* Instance();
+
+    void Enter(Enemy* pEnemy) override;
+
+    void Execute(Enemy* pEnemy) override;
+
+    void Exit(Enemy* pEnemy) override;
+
+    bool OnMessage(Enemy* agent, const Telegram& telegram) override;
+};
 #endif // ENEMYSTATES_H

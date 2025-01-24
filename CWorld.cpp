@@ -18,6 +18,7 @@
 #include "Audio/Audio.h"
 #include "Entity/FirstPersonPlayer/g_fp_player.h"
 #include "Entity/base_game_entity.h"
+#include "Message/g_extra_info_types.h"
 #include "Message/message_type.h"
 #include "hkd_interface.h"
 #include "irender.h"
@@ -79,7 +80,7 @@ void CWorld::InitWorld(const std::string& mapName)
         m_MapTris                        = CWorld::CreateMapTrisFromMapPolys(polysoup);
     }
 
-    m_StaticGeometryCount = m_MapTris.size();
+    m_StaticTriCount = m_MapTris.size();
 
     // Now initialize all the entities. Those also include brush
     // entities. Those entities store their own geometry as MapTris.
@@ -105,6 +106,7 @@ void CWorld::InitWorld(const std::string& mapName)
                     m_pBrushModels.push_back(model);
                     std::vector<MapTri>& mapTris = door->MapTris();
                     m_pBrushMapTris.push_back(&mapTris);
+                    m_BrushTriCount += mapTris.size();
                 }
                 else if ( prop.value == "info_player_start" )
                 {
@@ -135,6 +137,9 @@ void CWorld::InitWorld(const std::string& mapName)
             }
         }
     }
+
+    // Set the geometry cache for collision system
+    InitMapTrisCache(m_StaticTriCount + m_BrushTriCount);
 
     // NOTE: At the moment, maps without an 'info_player_start' are not allowed.
     // FIX: (Michael): I think it should be possible to not have a player?
@@ -218,6 +223,8 @@ void CWorld::InitWorld(const std::string& mapName)
                             pPathCopy->SetCurrentWaypoint(enemy->m_Target);
                             pPathCopy->SetNextWaypoint(point.target);
                             enemy->SetPatrolPath(pPathCopy);
+                            Dispatcher->DispatchMessage(
+                                SEND_MSG_IMMEDIATELY, enemy->ID(), enemy->ID(), message_type::SetPatrol, 0);
                         }
                     }
                 }
@@ -249,15 +256,24 @@ void CWorld::CollideEntitiesWithWorld()
 
             if ( (pEntity->Type() == ET_PLAYER) || (pEntity->Type() == ET_ENEMY) )
             {
-
+                // No collider no party!
                 EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
                 if ( ec == nullptr )
                 {
                     continue;
                 }
 
+
+
                 pEntity->m_PrevPosition = ec->center; //pEntity->m_Position;
                 //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
+                // Don't even bother checking for collision if the entity isn't even moving.
+                if ( glm::length2(pEntity->m_Velocity) <= (DOD_VERY_CLOSE_DIST * DOD_VERY_CLOSE_DIST)
+                     && pEntity->m_CollisionState == ES_ON_GROUND )
+                {
+                    continue;
+                }
+
                 CollisionInfo collisionInfo
                     = CollideEllipsoidWithMapTris(*ec,
                                                   (float)DOD_FIXED_UPDATE_TIME / 1000.0f * pEntity->m_Velocity,
@@ -351,7 +367,6 @@ void CWorld::CollideEntitiesWithWorld()
 // the first entity from the outer loop is the one who 'pushes'.
 void CWorld::CollideEntities()
 {
-
     std::vector<BaseGameEntity*> entities = EntityManager::Instance()->Entities();
     double                       dt       = GetDeltaTime();
 
@@ -370,32 +385,60 @@ void CWorld::CollideEntities()
         {
 
             BaseGameEntity* pOther = entities[ j ];
+
             if ( pOther->ID() == pEntity->ID() )
             { // Don't collide with itself.
                 continue;
             }
 
-            if ( pOther->Type() == ET_DOOR )
+            EllipsoidCollider* ec = pEntity->GetEllipsoidColliderPtr();
+            if ( ec == nullptr ) // we nned an ellipsoid collider to collide with something
             {
-                Door*              pDoor = (Door*)pOther;
-                EllipsoidCollider* ec    = pEntity->GetEllipsoidColliderPtr();
+                continue;
+            }
 
-                if ( ec == nullptr )
+            CollisionInfo ci{};
+
+            if ( pOther->Type() == ET_DOOR ) // Brush entities. TODO: Generalize EntityTypes!
+            {
+                Door* pDoor = (Door*)pOther;
+
+                ci = PushTouch(*ec,
+                               (float)DOD_FIXED_UPDATE_TIME / 1000.0f * pEntity->m_Velocity,
+                               pDoor->MapTris().data(),
+                               pDoor->MapTris().size());
+            }
+            else // Point entities
+            {
+                EllipsoidCollider* pOtherEC = pOther->GetEllipsoidColliderPtr();
+                if ( pOtherEC == nullptr )
                 {
                     continue;
                 }
 
-                CollisionInfo ci = PushTouch(*ec,
-                                             (float)DOD_FIXED_UPDATE_TIME / 1000.0f * pEntity->m_Velocity,
-                                             pDoor->MapTris().data(),
-                                             pDoor->MapTris().size());
+                // TODO: This does *NOT* perform a proper continuous collision detection!
+                // Implement Ellipsoid Vs Ellipsoid CCD in collision.cpp.
+                float     otherRadius = pOther->GetEllipsoidColliderPtr()->radiusA;
+                float     selfRadius  = pEntity->GetEllipsoidColliderPtr()->radiusA;
+                glm::vec3 otherCenter = pOther->GetEllipsoidColliderPtr()->center;
+                glm::vec3 selfCenter  = pEntity->GetEllipsoidColliderPtr()->center;
 
-                if ( ci.didCollide )
+                glm::vec3 selfToTarget = otherCenter - selfCenter;
+                float     distance     = glm::length(selfToTarget);
+                float     bias = distance * 0.5f; // TODO: This should not be here but in gameplay defined logic.
+                if ( (distance - bias) < (otherRadius + selfRadius) )
                 {
-                    printf("COLLIDED!\n");
-                    Dispatcher->DispatchMessage(
-                        SEND_MSG_IMMEDIATELY, pEntity->ID(), pDoor->ID(), message_type::Collision, 0);
+                    ci.didCollide = true;
                 }
+            }
+
+            if ( ci.didCollide )
+            {
+                // Notify each other about the collision
+                Dispatcher->DispatchMessage(
+                    SEND_MSG_IMMEDIATELY, pEntity->ID(), pOther->ID(), message_type::Collision, 0);
+                Dispatcher->DispatchMessage(
+                    SEND_MSG_IMMEDIATELY, pOther->ID(), pEntity->ID(), message_type::Collision, 0);
             }
         }
     }
@@ -424,6 +467,12 @@ void CWorld::RunEnemyVision()
                     continue;
                 }
 
+                if ( pOther->Type() != ET_PLAYER )
+                {
+                    // Don't care for entities other than the player
+                    continue;
+                }
+
                 EllipsoidCollider* ec = pOther->GetEllipsoidColliderPtr();
                 if ( ec == nullptr )
                 {
@@ -439,12 +488,14 @@ void CWorld::RunEnemyVision()
                 math::Frustum frustumWorld = math::BuildFrustum(
                     enemyTransform, pEnemy->m_ProjDistance, pEnemy->m_AspectRatio, pEnemy->m_Near, pEnemy->m_Far);
 
-                r_DrawFrustum(frustumWorld);
+                // FIX: Expensive as the implementation is just garbage (by Michael, sorry).
+                //r_DrawFrustum(frustumWorld);
 
                 if ( math::EllipsoidInFrustum(frustumWorld, *ec) )
                 {
-                    //Dispatcher->DispatchMessage(
-                    //    SEND_MSG_IMMEDIATELY, pEnemy->ID(), pEnemy->ID(), message_type::Collision, 0);
+                    InViewInfo inViewInfo = { pOther };
+                    Dispatcher->DispatchMessage(
+                        SEND_MSG_IMMEDIATELY, pEnemy->ID(), pEnemy->ID(), message_type::EntityInView, &inViewInfo);
                 }
             }
         }

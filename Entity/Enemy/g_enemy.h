@@ -77,6 +77,11 @@ class Enemy : public MovingEntity
         m_pSteeringBehaviour->SetFollowPath(m_pPath);
     }
 
+    void SetTarget(BaseGameEntity* pEntity)
+    {
+        m_pTargetEntity = pEntity;
+    }
+
   public:
     bool DecreaseHealth(double amount)
     {
@@ -95,6 +100,14 @@ class Enemy : public MovingEntity
     float m_Near;
     float m_Far;
 
+    // FIX: Those should be components for next milestone.
+    HKD_Model   m_Model;
+    PatrolPath* m_pPath;
+
+    BaseGameEntity* m_pTargetEntity;
+
+    AnimState m_AnimationState;
+
     SoLoud::AudioSource* m_SfxHit;
     SoLoud::AudioSource* m_SfxDeath;
 
@@ -105,13 +118,7 @@ class Enemy : public MovingEntity
     SoLoud::AudioSource* m_SfxFootsteps;
     SoLoud::handle       m_FootstepsHandle = 0;
 
-    // FIX: Those should be components for next milestone.
-    HKD_Model   m_Model;
-    PatrolPath* m_pPath;
-
   private:
-    AnimState m_AnimationState;
-
     void LoadModel(const char* path, glm::vec3 initialPosition);
     void UpdateEnemyModel();
 };

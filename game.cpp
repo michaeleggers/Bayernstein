@@ -74,7 +74,7 @@ void Game::Init()
 
     // Load lightmap triangles and lightmap texture
 
-    m_World->InitWorld("arena");
+    m_World->InitWorld("Milestone4");
     m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.
@@ -240,12 +240,22 @@ bool Game::RunFrame(double dt)
     // ImGUI stuff goes into GL default FBO
 
     // ImGui::ShowDemoWindow();
+    static bool enableDebugSettings = false;
+    static int  steering            = 0;
     ImGui::Begin("DebugSettings");
-    static int steering = 0;
-    ImGui::RadioButton("enemy::patrol", &steering, 0);
-    ImGui::RadioButton("enemy::wander", &steering, 1);
-    GetDebugSettings()->patrol = steering == 0;
-    GetDebugSettings()->wander = steering == 1;
+    ImGui::Checkbox("Enable debug settings", (bool*)&enableDebugSettings);
+    if ( enableDebugSettings )
+    {
+        ImGui::RadioButton("enemy::patrol", &steering, 0);
+        ImGui::RadioButton("enemy::wander", &steering, 1);
+        GetDebugSettings()->patrol = steering == 0;
+        GetDebugSettings()->wander = steering == 1;
+    }
+    else
+    {
+        GetDebugSettings()->patrol = false;
+        GetDebugSettings()->wander = false;
+    }
     ImGui::End();
 
     ImGui::Begin("Statistics");
@@ -318,6 +328,7 @@ bool Game::RunFrame(double dt)
         renderer->ImDrawSphere(collisionInfo.hitPoint, 5.0f);
 #endif
 
+#if 0
         // Draw colliders of enemies and trace ray against them from the
         // player's camera position. Just for testing purposes. Not final.
         // FIX: Remove later. Ugly.
@@ -345,6 +356,7 @@ bool Game::RunFrame(double dt)
                 renderer->RenderColliders(renderCam, &pModel, 1);
             }
         }
+#endif
 
         renderer->End3D();
     } // End3D scope
@@ -385,8 +397,6 @@ bool Game::RunFrame(double dt)
 
     renderer->Begin2D();
 
-    renderer->SetFont(m_ConsoleFont, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
-    renderer->R_DrawText("Sprite Test", 0.5f, 0.0f, COORD_MODE_REL);
     glm::vec2 windowDimensions = renderer->GetWindowDimensions();
     glm::vec2 relSpriteSize    = m_CrosshairSprite.size / windowDimensions;
     float     crosshairScale   = 0.25f;
@@ -394,13 +404,12 @@ bool Game::RunFrame(double dt)
                          glm::vec2(0.5f) - relSpriteSize * crosshairScale / 2.0f,
                          glm::vec2(crosshairScale),
                          COORD_MODE_REL);
-    renderer->DrawSprite(&m_BoltSprite, glm::vec2(0.0f), glm::vec2(2.0f), COORD_MODE_REL);
 
     // render weapon info
-    Weapon* weapon = m_pPlayerEntity->GetWeapon();
-    Sprite icon = weapon->GetHUDSprite();
-    int remainingRounds = weapon->GetRemainingRounds();
-    glm::vec2 pos = windowDimensions - icon.size - glm::vec2(icon.size.x + 10.0f, 10.0f);
+    Weapon*   weapon          = m_pPlayerEntity->GetWeapon();
+    Sprite    icon            = weapon->GetHUDSprite();
+    int       remainingRounds = weapon->GetRemainingRounds();
+    glm::vec2 pos             = windowDimensions - icon.size - glm::vec2(icon.size.x + 10.0f, 10.0f);
     renderer->SetFont(m_ConsoleFont);
     renderer->R_DrawText(std::to_string(remainingRounds), pos.x + icon.size.x + 10.0f, pos.y + 8.0f, COORD_MODE_ABS);
     renderer->DrawSprite(&icon, pos, glm::vec2(1.0f), COORD_MODE_ABS);

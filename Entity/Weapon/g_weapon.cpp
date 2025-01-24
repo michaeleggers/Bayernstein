@@ -28,13 +28,13 @@ Weapon::Weapon(const std::vector<Property>& properties)
         = Audio::LoadSource("sfx/TriuneFilms/Hollywood_Guns_SFX/mossberg590-12gauge-single-shot-processed-C.wav", 0.5f);
     m_SfxReload = Audio::LoadSource("sfx/TriuneFilms/Gun_Foley_SFX/mossberg590-shotgun-foley-charge-5.wav", 0.5f);
 
-    m_MagSize         = 2;
-    m_FireRate        = 800.0;
-    m_ReloadTime      = 800.0;
-    m_RoundsRemaining = m_MagSize;
-    m_MaxDamage = 30.0;
-    m_MinDamageDistance = 15.0f;
-    m_DamageFalloff = 0.5;
+    m_MagSize               = 2;
+    m_FireRate              = 800.0;
+    m_ReloadTime            = 800.0;
+    m_RoundsRemaining       = m_MagSize;
+    m_MaxDamage             = 100.0;
+    m_FullDamageWithinRange = 130.0f;
+    m_DamageFalloff         = 0.6f;
 }
 
 void Weapon::UpdatePosition(glm::vec3 newPosition)
@@ -116,7 +116,7 @@ bool Weapon::Fire()
 
 double Weapon::GetDamage(float distance) const
 {
-    float minDistance = m_MinDamageDistance * DOD_COORD_UNIT_FACTOR;
+    float minDistance = m_FullDamageWithinRange;
     return m_MaxDamage * std::clamp(std::pow(distance / minDistance, -m_DamageFalloff), 0.0, 1.0);
 }
 

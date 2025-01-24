@@ -174,20 +174,21 @@ struct Plane
 
     Plane() = default;
 
-    Plane(glm::vec3 n, float distance)
+    Plane(const glm::vec3& n, const float& distance)
     {
         normal = glm::normalize(n);
         d      = distance;
         p      = distance * n;
     }
 
-    Plane(float x, float y, float z, float w)
+    Plane(const float& x, const float& y, const float& z, const float& w)
     {
         normal = glm::normalize(glm::vec3(x, y, z));
         d      = w;
+        p      = d * normal;
     }
 
-    Plane(glm::vec4 hPlane)
+    Plane(const glm::vec4& hPlane)
     {
         normal = glm::vec3(hPlane.x, hPlane.y, hPlane.z);
         d      = hPlane.w;
@@ -323,7 +324,7 @@ Ellipsoid     CreateEllipsoidFromAABB(glm::vec3 mins, glm::vec3 maxs);
 MeshEllipsoid CreateUnitEllipsoid(uint32_t numSubdivs);
 void          TransformEllipsoid(Ellipsoid* ellipsoid, glm::mat4 modelMatrix);
 NBox          CreateNBox(glm::vec3 scale, uint32_t numSubdivs);
-Plane         CreatePlaneFromTri(Tri tri);
+void          CreatePlaneFromTri(Plane* plane, Tri tri);
 Sprite        CreateSprite(const std::string& textureFilename,
                            const glm::vec2&   topLeft,    // top left of texture in pixel coordinates
                            const glm::vec2&   bottomRight); // bottom right of texture in pixel coordinates

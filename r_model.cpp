@@ -244,18 +244,43 @@ static glm::mat4 PoseToMatrix(Pose pose)
     return tMat * rMat * sMat;
 }
 
-static glm::mat4 InterpolatePoses(Pose a, Pose b, float pct)
+static void InterpolatePoses(glm::mat4* out_pPoseMat, const Pose& a, const Pose& b, const float& pct)
 {
+    // NOTE(Michael): I keep the old version, because it is *guaranteed* to work.
+    // But I try to shuffle code around a bit to not make the compiler too
+    // unhappy in debug builds...
+
+    /********************/
+    /* Original version */
+    /********************/
+
+    //glm::vec3 interpTrans = (1.0f - pct) * a.translations + pct * b.translations;
+    //glm::mat4 transMat    = glm::translate(glm::mat4(1.0f), interpTrans);
+
+    //glm::vec3 interpScale = (1.0f - pct) * a.scale + pct * b.scale;
+    //glm::mat4 scaleMat    = glm::scale(glm::mat4(1.0f), interpScale);
+
+    //glm::quat interpRot = glm::slerp(a.rotation, b.rotation, pct);
+    //glm::mat4 rotMat    = glm::toMat4(interpRot);
+
+    //*out_pPoseMat = transMat * rotMat * scaleMat;
+
+
+    /********************/
+    /* Optimized version */
+    /********************/
+
     glm::vec3 interpTrans = (1.0f - pct) * a.translations + pct * b.translations;
-    glm::mat4 transMat    = glm::translate(glm::mat4(1.0f), interpTrans);
+    //glm::mat4 transMat    = glm::translate(glm::mat4(1.0f), interpTrans);
 
     glm::vec3 interpScale = (1.0f - pct) * a.scale + pct * b.scale;
-    glm::mat4 scaleMat    = glm::scale(glm::mat4(1.0f), interpScale);
+    //glm::mat4 scaleMat    = glm::scale(glm::mat4(1.0f), interpScale);
 
     glm::quat interpRot = glm::slerp(a.rotation, b.rotation, pct);
     glm::mat4 rotMat    = glm::toMat4(interpRot);
 
-    return transMat * rotMat * scaleMat;
+    *out_pPoseMat
+        = glm::translate(glm::mat4(1.0f), interpTrans) * rotMat * glm::scale(glm::mat4(1.0f), interpScale);
 }
 
 void UpdateModel(HKD_Model* model, float dt)
@@ -297,19 +322,30 @@ void UpdateModel(HKD_Model* model, float dt)
 
         // For now, we just cylce through all animations. If the current animations has reached its
         // end, we jump to the next animation.
-
+        bool animationDone = false;
         if ( currentFrame >= anim.firstFrame + anim.numFrames - 1 )
         {
+            animationDone = true;
             //model->currentAnimIdx = (model->currentAnimIdx + 1) % model->animations.size();
             anim         = model->animations[ model->currentAnimIdx ];
             currentFrame = anim.firstFrame;
         }
-        model->currentFrame = currentFrame;
-        uint32_t nextFrame  = (currentFrame + 1) % (anim.firstFrame + anim.numFrames);
+        uint32_t nextFrame = (currentFrame + 1) % (anim.firstFrame + anim.numFrames);
         if ( nextFrame < anim.firstFrame )
         {
             nextFrame = anim.firstFrame;
         }
+
+        // Check if this animation has looping turned off and the animation
+        // has already played once. If so, repeat the last frame of
+        // the animation forever...
+        if ( animationDone && !anim.loop )
+        {
+            currentFrame = anim.firstFrame + anim.numFrames - 1;
+            nextFrame = currentFrame;
+        }
+        
+        model->currentFrame = currentFrame;
 
         //printf("currentFrame: %d\n", currentFrame);
 
@@ -321,8 +357,8 @@ void UpdateModel(HKD_Model* model, float dt)
         {
             Pose      currentPoseTransform = model->poses[ currentFrame * model->numJoints + i ];
             Pose      nextPoseTransform    = model->poses[ nextFrame * model->numJoints + i ];
-            glm::mat4 poseMat
-                = InterpolatePoses(currentPoseTransform, nextPoseTransform, model->pctFrameDone / msPerFrame);
+            glm::mat4 poseMat{};
+            InterpolatePoses(&poseMat, currentPoseTransform, nextPoseTransform, model->pctFrameDone / msPerFrame);
             if ( currentPoseTransform.parent >= 0 )
             {
                 model->palette[ i ] = model->palette[ currentPoseTransform.parent ] * poseMat;

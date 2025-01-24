@@ -1,4 +1,4 @@
-//
+//enem
 // Created by benek on 10/14/24.
 //
 
@@ -33,8 +33,11 @@ Enemy::Enemy(const std::vector<Property>& properties)
     BaseGameEntity::GetProperty<glm::vec3>(properties, "origin", &m_Position);
     // FIX: Mem Leak on exit if target is not being set.
     BaseGameEntity::GetProperty<std::string>(properties, "target", &m_Target);
+    int angle = 0;
+    BaseGameEntity::GetProperty<int>(properties, "angle", &angle);
 
-    LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
+    //LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
+    LoadModel("models/mayan_undead_warrior/mayan_undead_warrior_final.iqm", m_Position);
     m_Model.pOwner       = this;
     m_Velocity           = glm::vec3(0.0f, 0.0f, 0.0f);
     m_PrevPosition       = GetEllipsoidColliderPtr()->center;
@@ -49,7 +52,9 @@ Enemy::Enemy(const std::vector<Property>& properties)
     m_Near         = 0.1f;
     m_Far          = 500.0f;
 
-    m_Orientation = glm::angleAxis(glm::radians(80.0f), DOD_WORLD_UP);
+    // Set initial orientation in the world
+    // HACK: -90 degrees because some mismatch between quake editor and stuff...
+    m_Orientation = glm::angleAxis(glm::radians((float)angle - 90.0f), DOD_WORLD_UP);
     m_Forward     = glm::rotate(m_Orientation, DOD_WORLD_FORWARD);
 
     m_SfxFootsteps
@@ -60,17 +65,21 @@ Enemy::Enemy(const std::vector<Property>& properties)
 
 void Enemy::PreCollisionUpdate()
 {
-
     float     dt           = (float)GetDeltaTime();
     glm::vec3 force        = m_pSteeringBehaviour->Calculate();
     glm::vec3 acceleration = force / m_Mass;
+
+    // NOTE: There is no dynamic movement happening as it didn't
+    // play nicely with slopes and it was hard to control
+    // the speed behaviour.
+    //
     //update velocity
-    //m_Velocity += acceleration * 1000.0f;
-    m_Velocity += acceleration * dt / 1000.0f;
-    m_Velocity = math::TruncateVec3(m_Velocity, m_MaxSpeed);
+    //m_Velocity += acceleration;
+    //m_Velocity = math::TruncateVec3(m_Velocity, m_MaxSpeed);
+
+    m_Velocity = force;
     if ( Speed() > 0.001 )
     {
-
         // Calculate the new forward direction
         glm::vec3 newForward = glm::normalize(m_Velocity);
 
@@ -98,19 +107,20 @@ void Enemy::PreCollisionUpdate()
 
     if ( Speed() >= 0.00001f )
     {
-        m_AnimationState = ANIM_STATE_WALK;
+        //m_AnimationState = ANIM_STATE_WALK;
         Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.6f);
         Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume * 0.4f);
-    }
-    else if ( Speed() > m_MaxSpeed * 0.5f )
-    { // FIXME: will this condition ever happen
-        m_AnimationState = ANIM_STATE_RUN;
-        Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle, 0.9f); // adjust sample speed to better match animation
-        Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume);
+        if ( Speed() > m_MaxSpeed * 0.5f )
+        { // FIXME: will this condition ever happen
+            //m_AnimationState = ANIM_STATE_RUN;
+            Audio::m_Soloud.setRelativePlaySpeed(m_FootstepsHandle,
+                                                 0.9f); // adjust sample speed to better match animation
+            Audio::m_Soloud.setVolume(m_FootstepsHandle, m_SfxFootsteps->mVolume);
+        }
     }
     else
     {
-        m_AnimationState = ANIM_STATE_IDLE;
+        //m_AnimationState = ANIM_STATE_IDLE;
         Audio::m_Soloud.stop(m_FootstepsHandle);
     }
 }
@@ -122,6 +132,7 @@ void Enemy::PostCollisionUpdate()
     SetAnimState(&m_Model, m_AnimationState);
     UpdateModel(&m_Model, (float)dt);
 
+    /*
     if ( GetDebugSettings()->patrol )
     {
         if ( m_pPath != nullptr && !m_Target.empty() )
@@ -137,6 +148,7 @@ void Enemy::PostCollisionUpdate()
     {
         this->Idle();
     }
+    */
 }
 
 void Enemy::LoadModel(const char* path, glm::vec3 initialPosition)
@@ -148,7 +160,7 @@ void Enemy::LoadModel(const char* path, glm::vec3 initialPosition)
     m_Model             = CreateModelFromIQM(&iqmModel);
     m_Model.isRigidBody = false;
     m_Model.renderFlags = MODEL_RENDER_FLAG_NONE;
-    m_Model.scale       = glm::vec3(22.0f);
+    m_Model.scale       = glm::vec3(1.0f);
 
     for ( int i = 0; i < m_Model.animations.size(); i++ )
     {

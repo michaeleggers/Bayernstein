@@ -11,8 +11,8 @@ struct Frustum
 {
     float projDistance;
     float aspectRatio;
-    float near;
-    float far;
+    float nearPlane;
+    float farPlane;
 
     Plane  planes[ 6 ];
     Vertex vertices[ 8 ];

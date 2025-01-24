@@ -33,7 +33,7 @@ FirstPersonPlayer::FirstPersonPlayer(const std::vector<Property>& properties)
     m_pStateMachine = new StateMachine(this);
     m_pStateMachine->SetCurrentState(FirstPersonPlayerIdle::Instance());
     BaseGameEntity::GetProperty<glm::vec3>(properties, "origin", &m_Position);
-    LoadModel("models/multiple_anims/multiple_anims.iqm", m_Position);
+    LoadModel("models/mayan_undead_warrior/mayan_undead_warrior.iqm", m_Position);
     m_PrevPosition = m_Position;
     //m_PrevPosition.z += GetEllipsoidColliderPtr()->radiusB;
     m_Camera = Camera(m_Position);
@@ -41,7 +41,7 @@ FirstPersonPlayer::FirstPersonPlayer(const std::vector<Property>& properties)
     m_PrevCollisionState = ES_UNDEFINED;
     m_Momentum           = glm::vec3(0.0f);
 
-    m_SfxJump    = Audio::LoadSource("sfx/jump_01.wav", 0.5f);
+    m_SfxJump = Audio::LoadSource("sfx/jump_01.wav", 0.5f);
     m_SfxFootsteps
         = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
 
@@ -191,7 +191,7 @@ void FirstPersonPlayer::PostCollisionUpdate()
     //m_Position = m_Model.position;
     m_Camera.m_Pos = m_Position;
     // Adjust the camera so it is roughly at the top of the model's head.
-    m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, GetEllipsoidColliderPtr()->radiusB);
+    m_Camera.m_Pos += glm::vec3(0.0f, 0.0f, GetEllipsoidColliderPtr()->radiusB) - glm::vec3(0.0f, 0.0f, 15.0f);
     //m_Camera.Pan( -100.0f * m_Camera.m_Forward );
 
     // Adjust the Weapon model
@@ -219,7 +219,7 @@ void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition)
     m_Model.pOwner = this;
     m_Model.renderFlags |= MODEL_RENDER_FLAG_IGNORE;
     m_Model.isRigidBody = false;
-    m_Model.scale       = glm::vec3(30.0f);
+    m_Model.scale       = glm::vec3(1.0f);
 
     for ( int i = 0; i < m_Model.animations.size(); i++ )
     {
@@ -385,7 +385,6 @@ void FirstPersonPlayer::UpdatePlayerModel()
         Audio::m_Soloud.stop(m_FootstepsHandle);
     }
 
-
     bool fireRequested = fire == ButtonState::WENT_DOWN || fire == ButtonState::PRESSED;
     if ( fireRequested && m_Weapon->Fire() )
     {
@@ -405,12 +404,9 @@ void FirstPersonPlayer::UpdatePlayerModel()
                 ec.center += enemyPos;
                 if ( TraceRayAgainstEllipsoid(m_Camera.m_Pos, m_Camera.m_Forward, *pEC) )
                 {
-                    double* damage = new double(m_Weapon->GetDamage(glm::distance(enemyPos, m_Position)));
-                    if ( *damage > 1.0 ) // TODO: does that threshold make any sense?
-                    {
-                        Dispatcher->DispatchMessage(400.0, ID(), pEnemy->ID(), message_type::RayHit, damage);
-                        // ^^ delayed message to better separate sfx
-                    }
+                    double damage = m_Weapon->GetDamage(glm::distance(enemyPos, m_Position));
+                    Dispatcher->DispatchMessage(
+                        SEND_MSG_IMMEDIATELY, ID(), pEnemy->ID(), message_type::RayHit, &damage);
                 }
             }
         }

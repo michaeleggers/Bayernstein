@@ -8,7 +8,15 @@
 #include <math.h>
 #include <stdio.h>
 
-struct Telegram {
+#define MAX_CHARS_EXTRA_INFO 256
+
+struct ExtraInfoString
+{
+    char str[ MAX_CHARS_EXTRA_INFO ];
+};
+
+struct Telegram
+{
     // messages can be dispatched immediately or delayed for a specified amount
     // of time. If a delay is necessary this field is stamped with the time
     // the message should be dispatched.
@@ -32,16 +40,21 @@ struct Telegram {
           Sender(-1),
           Receiver(-1),
           Message(-1),
-          ExtraInfo(nullptr) {}
+          ExtraInfo(nullptr)
+    {
+    }
 
     Telegram(const double time, const int sender, const int receiver, const int msg, void* info = nullptr)
         : DispatchTime(time),
           Sender(sender),
           Receiver(receiver),
           Message(msg),
-          ExtraInfo(info) {}
+          ExtraInfo(info)
+    {
+    }
 
-    [[nodiscard]] char c_str() const {
+    [[nodiscard]] char c_str() const
+    {
         char buffer[ 100 ];
         sprintf(buffer,
                 "telegram = time: %f, Sender: %i, Receiver %i, Message: %i",
@@ -60,24 +73,29 @@ struct Telegram {
 // This is to prevent flooding an agent with identical messages.
 const double SmallestDelayInMS = 250;
 
-inline bool operator==(const Telegram& t1, const Telegram& t2) {
+inline bool operator==(const Telegram& t1, const Telegram& t2)
+{
     return (fabs(t1.DispatchTime - t2.DispatchTime) < SmallestDelayInMS) && (t1.Sender == t2.Sender)
            && (t1.Receiver == t2.Receiver) && (t1.Message == t2.Message);
 }
 
-inline bool operator<(const Telegram& t1, const Telegram& t2) {
-    if ( t1 == t2 ) {
+inline bool operator<(const Telegram& t1, const Telegram& t2)
+{
+    if ( t1 == t2 )
+    {
         return false;
     }
 
-    else {
+    else
+    {
         return (t1.DispatchTime < t2.DispatchTime);
     }
 }
 
 // handy helper function for dereferencing the ExtraInfo field of the Telegram
 // to the required type.
-template <class T> inline T DereferenceToType(void* p) {
+template <class T> inline T DereferenceToType(void* p)
+{
     return *(T*)(p);
 }
 

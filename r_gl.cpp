@@ -259,7 +259,7 @@ bool GLRender::Init(void)
     SDL_ShowWindow(m_Window);
 
     // GL Vsync on
-    if ( SDL_GL_SetSwapInterval(1) != 0 )
+    if ( SDL_GL_SetSwapInterval(0) != 0 )
     {
         SDL_Log("Failed to enable vsync!\n");
     }
@@ -304,15 +304,15 @@ bool GLRender::Init(void)
     // With sizeof(Vertex) = 92bytes => sizeof(Tri) = 276bytes we need ~ 263MB for Models.
     // A lot for a game in the 2000s! Our models have a tri count of maybe 3000 Tris (without weapon), which
     // is not even close to 1Mio tris.
-    m_ModelBatch = new GLBatch(500 * 1000);
+    m_ModelBatch = new GLBatch(10 * 1000 * 1000);
 
     // Batches but for different purposes
-    m_ImPrimitiveBatch        = new GLBatch(1000);
+    m_ImPrimitiveBatch        = new GLBatch(1000 * 1000);
     m_ImPrimitiveBatchIndexed = new GLBatch(1000, 1000);
     m_ColliderBatch           = new GLBatch(10000);
     m_FontBatch               = new GLBatch(1000, 1000);
     m_ShapesBatch             = new GLBatch(1000, 1000);
-    m_WorldBatch              = new GLBatch(100000);
+    m_WorldBatch              = new GLBatch(1000 * 1000);
     m_BrushBatch              = new GLBatch(50000);
 
     // Initialize shaders
@@ -462,7 +462,7 @@ void GLRender::RegisterColliderModels()
 {
     // Generate vertices for a circle. Used for ellipsoid colliders.
 
-    MeshEllipsoid unitEllipsoid = CreateUnitEllipsoid(3); // FIX: Broken for values other than 1 and 2!
+    MeshEllipsoid unitEllipsoid = CreateUnitEllipsoid(1); // FIX: Broken for values other than 1 and 2!
 
     m_EllipsoidColliderDrawCmd = AddTrisToBatch(
         m_ColliderBatch, unitEllipsoid.tris.data(), unitEllipsoid.tris.size(), false, DRAW_MODE_WIREFRAME);
@@ -1118,10 +1118,12 @@ void GLRender::DrawSprite(const Sprite*        sprite,
         = { glm::vec2(posX, posY), sprite->size, scale, sprite->uvTopLeft, sprite->uvBottomRight };
     glBindBuffer(GL_UNIFORM_BUFFER, m_SpriteShader->m_SpriteUBO);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(SpriteUB), (void*)&spriteShaderData);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, (GLuint)sprite->hTexture);
+    m_FontBatch->Bind(); // HACK: OpenGL needs *some* buffer to be bound even if not used!
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    m_FontBatch->Unbind();
 }
 
 void GLRender::SetFont(CFont* font, glm::vec4 color)

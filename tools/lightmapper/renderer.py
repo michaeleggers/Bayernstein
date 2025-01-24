@@ -34,6 +34,8 @@ class Renderer:
         self.scene = scene
         self.lightmap_mode = lightmap_mode
 
+        self.show_lm = True
+
         fov = 90 # FOV must be 90 for the lightmap generation in order for the hemisphere to be projected correctly onto the hemicubes
 
         # This will be the factor by which the lightmaps energy will be multiplied to achieve the final emissive color
@@ -253,6 +255,7 @@ class Renderer:
         self.viewMatrixLocation = glGetUniformLocation(self.shader, "view")
         self.projectionMatrixLocation = glGetUniformLocation(self.shader, "projection")
         self.exposureLocation = glGetUniformLocation(self.shader, "exposure")
+        self.showLmLocation = glGetUniformLocation(self.shader, "useLightmap")
 
         glUniformMatrix4fv(self.projectionMatrixLocation, 1, GL_FALSE, projection)
         glUniform1f(self.exposureLocation, self.emission_strength)
@@ -308,7 +311,7 @@ class Renderer:
         
         for position, direction, camera_up in zip(positions, directions, camera_ups):
             # Update only the view matrix for each frame
-            self.update_view_matrix(position.to_array(), direction, camera_up)
+            self.update_view_matrix(position, direction, camera_up)
             self.render_scene()
 
             # Read pixels
@@ -375,6 +378,8 @@ class Renderer:
         glBindTexture(GL_TEXTURE_2D, self.lightmap_texture_id)
         glUniform1i(glGetUniformLocation(self.shader, "lightmapTexture"), 1)  # Lightmap bound to unit 1
 
+        glUniform1i(self.showLmLocation, int(self.show_lm))
+
         # Prepare to draw the geometry
         glBindVertexArray(self.vao)
         glDrawArrays(GL_TRIANGLES, 0, len(self.scene.vertex_array) // 3)
@@ -429,6 +434,19 @@ class Renderer:
         if glfw.get_key(self.window, glfw.KEY_K) == glfw.PRESS:
             self.emission_strength += 1
         self.emission_strength = max(1, min(self.emission_strength, 1000))
+
+        # Add this to the __init__ method
+        self.l_key_previous_state = glfw.RELEASE  # Track the L key's state
+
+        # Replace the current L key handling in _process_input with this:
+        current_state = glfw.get_key(self.window, glfw.KEY_L)
+
+        if current_state == glfw.PRESS and self.l_key_previous_state == glfw.RELEASE:
+            # Toggle the value only on key press down
+            self.show_lm = not self.show_lm
+
+        # Update the previous state to the current state
+        self.l_key_previous_state = current_state
 
     def _update_camera_vectors(self) -> None:
         # Calculate new front vector based on yaw and pitch
