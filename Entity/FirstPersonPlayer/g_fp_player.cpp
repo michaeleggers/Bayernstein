@@ -148,18 +148,18 @@ void FirstPersonPlayer::PostCollisionUpdate()
 
     double dt = GetDeltaTime();
 
-    ImGui::Begin("FPS Player Info");
+    // ImGui::Begin("FPS Player Info");
     if ( m_CollisionState == ES_IN_AIR )
     {
-        ImGui::Text("flying!\n");
+        // ImGui::Text("flying!\n");
     }
     else
     {
-        ImGui::Text("on ground!\n");
+        // ImGui::Text("on ground!\n");
     }
-    ImGui::Text("m_Velocity.z: %f", m_Velocity.z);
-    ImGui::Text("m_Momentum.xyz: %f, %f, %f", m_Momentum.x, m_Momentum.y, m_Momentum.z);
-    ImGui::End();
+    // ImGui::Text("m_Velocity.z: %f", m_Velocity.z);
+    // ImGui::Text("m_Momentum.xyz: %f, %f, %f", m_Momentum.x, m_Momentum.y, m_Momentum.z);
+    // ImGui::End();
 
     if ( m_PrevCollisionState == ES_ON_GROUND && m_CollisionState == ES_IN_AIR )
     {

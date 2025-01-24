@@ -36,8 +36,8 @@ struct GLModel
 class GLRender : public IRender
 {
   public:
-    virtual bool                   Init(void) override;
-    virtual void                   Shutdown(void) override;
+    virtual bool                   Init(SDL_Window* window) override;
+    virtual void                   Shutdown(bool deleteWindow) override;
     virtual int                    RegisterModel(HKD_Model* model) override;
     virtual int                    RegisterBrush(HKD_Model* model) override;
     virtual void                   RegisterFont(CFont* font) override;
