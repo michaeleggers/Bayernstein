@@ -44,6 +44,7 @@ FirstPersonPlayer::FirstPersonPlayer(const std::vector<Property>& properties)
     m_SfxJump = Audio::LoadSource("sfx/jump_01.wav", 0.5f);
     m_SfxFootsteps
         = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
+    m_SfxDamage = Audio::LoadSource("sfx/sonniss/VOXScrm_Male in Shock 4_344 Audio_Screaming.wav", 0.8);
 
     m_Weapon              = new Weapon(properties);
     IRender* renderer     = GetRenderer();

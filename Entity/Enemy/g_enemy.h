@@ -111,6 +111,11 @@ class Enemy : public MovingEntity
     SoLoud::AudioSource* m_SfxHit;
     SoLoud::AudioSource* m_SfxDeath;
     SoLoud::AudioSource* m_SfxTargetSpotted;
+    SoLoud::AudioSource* m_SfxAttack;
+
+    double m_AttackRate;
+    double m_AttackOffset;
+    double m_AttackTimer;
 
   private:
     StateMachine<Enemy>* m_pStateMachine;

@@ -90,6 +90,9 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver
         return m_Weapon;
     }
 
+  public:
+    SoLoud::AudioSource* m_SfxDamage;
+
   private:
     StateMachine<FirstPersonPlayer>* m_pStateMachine;
     double                           m_AttackDelay = 100;

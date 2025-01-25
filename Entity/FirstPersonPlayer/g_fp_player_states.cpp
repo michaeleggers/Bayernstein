@@ -5,6 +5,7 @@
 #include "g_fp_player_states.h"
 #include "g_fp_player.h"
 
+#include "../../Audio/Audio.h"
 #include "../../utils/utils.h"
 #include "../Message/message_type.h"
 #include <stdio.h>
@@ -34,10 +35,7 @@ bool FirstPersonPlayerIdle::OnMessage(FirstPersonPlayer* agent, const Telegram& 
     case message_type::Hit:
     {
         BaseGameEntity* pSender = EntityManager::Instance()->GetEntityFromID(telegram.Sender);
-        //printf("Hit by enemy!\n");
-        // TODO: Implement.
-        // - before enemy sends this message it must check if its cooldown is to 0.
-        // otherwise it will spam this message.
+        Audio::m_SfxBus.play(*agent->m_SfxDamage, -1);
         return true;
     }
     break;
