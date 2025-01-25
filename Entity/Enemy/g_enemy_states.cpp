@@ -349,6 +349,13 @@ void EnemyFollow::Enter(Enemy* pEnemy)
     pEnemy->m_AnimationState = ANIM_STATE_RUN;
     pEnemy->m_pSteeringBehaviour->SetTargetAgent(pEnemy->m_pTargetEntity);
     pEnemy->m_pSteeringBehaviour->SeekOn();
+
+    if ( !StateMachine<Enemy>::IsSameState(*pEnemy->GetFSM()->PreviousState(), *EnemyAttacking::Instance()) )
+    { // only play if first spotted, not if player runs away after being attacked
+        glm::vec3 pos = pEnemy->m_Position;
+        glm::vec3 vel = pEnemy->m_Velocity;
+        Audio::m_SfxBus.play3d(*pEnemy->m_SfxTargetSpotted, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, -1);
+    }
     // pEnemy->m_pSteeringBehaviour->FollowWaypointsOn();
     //pEnemy->m_pSteeringBehaviour->FollowPathOn();
 }

@@ -110,6 +110,7 @@ class Enemy : public MovingEntity
 
     SoLoud::AudioSource* m_SfxHit;
     SoLoud::AudioSource* m_SfxDeath;
+    SoLoud::AudioSource* m_SfxTargetSpotted;
 
   private:
     StateMachine<Enemy>* m_pStateMachine;
