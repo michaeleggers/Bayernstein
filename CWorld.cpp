@@ -232,7 +232,7 @@ void CWorld::InitWorld(const std::string& mapName)
         }
     }
 
-    m_MusicIdle       = Audio::LoadSource("music/TriuneFilms/TriuneSound_TrailerMusic_V1/It Just Got Real.wav", 0.15f, true, true);
+    m_MusicIdle       = Audio::LoadSource("music/TriuneFilms/TriuneSound_TrailerMusic_V1/It-Just-Got-Real.wav", 0.15f, true, true);
     m_MusicIdleHandle = Audio::m_MusicBus.play(*m_MusicIdle, -1);
 
     m_Ambience = Audio::LoadSource(
