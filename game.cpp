@@ -143,8 +143,8 @@ void Game::Init()
 
     // Create a HUD for the player
     // This will create  the correct uv coordinates.
-    m_CrosshairSprite = CreateSprite("hud_elements.tga", glm::vec2(0.0f), glm::vec2(64.0f));
-    m_BoltSprite      = CreateSprite("hud_elements.tga", glm::vec2(64.0f, 0.0f), glm::vec2(128.0f, 64.0f));
+    m_CrosshairSprite = CreateSprite("hud_elements", glm::vec2(0.0f), glm::vec2(64.0f));
+    m_BoltSprite      = CreateSprite("hud_elements", glm::vec2(64.0f, 0.0f), glm::vec2(128.0f, 64.0f));
 
     // Disable mouse cursor in FPS mode (initial mode)
     SDL_SetRelativeMouseMode(SDL_TRUE);

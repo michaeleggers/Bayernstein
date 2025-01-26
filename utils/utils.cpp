@@ -68,6 +68,22 @@ std::vector<std::string> SplitString(const std::string& input, char delimiter) {
     return tokens;
 }
 
+std::string RemoveExtension(const std::string& filename)
+{
+    std::string result = filename;
+    size_t      pos = filename.size() - 1;
+    while ( pos-- > 0 )
+    {
+        if ( result[ pos ] == '.' )
+        {
+            result.resize(pos);
+            break;
+        }
+    }
+
+    return result;
+}
+
 template <> float StringToFloat<float>(const char* str, char** end) {
     return std::strtof(str, end);
 }

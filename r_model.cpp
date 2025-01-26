@@ -65,7 +65,7 @@ HKD_Model CreateModelFromIQM(IQMModel* model)
             mesh.isTextured = true;
         }
 
-        mesh.textureFileName = iqmMesh->material;
+        mesh.textureFileName = RemoveExtension(iqmMesh->material);
         mesh.firstTri        = iqmMesh->firstTri;
         mesh.numTris         = iqmMesh->numTris;
         for ( int v = 0; v < iqmMesh->vertices.size(); v += 3 )
@@ -136,7 +136,7 @@ HKD_Model CreateModelFromIQM(IQMModel* model)
         EllipsoidCollider ec = CreateEllipsoidColliderFromAABB(mins, maxs);
         result.ellipsoidColliders.push_back(ec);
     }
-
+    
     result.position       = glm::vec3(0.0f);
     result.orientation    = glm::angleAxis(glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     result.scale          = glm::vec3(1.0f);

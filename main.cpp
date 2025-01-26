@@ -64,7 +64,10 @@ IRender* GetRenderer() {
 
 static DebugSettings g_debugSettings;
 
-DebugSettings* GetDebugSettings() {
+
+
+DebugSettings* GetDebugSettings()
+{
     return &g_debugSettings;
 }
 
