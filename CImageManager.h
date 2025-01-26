@@ -6,6 +6,10 @@
 
 #include "stb_image.h"
 
+constexpr size_t DOD_FALLBACK_IMG_WIDTH    = 32;
+constexpr size_t DOD_FALLBACK_IMG_HEIGHT   = 32;
+constexpr size_t DOD_FALLBACK_IMG_CHANNELS = 4;
+
 class CImageManager
 {
   public:
@@ -31,18 +35,20 @@ class CImageManager
             if ( pixeldata )
             {
                 stbi_image_free(pixeldata);
+                pixeldata = nullptr;
             }
         };
     };
 
     static CImageManager* Instance();
-    Image*                Create(const std::string& filename);
+    const Image*          Create(const std::string& filename);
 
   private:
-    CImageManager()  = default;
+    CImageManager();
     ~CImageManager() = default;
 
     std::unordered_map<std::string, Image*> m_Filename2image;
+    Image                                   m_FallbackImage;
 };
 
 #endif

@@ -214,7 +214,7 @@ HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes)
     {
         HKD_Mesh mesh{};
         mesh.isTextured       = true;
-        mesh.textureFileName  = textureName + ".tga"; // FIX: Check for all formats.
+        mesh.textureFileName  = textureName;
         mesh.firstTri         = triOffset;
         size_t numTris        = mapPolys.size();
         mesh.numTris          = numTris;

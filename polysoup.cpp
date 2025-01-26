@@ -222,19 +222,12 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush)
         float width       = 1.0f;
         float height      = 1.0f;
 
-        // FIX: Make other fileformats possible!
-        
-        CImageManager::Image* image; 
-        for ( int i = 0; i < DOD_SUPPORTED_IMAGE_EXTENSION_COUNT; i++ )
+        const CImageManager::Image* image = imageManager->Create(g_GameDir + "textures/" + poly.textureName);
+        if ( image->isValid )
         {
-            image = imageManager->Create(g_GameDir + "textures/" + poly.textureName + DOD_IMAGE_EXTENSION_NAMES[ i ]);
-            if ( image->isValid )
-            {
-                width  = (float)image->width;
-                height = (float)image->height;
-                break;                
-            }           
-        }
+            width  = (float)image->width;
+            height = (float)image->height;
+        }           
 
         poly.normal = p0.n;
         for ( int j = 0; j < faceCount; j++ )

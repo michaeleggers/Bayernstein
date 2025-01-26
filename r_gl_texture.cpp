@@ -23,7 +23,7 @@ GLTexture::GLTexture(const std::string& filename)
     CImageManager* imageManager = CImageManager::Instance();
 
     std::string           filePath = g_GameDir + "textures/" + filename;
-    CImageManager::Image* image    = imageManager->Create(filePath);
+    const CImageManager::Image* image    = imageManager->Create(filePath);
 
     // TODO: Load checkerboard texture if not valid.
     if ( !image->isValid )

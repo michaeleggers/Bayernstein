@@ -74,7 +74,7 @@ void Game::Init()
 
     // Load lightmap triangles and lightmap texture
 
-    m_World->InitWorld("arena");
+    m_World->InitWorld("Milestone4");
     m_pPlayerEntity = m_World->PlayerEntity();
 
     // Register World Triangles at GPU.

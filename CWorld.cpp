@@ -67,15 +67,8 @@ void CWorld::InitWorld(const std::string& mapName)
     {
         m_MapTris           = CWorld::CreateMapFromLightmapTrisFile(plyFile);
         m_LightmapAvailable = false;
-        for ( int i = 0; i < DOD_SUPPORTED_IMAGE_EXTENSION_COUNT; i++ )
-        {
-            m_LightmapAvailable = renderer->RegisterTextureGetHandle(
-                mapName + std::string(DOD_IMAGE_EXTENSION_NAMES[ i ]), &m_hLightmapTexture);
-            if ( m_LightmapAvailable )
-            {
-                break;
-            }
-        }
+
+        m_LightmapAvailable = renderer->RegisterTextureGetHandle(mapName, &m_hLightmapTexture);
         
         if ( !m_LightmapAvailable )
         {
@@ -552,20 +545,9 @@ std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolyg
         tri.textureName = mapPoly.textureName;
         
         // Try to load texture from disk and create a texture.
-        bool textureFound = false;
-        for ( int i = 0; i < DOD_SUPPORTED_IMAGE_EXTENSION_COUNT; i++ )
-        {
-            if ( textureFound = renderer->RegisterTextureGetHandle(tri.textureName + std::string(DOD_IMAGE_EXTENSION_NAMES[ i ]), &tri.hTexture) )
-            {                
-                break;
-            }
-        }
 
-        if ( !textureFound )
-        {
-            printf("Texture could not be found: %s\n", tri.textureName.c_str());
-            assert(textureFound);
-        }
+        
+        renderer->RegisterTextureGetHandle(tri.textureName, &tri.hTexture);
         
         mapTris.push_back(tri);
     }
@@ -661,21 +643,8 @@ struct MapTri {
 
         mapTri.textureName = std::string(currentLightmapTri->textureName);        
 
-        bool textureFound = false;
-        for ( int i = 0; i < DOD_SUPPORTED_IMAGE_EXTENSION_COUNT; i++ )
-        {
-            if ( textureFound
-                 = renderer->RegisterTextureGetHandle(mapTri.textureName + std::string(DOD_IMAGE_EXTENSION_NAMES[ i ]), &mapTri.hTexture) )
-            {
-                break;
-            }
-        }
 
-        if ( !textureFound )
-        {
-            printf("Texture could not be found: %s\n", mapTri.textureName.c_str());
-            assert(textureFound);
-        }
+        renderer->RegisterTextureGetHandle(mapTri.textureName, &mapTri.hTexture);
 
         mapTris[ i ] = mapTri;
 
