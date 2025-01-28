@@ -47,7 +47,7 @@ Enemy::Enemy(const std::vector<Property>& properties)
     // m_pSteeringBehaviour->WanderOn();
 
     // Set viewing frustum
-    m_ProjDistance = 5.0f;
+    m_ProjDistance = 3.0f;
     m_AspectRatio  = 3.35f;
     m_Near         = 0.1f;
     m_Far          = 500.0f;
@@ -160,7 +160,7 @@ void Enemy::LoadModel(const char* path, glm::vec3 initialPosition)
     m_Model             = CreateModelFromIQM(&iqmModel);
     m_Model.isRigidBody = false;
     m_Model.renderFlags = MODEL_RENDER_FLAG_NONE;
-    m_Model.scale       = glm::vec3(1.0f);
+    m_Model.scale       = glm::vec3(1.7f);
 
     for ( int i = 0; i < m_Model.animations.size(); i++ )
     {
