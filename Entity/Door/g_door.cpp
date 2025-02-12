@@ -107,7 +107,7 @@ Door::Door(const std::vector<Property>& properties, const std::vector<Brush>& br
     glm::vec3 doorCenter = mins + minsToMaxs / 2.0f;
     m_SoundEmitterPos    = doorCenter + directedLength / 2.0f;
 
-    auto sfxLoop  = Audio::LoadSource("sfx/sonniss/Door - Stone Long 02 LOOP.wav", 1.2f, true);
+    auto sfxLoop  = Audio::LoadSource("sfx/sonniss/Door_Stone-Long-02-LOOP.wav", 1.2f, true);
     auto sfxEnd   = Audio::LoadSource("sfx/sonniss/Async_Impact2.wav");
     m_SfxMovement = new DynamicSound(sfxLoop, sfxEnd);
 }

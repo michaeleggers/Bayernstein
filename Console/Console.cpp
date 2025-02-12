@@ -118,13 +118,13 @@ void Console::DeleteInput(int delta) {
 }
 
 void Console::SubmitInput() {
-    Print(m_currentInput);
+    Print(std::string("> ") +  m_currentInput);
     m_inputHistoryPos = -1;
     m_cursorPos       = 0;
     m_scrollPos       = 0;
     m_blinkTimer      = 0;
 
-    if ( m_currentInput == "" ) return;
+    if ( m_currentInput.empty() ) return;
     std::string lastInput;
     if ( !m_inputHistory.Get(0, &lastInput) || lastInput != m_currentInput ) {
         m_inputHistory.Push(m_currentInput);

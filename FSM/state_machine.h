@@ -83,6 +83,10 @@ template <class entity_type> class StateMachine {
         return false;
     }
 
+    static bool IsSameState(const State<entity_type>& state1, const State<entity_type>& state2) {
+        return typeid(state1) == typeid(state2);
+    }
+
     State<entity_type>* CurrentState() const {
         return m_pCurrentState;
     }

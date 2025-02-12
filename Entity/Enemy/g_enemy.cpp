@@ -59,8 +59,13 @@ Enemy::Enemy(const std::vector<Property>& properties)
 
     m_SfxFootsteps
         = Audio::LoadSource("sfx/sonniss/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav", 1.0f, true);
-    m_SfxHit   = Audio::LoadSource("sfx/sonniss/Creature_Monster_Attack_09.wav");
-    m_SfxDeath = Audio::LoadSource("sfx/sonniss/Creature_Alien_Death_01.wav");
+    m_SfxHit           = Audio::LoadSource("sfx/sonniss/Creature_Monster_Attack_09.wav");
+    m_SfxDeath         = Audio::LoadSource("sfx/sonniss/Creature_Alien_Death_01.wav");
+    m_SfxTargetSpotted = Audio::LoadSource("sfx/sonniss/BEAST-01-Attack-08.wav", 0.6);
+    m_SfxAttack        = Audio::LoadSource("sfx/sonniss/gore_large-metal-blade-wet-stab-slash-and-remove-from-flesh_hard_1.wav", 0.6f);
+
+    m_AttackRate   = 1200.0; // FIXME: this is dependent on the loaded model's animation;
+    m_AttackOffset = 700.0;
 }
 
 void Enemy::PreCollisionUpdate()

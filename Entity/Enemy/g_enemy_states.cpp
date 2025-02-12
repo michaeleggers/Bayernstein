@@ -152,6 +152,7 @@ void EnemyAttacking::Enter(Enemy* pEnemy)
 {
     //printf("Enemy entered Attacking State\n");
     pEnemy->m_AnimationState = ANIM_STATE_ATTACK;
+    pEnemy->m_AttackTimer    = pEnemy->m_AttackOffset;
 }
 
 void EnemyAttacking::Execute(Enemy* pEnemy)
@@ -173,7 +174,19 @@ void EnemyAttacking::Execute(Enemy* pEnemy)
     float     bias         = distance * 0.5f;
     if ( (distance - bias) < (otherRadius + selfRadius) ) // OK, close enough. Deal damage.
     {
-        Dispatcher->DispatchMessage(SEND_MSG_IMMEDIATELY, pEnemy->ID(), pOther->ID(), message_type::Hit, nullptr);
+        if ( pEnemy->m_AttackTimer > pEnemy->m_AttackRate )
+        {
+            pEnemy->m_AttackTimer = 0;
+            glm::vec3 pos         = pEnemy->m_Position;
+            glm::vec3 vel         = pEnemy->m_Velocity;
+            auto handle = Audio::m_SfxBus.play3d(*pEnemy->m_SfxAttack, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, -1);
+            Audio::m_Soloud.setRelativePlaySpeed(handle, 2.3f);
+            Dispatcher->DispatchMessage(100.0, pEnemy->ID(), pOther->ID(), message_type::Hit, nullptr);
+        }
+        else
+        {
+            pEnemy->m_AttackTimer += GetDeltaTime();
+        }
     }
     else // Other entity is too far away, follow it.
     {
@@ -349,6 +362,13 @@ void EnemyFollow::Enter(Enemy* pEnemy)
     pEnemy->m_AnimationState = ANIM_STATE_RUN;
     pEnemy->m_pSteeringBehaviour->SetTargetAgent(pEnemy->m_pTargetEntity);
     pEnemy->m_pSteeringBehaviour->SeekOn();
+
+    if ( !StateMachine<Enemy>::IsSameState(*pEnemy->GetFSM()->PreviousState(), *EnemyAttacking::Instance()) )
+    { // only play if first spotted, not if player runs away after being attacked
+        glm::vec3 pos = pEnemy->m_Position;
+        glm::vec3 vel = pEnemy->m_Velocity;
+        Audio::m_SfxBus.play3d(*pEnemy->m_SfxTargetSpotted, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z, -1);
+    }
     // pEnemy->m_pSteeringBehaviour->FollowWaypointsOn();
     //pEnemy->m_pSteeringBehaviour->FollowPathOn();
 }
