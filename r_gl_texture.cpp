@@ -12,27 +12,32 @@ extern std::string g_GameDir;
 
 // TODO: This is the texture manager at the moment...
 
-GLTexture::~GLTexture() {
+GLTexture::~GLTexture()
+{
     // TODO: Nuke Texture from GPU.
 }
 
 GLTexture::GLTexture(const std::string& filename)
 {
-    m_IsValid                   = false;
+    m_IsValid = false;
 
     CImageManager* imageManager = CImageManager::Instance();
 
-    std::string           filePath = g_GameDir + "textures/" + filename;
+    std::string                 filePath = g_GameDir + "textures/" + filename;
     const CImageManager::Image* image    = imageManager->Create(filePath);
 
     // TODO: Load checkerboard texture if not valid.
     if ( !image->isValid )
-    {        
+    {
         return;
     }
 
     GLenum internalFormat;
     GLenum sourceFormat;
+
+    GLuint glTextureHandle;
+    glGenTextures(1, &glTextureHandle);
+    glBindTexture(GL_TEXTURE_2D, glTextureHandle);
 
     if ( image->channels == 4 )
     {
@@ -47,19 +52,18 @@ GLTexture::GLTexture(const std::string& filename)
     else if ( image->channels == 1 )
     {
         internalFormat = GL_R8;
-        sourceFormat = GL_RED;
+        sourceFormat   = GL_RED;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
     }
     else
     {
         printf("Error: Unsupported pixelformat in image: %s (channels=%d)\n", filename.c_str(), image->channels);
         assert(false && "Bad pixelformat");
     }
-        
 
-    GLuint glTextureHandle;
-    glGenTextures(1, &glTextureHandle);
-    glBindTexture(GL_TEXTURE_2D, glTextureHandle);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -85,7 +89,7 @@ GLTexture::GLTexture(const std::string& filename)
     //             GL_RGBA,
     //             GL_UNSIGNED_BYTE,
     //             image->pixeldata);
-    
+
     //glBindTexture(GL_TEXTURE_2D, 0);
 
     m_Filename  = filename;
@@ -110,7 +114,7 @@ GLTexture::GLTexture(CFont* font)
     glGenTextures(1, &glTextureHandle);
     glBindTexture(GL_TEXTURE_2D, glTextureHandle);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLuint)x, (GLuint)y, 0, GL_RED, GL_UNSIGNED_BYTE, font->m_Bitmap);    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLuint)x, (GLuint)y, 0, GL_RED, GL_UNSIGNED_BYTE, font->m_Bitmap);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     m_Filename  = font->m_Filename;
