@@ -37,6 +37,8 @@ class GLRender : public IRender
 {
   public:
     virtual bool                   Init(void) override;
+    virtual void                   SetResolution(int width, int height) override;
+    virtual void                   SetDisplayMode(DisplayMode displayMode) override;
     virtual void                   Shutdown(void) override;
     virtual int                    RegisterModel(HKD_Model* model) override;
     virtual int                    RegisterBrush(HKD_Model* model) override;
@@ -96,7 +98,10 @@ class GLRender : public IRender
         return m_Window;
     };
     virtual glm::vec2        GetWindowDimensions() override;
+    virtual glm::vec2        GLRender::GetRenderDimensions() override;
     virtual ITextureManager* GetTextureManager() override;
+
+    void InitFBOs(int width, int height);
 
     void DrawFrustum(const math::Frustum& frustum);
 
@@ -156,6 +161,8 @@ class GLRender : public IRender
     CglFBO* m_ConsoleFBO;
     int     m_WindowWidth;
     int     m_WindowHeight;
+    int     m_RenderWidth;
+    int     m_RenderHeight;
 
     // 2D Rendering state
     CFont* m_CurrentFont;

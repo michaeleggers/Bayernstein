@@ -184,6 +184,23 @@ bool Game::RunFrame(double dt)
     {
         m_pInterface->QuitGame();
     }
+    else if ( KeyPressed(SDLK_f) )
+    {
+        static bool drawFullscreen = true;
+        drawFullscreen             = !drawFullscreen;
+        if ( drawFullscreen )
+        {
+            printf("Switching to fake fullscreen mode\n");
+            glm::vec2 windowDimensions = renderer->GetWindowDimensions();
+            //renderer->SetResolution((int)windowDimensions.x, (int)windowDimensions.y);
+            renderer->SetDisplayMode(DOD_RENDER_FULLSCREEN_DESKTOP);
+        }
+        else
+        {
+            printf("Switching to windowed mode\n");
+            renderer->SetDisplayMode(DOD_RENDER_WINDOWED);
+        }
+    }
 
     // Toggle who should be controlled by the input system
     static IInputReceiver* receivers[ 2 ] = { m_pPlayerEntity, m_pFlyCameraEntity };
@@ -397,8 +414,8 @@ bool Game::RunFrame(double dt)
 
     renderer->Begin2D();
 
-    glm::vec2 windowDimensions = renderer->GetWindowDimensions();
-    glm::vec2 relSpriteSize    = m_CrosshairSprite.size / windowDimensions;
+    glm::vec2 renderDimensions = renderer->GetRenderDimensions();
+    glm::vec2 relSpriteSize    = m_CrosshairSprite.size / renderDimensions;
     float     crosshairScale   = 0.25f;
     renderer->DrawSprite(&m_CrosshairSprite,
                          glm::vec2(0.5f) - relSpriteSize * crosshairScale / 2.0f,
@@ -409,7 +426,7 @@ bool Game::RunFrame(double dt)
     Weapon*   weapon          = m_pPlayerEntity->GetWeapon();
     Sprite    icon            = weapon->GetHUDSprite();
     int       remainingRounds = weapon->GetRemainingRounds();
-    glm::vec2 pos             = windowDimensions - icon.size - glm::vec2(icon.size.x + 10.0f, 10.0f);
+    glm::vec2 pos             = renderDimensions - icon.size - glm::vec2(icon.size.x + 10.0f, 10.0f);
     renderer->SetFont(m_ConsoleFont);
     renderer->R_DrawText(std::to_string(remainingRounds), pos.x + icon.size.x + 10.0f, pos.y + 8.0f, COORD_MODE_ABS);
     renderer->DrawSprite(&icon, pos, glm::vec2(1.0f), COORD_MODE_ABS);
