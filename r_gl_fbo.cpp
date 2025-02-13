@@ -15,7 +15,7 @@ CglFBO::CglFBO()
     m_hFBO   = 9999; // TODO: (Michael): Can the handle be 0? Check GL docs!
 }
 
-CglFBO::CglFBO(int width, int height)
+CglFBO::CglFBO(int width, int height, GLint nearestOrLinear)
 {
     m_Width  = width;
     m_Height = height;
@@ -24,8 +24,8 @@ CglFBO::CglFBO(int width, int height)
 
     Bind();
 
-    m_ColorTexture = CglRenderTexture(width, height, GL_RGBA8);
-    m_DepthTexture = CglRenderTexture(width, height, GL_DEPTH_COMPONENT32F);
+    m_ColorTexture = CglRenderTexture(width, height, GL_RGBA8, nearestOrLinear);
+    m_DepthTexture = CglRenderTexture(width, height, GL_DEPTH_COMPONENT32F, nearestOrLinear);
 
     m_ColorTexture.Bind();
     m_DepthTexture.Bind();

@@ -6,11 +6,12 @@
 
 #include "r_gl_rendertexture.h"
 
-class CglFBO {
+class CglFBO
+{
 
   public:
     CglFBO();
-    CglFBO(int width, int height);
+    CglFBO(int width, int height, GLint nearestOrLinear = GL_LINEAR);
     ~CglFBO();
 
     void Bind();

@@ -353,16 +353,16 @@ void GLRender::InitFBOs(int width, int height)
     m_RenderHeight = height;
 
     // FBO for rendering the 3d scene.
-    m_3dFBO = new CglFBO(width, height);
+    m_3dFBO = new CglFBO(width, height, GL_NEAREST);
 
     // First person weapon display
-    m_3dFirstPersonViewFBO = new CglFBO(width, height);
+    m_3dFirstPersonViewFBO = new CglFBO(width, height, GL_NEAREST);
 
     // FBO for rendering text and other 2d elements (shapes, sprites, ...)
     // on top of the 3d scene.
-    m_2dFBO = new CglFBO(width, height);
+    m_2dFBO = new CglFBO(width, height, GL_NEAREST);
 
-    m_ConsoleFBO = new CglFBO(width, height);
+    m_ConsoleFBO = new CglFBO(width, height, GL_NEAREST);
 }
 
 void GLRender::SetResolution(int width, int height)
@@ -1065,8 +1065,7 @@ void GLRender::RenderFirstPersonView(Camera* camera, HKD_Model* model)
 
     glm::mat4 view = camera->ViewMatrix();
     // TODO: Global Setting for perspective values
-    glm::mat4 proj
-        = glm::perspective(glm::radians(45.0f), (float)m_RenderWidth / (float)m_RenderHeight, 0.1f, 10000.0f);
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)m_RenderWidth / (float)m_RenderHeight, 1.0f, 100.0f);
 
     m_ModelBatch->Bind();
     m_ModelShader->Activate();
