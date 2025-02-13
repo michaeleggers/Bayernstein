@@ -377,9 +377,9 @@ void GLRender::SetResolution(int width, int height)
 
     m_RenderWidth  = width;
     m_RenderHeight = height;
-    //m_WindowWidth  = width;
-    //m_WindowHeight = height;
-    //SDL_SetWindowSize(m_Window, width, height);
+    m_WindowWidth  = width;
+    m_WindowHeight = height;
+    SDL_SetWindowSize(m_Window, width, height);
 
     printf("Resolution set to: %d, %d\n", m_RenderWidth, m_RenderHeight);
 }
@@ -1443,7 +1443,7 @@ void GLRender::RenderConsole(Console* console, CFont* font)
     m_ConsoleFBO->Bind();
     // draw background/frame
     SetShapeColor(glm::vec4(0.05f, 0.05f, 0.05f, scr_conopacity.value));
-    DrawBox(0.0f, 0.0f, 1.0f, relHeight);
+    DrawBox(0.0f, 0.0f, m_RenderWidth, height, COORD_MODE_ABS);
     SetShapeColor(glm::vec4(1.0f));
     DrawBox(0.0f, 0.0f, borderWidth, height, COORD_MODE_ABS);
     DrawBox(m_RenderWidth, 0.0f, -borderWidth, height, COORD_MODE_ABS);
