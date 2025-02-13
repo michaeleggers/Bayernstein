@@ -113,7 +113,7 @@ class GLRender : public IRender
 
   private:
     SDL_Window*   m_Window;
-    SDL_GLContext m_SDL_GL_Conext;
+    SDL_GLContext m_SDL_GL_Context;
 
     GLTextureManager* m_ITextureManager;
 

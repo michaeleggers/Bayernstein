@@ -153,7 +153,7 @@ void GLRender::Shutdown(void)
 
     // Close and destroy the window
 
-    SDL_GL_DeleteContext(m_SDL_GL_Conext);
+    SDL_GL_DeleteContext(m_SDL_GL_Context);
     SDL_DestroyWindow(m_Window);
 
     m_ModelBatch->Kill();
@@ -231,14 +231,14 @@ bool GLRender::Init(void)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-    m_SDL_GL_Conext = SDL_GL_CreateContext(m_Window);
-    if ( !m_SDL_GL_Conext )
+    m_SDL_GL_Context = SDL_GL_CreateContext(m_Window);
+    if ( !m_SDL_GL_Context )
     {
         SDL_Log("Unable to create GL context! SDL-Error: %s\n", SDL_GetError());
         return false;
     }
 
-    SDL_GL_MakeCurrent(m_Window, m_SDL_GL_Conext);
+    SDL_GL_MakeCurrent(m_Window, m_SDL_GL_Context);
 
     int majorVersion;
     int minorVersion;
@@ -286,7 +286,7 @@ bool GLRender::Init(void)
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGui_ImplSDL2_InitForOpenGL(m_Window, m_SDL_GL_Conext);
+    ImGui_ImplSDL2_InitForOpenGL(m_Window, m_SDL_GL_Context);
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // ImGui Config
