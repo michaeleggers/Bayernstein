@@ -184,7 +184,7 @@ bool Game::RunFrame(double dt)
     {
         m_pInterface->QuitGame();
     }
-    else if ( KeyPressed(SDLK_f) )
+    else if ( KeyWentDown(SDLK_f) )
     {
         static bool drawFullscreen = true;
         drawFullscreen             = !drawFullscreen;
