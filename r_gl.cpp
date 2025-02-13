@@ -385,7 +385,7 @@ void GLRender::SetDisplayMode(DisplayMode displayMode)
 {
     switch ( displayMode )
     {
-    case DOD_RENDER_FULLSCREEN_DESKTOP:
+    case DOD_DISPLAY_MODE_FULLSCREEN_DESKTOP:
     {
 
         SDL_SetWindowFullscreen(m_Window, SDL_WINDOW_FULLSCREEN_DESKTOP);
@@ -400,7 +400,7 @@ void GLRender::SetDisplayMode(DisplayMode displayMode)
     }
     break;
 
-    case DOD_RENDER_WINDOWED:
+    case DOD_DISPLAY_MODE_WINDOWED:
     {
         SDL_SetWindowFullscreen(m_Window, 0);
         m_WindowWidth  = WINDOW_WIDTH;

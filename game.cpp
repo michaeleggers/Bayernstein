@@ -193,12 +193,12 @@ bool Game::RunFrame(double dt)
             printf("Switching to fake fullscreen mode\n");
             glm::vec2 windowDimensions = renderer->GetWindowDimensions();
             //renderer->SetResolution((int)windowDimensions.x, (int)windowDimensions.y);
-            renderer->SetDisplayMode(DOD_RENDER_FULLSCREEN_DESKTOP);
+            renderer->SetDisplayMode(DOD_DISPLAY_MODE_FULLSCREEN_DESKTOP);
         }
         else
         {
             printf("Switching to windowed mode\n");
-            renderer->SetDisplayMode(DOD_RENDER_WINDOWED);
+            renderer->SetDisplayMode(DOD_DISPLAY_MODE_WINDOWED);
         }
     }
 
