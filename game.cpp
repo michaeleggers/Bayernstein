@@ -186,13 +186,11 @@ bool Game::RunFrame(double dt)
     }
     else if ( KeyWentDown(SDLK_f) )
     {
-        static bool drawFullscreen = true;
+        static bool drawFullscreen = false;
         drawFullscreen             = !drawFullscreen;
         if ( drawFullscreen )
         {
             printf("Switching to fake fullscreen mode\n");
-            glm::vec2 windowDimensions = renderer->GetWindowDimensions();
-            //renderer->SetResolution((int)windowDimensions.x, (int)windowDimensions.y);
             renderer->SetDisplayMode(DOD_DISPLAY_MODE_FULLSCREEN_DESKTOP);
         }
         else
@@ -200,6 +198,16 @@ bool Game::RunFrame(double dt)
             printf("Switching to windowed mode\n");
             renderer->SetDisplayMode(DOD_DISPLAY_MODE_WINDOWED);
         }
+    }
+    else if ( KeyWentDown(SDLK_q) )
+    {
+        static int             resolutionSelector = 0;
+        static const int       resolutionCount    = 6;
+        static const glm::vec2 resolutions[]      = { glm::vec2(320, 240),  glm::vec2(640, 480),   glm::vec2(800, 600),
+                                                      glm::vec2(1024, 768), glm::vec2(1920, 1080), glm::vec2(2560, 1440) };
+
+        glm::vec2 currentResolution = resolutions[ ++resolutionSelector % resolutionCount ];
+        renderer->SetResolution((int)currentResolution.x, (int)currentResolution.y);
     }
 
     // Toggle who should be controlled by the input system

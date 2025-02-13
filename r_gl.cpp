@@ -32,8 +32,8 @@
 #include "r_itexture.h"
 #include "utils/quick_math.h"
 
-const int WINDOW_WIDTH  = 1920;
-const int WINDOW_HEIGHT = 1080;
+constexpr int DOD_DEFAULT_WINDOW_WIDTH  = 1920;
+constexpr int DOD_DEFAULT_WINDOW_HEIGHT = 1080;
 
 ConsoleVariable scr_consize      = { "scr_consize", 0.45f };
 ConsoleVariable scr_conopacity   = { "scr_conopacity", 0.95f };
@@ -203,7 +203,8 @@ bool GLRender::Init(void)
 */
 
     // Create an application window with the following settings:
-    m_Window = SDL_CreateWindow("HKD", 1, 1, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
+    m_Window = SDL_CreateWindow(
+        "HKD", 1, 1, DOD_DEFAULT_WINDOW_WIDTH, DOD_DEFAULT_WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
     //SDL_SetWindowFullscreen(m_Window, SDL_WINDOW_FULLSCREEN_DESKTOP);
     SDL_DisplayMode displayMode{};
     SDL_GetCurrentDisplayMode(0, &displayMode);
@@ -334,7 +335,7 @@ bool GLRender::Init(void)
 
     // Create FBOs for 3D/2D Rendering
 
-    InitFBOs(WINDOW_WIDTH, WINDOW_HEIGHT);
+    InitFBOs(DOD_DEFAULT_WINDOW_WIDTH, DOD_DEFAULT_WINDOW_HEIGHT);
 
     VariableManager::Register(&scr_consize);
     VariableManager::Register(&scr_conopacity);
@@ -376,9 +377,11 @@ void GLRender::SetResolution(int width, int height)
 
     m_RenderWidth  = width;
     m_RenderHeight = height;
-    m_WindowWidth  = width;
-    m_WindowHeight = height;
-    SDL_SetWindowSize(m_Window, width, height);
+    //m_WindowWidth  = width;
+    //m_WindowHeight = height;
+    //SDL_SetWindowSize(m_Window, width, height);
+
+    printf("Resolution set to: %d, %d\n", m_RenderWidth, m_RenderHeight);
 }
 
 void GLRender::SetDisplayMode(DisplayMode displayMode)
@@ -403,8 +406,8 @@ void GLRender::SetDisplayMode(DisplayMode displayMode)
     case DOD_DISPLAY_MODE_WINDOWED:
     {
         SDL_SetWindowFullscreen(m_Window, 0);
-        m_WindowWidth  = WINDOW_WIDTH;
-        m_WindowHeight = WINDOW_HEIGHT;
+        m_WindowWidth  = m_RenderWidth;
+        m_WindowHeight = m_RenderHeight;
     }
     break;
 
@@ -1251,8 +1254,8 @@ void GLRender::R_DrawText(const std::string& text, float x, float y, ScreenSpace
 
     // TODO: (Michael): Make sure that the correct shader is active.
 
-    float xOffset = WINDOW_WIDTH * x;
-    float yOffset = WINDOW_HEIGHT * y;
+    float xOffset = DOD_DEFAULT_WINDOW_WIDTH * x;
+    float yOffset = DOD_DEFAULT_WINDOW_HEIGHT * y;
 
     if ( coordMode == COORD_MODE_ABS )
     {
@@ -1332,10 +1335,10 @@ void GLRender::R_DrawText(const std::string& text, float x, float y, ScreenSpace
 void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode)
 {
 
-    float x0 = WINDOW_WIDTH * x;
-    float y0 = WINDOW_HEIGHT * y;
-    float x1 = WINDOW_WIDTH * (x + width);
-    float y1 = WINDOW_HEIGHT * (y + height);
+    float x0 = DOD_DEFAULT_WINDOW_WIDTH * x;
+    float y0 = DOD_DEFAULT_WINDOW_HEIGHT * y;
+    float x1 = DOD_DEFAULT_WINDOW_WIDTH * (x + width);
+    float y1 = DOD_DEFAULT_WINDOW_HEIGHT * (y + height);
 
     if ( coordMode == COORD_MODE_ABS )
     {
