@@ -39,8 +39,10 @@ endif ()
 #SET(SDL_VIDEO_X11 OFF)
 
 #add_subdirectory(dependencies/SDL2.28.4)
-find_package(SDL2 REQUIRED)
+
+find_package(SDL2 CONFIG REQUIRED)
 message(STATUS "SDL2 Include Dirs: ${SDL2_INCLUDE_DIRS}")
+message(STATUS "SDL2 Library Dirs: ${SDL2_LIBRARIES}")
 
 set(SOLOUD_SRC_PATH dependencies/soloud/src)
 
@@ -266,6 +268,10 @@ add_executable(Game
     ${RESOURCE_FILES}
 )
 
+if (WIN32)
+    set_target_properties(Game PROPERTIES VS_DPI_AWARE "PerMonitor")
+endif ()
+
 target_include_directories(Game
     PUBLIC dependencies
     PUBLIC dependencies/glad/include
@@ -276,7 +282,7 @@ target_include_directories(Game
 
 add_definitions(-DWITH_MINIAUDIO) # enable soloud miniaudio backend
 
-target_link_libraries(Game PUBLIC
+target_link_libraries(Game PRIVATE
     SDL2::SDL2
     SDL2::SDL2main
 )

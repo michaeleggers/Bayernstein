@@ -202,6 +202,9 @@ bool GLRender::Init(void)
 #endif
 */
 
+    SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
+    SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
+
     // Create an application window with the following settings:
     m_Window = SDL_CreateWindow(
         "HKD", 1, 1, DOD_DEFAULT_WINDOW_WIDTH, DOD_DEFAULT_WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
@@ -377,8 +380,6 @@ void GLRender::SetResolution(int width, int height)
 
     m_RenderWidth  = width;
     m_RenderHeight = height;
-    m_WindowWidth  = width;
-    m_WindowHeight = height;
 
     /* Set window size according to DPI scaling.*/
     /* See: https://wiki.libsdl.org/SDL2/SDL_GetDisplayDPI */
@@ -408,6 +409,8 @@ void GLRender::SetResolution(int width, int height)
     int scaledHeight = (int)((float)height / scalingFactorH);
     printf("Setting window size to scaled width/height: %d, %d\n", scaledWidth, scaledHeight);
     SDL_SetWindowSize(m_Window, scaledWidth, scaledHeight);
+    m_WindowWidth  = scaledWidth;
+    m_WindowHeight = scaledHeight;
 
     printf("Resolution set to: %d, %d\n", m_RenderWidth, m_RenderHeight);
     printf("--------------------------\n\n");
@@ -435,8 +438,8 @@ void GLRender::SetDisplayMode(DisplayMode displayMode)
     case DOD_DISPLAY_MODE_WINDOWED:
     {
         SDL_SetWindowFullscreen(m_Window, 0);
-        m_WindowWidth  = m_RenderWidth;
-        m_WindowHeight = m_RenderHeight;
+        //m_WindowWidth  = m_RenderWidth;
+        //m_WindowHeight = m_RenderHeight;
     }
     break;
 
