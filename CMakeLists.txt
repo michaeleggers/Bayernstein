@@ -268,6 +268,7 @@ add_executable(Game
     ${RESOURCE_FILES}
 )
 
+# see: https://stackoverflow.com/questions/59829969/why-is-my-vs-sdl-2-0-window-2x-bigger-than-i-specified
 if (WIN32)
     set_target_properties(Game PROPERTIES VS_DPI_AWARE "PerMonitor")
 endif ()
