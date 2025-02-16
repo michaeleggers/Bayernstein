@@ -35,7 +35,12 @@ if (MSVC)
     add_compile_options(/W4)
 endif ()
 
-add_subdirectory(dependencies/SDL2.28.4)
+#SET(SDL_VIDEO_WAYLAND ON)
+#SET(SDL_VIDEO_X11 OFF)
+
+#add_subdirectory(dependencies/SDL2.28.4)
+find_package(SDL2 REQUIRED)
+message(STATUS "SDL2 Include Dirs: ${SDL2_INCLUDE_DIRS}")
 
 set(SOLOUD_SRC_PATH dependencies/soloud/src)
 
@@ -265,13 +270,13 @@ target_include_directories(Game
     PUBLIC dependencies
     PUBLIC dependencies/glad/include
     PUBLIC dependencies/imgui
-    PUBLIC dependencies/SDL2.28.4/include
+    #PUBLIC dependencies/SDL2.28.4/include
     PUBLIC dependencies/soloud/include
 )
 
 add_definitions(-DWITH_MINIAUDIO) # enable soloud miniaudio backend
 
 target_link_libraries(Game PUBLIC
-    SDL2
-    SDL2main
+    SDL2::SDL2
+    SDL2::SDL2main
 )
