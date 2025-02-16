@@ -379,9 +379,38 @@ void GLRender::SetResolution(int width, int height)
     m_RenderHeight = height;
     m_WindowWidth  = width;
     m_WindowHeight = height;
-    SDL_SetWindowSize(m_Window, width, height);
+
+    /* Set window size according to DPI scaling.*/
+    /* See: https://wiki.libsdl.org/SDL2/SDL_GetDisplayDPI */
+
+    printf("--------------------------\n\n");
+
+    int windowWidth, windowHeight;
+    SDL_GetWindowSize(m_Window, &windowWidth, &windowHeight);
+    printf("Window Size: %d, %d\n", windowWidth, windowHeight);
+
+    int windowDrawWidth, windowDrawHeight;
+    SDL_GL_GetDrawableSize(m_Window, &windowDrawWidth, &windowDrawHeight);
+    printf("Drawable Size: %d, %d\n", windowDrawWidth, windowDrawHeight);
+
+    float scalingFactorW = (float)windowDrawWidth / (float)windowWidth;
+    float scalingFactorH = (float)windowDrawHeight / (float)windowHeight;
+    printf("DPI scaling factor (w/h): %f, %f\n", scalingFactorW, scalingFactorH);
+
+    SDL_DisplayMode displayMode{};
+    SDL_GetCurrentDisplayMode(0, &displayMode);
+    printf("Display Mode:\n  width: %d, height: %d\n  refresh-rate: %d\n",
+           displayMode.w,
+           displayMode.h,
+           displayMode.refresh_rate);
+
+    int scaledWidth  = (int)((float)width / scalingFactorW);
+    int scaledHeight = (int)((float)height / scalingFactorH);
+    printf("Setting window size to scaled width/height: %d, %d\n", scaledWidth, scaledHeight);
+    SDL_SetWindowSize(m_Window, scaledWidth, scaledHeight);
 
     printf("Resolution set to: %d, %d\n", m_RenderWidth, m_RenderHeight);
+    printf("--------------------------\n\n");
 }
 
 void GLRender::SetDisplayMode(DisplayMode displayMode)

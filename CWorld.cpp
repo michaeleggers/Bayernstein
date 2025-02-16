@@ -69,7 +69,7 @@ void CWorld::InitWorld(const std::string& mapName)
         m_LightmapAvailable = false;
 
         m_LightmapAvailable = renderer->RegisterTextureGetHandle(mapName, &m_hLightmapTexture);
-        
+
         if ( !m_LightmapAvailable )
         {
             printf("WARNING (%s): Failed to load lightmap-image: %s\n", __FILE__, mapName.c_str());
@@ -543,12 +543,11 @@ std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolyg
         C.color         = triColor;
         MapTri tri      = { .tri = { A, B, C } };
         tri.textureName = mapPoly.textureName;
-        
+
         // Try to load texture from disk and create a texture.
 
-        
         renderer->RegisterTextureGetHandle(tri.textureName, &tri.hTexture);
-        
+
         mapTris.push_back(tri);
     }
 
@@ -641,8 +640,7 @@ struct MapTri {
 
         memcpy(mapTri.tri.vertices, vertices, 3 * sizeof(Vertex));
 
-        mapTri.textureName = std::string(currentLightmapTri->textureName);        
-
+        mapTri.textureName = std::string(currentLightmapTri->textureName);
 
         renderer->RegisterTextureGetHandle(mapTri.textureName, &mapTri.hTexture);
 
