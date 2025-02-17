@@ -35,14 +35,7 @@ if (MSVC)
     add_compile_options(/W4)
 endif ()
 
-#SET(SDL_VIDEO_WAYLAND ON)
-#SET(SDL_VIDEO_X11 OFF)
-
-#add_subdirectory(dependencies/SDL2.28.4)
-
-find_package(SDL2 CONFIG REQUIRED)
-message(STATUS "SDL2 Include Dirs: ${SDL2_INCLUDE_DIRS}")
-message(STATUS "SDL2 Library Dirs: ${SDL2_LIBRARIES}")
+add_subdirectory(${SDL_SRC_DIR})
 
 set(SOLOUD_SRC_PATH dependencies/soloud/src)
 
@@ -268,22 +261,17 @@ add_executable(Game
     ${RESOURCE_FILES}
 )
 
-# see: https://stackoverflow.com/questions/59829969/why-is-my-vs-sdl-2-0-window-2x-bigger-than-i-specified
-if (WIN32)
-    set_target_properties(Game PROPERTIES VS_DPI_AWARE "PerMonitor")
-endif ()
-
 target_include_directories(Game
     PUBLIC dependencies
     PUBLIC dependencies/glad/include
     PUBLIC dependencies/imgui
-    #PUBLIC dependencies/SDL2.28.4/include
+    PUBLIC ${SDL_SRC_DIR}/include
     PUBLIC dependencies/soloud/include
 )
 
 add_definitions(-DWITH_MINIAUDIO) # enable soloud miniaudio backend
 
-target_link_libraries(Game PRIVATE
-    SDL2::SDL2
-    SDL2::SDL2main
+target_link_libraries(Game PUBLIC
+    SDL2
+    SDL2main
 )
