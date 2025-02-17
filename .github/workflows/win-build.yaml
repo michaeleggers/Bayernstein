@@ -31,12 +31,12 @@ jobs:
     - name: Download SDL2
       run: |
           Invoke-WebRequest -Uri "https://github.com/libsdl-org/SDL/releases/download/release-2.32.0/SDL2-2.32.0.zip" -OutFile "SDL.zip"          
-        shell: pwsh
+      shell: pwsh
 
     - name: Unzip SDL2
       run: |
           Expand-Archive -Path "SDL.zip" -DestinationPath "SDL"
-        shell: pwsh    
+      shell: pwsh    
 
     - name: Configure CMake
       shell: cmd
