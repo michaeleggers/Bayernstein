@@ -56,7 +56,6 @@ set(SOLOUD_SRC_PATH dependencies/soloud/src)
 #   ${HEADER_FILES}
 # ) 
 
-
 add_executable(Game
 
     main.cpp
@@ -273,6 +272,11 @@ add_executable(Game
     ${RESOURCE_FILES}
 )
 
+# see: https://stackoverflow.com/questions/59829969/why-is-my-vs-sdl-2-0-window-2x-bigger-than-i-specified
+if (WIN32)
+    set_target_properties(Game PROPERTIES VS_DPI_AWARE "PerMonitor")
+endif ()
+
 target_include_directories(Game
     PUBLIC dependencies
     PUBLIC dependencies/glad/include
@@ -285,8 +289,8 @@ add_definitions(-DWITH_MINIAUDIO) # enable soloud miniaudio backend
 
 
 target_link_libraries(Game PUBLIC
-	SDL2::SDL2
-	#SDL2main
+	SDL2
+	SDL2main
 )
 
 if (UNIX AND NOT APPLE)
