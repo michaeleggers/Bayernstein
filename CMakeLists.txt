@@ -35,6 +35,18 @@ if (MSVC)
     add_compile_options(/W4)
 endif ()
 
+# Use local shared libs
+# From: https://github.com/dhewm/dhewm3/blob/a18b9e6bad31a1e9ffcf1bb815ec734d4290e4b0/neo/CMakeLists.txt#L34-L41
+if (UNIX AND NOT APPLE)
+#set(CMAKE_CXX_FLAGS "-Wl,-rpath,$ORIGIN")
+#set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+	set(CMAKE_SKIP_RPATH OFF CACHE BOOL "Skip RPATH" FORCE)
+	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+	set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+	set(CMAKE_INSTALL_RPATH "$ORIGIN/")
+	set(ldflags "${ldflags} -Wl,-z,origin") # not sure this is even needed, but shouldn't hurt
+endif()
+
 add_subdirectory(${SDL_SRC_DIR})
 
 set(SOLOUD_SRC_PATH dependencies/soloud/src)
@@ -271,7 +283,15 @@ target_include_directories(Game
 
 add_definitions(-DWITH_MINIAUDIO) # enable soloud miniaudio backend
 
+
 target_link_libraries(Game PUBLIC
-    SDL2
-    SDL2main
+	SDL2::SDL2
+	#SDL2main
 )
+
+if (UNIX AND NOT APPLE)
+target_link_libraries(Game PUBLIC
+	#${CMAKE_DL_LIBS}
+    -lc -ldl -lpthread
+    )
+endif()
