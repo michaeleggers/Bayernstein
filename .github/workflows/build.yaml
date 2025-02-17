@@ -60,7 +60,7 @@ jobs:
       
       - name: Install SDL2
         run: |
-          wget https://github.com/libsdl-org/SDL/releases/download/release-2.32.0/SDL2-2.32.0.tar.gz -O SDL.tar.gz
+          wget https://github.com/libsdl-org/SDL/releases/download/release-2.32.0/SDL2-2.32.0.tar.gz -O SDL.tar.gz \
           tar -xf SDL.tar.gz -C ./dependencies
 
       - name: Install CMake
@@ -82,7 +82,7 @@ jobs:
           cmake ${{ github.workspace }} \
           -DCMAKE_C_COMPILER=$(which clang-18) \
           -DCMAKE_CXX_COMPILER=$(which clang++-18) \
-          -DSDL_SRC_DIR=dependencies/SDL
+          -DSDL_SRC_DIR=dependencies/SDL2-2.32.0 \
           -DCMAKE_BUILD_TYPE=Release \
           -B ${{ github.workspace }}/build/Release
         working-directory: ${{ github.workspace }}/build
