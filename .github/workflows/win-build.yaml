@@ -21,16 +21,6 @@ jobs:
   #       against it.
   #       @see: https://github.com/libsdl-org/SDL/issues/7219
 
-    - name: Download SDL2
-      run: |
-          Invoke-WebRequest -Uri "https://github.com/libsdl-org/SDL/releases/download/release-2.32.0/SDL2-2.32.0.zip" -OutFile "SDL.zip"          
-        shell: pwsh
-
-    - name: Unzip SDL2
-      run: |
-          Expand-Archive -Path "SDL.zip" -DestinationPath "SDL"
-        shell: pwsh        
-
     - uses: actions/checkout@v4
     - uses: ilammy/msvc-dev-cmd@v1.4.1
 
@@ -46,6 +36,16 @@ jobs:
 
     # - name: Install SDL2 via vcpkg
     #   run: C:\vcpkg\vcpkg.exe install sdl2:x64-windows sdl2-image:x64-windows sdl2-ttf:x64-windows sdl2-mixer:x64-windows
+
+    - name: Download SDL2
+      run: |
+          Invoke-WebRequest -Uri "https://github.com/libsdl-org/SDL/releases/download/release-2.32.0/SDL2-2.32.0.zip" -OutFile "SDL.zip"          
+        shell: pwsh
+
+    - name: Unzip SDL2
+      run: |
+          Expand-Archive -Path "SDL.zip" -DestinationPath "SDL"
+        shell: pwsh    
 
     - name: Configure CMake
       shell: cmd
