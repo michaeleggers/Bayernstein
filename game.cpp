@@ -306,8 +306,8 @@ bool Game::RunFrame(double dt)
 
             // Draw Debug Line for player veloctiy vector
             Line velocityDebugLine = {
-                Vertex(center),
-                Vertex(enemy->m_pSteeringBehaviour->m_WanderTarget) //* enemy->m_pSteeringBehaviour->m_WanderRadius
+                Vertex{ center },
+                Vertex{ enemy->m_pSteeringBehaviour->m_WanderTarget } //* enemy->m_pSteeringBehaviour->m_WanderRadius
             };
             velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
             velocityDebugLine.b.color = velocityDebugLine.a.color;
