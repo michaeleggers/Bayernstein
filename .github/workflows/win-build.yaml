@@ -28,15 +28,6 @@ jobs:
       run: |
         mkdir build && cd build
 
-    # - name: Install vcpkg
-    #   run: |
-    #     git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
-    #     cd C:\vcpkg
-    #     .\bootstrap-vcpkg.bat
-
-    # - name: Install SDL2 via vcpkg
-    #   run: C:\vcpkg\vcpkg.exe install sdl2:x64-windows sdl2-image:x64-windows sdl2-ttf:x64-windows sdl2-mixer:x64-windows
-
     - name: Download SDL2
       run: |
           Invoke-WebRequest -Uri "https://github.com/libsdl-org/SDL/releases/download/release-2.32.0/SDL2-2.32.0.zip" -OutFile "SDL.zip"          
