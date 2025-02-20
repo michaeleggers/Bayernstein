@@ -62,10 +62,10 @@ set(SOLOUD_SRC_PATH dependencies/soloud/src)
 #   ${HEADER_FILES}
 # ) 
 
-add_executable(VersionMaker
-    version.cpp
-    version.h
-)
+#add_executable(VersionMaker
+#    version.cpp
+#    version.h
+#)
 
 add_executable(Game
 
