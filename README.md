@@ -71,7 +71,7 @@ principles.
 ## Linux
 - Run
 ```
-cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
+cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DSDL_SRC_DIR=<path-to-sdl-sources> ..
 ```
 This generates a Makefile on UNIX systems by default. 
 Or just open the project in CLion (without creating the ```build``` folder)
