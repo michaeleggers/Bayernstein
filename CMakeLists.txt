@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(HKD VERSION 1.0)
+project(HKD VERSION 0.0.101)
 
 macro(ADD_SRC_HEADER_FILES)
     file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false RELATIVE
@@ -11,6 +11,12 @@ macro(ADD_SRC_HEADER_FILES)
     file(GLOB_RECURSE HEADER_FILES LIST_DIRECTORIES false RELATIVE
             ${CMAKE_CURRENT_SOURCE_DIR} *.h)
 endmacro()
+
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake_version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake_version.h
+)
 
 # ADD_SRC_HEADER_FILES()
 
@@ -55,6 +61,11 @@ set(SOLOUD_SRC_PATH dependencies/soloud/src)
 #   ${SRC_FILES}
 #   ${HEADER_FILES}
 # ) 
+
+add_executable(VersionMaker
+    version.cpp
+    version.h
+)
 
 add_executable(Game
 
@@ -277,12 +288,15 @@ if (WIN32)
     set_target_properties(Game PROPERTIES VS_DPI_AWARE "PerMonitor")
 endif ()
 
+set_target_properties(Game PROPERTIES OUTPUT_NAME "DOD-${PROJECT_VERSION}")
+
 target_include_directories(Game
     PUBLIC dependencies
     PUBLIC dependencies/glad/include
     PUBLIC dependencies/imgui
     PUBLIC ${SDL_SRC_DIR}/include
     PUBLIC dependencies/soloud/include
+    PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 add_definitions(-DWITH_MINIAUDIO) # enable soloud miniaudio backend
@@ -293,6 +307,7 @@ target_link_libraries(Game PUBLIC
 	SDL2main
 )
 
+# This seems only to be necessary on Ubuntu 18.04. and NOT from 20.04+
 if (UNIX AND NOT APPLE)
 target_link_libraries(Game PUBLIC
 	#${CMAKE_DL_LIBS}
