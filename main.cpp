@@ -33,6 +33,7 @@
 #include "Audio/Audio.h"
 #include "Console/VariableManager.h"
 #include "TestClass.h"
+#include "cmake_version.h"
 #include "game.h"
 #include "hkd_interface.h"
 #include "input.h"
@@ -48,30 +49,35 @@ static bool     g_GameWantsToQuit;
 std::string     g_GameDir;
 static IRender* g_Renderer;
 
-static bool QuitGameFunc(void) {
+extern std::string g_VersionID;
+
+static bool QuitGameFunc(void)
+{
     g_GameWantsToQuit = true;
     return true;
 }
 
 static double msPerFrame;
-double        GetDeltaTime() {
+double        GetDeltaTime()
+{
     return msPerFrame;
 }
 
-IRender* GetRenderer() {
+IRender* GetRenderer()
+{
     return g_Renderer;
 }
 
 static DebugSettings g_debugSettings;
-
-
 
 DebugSettings* GetDebugSettings()
 {
     return &g_debugSettings;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
+    printf("This is version: %s\n", PROJECT_VERSION);
 
 #if WIN32
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
@@ -89,13 +95,15 @@ int main(int argc, char** argv) {
     std::string exePath = hkd_GetExePath();
     interface.gameDir   = exePath;
     g_GameDir           = exePath;
-    if ( argc > 1 ) {
+    if ( argc > 1 )
+    {
         interface.gameDir += std::string(argv[ 1 ]);
         g_GameDir += std::string(argv[ 1 ]);
     }
 
     g_Renderer = new GLRender();
-    if ( !g_Renderer->Init() ) {
+    if ( !g_Renderer->Init() )
+    {
         SDL_Log("Could not initialize renderer.\n");
         return -1;
     }
@@ -103,7 +111,8 @@ int main(int argc, char** argv) {
     VariableManager::Init();
     Console* console = Console::Create(100, 32);
 
-    if ( !Audio::Init() ) {
+    if ( !Audio::Init() )
+    {
         SDL_Log("Could not initialize audio engine.\n");
         return -1;
     }
@@ -120,7 +129,8 @@ int main(int argc, char** argv) {
     Uint64 endCounter     = SDL_GetPerformanceCounter();
 
     float updateIntervalMs = 0.0f;
-    while ( !ShouldClose() && !g_GameWantsToQuit ) {
+    while ( !ShouldClose() && !g_GameWantsToQuit )
+    {
         double ticksPerFrame = (double)endCounter - (double)startCounter;
         msPerFrame           = (ticksPerFrame / (double)ticksPerSecond) * 1000.0;
 
@@ -131,12 +141,14 @@ int main(int argc, char** argv) {
         g_Renderer->RenderBegin();
 
         // caret is not a standalone key in german keyboard layout (`KeyWentDown(SDLK_CARET)` doesn't work)
-        if ( TextInput() == "^" ) {
+        if ( TextInput() == "^" )
+        {
             console->m_isActive   = !(console->m_isActive);
             console->m_blinkTimer = 0;
             ClearTextInput(); // Remove caret from the buffer
         }
-        if ( console->m_isActive ) {
+        if ( console->m_isActive )
+        {
             // FIXME: the game's 2d content disappears while console is open
             // NOTE: (Michael): We let this unfixed for now and defer this
             // to another time. To implement this cleanly a few things
@@ -147,7 +159,9 @@ int main(int argc, char** argv) {
             // investing too much time now and having to change everything
             // later...
             console->RunFrame();
-        } else {
+        }
+        else
+        {
             game.RunFrame(msPerFrame);
         }
 
@@ -160,10 +174,12 @@ int main(int argc, char** argv) {
 
         // Update window title every second.
         updateIntervalMs += msPerFrame;
-        if ( updateIntervalMs >= 1000.0f ) {
+        if ( updateIntervalMs >= 1000.0f )
+        {
             char windowTitle[ 256 ];
             sprintf(windowTitle,
-                    "Device: %s, frametime (ms): %f, FPS: %f",
+                    "Game Version: %s, Device: %s, frametime (ms): %f, FPS: %f",
+                    PROJECT_VERSION,
                     glGetString(GL_RENDERER),
                     msPerFrame,
                     1000.0f / msPerFrame);
