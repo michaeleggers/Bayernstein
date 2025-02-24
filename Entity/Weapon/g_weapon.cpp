@@ -22,7 +22,7 @@ Weapon::Weapon(const std::vector<Property>& properties)
     // TODO: Load the type of the model from properties.
     LoadModel("models/double_barrel_shotgun/db_shotgun.iqm", m_Position);
 
-    m_HUDSprite = CreateSprite("shotgun_shell_icon.png", glm::vec2(0.0f), glm::vec2(64.0f));
+    m_HUDSprite = CreateSprite("shotgun_shell_icon", glm::vec2(0.0f), glm::vec2(64.0f));
 
     m_SfxGunshot
         = Audio::LoadSource("sfx/TriuneFilms/Hollywood_Guns_SFX/mossberg590-12gauge-single-shot-processed-C.wav", 0.5f);

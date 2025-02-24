@@ -3,11 +3,12 @@
 
 #include <glad/glad.h>
 
-class CglRenderTexture {
+class CglRenderTexture
+{
 
   public:
     CglRenderTexture();
-    CglRenderTexture(int width, int height, GLenum format);
+    CglRenderTexture(int width, int height, GLenum format, GLint nearestOrLinear);
     ~CglRenderTexture();
     void Bind();
     void Unbind();

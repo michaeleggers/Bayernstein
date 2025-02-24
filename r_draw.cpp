@@ -16,7 +16,8 @@ void r_DrawFrustum(const math::Frustum& frustum)
 
     // Normals
     Line frustumNormalA // right
-        = { Vertex(frustum.vertices[ 4 ].pos), Vertex(frustum.vertices[ 4 ].pos + 50.0f * frustum.planes[ 0 ].normal) };
+        = { Vertex{ frustum.vertices[ 4 ].pos },
+            Vertex{ frustum.vertices[ 4 ].pos + 50.0f * frustum.planes[ 0 ].normal } };
     frustumNormalA.a.color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
     frustumNormalA.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     renderer->ImDrawLines(frustumNormalA.vertices, 2, false);
@@ -34,31 +35,36 @@ void r_DrawFrustum(const math::Frustum& frustum)
     */
 
     Line frustumNormalB // top
-        = { Vertex(frustum.vertices[ 4 ].pos), Vertex(frustum.vertices[ 4 ].pos + 50.0f * frustum.planes[ 1 ].normal) };
+        = { Vertex{ frustum.vertices[ 4 ].pos },
+            Vertex{ frustum.vertices[ 4 ].pos + 50.0f * frustum.planes[ 1 ].normal } };
     frustumNormalB.a.color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
     frustumNormalB.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     renderer->ImDrawLines(frustumNormalB.vertices, 2, false);
 
     Line frustumNormalC // left
-        = { Vertex(frustum.vertices[ 7 ].pos), Vertex(frustum.vertices[ 7 ].pos + 50.0f * frustum.planes[ 2 ].normal) };
+        = { Vertex{ frustum.vertices[ 7 ].pos },
+            Vertex{ frustum.vertices[ 7 ].pos + 50.0f * frustum.planes[ 2 ].normal } };
     frustumNormalC.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
     frustumNormalC.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     renderer->ImDrawLines(frustumNormalC.vertices, 2, false);
 
     Line frustumNormalD // bottom
-        = { Vertex(frustum.vertices[ 6 ].pos), Vertex(frustum.vertices[ 6 ].pos + 50.0f * frustum.planes[ 3 ].normal) };
+        = { Vertex{ frustum.vertices[ 6 ].pos },
+            Vertex{ frustum.vertices[ 6 ].pos + 50.0f * frustum.planes[ 3 ].normal } };
     frustumNormalD.a.color = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
     frustumNormalD.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     renderer->ImDrawLines(frustumNormalD.vertices, 2, false);
 
     Line frustumNormalE // near
-        = { Vertex(frustum.vertices[ 0 ].pos), Vertex(frustum.vertices[ 0 ].pos + 50.0f * frustum.planes[ 4 ].normal) };
+        = { Vertex{ frustum.vertices[ 0 ].pos },
+            Vertex{ frustum.vertices[ 0 ].pos + 50.0f * frustum.planes[ 4 ].normal } };
     frustumNormalE.a.color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
     frustumNormalE.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     renderer->ImDrawLines(frustumNormalE.vertices, 2, false);
 
     Line frustumNormalF // far
-        = { Vertex(frustum.vertices[ 4 ].pos), Vertex(frustum.vertices[ 4 ].pos + 50.0f * frustum.planes[ 5 ].normal) };
+        = { Vertex{ frustum.vertices[ 4 ].pos },
+            Vertex{ frustum.vertices[ 4 ].pos + 50.0f * frustum.planes[ 5 ].normal } };
     frustumNormalF.a.color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
     frustumNormalF.b.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     renderer->ImDrawLines(frustumNormalF.vertices, 2, false);

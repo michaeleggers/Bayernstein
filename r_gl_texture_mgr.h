@@ -14,8 +14,8 @@ class GLTextureManager : public ITextureManager {
   public:
     static GLTextureManager* Instance();
 
-    ITexture* CreateTexture(std::string filename) override;
-    uint64_t  CreateTextureGetHandle(std::string filename) override;
+    ITexture* CreateTexture(const std::string& filename) override;
+    bool      CreateTextureGetHandle(const std::string& filename, uint64_t* out_handle) override;
     ITexture* CreateTexture(CFont* font) override;
     ITexture* GetTexture(std::string filename) override;
     ITexture* GetTexture(uint64_t handle) override;

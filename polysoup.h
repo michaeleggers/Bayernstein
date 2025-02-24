@@ -11,17 +11,20 @@
 static const uint8_t POLY_SOUP_MAGIC[ 4 ]   = { 'P', 'L', 'Y', '\0' };
 static const uint8_t POLY_SOUP_VERSION[ 4 ] = { '0', '0', '1', '\0' };
 
-enum SoupFlags {
+enum SoupFlags
+{
     SOUP_GET_ALL,
     SOUP_GET_WORLDSPAWN_ONLY
 };
 
-struct QuakeMapVertex {
+struct QuakeMapVertex
+{
     glm::f64vec3 pos;
     glm::vec2    uv;
 };
 
-struct MapPolygon {
+struct MapPolygon
+{
     std::vector<QuakeMapVertex> vertices;
     glm::f64vec3                normal;
     // NOTE: (Michael): A single, solid color would be good for testing
@@ -32,13 +35,15 @@ struct MapPolygon {
     uint64_t    contentFlags; // eg. water, slime, lava, ...
 };
 
-struct MapPlane {
+struct MapPlane
+{
     glm::f64vec3 n;
     glm::f64vec3 p0;
     double       d; // = n dot p0. Just for convenience.
 };
 
-struct PolySoupDataHeader {
+struct PolySoupDataHeader
+{
     uint8_t  magic[ 4 ]; // must be PLYS
     uint8_t  version[ 4 ];
     uint64_t numPolys; // num of MapPolygons
@@ -46,7 +51,8 @@ struct PolySoupDataHeader {
 };
 
 #pragma pack(push, 1)
-struct PolySoupData {
+struct PolySoupData
+{
     PolySoupDataHeader header;
     MapPolygon*        polys;
 };

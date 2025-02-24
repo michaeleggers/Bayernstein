@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(HKD VERSION 1.0)
+project(HKD VERSION 0.0.101)
 
 macro(ADD_SRC_HEADER_FILES)
     file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false RELATIVE
@@ -11,6 +11,12 @@ macro(ADD_SRC_HEADER_FILES)
     file(GLOB_RECURSE HEADER_FILES LIST_DIRECTORIES false RELATIVE
             ${CMAKE_CURRENT_SOURCE_DIR} *.h)
 endmacro()
+
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake_version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake_version.h
+)
 
 # ADD_SRC_HEADER_FILES()
 
@@ -35,7 +41,19 @@ if (MSVC)
     add_compile_options(/W4)
 endif ()
 
-add_subdirectory(dependencies/SDL2.28.4)
+# Use local shared libs
+# From: https://github.com/dhewm/dhewm3/blob/a18b9e6bad31a1e9ffcf1bb815ec734d4290e4b0/neo/CMakeLists.txt#L34-L41
+if (UNIX AND NOT APPLE)
+#set(CMAKE_CXX_FLAGS "-Wl,-rpath,$ORIGIN")
+#set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+	set(CMAKE_SKIP_RPATH OFF CACHE BOOL "Skip RPATH" FORCE)
+	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+	set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+	set(CMAKE_INSTALL_RPATH "$ORIGIN/")
+	set(ldflags "${ldflags} -Wl,-z,origin") # not sure this is even needed, but shouldn't hurt
+endif()
+
+add_subdirectory(${SDL_SRC_DIR})
 
 set(SOLOUD_SRC_PATH dependencies/soloud/src)
 
@@ -44,6 +62,10 @@ set(SOLOUD_SRC_PATH dependencies/soloud/src)
 #   ${HEADER_FILES}
 # ) 
 
+#add_executable(VersionMaker
+#    version.cpp
+#    version.h
+#)
 
 add_executable(Game
 
@@ -134,6 +156,8 @@ add_executable(Game
     CWorld.h
     collision.cpp
     collision.h
+    CImageManager.h
+    CImageManager.cpp
     globals.h
     Clock/clock.cpp
     Clock/clock.h
@@ -259,17 +283,34 @@ add_executable(Game
     ${RESOURCE_FILES}
 )
 
+# see: https://stackoverflow.com/questions/59829969/why-is-my-vs-sdl-2-0-window-2x-bigger-than-i-specified
+if (WIN32)
+    set_target_properties(Game PROPERTIES VS_DPI_AWARE "PerMonitor")
+endif ()
+
+set_target_properties(Game PROPERTIES OUTPUT_NAME "DOD-${PROJECT_VERSION}")
+
 target_include_directories(Game
     PUBLIC dependencies
     PUBLIC dependencies/glad/include
     PUBLIC dependencies/imgui
-    PUBLIC dependencies/SDL2.28.4/include
+    PUBLIC ${SDL_SRC_DIR}/include
     PUBLIC dependencies/soloud/include
+    PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 add_definitions(-DWITH_MINIAUDIO) # enable soloud miniaudio backend
 
+
 target_link_libraries(Game PUBLIC
-    SDL2
-    SDL2main
+	SDL2
+	SDL2main
 )
+
+# This seems only to be necessary on Ubuntu 18.04. and NOT from 20.04+
+if (UNIX AND NOT APPLE)
+target_link_libraries(Game PUBLIC
+	#${CMAKE_DL_LIBS}
+    -lc -ldl -lpthread
+    )
+endif()

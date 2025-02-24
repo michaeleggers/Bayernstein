@@ -32,8 +32,8 @@
 #include "r_itexture.h"
 #include "utils/quick_math.h"
 
-const int WINDOW_WIDTH  = 1920;
-const int WINDOW_HEIGHT = 1080;
+constexpr int DOD_DEFAULT_WINDOW_WIDTH  = 1920;
+constexpr int DOD_DEFAULT_WINDOW_HEIGHT = 1080;
 
 ConsoleVariable scr_consize      = { "scr_consize", 0.45f };
 ConsoleVariable scr_conopacity   = { "scr_conopacity", 0.95f };
@@ -153,7 +153,7 @@ void GLRender::Shutdown(void)
 
     // Close and destroy the window
 
-    SDL_GL_DeleteContext(m_SDL_GL_Conext);
+    SDL_GL_DeleteContext(m_SDL_GL_Context);
     SDL_DestroyWindow(m_Window);
 
     m_ModelBatch->Kill();
@@ -202,8 +202,21 @@ bool GLRender::Init(void)
 #endif
 */
 
+    SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
+    SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
+
     // Create an application window with the following settings:
-    m_Window = SDL_CreateWindow("HKD", 1, 1, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
+    m_Window = SDL_CreateWindow(
+        "HKD", 1, 1, DOD_DEFAULT_WINDOW_WIDTH, DOD_DEFAULT_WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
+    //SDL_SetWindowFullscreen(m_Window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    SDL_DisplayMode displayMode{};
+    SDL_GetCurrentDisplayMode(0, &displayMode);
+    printf("Display Mode:\n  width: %d, height: %d\n  refresh-rate: %d\n",
+           displayMode.w,
+           displayMode.h,
+           displayMode.refresh_rate);
+    //SDL_SetWindowSize(m_Window, displayMode.w, displayMode.h);
+    //SDL_SetWindowDisplayMode(m_Window, &displayMode);
 
     // BEWARE! These flags must be set AFTER SDL_CreateWindow. Otherwise SDL
     // just doesn't cate about them (at least on Linux)!
@@ -221,14 +234,14 @@ bool GLRender::Init(void)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-    m_SDL_GL_Conext = SDL_GL_CreateContext(m_Window);
-    if ( !m_SDL_GL_Conext )
+    m_SDL_GL_Context = SDL_GL_CreateContext(m_Window);
+    if ( !m_SDL_GL_Context )
     {
         SDL_Log("Unable to create GL context! SDL-Error: %s\n", SDL_GetError());
         return false;
     }
 
-    SDL_GL_MakeCurrent(m_Window, m_SDL_GL_Conext);
+    SDL_GL_MakeCurrent(m_Window, m_SDL_GL_Context);
 
     int majorVersion;
     int minorVersion;
@@ -276,7 +289,7 @@ bool GLRender::Init(void)
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGui_ImplSDL2_InitForOpenGL(m_Window, m_SDL_GL_Conext);
+    ImGui_ImplSDL2_InitForOpenGL(m_Window, m_SDL_GL_Context);
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // ImGui Config
@@ -325,17 +338,7 @@ bool GLRender::Init(void)
 
     // Create FBOs for 3D/2D Rendering
 
-    // FBO for rendering the 3d scene.
-    m_3dFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    // First person weapon display
-    m_3dFirstPersonViewFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    // FBO for rendering text and other 2d elements (shapes, sprites, ...)
-    // on top of the 3d scene.
-    m_2dFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    m_ConsoleFBO = new CglFBO(WINDOW_WIDTH, WINDOW_HEIGHT);
+    InitFBOs(DOD_DEFAULT_WINDOW_WIDTH, DOD_DEFAULT_WINDOW_HEIGHT);
 
     VariableManager::Register(&scr_consize);
     VariableManager::Register(&scr_conopacity);
@@ -347,12 +350,112 @@ bool GLRender::Init(void)
     return true;
 }
 
+void GLRender::InitFBOs(int width, int height)
+{
+    m_RenderWidth  = width;
+    m_RenderHeight = height;
+
+    // FBO for rendering the 3d scene.
+    m_3dFBO = new CglFBO(width, height, GL_NEAREST);
+
+    // First person weapon display
+    m_3dFirstPersonViewFBO = new CglFBO(width, height, GL_NEAREST);
+
+    // FBO for rendering text and other 2d elements (shapes, sprites, ...)
+    // on top of the 3d scene.
+    m_2dFBO = new CglFBO(width, height, GL_NEAREST);
+
+    m_ConsoleFBO = new CglFBO(width, height, GL_NEAREST);
+}
+
+void GLRender::SetResolution(int width, int height)
+{
+    // Nuke the old FBOs
+    delete m_3dFBO;
+    delete m_3dFirstPersonViewFBO;
+    delete m_2dFBO;
+    delete m_ConsoleFBO;
+
+    InitFBOs(width, height);
+
+    m_RenderWidth  = width;
+    m_RenderHeight = height;
+
+    /* Set window size according to DPI scaling.*/
+    /* See: https://wiki.libsdl.org/SDL2/SDL_GetDisplayDPI */
+
+    printf("--------------------------\n\n");
+
+    int windowWidth, windowHeight;
+    SDL_GetWindowSize(m_Window, &windowWidth, &windowHeight);
+    printf("Window Size: %d, %d\n", windowWidth, windowHeight);
+
+    int windowDrawWidth, windowDrawHeight;
+    SDL_GL_GetDrawableSize(m_Window, &windowDrawWidth, &windowDrawHeight);
+    printf("Drawable Size: %d, %d\n", windowDrawWidth, windowDrawHeight);
+
+    float scalingFactorW = (float)windowDrawWidth / (float)windowWidth;
+    float scalingFactorH = (float)windowDrawHeight / (float)windowHeight;
+    printf("DPI scaling factor (w/h): %f, %f\n", scalingFactorW, scalingFactorH);
+
+    SDL_DisplayMode displayMode{};
+    SDL_GetCurrentDisplayMode(0, &displayMode);
+    printf("Display Mode:\n  width: %d, height: %d\n  refresh-rate: %d\n",
+           displayMode.w,
+           displayMode.h,
+           displayMode.refresh_rate);
+
+    int scaledWidth  = (int)((float)width / scalingFactorW);
+    int scaledHeight = (int)((float)height / scalingFactorH);
+    printf("Setting window size to scaled width/height: %d, %d\n", scaledWidth, scaledHeight);
+    SDL_SetWindowSize(m_Window, scaledWidth, scaledHeight);
+    m_WindowWidth  = scaledWidth;
+    m_WindowHeight = scaledHeight;
+
+    printf("Resolution set to: %d, %d\n", m_RenderWidth, m_RenderHeight);
+    printf("--------------------------\n\n");
+}
+
+void GLRender::SetDisplayMode(DisplayMode displayMode)
+{
+    switch ( displayMode )
+    {
+    case DOD_DISPLAY_MODE_FULLSCREEN_DESKTOP:
+    {
+
+        SDL_SetWindowFullscreen(m_Window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+        SDL_DisplayMode displayMode{};
+        SDL_GetCurrentDisplayMode(0, &displayMode);
+        printf("Display Mode:\n  width: %d, height: %d\n  refresh-rate: %d\n",
+               displayMode.w,
+               displayMode.h,
+               displayMode.refresh_rate);
+        m_WindowWidth  = displayMode.w;
+        m_WindowHeight = displayMode.h;
+    }
+    break;
+
+    case DOD_DISPLAY_MODE_WINDOWED:
+    {
+        SDL_SetWindowFullscreen(m_Window, 0);
+        //m_WindowWidth  = m_RenderWidth;
+        //m_WindowHeight = m_RenderHeight;
+    }
+    break;
+
+    default:
+    {
+        printf("Unsupported display mode\n");
+    }
+    }
+}
+
 // At the moment we don't generate a drawCmd for a model. We just but all of
 // the meshes into a GPU buffer and draw all of them exactly the same way.
 int GLRender::RegisterModel(HKD_Model* model)
 {
     GLModel gl_model = {};
-    int     offset   = m_ModelBatch->Add(&model->tris[ 0 ], model->tris.size());
+    int     offset   = m_ModelBatch->AddTris(&model->tris[ 0 ], model->tris.size());
 
     for ( int i = 0; i < model->meshes.size(); i++ )
     {
@@ -375,7 +478,7 @@ int GLRender::RegisterModel(HKD_Model* model)
 int GLRender::RegisterBrush(HKD_Model* model)
 {
     GLModel gl_model = {};
-    int     offset   = m_BrushBatch->Add(&model->tris[ 0 ], model->tris.size());
+    int     offset   = m_BrushBatch->AddTris(&model->tris[ 0 ], model->tris.size());
 
     for ( int i = 0; i < model->meshes.size(); i++ )
     {
@@ -448,9 +551,9 @@ void GLRender::RegisterWorld(CWorld* world)
 }
 
 // Returns the CPU handle
-uint64_t GLRender::RegisterTextureGetHandle(const std::string& name)
+bool GLRender::RegisterTextureGetHandle(const std::string& name, uint64_t* out_handle)
 {
-    return m_ITextureManager->CreateTextureGetHandle(name);
+    return m_ITextureManager->CreateTextureGetHandle(name, out_handle);
 }
 
 void GLRender::SetActiveCamera(Camera* camera)
@@ -501,7 +604,7 @@ std::vector<ITexture*> GLRender::Textures(void)
 
 void GLRender::ImDrawTris(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
 {
-    int offset = m_ImPrimitiveBatch->Add(tris, numTris, cullFace, drawMode);
+    int offset = m_ImPrimitiveBatch->AddTris(tris, numTris, cullFace, drawMode);
 
     GLBatchDrawCmd drawCmd = { .offset = offset, .numVerts = 3 * numTris, .cullFace = cullFace, .drawMode = drawMode };
 
@@ -521,7 +624,7 @@ void GLRender::ImDrawTriPlanes(TriPlane* triPlanes, uint32_t numTriPlanes, bool 
 
 GLBatchDrawCmd GLRender::AddTrisToBatch(GLBatch* batch, Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
 {
-    int offset = batch->Add(tris, numTris, cullFace, drawMode);
+    int offset = batch->AddTris(tris, numTris, cullFace, drawMode);
 
     GLBatchDrawCmd drawCmd = { .offset = offset, .numVerts = 3 * numTris, .cullFace = cullFace, .drawMode = drawMode };
 
@@ -534,7 +637,7 @@ void GLRender::ImDrawIndexed(
 {
     int offset        = 0;
     int offsetIndices = 0;
-    if ( !m_ImPrimitiveBatchIndexed->Add(
+    if ( !m_ImPrimitiveBatchIndexed->AddIndexedVertices(
              verts, numVerts, indices, numIndices, &offset, &offsetIndices, cullFace, drawMode) )
     {
         return;
@@ -553,7 +656,7 @@ void GLRender::ImDrawIndexed(
 // TODO: not done
 void GLRender::ImDrawVerts(Vertex* verts, uint32_t numVerts)
 {
-    int offset = m_ImPrimitiveBatch->Add(verts, numVerts);
+    int offset = m_ImPrimitiveBatch->AddVertices(verts, numVerts);
 
     GLBatchDrawCmd drawCmd = { .offset = offset, .numVerts = numVerts, .cullFace = false, .drawMode = DRAW_MODE_SOLID };
 }
@@ -598,12 +701,12 @@ void GLRender::ImDrawLines(const Vertex* verts, uint32_t numVerts, bool close)
 
     const Vertex* v = verts;
     // TODO: DRAW_MODEL_LINES doesn't do anything to the batch!
-    int offset = m_ImPrimitiveBatch->Add(v, 2, false, DRAW_MODE_LINES);
+    int offset = m_ImPrimitiveBatch->AddVertices(v, 2, false, DRAW_MODE_LINES);
     v += 1;
     int moreVerts = 0;
     for ( int i = 2; i < numVerts; i++ )
     {
-        m_ImPrimitiveBatch->Add(v, 2, false, DRAW_MODE_LINES);
+        m_ImPrimitiveBatch->AddVertices(v, 2, false, DRAW_MODE_LINES);
         v++;
         moreVerts += 1;
     }
@@ -611,7 +714,7 @@ void GLRender::ImDrawLines(const Vertex* verts, uint32_t numVerts, bool close)
     if ( close )
     {
         Vertex endAndStart[] = { *v, verts[ 0 ] };
-        m_ImPrimitiveBatch->Add(endAndStart, 2, false, DRAW_MODE_LINES);
+        m_ImPrimitiveBatch->AddVertices(endAndStart, 2, false, DRAW_MODE_LINES);
         moreVerts += 2;
     }
 
@@ -626,7 +729,7 @@ void GLRender::ImDrawSphere(glm::vec3 pos, float radius, glm::vec4 color)
     glm::mat4 view = m_ActiveCamera->ViewMatrix();
     // TODO: Global Setting for perspective values
     glm::mat4 proj
-        = glm::perspective(glm::radians(45.0f), (float)m_WindowWidth / (float)m_WindowHeight, 0.1f, 10000.0f);
+        = glm::perspective(glm::radians(45.0f), (float)m_RenderWidth / (float)m_RenderHeight, 0.1f, 10000.0f);
 
     m_ColliderShader->Activate();
     m_ColliderShader->SetViewProjMatrices(view, proj);
@@ -651,12 +754,12 @@ GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t 
 
     Vertex* v = verts;
     // TODO: DRAW_MODEL_LINES doesn't do anything to the batch!
-    int offset = batch->Add(v, 2, false, DRAW_MODE_LINES);
+    int offset = batch->AddVertices(v, 2, false, DRAW_MODE_LINES);
     v += 1;
     int moreVerts = 0;
     for ( int i = 2; i < numVerts; i++ )
     {
-        batch->Add(v, 2, false, DRAW_MODE_LINES);
+        batch->AddVertices(v, 2, false, DRAW_MODE_LINES);
         v++;
         moreVerts += 1;
     }
@@ -664,7 +767,7 @@ GLBatchDrawCmd GLRender::AddLineToBatch(GLBatch* batch, Vertex* verts, uint32_t 
     if ( close )
     {
         Vertex endAndStart[] = { *v, verts[ 0 ] };
-        batch->Add(endAndStart, 2, false, DRAW_MODE_LINES);
+        batch->AddVertices(endAndStart, 2, false, DRAW_MODE_LINES);
         moreVerts += 2;
     }
 
@@ -701,8 +804,9 @@ void GLRender::RenderBegin(void)
     // Render into the GL default FBO.
 
     // See: https://wiki.libsdl.org/SDL2/SDL_GL_GetDrawableSize
+    // NOTE: I don't think this does anything useful as it is overridden by the
+    // other calls to glViewport ;)
     SDL_GL_GetDrawableSize(m_Window, &m_WindowWidth, &m_WindowHeight);
-    float windowAspect = (float)m_WindowWidth / (float)m_WindowHeight;
     glViewport(0, 0, m_WindowWidth, m_WindowHeight);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -727,9 +831,7 @@ void GLRender::Begin3D(void)
 
     // Render into the 3D scene FBO
     m_3dFBO->Bind();
-    SDL_GL_GetDrawableSize(m_Window, &m_WindowWidth, &m_WindowHeight);
-    float windowAspect = (float)m_WindowWidth / (float)m_WindowHeight;
-    glViewport(0, 0, m_WindowWidth, m_WindowHeight);
+    glViewport(0, 0, m_3dFBO->m_Width, m_3dFBO->m_Height);
     glClearColor(0.f, 0.f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -815,7 +917,7 @@ void GLRender::Render(
     glm::mat4 view = camera->ViewMatrix();
     // TODO: Global Setting for perspective values
     glm::mat4 proj
-        = glm::perspective(glm::radians(45.0f), (float)m_WindowWidth / (float)m_WindowHeight, 0.1f, 10000.0f);
+        = glm::perspective(glm::radians(45.0f), (float)m_RenderWidth / (float)m_RenderHeight, 0.1f, 10000.0f);
 
     // Draw immediate mode primitives
 
@@ -990,19 +1092,18 @@ void GLRender::RenderFirstPersonView(Camera* camera, HKD_Model* model)
     //glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 
     m_3dFirstPersonViewFBO->Bind();
-    SDL_GL_GetDrawableSize(m_Window, &m_WindowWidth, &m_WindowHeight);
-    float windowAspect = (float)m_WindowWidth / (float)m_WindowHeight;
+    SDL_GL_GetDrawableSize(m_Window, &m_RenderWidth, &m_RenderHeight);
+    float windowAspect = (float)m_RenderWidth / (float)m_RenderHeight;
 
     glm::mat4 view = camera->ViewMatrix();
     // TODO: Global Setting for perspective values
-    glm::mat4 proj
-        = glm::perspective(glm::radians(45.0f), (float)m_WindowWidth / (float)m_WindowHeight, 0.1f, 10000.0f);
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)m_RenderWidth / (float)m_RenderHeight, 1.0f, 100.0f);
 
     m_ModelBatch->Bind();
     m_ModelShader->Activate();
     m_ModelShader->SetViewProjMatrices(view, proj);
 
-    glViewport(0, 0, m_WindowWidth, m_WindowHeight);
+    glViewport(0, 0, m_3dFirstPersonViewFBO->m_Width, m_3dFirstPersonViewFBO->m_Height);
     glClearColor(0.f, 0.f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1079,7 +1180,7 @@ void GLRender::Begin2D()
 
     glViewport(0, 0, m_2dFBO->m_Width, m_2dFBO->m_Height);
 
-    glm::mat4 ortho = glm::ortho(0.0f, (float)m_2dFBO->m_Width, (float)m_2dFBO->m_Height, 0.0f, -1.0f, 1.0f);
+    glm::mat4 ortho = glm::ortho(0.0f, (float)m_RenderWidth, (float)m_RenderHeight, 0.0f, -1.0f, 1.0f);
     m_FontShader->Activate();
     m_FontShader->SetViewProjMatrices(glm::mat4(1.0f), ortho);
     m_ShapesShader->Activate();
@@ -1108,8 +1209,8 @@ void GLRender::DrawSprite(const Sprite*        sprite,
     float posY = pos.y;
     if ( coordMode == COORD_MODE_REL )
     {
-        posX *= m_WindowWidth;
-        posY *= m_WindowHeight;
+        posX *= m_RenderWidth;
+        posY *= m_RenderHeight;
     }
 
     m_SpriteShader->Activate();
@@ -1128,7 +1229,6 @@ void GLRender::DrawSprite(const Sprite*        sprite,
 
 void GLRender::SetFont(CFont* font, glm::vec4 color)
 {
-
     m_FontShader->Activate();
 
     ITexture* fontTexture = m_ITextureManager->GetTexture(font->m_Filename);
@@ -1185,8 +1285,8 @@ void GLRender::R_DrawText(const std::string& text, float x, float y, ScreenSpace
 
     // TODO: (Michael): Make sure that the correct shader is active.
 
-    float xOffset = WINDOW_WIDTH * x;
-    float yOffset = WINDOW_HEIGHT * y;
+    float xOffset = DOD_DEFAULT_WINDOW_WIDTH * x;
+    float yOffset = DOD_DEFAULT_WINDOW_HEIGHT * y;
 
     if ( coordMode == COORD_MODE_ABS )
     {
@@ -1246,7 +1346,7 @@ void GLRender::R_DrawText(const std::string& text, float x, float y, ScreenSpace
             fq.b.uv  = { q.s0, q.t1 };
             fq.c.uv  = { q.s0, q.t0 };
             fq.d.uv  = { q.s1, q.t0 };
-            m_FontBatch->Add(
+            m_FontBatch->AddIndexedVertices(
                 fq.vertices, 4, indices, 6, &out_OffsetVertices, &out_OffsetIndices, false, DRAW_MODE_SOLID);
 
             lastIndex = iOffset + 3 + i * 4;
@@ -1266,10 +1366,10 @@ void GLRender::R_DrawText(const std::string& text, float x, float y, ScreenSpace
 void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceCoordMode coordMode)
 {
 
-    float x0 = WINDOW_WIDTH * x;
-    float y0 = WINDOW_HEIGHT * y;
-    float x1 = WINDOW_WIDTH * (x + width);
-    float y1 = WINDOW_HEIGHT * (y + height);
+    float x0 = DOD_DEFAULT_WINDOW_WIDTH * x;
+    float y0 = DOD_DEFAULT_WINDOW_HEIGHT * y;
+    float x1 = DOD_DEFAULT_WINDOW_WIDTH * (x + width);
+    float y1 = DOD_DEFAULT_WINDOW_HEIGHT * (y + height);
 
     if ( coordMode == COORD_MODE_ABS )
     {
@@ -1293,7 +1393,8 @@ void GLRender::DrawBox(float x, float y, float width, float height, ScreenSpaceC
     // of unused (and unwanted) out_* variables for now!
     int out_OffsetIndices  = 0; // TODO: Not needed here!
     int out_OffsetVertices = 0; // TODO: Not needed here!
-    m_ShapesBatch->Add(fq.vertices, 4, indices, 6, &out_OffsetVertices, &out_OffsetIndices, false, DRAW_MODE_SOLID);
+    m_ShapesBatch->AddIndexedVertices(
+        fq.vertices, 4, indices, 6, &out_OffsetVertices, &out_OffsetIndices, false, DRAW_MODE_SOLID);
 
     m_ShapesBatch->m_LastIndex += 4;
 
@@ -1314,7 +1415,7 @@ void GLRender::RenderColliders(Camera* camera, HKD_Model** models, uint32_t numM
     glm::mat4 view = camera->ViewMatrix();
     // TODO: Global Setting for perspective values
     glm::mat4 proj
-        = glm::perspective(glm::radians(45.0f), (float)m_WindowWidth / (float)m_WindowHeight, 0.1f, 10000.0f);
+        = glm::perspective(glm::radians(45.0f), (float)m_RenderWidth / (float)m_RenderHeight, 0.1f, 10000.0f);
 
     m_ColliderShader->Activate();
     m_ColliderShader->SetViewProjMatrices(view, proj);
@@ -1354,7 +1455,7 @@ void GLRender::RenderConsole(Console* console, CFont* font)
     if ( !console->m_isActive ) return;
 
     const float relHeight   = scr_consize.value;
-    const float height      = m_WindowHeight * relHeight;
+    const float height      = m_RenderHeight * relHeight;
     const float borderWidth = 2.0f;
     const float textMargin  = 10.0f;
     const float lineHeight
@@ -1366,20 +1467,20 @@ void GLRender::RenderConsole(Console* console, CFont* font)
     const float inputY       = height - font->m_Size - textMargin;
     float       logY         = inputY - textMargin * 2 - font->m_Size;
     const int   maxLines     = floor(logY / lineHeight) + 1;
-    const int   maxChars     = floor((m_WindowWidth - 2 * textMargin) / charWidth);
+    const int   maxChars     = floor((m_RenderWidth - 2 * textMargin) / charWidth);
     const bool  isScrollable = console->m_lineBuffer.Size() > maxLines;
 
     Begin2D();
     m_ConsoleFBO->Bind();
     // draw background/frame
     SetShapeColor(glm::vec4(0.05f, 0.05f, 0.05f, scr_conopacity.value));
-    DrawBox(0.0f, 0.0f, 1.0f, relHeight);
+    DrawBox(0.0f, 0.0f, m_RenderWidth, height, COORD_MODE_ABS);
     SetShapeColor(glm::vec4(1.0f));
     DrawBox(0.0f, 0.0f, borderWidth, height, COORD_MODE_ABS);
-    DrawBox(m_WindowWidth, 0.0f, -borderWidth, height, COORD_MODE_ABS);
-    DrawBox(0.0f, 0.0f, m_WindowWidth, borderWidth, COORD_MODE_ABS);
-    DrawBox(0.0f, inputY - textMargin, m_WindowWidth, -borderWidth, COORD_MODE_ABS);
-    DrawBox(0.0f, height, m_WindowWidth, -borderWidth, COORD_MODE_ABS);
+    DrawBox(m_RenderWidth, 0.0f, -borderWidth, height, COORD_MODE_ABS);
+    DrawBox(0.0f, 0.0f, m_RenderWidth, borderWidth, COORD_MODE_ABS);
+    DrawBox(0.0f, inputY - textMargin, m_RenderWidth, -borderWidth, COORD_MODE_ABS);
+    DrawBox(0.0f, height, m_RenderWidth, -borderWidth, COORD_MODE_ABS);
 
     // draw input
     SetFont(font, glm::vec4(1.0f));
@@ -1462,6 +1563,11 @@ void GLRender::RenderEnd(void)
     glDepthFunc(GL_LESS);
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+    int windowDrawWidth, windowDrawHeight;
+    SDL_GL_GetDrawableSize(m_Window, &windowDrawWidth, &windowDrawHeight);
+    //printf("drawable size: %d, %d\n", windowDrawWidth, windowDrawHeight);
+    glViewport(0, 0, windowDrawWidth, windowDrawHeight);
 
     // FIX: Some buffer *HAS* to be bound apparently before a draw call
     // so OpenGL doesn't freak out... So this buffer is not even used
@@ -1617,6 +1723,11 @@ void GLRender::SetWindowTitle(char* windowTitle)
 glm::vec2 GLRender::GetWindowDimensions()
 {
     return glm::vec2(m_WindowWidth, m_WindowHeight);
+}
+
+glm::vec2 GLRender::GetRenderDimensions()
+{
+    return glm::vec2(m_RenderWidth, m_RenderHeight);
 }
 
 ITextureManager* GLRender::GetTextureManager()

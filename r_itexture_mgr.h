@@ -9,8 +9,8 @@
 
 class ITextureManager {
   public:
-    virtual ITexture* CreateTexture(std::string filename)          = 0;
-    virtual uint64_t  CreateTextureGetHandle(std::string filename) = 0;
+    virtual ITexture* CreateTexture(const std::string& filename)          = 0;
+    virtual bool      CreateTextureGetHandle(const std::string& filename, uint64_t* out_handle) = 0;
     virtual ITexture* CreateTexture(CFont* font)                   = 0;
     virtual ITexture* GetTexture(std::string filename)             = 0;
     virtual ITexture* GetTexture(uint64_t handle)                  = 0;

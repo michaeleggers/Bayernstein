@@ -7,7 +7,7 @@
 #include "../FSM/istate.h"
 
 class Enemy;
-class Telegram;
+struct Telegram;
 
 class EnemyIdle : public State<Enemy>
 {
