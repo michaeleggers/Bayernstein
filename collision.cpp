@@ -204,19 +204,19 @@ bool CheckSweptSphereVsLinesegment(glm::vec3  p0,
     glm::vec3 e                = p1 - p0;
     float     eSquaredLength   = glm::length2(e);
     float     vSquaredLength   = glm::length2(velocity);
-    glm::vec3 baseToVertex     = p0 - sphereBase;
+    glm::vec3 baseToVertex     = sphereBase - p0;
     float     eDotVel          = glm::dot(e, velocity);
     float     eDotBaseToVertex = glm::dot(e, baseToVertex);
 
-    float a = eSquaredLength * (-vSquaredLength) + eDotVel * eDotVel;
+    float a = eSquaredLength * vSquaredLength - eDotVel * eDotVel;
     float b = eSquaredLength * 2.0f * glm::dot(velocity, baseToVertex) - 2.0f * (eDotVel * eDotBaseToVertex);
-    float c = eSquaredLength * (1.0f - glm::length2(baseToVertex)) + eDotBaseToVertex * eDotBaseToVertex;
+    float c = eSquaredLength * (glm::length2(baseToVertex) - 1.0f) - eDotBaseToVertex * eDotBaseToVertex;
 
     float t;
     if ( GetSmallestRoot(a, b, c, maxT, &t) )
     {
         // Now check if hitpoint is withing the line segment.
-        float f = (eDotVel * t - eDotBaseToVertex) / eSquaredLength;
+        float f = (eDotVel * t + eDotBaseToVertex) / eSquaredLength;
         if ( f >= 0.0f && f <= 1.0f )
         {
             *out_newT     = t;
@@ -411,29 +411,28 @@ static void CollideUnitSphereWithTri(CollisionInfo* ci, const Tri& tri)
 }
 
 static std::vector<Tri> g_MapTrisCache;
-void InitMapTrisCache(size_t numTris) 
+void                    InitMapTrisCache(size_t numTris)
 {
     g_MapTrisCache.resize(numTris);
 }
-  
+
 CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider                 ec,
                                           glm::vec3                         velocity,
                                           glm::vec3                         gravity,
                                           MapTri*                           tris,
                                           int                               triCount,
                                           std::vector<std::vector<MapTri>*> brushMapTris)
-{      
+{
     // Convert to ellipsoid space
     glm::vec3 scaleToESpace(ec.toESpace[ 0 ][ 0 ], ec.toESpace[ 1 ][ 1 ], ec.toESpace[ 2 ][ 2 ]);
-   
+
     for ( int i = 0; i < triCount; i++ )
     {
-        Tri tri   = tris[ i ].tri;
+        Tri tri = tris[ i ].tri;
         TriToEllipsoidSpace(&tri, scaleToESpace);
-        g_MapTrisCache[i] = tri;
+        g_MapTrisCache[ i ] = tri;
     }
     int currentTriCount = triCount;
-
 
     // Also do this for the brush tris
     for ( int brushIndex = 0; brushIndex < brushMapTris.size(); brushIndex++ )
@@ -441,9 +440,9 @@ CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider                 ec,
         std::vector<MapTri>* pMapTris = brushMapTris[ brushIndex ];
         for ( int j = 0; j < pMapTris->size(); j++ )
         {
-            Tri tri   = pMapTris->at(j).tri;
+            Tri tri = pMapTris->at(j).tri;
             TriToEllipsoidSpace(&tri, scaleToESpace);
-            g_MapTrisCache[currentTriCount + j] = tri;
+            g_MapTrisCache[ currentTriCount + j ] = tri;
         }
         currentTriCount += pMapTris->size();
     }
@@ -471,7 +470,7 @@ CollisionInfo CollideEllipsoidWithMapTris(EllipsoidCollider                 ec,
     ci.didCollide       = false;
     newPos = CollideEllipsoidWithTrisRec(&ci, newPos, esGravity, g_MapTrisCache.data(), g_MapTrisCache.size(), 0, 5);
 
-    glm::vec3 invESpace(1.0f/scaleToESpace);
+    glm::vec3 invESpace(1.0f / scaleToESpace);
     ci.velocity = invESpace * ci.velocity;
     ci.hitPoint = invESpace * ci.hitPoint;
     ci.basePos  = invESpace * newPos;
@@ -532,7 +531,7 @@ void TriToEllipsoidSpace(Tri* tri, glm::vec3 scaleToESpace)
 {
     tri->a.pos = scaleToESpace * tri->a.pos;
     tri->b.pos = scaleToESpace * tri->b.pos;
-    tri->c.pos = scaleToESpace * tri->c.pos;    
+    tri->c.pos = scaleToESpace * tri->c.pos;
 }
 
 // NOTE: This is to prevent allocating new memory every
@@ -548,7 +547,7 @@ CollisionInfo           PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapT
     glm::vec3 scaleToESpace(ec.toESpace[ 0 ][ 0 ], ec.toESpace[ 1 ][ 1 ], ec.toESpace[ 2 ][ 2 ]);
     for ( int i = 0; i < triCount; i++ )
     {
-        Tri tri   = tris[ i ].tri;
+        Tri tri = tris[ i ].tri;
         TriToEllipsoidSpace(&tri, scaleToESpace);
         g_esTriMemory.push_back(tri);
     }
@@ -571,9 +570,9 @@ CollisionInfo           PushTouch(EllipsoidCollider ec, glm::vec3 velocity, MapT
         }
     }
 
-    glm::vec3 invESpace(1.0f/scaleToESpace);
-    ci.hitPoint         = invESpace * ci.hitPoint;
-    ci.velocity         = invESpace * ci.velocity;
+    glm::vec3 invESpace(1.0f / scaleToESpace);
+    ci.hitPoint = invESpace * ci.hitPoint;
+    ci.velocity = invESpace * ci.velocity;
 
     return ci;
 }
