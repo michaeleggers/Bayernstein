@@ -191,6 +191,10 @@ bool TraceRayAgainstEllipsoid(glm::vec3 rayPos, glm::vec3 rayDir, EllipsoidColli
     return TraceRayAgainstUnitSphere(rayPosESpace, rayDirESpace, ellipsoidCenterESpace);
 }
 
+// NOTE: Logic is a bit different from Fauerby's paper as
+// I was not able to derive the formula like it is in the paper.
+// So this one is being used: https://pythno.org/blog/posts/sphere_vs_linesegment/
+// But it is essentially the same, just with flipped signs (check the blogpost for more info).
 bool CheckSweptSphereVsLinesegment(glm::vec3  p0,
                                    glm::vec3  p1,
                                    glm::vec3  sphereBase,
