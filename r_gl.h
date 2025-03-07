@@ -37,12 +37,14 @@ class GLRender : public IRender
 {
   public:
     virtual bool                   Init(void) override;
+    virtual void                   SetResolution(int width, int height) override;
+    virtual void                   SetDisplayMode(DisplayMode displayMode) override;
     virtual void                   Shutdown(void) override;
     virtual int                    RegisterModel(HKD_Model* model) override;
     virtual int                    RegisterBrush(HKD_Model* model) override;
     virtual void                   RegisterFont(CFont* font) override;
     virtual void                   RegisterWorld(CWorld* world) override;
-    virtual uint64_t               RegisterTextureGetHandle(const std::string& name) override;
+    virtual bool                   RegisterTextureGetHandle(const std::string& name, uint64_t* out_handle) override;
     virtual void                   SetActiveCamera(Camera* camera) override;
     virtual std::vector<ITexture*> ModelTextures(int gpuModelHandle) override;
     virtual std::vector<ITexture*> Textures(void) override;
@@ -96,7 +98,10 @@ class GLRender : public IRender
         return m_Window;
     };
     virtual glm::vec2        GetWindowDimensions() override;
+    virtual glm::vec2        GLRender::GetRenderDimensions() override;
     virtual ITextureManager* GetTextureManager() override;
+
+    void InitFBOs(int width, int height);
 
     void DrawFrustum(const math::Frustum& frustum);
 
@@ -108,7 +113,7 @@ class GLRender : public IRender
 
   private:
     SDL_Window*   m_Window;
-    SDL_GLContext m_SDL_GL_Conext;
+    SDL_GLContext m_SDL_GL_Context;
 
     GLTextureManager* m_ITextureManager;
 
@@ -156,6 +161,8 @@ class GLRender : public IRender
     CglFBO* m_ConsoleFBO;
     int     m_WindowWidth;
     int     m_WindowHeight;
+    int     m_RenderWidth;
+    int     m_RenderHeight;
 
     // 2D Rendering state
     CFont* m_CurrentFont;

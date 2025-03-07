@@ -19,10 +19,10 @@ class GLBatch
     GLBatch(uint32_t maxVerts);
     GLBatch(uint32_t maxVerts, uint32_t maxIndices);
 
-    int  Add(Tri* tris, uint32_t numTris, bool cullFace = true, DrawMode drawMode = DRAW_MODE_SOLID);
+    int  AddTris(Tri* tris, uint32_t numTris, bool cullFace = true, DrawMode drawMode = DRAW_MODE_SOLID);
     int  AddMapTris(MapTri* tris, uint32_t numTris, bool cullFace = true, DrawMode drawMode = DRAW_MODE_SOLID);
-    int  Add(const Vertex* verts, uint32_t numVerts, bool cullFace = true, DrawMode drawMode = DRAW_MODE_LINES);
-    bool Add(Vertex*   verts,
+    int  AddVertices(const Vertex* verts, uint32_t numVerts, bool cullFace = true, DrawMode drawMode = DRAW_MODE_LINES);
+    bool AddIndexedVertices(Vertex*   verts,
              uint32_t  numVerts,
              uint16_t* indices,
              uint32_t  numIndices,

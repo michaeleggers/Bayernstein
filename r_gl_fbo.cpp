@@ -8,13 +8,15 @@
 
 // Not usable in this state! Call any of the non-default Ctors to
 // get the FBO into valid state.
-CglFBO::CglFBO() {
+CglFBO::CglFBO()
+{
     m_Width  = 0;
     m_Height = 0;
     m_hFBO   = 9999; // TODO: (Michael): Can the handle be 0? Check GL docs!
 }
 
-CglFBO::CglFBO(int width, int height) {
+CglFBO::CglFBO(int width, int height, GLint nearestOrLinear)
+{
     m_Width  = width;
     m_Height = height;
 
@@ -22,8 +24,8 @@ CglFBO::CglFBO(int width, int height) {
 
     Bind();
 
-    m_ColorTexture = CglRenderTexture(width, height, GL_RGBA8);
-    m_DepthTexture = CglRenderTexture(width, height, GL_DEPTH_COMPONENT32F);
+    m_ColorTexture = CglRenderTexture(width, height, GL_RGBA8, nearestOrLinear);
+    m_DepthTexture = CglRenderTexture(width, height, GL_DEPTH_COMPONENT32F, nearestOrLinear);
 
     m_ColorTexture.Bind();
     m_DepthTexture.Bind();
@@ -36,24 +38,30 @@ CglFBO::CglFBO(int width, int height) {
 
     // Check if framebuffer is complete
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if ( status != GL_FRAMEBUFFER_COMPLETE ) {
+    if ( status != GL_FRAMEBUFFER_COMPLETE )
+    {
         printf("Framebuffer not complete: 0x%x\n", status);
-    } else {
+    }
+    else
+    {
         printf("Framebuffer is complete\n");
     }
 
     Unbind();
 }
 
-CglFBO::~CglFBO() {
+CglFBO::~CglFBO()
+{
     glDeleteFramebuffers(1, &m_hFBO);
-    m_hFBO = 9999;
+    m_hFBO = 9999; // TODO: What to set this to to signal that it is invalid?
 }
 
-void CglFBO::Bind() {
+void CglFBO::Bind()
+{
     glBindFramebuffer(GL_FRAMEBUFFER, m_hFBO);
 }
 
-void CglFBO::Unbind() {
+void CglFBO::Unbind()
+{
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

@@ -16,6 +16,7 @@ double                   GetDeltaTime();
 float                    RandBetween(float min, float max);
 bool                     IsStringFloat(const std::string& string);
 std::vector<std::string> SplitString(const std::string& input, char delimiter);
+std::string              RemoveExtension(const std::string& filename);
 
 template <typename T> T StringToFloat(const char* str, char** end);
 

@@ -143,8 +143,8 @@ void Game::Init()
 
     // Create a HUD for the player
     // This will create  the correct uv coordinates.
-    m_CrosshairSprite = CreateSprite("hud_elements.tga", glm::vec2(0.0f), glm::vec2(64.0f));
-    m_BoltSprite      = CreateSprite("hud_elements.tga", glm::vec2(64.0f, 0.0f), glm::vec2(128.0f, 64.0f));
+    m_CrosshairSprite = CreateSprite("hud_elements", glm::vec2(0.0f), glm::vec2(64.0f));
+    m_BoltSprite      = CreateSprite("hud_elements", glm::vec2(64.0f, 0.0f), glm::vec2(128.0f, 64.0f));
 
     // Disable mouse cursor in FPS mode (initial mode)
     SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -183,6 +183,32 @@ bool Game::RunFrame(double dt)
     if ( KeyPressed(SDLK_ESCAPE) )
     {
         m_pInterface->QuitGame();
+    }
+    else if ( KeyWentDown(SDLK_f) )
+    {
+        static bool drawFullscreen = false;
+        drawFullscreen             = !drawFullscreen;
+        if ( drawFullscreen )
+        {
+            printf("Switching to fake fullscreen mode\n");
+            renderer->SetDisplayMode(DOD_DISPLAY_MODE_FULLSCREEN_DESKTOP);
+        }
+        else
+        {
+            printf("Switching to windowed mode\n");
+            renderer->SetDisplayMode(DOD_DISPLAY_MODE_WINDOWED);
+        }
+    }
+    else if ( KeyWentDown(SDLK_q) )
+    {
+        static int             resolutionSelector = 0;
+        static const int       resolutionCount    = 7;
+        static const glm::vec2 resolutions[]
+            = { glm::vec2(320, 240),   glm::vec2(640, 480),   glm::vec2(800, 600),  glm::vec2(1024, 768),
+                glm::vec2(1920, 1080), glm::vec2(2560, 1440), glm::vec2(2560, 1600) };
+
+        glm::vec2 currentResolution = resolutions[ ++resolutionSelector % resolutionCount ];
+        renderer->SetResolution((int)currentResolution.x, (int)currentResolution.y);
     }
 
     // Toggle who should be controlled by the input system
@@ -280,8 +306,8 @@ bool Game::RunFrame(double dt)
 
             // Draw Debug Line for player veloctiy vector
             Line velocityDebugLine = {
-                Vertex(center),
-                Vertex(enemy->m_pSteeringBehaviour->m_WanderTarget) //* enemy->m_pSteeringBehaviour->m_WanderRadius
+                Vertex{ center },
+                Vertex{ enemy->m_pSteeringBehaviour->m_WanderTarget } //* enemy->m_pSteeringBehaviour->m_WanderRadius
             };
             velocityDebugLine.a.color = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
             velocityDebugLine.b.color = velocityDebugLine.a.color;
@@ -397,8 +423,8 @@ bool Game::RunFrame(double dt)
 
     renderer->Begin2D();
 
-    glm::vec2 windowDimensions = renderer->GetWindowDimensions();
-    glm::vec2 relSpriteSize    = m_CrosshairSprite.size / windowDimensions;
+    glm::vec2 renderDimensions = renderer->GetRenderDimensions();
+    glm::vec2 relSpriteSize    = m_CrosshairSprite.size / renderDimensions;
     float     crosshairScale   = 0.25f;
     renderer->DrawSprite(&m_CrosshairSprite,
                          glm::vec2(0.5f) - relSpriteSize * crosshairScale / 2.0f,
@@ -409,7 +435,7 @@ bool Game::RunFrame(double dt)
     Weapon*   weapon          = m_pPlayerEntity->GetWeapon();
     Sprite    icon            = weapon->GetHUDSprite();
     int       remainingRounds = weapon->GetRemainingRounds();
-    glm::vec2 pos             = windowDimensions - icon.size - glm::vec2(icon.size.x + 10.0f, 10.0f);
+    glm::vec2 pos             = renderDimensions - icon.size - glm::vec2(icon.size.x + 10.0f, 10.0f);
     renderer->SetFont(m_ConsoleFont);
     renderer->R_DrawText(std::to_string(remainingRounds), pos.x + icon.size.x + 10.0f, pos.y + 8.0f, COORD_MODE_ABS);
     renderer->DrawSprite(&icon, pos, glm::vec2(1.0f), COORD_MODE_ABS);

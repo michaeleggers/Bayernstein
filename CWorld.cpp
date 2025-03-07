@@ -56,15 +56,24 @@ void CWorld::InitWorld(const std::string& mapName)
 
     // Convert to tris
 
+    printf("----------------\n");
+    printf("INIT WORLD GEOMETRY\n");
+    printf("----------------\n");
+
     // Check if a lightmap is available
-    m_LightmapAvailable = false;
     HKD_File    plyFile;
     std::string fullPlyPath = g_GameDir + "maps/" + mapName + ".ply";
     if ( hkd_read_file(fullPlyPath.c_str(), &plyFile) == HKD_FILE_SUCCESS )
     {
         m_MapTris           = CWorld::CreateMapFromLightmapTrisFile(plyFile);
-        m_hLightmapTexture  = renderer->RegisterTextureGetHandle(mapName + ".png");
-        m_LightmapAvailable = true;
+        m_LightmapAvailable = false;
+
+        m_LightmapAvailable = renderer->RegisterTextureGetHandle(mapName, &m_hLightmapTexture);
+
+        if ( !m_LightmapAvailable )
+        {
+            printf("WARNING (%s): Failed to load lightmap-image: %s\n", __FILE__, mapName.c_str());
+        }
     }
     else
     {
@@ -82,6 +91,10 @@ void CWorld::InitWorld(const std::string& mapName)
 
     m_StaticTriCount = m_MapTris.size();
 
+    printf("----------------\n");
+    printf("DONE\n");
+    printf("----------------\n");
+
     // Now initialize all the entities. Those also include brush
     // entities. Those entities store their own geometry as MapTris.
     // We keep pointers to those triangles as the brush entities (eg. doors)
@@ -89,6 +102,9 @@ void CWorld::InitWorld(const std::string& mapName)
     // in order to collide with the tris correctly.
 
     // Load and create all the entities
+    printf("----------------\n");
+    printf("LOADING ENTITIES\n");
+    printf("----------------\n");
     for ( int i = 0; i < map.entities.size(); i++ )
     {
         const Entity& e = map.entities[ i ];
@@ -137,6 +153,9 @@ void CWorld::InitWorld(const std::string& mapName)
             }
         }
     }
+    printf("----------------\n");
+    printf("DONE\n");
+    printf("----------------\n");
 
     // Set the geometry cache for collision system
     InitMapTrisCache(m_StaticTriCount + m_BrushTriCount);
@@ -262,8 +281,6 @@ void CWorld::CollideEntitiesWithWorld()
                 {
                     continue;
                 }
-
-
 
                 pEntity->m_PrevPosition = ec->center; //pEntity->m_Position;
                 //printf("velocity: %f %f %f\n", pEntity->m_Velocity.x, pEntity->m_Velocity.y, pEntity->m_Velocity.z);
@@ -526,8 +543,11 @@ std::vector<MapTri> CWorld::CreateMapTrisFromMapPolys(const std::vector<MapPolyg
         C.color         = triColor;
         MapTri tri      = { .tri = { A, B, C } };
         tri.textureName = mapPoly.textureName;
-        //FIX: Search through all supported image formats not just PNG.
-        tri.hTexture = renderer->RegisterTextureGetHandle(tri.textureName + ".tga");
+
+        // Try to load texture from disk and create a texture.
+
+        renderer->RegisterTextureGetHandle(tri.textureName, &tri.hTexture);
+
         mapTris.push_back(tri);
     }
 
@@ -621,7 +641,8 @@ struct MapTri {
         memcpy(mapTri.tri.vertices, vertices, 3 * sizeof(Vertex));
 
         mapTri.textureName = std::string(currentLightmapTri->textureName);
-        mapTri.hTexture    = renderer->RegisterTextureGetHandle(mapTri.textureName + ".tga");
+
+        renderer->RegisterTextureGetHandle(mapTri.textureName, &mapTri.hTexture);
 
         mapTris[ i ] = mapTri;
 

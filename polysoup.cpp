@@ -22,18 +22,22 @@
 
 #include "polysoup.h"
 
+#include "CImageManager.h"
 #include "image.h"
 #include "platform.h"
+#include "globals.h"
 
 #define PS_FLOAT_EPSILON (0.0001)
 
 extern std::string g_GameDir;
 
-std::string loadTextFile(std::string file) {
+std::string loadTextFile(std::string file)
+{
     std::ifstream     iFileStream;
     std::stringstream ss;
     iFileStream.open(file, std::ifstream::in);
-    if ( iFileStream.fail() ) {
+    if ( iFileStream.fail() )
+    {
         fprintf(stderr, "Unable to open file: %s!\nExiting...", file.c_str());
         exit(-1);
     }
@@ -46,15 +50,18 @@ std::string loadTextFile(std::string file) {
 
 // @DEPRECATED: Writes only the polys out to disk without a
 // header. Use writePolySoupBinary (see below) instead!
-void writePolys(std::string fileName, std::vector<MapPolygon> polys) {
+void writePolys(std::string fileName, std::vector<MapPolygon> polys)
+{
     std::ofstream oFileStream;
     oFileStream.open(fileName, std::ios::binary | std::ios::out);
 
     uint32_t numPolys = polys.size();
     oFileStream.write((char*)&numPolys, sizeof(uint32_t));
 
-    for ( auto p = polys.begin(); p != polys.end(); p++ ) {
-        for ( auto v = p->vertices.begin(); v != p->vertices.end(); v++ ) {
+    for ( auto p = polys.begin(); p != polys.end(); p++ )
+    {
+        for ( auto v = p->vertices.begin(); v != p->vertices.end(); v++ )
+        {
             oFileStream.write((char*)&(v->pos), sizeof(glm::f64vec3));
         }
     }
@@ -62,7 +69,8 @@ void writePolys(std::string fileName, std::vector<MapPolygon> polys) {
     oFileStream.close();
 }
 
-void writePolySoupBinary(std::string fileName, const std::vector<MapPolygon>& polys) {
+void writePolySoupBinary(std::string fileName, const std::vector<MapPolygon>& polys)
+{
     uint64_t numPolys = polys.size();
     uint64_t polySize = sizeof(MapPolygon);
 
@@ -79,7 +87,8 @@ void writePolySoupBinary(std::string fileName, const std::vector<MapPolygon>& po
     memcpy(data, &header, sizeof(PolySoupDataHeader));
     memcpy(data + sizeof(PolySoupDataHeader), polys.data(), (size_t)totalPolySize);
 
-    if ( hkd_write_file(fileName.c_str(), data, totalFileSize, 1) != HKD_FILE_SUCCESS ) {
+    if ( hkd_write_file(fileName.c_str(), data, totalFileSize, 1) != HKD_FILE_SUCCESS )
+    {
 
         printf("Failed to write Polysoup binary data to file!\n");
     }
@@ -87,7 +96,8 @@ void writePolySoupBinary(std::string fileName, const std::vector<MapPolygon>& po
     free(data);
 }
 
-void writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys) {
+void writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys)
+{
     std::stringstream faces;
     std::ofstream     oFileStream;
     oFileStream.open(fileName, std::ios::out);
@@ -95,9 +105,11 @@ void writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys) {
     oFileStream << "o Quake-map" << std::endl;
 
     size_t count = 1;
-    for ( auto p = polys.begin(); p != polys.end(); p++ ) {
+    for ( auto p = polys.begin(); p != polys.end(); p++ )
+    {
         faces << "f";
-        for ( auto v = p->vertices.begin(); v != p->vertices.end(); v++ ) {
+        for ( auto v = p->vertices.begin(); v != p->vertices.end(); v++ )
+        {
             oFileStream << "v " << std::to_string(v->pos.x) << " " << std::to_string(v->pos.z) << " "
                         << std::to_string(-v->pos.y) << std::endl;
             faces << " " << count;
@@ -110,7 +122,8 @@ void writePolysOBJ(std::string fileName, std::vector<MapPolygon> polys) {
     oFileStream.close();
 }
 
-MapPlane createPlane(glm::f64vec3 p0, glm::f64vec3 p1, glm::f64vec3 p2) {
+MapPlane createPlane(glm::f64vec3 p0, glm::f64vec3 p1, glm::f64vec3 p2)
+{
     glm::f64vec3 v0 = p2 - p0;
     glm::f64vec3 v1 = p1 - p0;
     glm::f64vec3 n  = glm::normalize(glm::cross(v0, v1));
@@ -119,18 +132,21 @@ MapPlane createPlane(glm::f64vec3 p0, glm::f64vec3 p1, glm::f64vec3 p2) {
     return { n, p0, d };
 }
 
-glm::f64vec3 convertVertexToVec3(MapVertex v) {
+glm::f64vec3 convertVertexToVec3(MapVertex v)
+{
     return glm::f64vec3(v.x, v.y, v.z);
 }
 
-MapPlane convertFaceToPlane(Face face) {
+MapPlane convertFaceToPlane(Face face)
+{
     glm::f64vec3 p0 = convertVertexToVec3(face.vertices[ 0 ]);
     glm::f64vec3 p1 = convertVertexToVec3(face.vertices[ 1 ]);
     glm::f64vec3 p2 = convertVertexToVec3(face.vertices[ 2 ]);
     return createPlane(p0, p1, p2);
 }
 
-bool intersectThreePlanes(MapPlane p0, MapPlane p1, MapPlane p2, glm::f64vec3* intersectionPoint) {
+bool intersectThreePlanes(MapPlane p0, MapPlane p1, MapPlane p2, glm::f64vec3* intersectionPoint)
+{
     glm::f64vec3 n0xn1 = glm::cross(p0.n, p1.n);
     double       det   = glm::dot(n0xn1, p2.n);
 
@@ -143,23 +159,28 @@ bool intersectThreePlanes(MapPlane p0, MapPlane p1, MapPlane p2, glm::f64vec3* i
     return true;
 }
 
-bool vec3IsEqual(const glm::f64vec3& lhs, const glm::f64vec3& rhs) {
+bool vec3IsEqual(const glm::f64vec3& lhs, const glm::f64vec3& rhs)
+{
     return (glm::abs(lhs.x - rhs.x) < PS_FLOAT_EPSILON && glm::abs(lhs.y - rhs.y) < PS_FLOAT_EPSILON
             && glm::abs(lhs.z - rhs.z) < PS_FLOAT_EPSILON);
 }
 
-void insertVertexToPolygon(QuakeMapVertex v, MapPolygon* p) {
+void insertVertexToPolygon(QuakeMapVertex v, MapPolygon* p)
+{
     auto v0 = p->vertices.begin();
-    if ( v0 == p->vertices.end() ) {
+    if ( v0 == p->vertices.end() )
+    {
         p->vertices.push_back(v);
         return;
     }
 
-    for ( ; v0 != p->vertices.end(); v0++ ) {
+    for ( ; v0 != p->vertices.end(); v0++ )
+    {
         // TODO: Is this check actually needed??
         // TODO: Also check for UV? (Probably not because
         //       it is purely geometry related).
-        if ( vec3IsEqual(v.pos, v0->pos) ) {
+        if ( vec3IsEqual(v.pos, v0->pos) )
+        {
             return;
         }
     }
@@ -167,8 +188,10 @@ void insertVertexToPolygon(QuakeMapVertex v, MapPolygon* p) {
     p->vertices.push_back(v);
 }
 
-bool isPointInsideBrush(Brush brush, glm::f64vec3 intersectionPoint) {
-    for ( int i = 0; i < brush.faces.size(); i++ ) {
+bool isPointInsideBrush(Brush brush, glm::f64vec3 intersectionPoint)
+{
+    for ( int i = 0; i < brush.faces.size(); i++ )
+    {
         Face         face    = brush.faces[ i ];
         MapPlane     plane   = convertFaceToPlane(face);
         glm::f64vec3 a       = glm::normalize(intersectionPoint - plane.p0);
@@ -181,36 +204,45 @@ bool isPointInsideBrush(Brush brush, glm::f64vec3 intersectionPoint) {
     return true;
 }
 
-std::vector<MapPolygon> createPolysoup(const Brush& brush) {
+std::vector<MapPolygon> createPolysoup(const Brush& brush)
+{
+    CImageManager* imageManager = CImageManager::Instance();
+
     std::vector<MapPolygon> polys;
 
     int faceCount = brush.faces.size();
-    for ( int i = 0; i < faceCount; i++ ) {
+    for ( int i = 0; i < faceCount; i++ )
+    {
         Face       face_i = brush.faces[ i ];
         glm::vec3  axisU  = glm::vec3(face_i.tx1, face_i.ty1, face_i.tz1);
         glm::vec3  axisV  = glm::vec3(face_i.tx2, face_i.ty2, face_i.tz2);
         MapPlane   p0     = convertFaceToPlane(face_i);
         MapPolygon poly   = {};
         poly.textureName  = face_i.textureName;
-        float texWidth    = 1.0f;
-        float texHeight   = 1.0f;
-        // FIX: (Michael): Before Michael goes an implements a new
-        // feature he has to implement a decent virtual file-system!
-        // This is a boring job but it has to be done!!!
-        CImage texImage("textures/" + poly.textureName + ".tga");
-        if ( texImage.Valid() ) {
-            texWidth  = (float)texImage.Width();
-            texHeight = (float)texImage.Height();
-        }
+        float width       = 1.0f;
+        float height      = 1.0f;
+
+        const CImageManager::Image* image = imageManager->Create(g_GameDir + "textures/" + poly.textureName);
+        if ( image->isValid )
+        {
+            width  = (float)image->width;
+            height = (float)image->height;
+        }           
+
         poly.normal = p0.n;
-        for ( int j = 0; j < faceCount; j++ ) {
+        for ( int j = 0; j < faceCount; j++ )
+        {
             MapPlane p1 = convertFaceToPlane(brush.faces[ j ]);
-            for ( int k = 0; k < faceCount; k++ ) {
+            for ( int k = 0; k < faceCount; k++ )
+            {
                 glm::f64vec3 intersectionPoint;
                 MapPlane     p2 = convertFaceToPlane(brush.faces[ k ]);
-                if ( (i != j) && (j != k) && (i != k) ) {
-                    if ( intersectThreePlanes(p0, p1, p2, &intersectionPoint) ) {
-                        if ( isPointInsideBrush(brush, intersectionPoint) ) {
+                if ( (i != j) && (j != k) && (i != k) )
+                {
+                    if ( intersectThreePlanes(p0, p1, p2, &intersectionPoint) )
+                    {
+                        if ( isPointInsideBrush(brush, intersectionPoint) )
+                        {
                             // TODO: Calculate texture coordinates
                             glm::vec2 uv = { glm::dot((glm::vec3)intersectionPoint, axisU),
                                              glm::dot((glm::vec3)intersectionPoint, axisV) };
@@ -218,8 +250,8 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush) {
                             uv.y /= face_i.yScale;
                             uv.x += face_i.tOffset1;
                             uv.y += face_i.tOffset2;
-                            uv.x /= texWidth;
-                            uv.y /= texHeight;
+                            uv.x /= width;
+                            uv.y /= height;
                             //uv.y = 1.0f - uv.y;
                             QuakeMapVertex v = { intersectionPoint, uv };
                             insertVertexToPolygon(v, &poly);
@@ -228,23 +260,23 @@ std::vector<MapPolygon> createPolysoup(const Brush& brush) {
                 }
             }
         }
-        if ( poly.vertices.size() > 0 ) {
+
+        if ( poly.vertices.size() > 0 )
+        {
             polys.push_back(poly);
         }
-
-        // TODO: We could also not free here but place
-        // all the images into a CPU side pixelbuffer.
-        // We will see. For now ok...
-        texImage.FreePixeldata();
     }
 
     return polys;
 }
 
-static bool hasClassname(const Entity& e, std::string classname) {
-    for ( int i = 0; i < e.properties.size(); i++ ) {
+static bool hasClassname(const Entity& e, std::string classname)
+{
+    for ( int i = 0; i < e.properties.size(); i++ )
+    {
         const Property& p = e.properties[ i ];
-        if ( p.value == classname ) {
+        if ( p.value == classname )
+        {
             return true;
         }
     }
@@ -252,17 +284,21 @@ static bool hasClassname(const Entity& e, std::string classname) {
     return false;
 }
 
-std::vector<MapPolygon> createPolysoup(Map map, SoupFlags soupFlags) {
+std::vector<MapPolygon> createPolysoup(Map map, SoupFlags soupFlags)
+{
     std::vector<MapPolygon> polys;
-    for ( auto e = map.entities.begin(); e != map.entities.end(); e++ ) {
+    for ( auto e = map.entities.begin(); e != map.entities.end(); e++ )
+    {
 
         // Check if we also want the brush entities included or not (default = not).
         if ( !hasClassname(*e, "worldspawn") && !hasClassname(*e, "func_group")
-             && (soupFlags == SOUP_GET_WORLDSPAWN_ONLY) ) {
+             && (soupFlags == SOUP_GET_WORLDSPAWN_ONLY) )
+        {
             continue;
         }
 
-        for ( auto b = e->brushes.begin(); b != e->brushes.end(); b++ ) {
+        for ( auto b = e->brushes.begin(); b != e->brushes.end(); b++ )
+        {
             std::vector<MapPolygon> brushPolys = createPolysoup(*b);
             // NOTE: (Michael): I cannot wait to get rid off this STL nonsense...
             polys.insert(polys.end(), brushPolys.begin(), brushPolys.end());
@@ -272,25 +308,29 @@ std::vector<MapPolygon> createPolysoup(Map map, SoupFlags soupFlags) {
     return polys;
 }
 
-bool isAngleLegal(glm::f64vec3 center, glm::f64vec3 v0, glm::f64vec3 v1) {
+bool isAngleLegal(glm::f64vec3 center, glm::f64vec3 v0, glm::f64vec3 v1)
+{
     MapPlane     polyPlane = createPlane(center, v0, v1);
     glm::f64vec3 b         = glm::normalize(v1 - center);
     MapPlane     p         = createPlane(center, v0, center + polyPlane.n);
-    if ( glm::dot(p.n, b) < -0.00001 ) {
+    if ( glm::dot(p.n, b) < -0.00001 )
+    {
         return false;
     }
 
     return true;
 }
 
-double getAngle(glm::f64vec3 center, glm::f64vec3 v0, glm::f64vec3 v1) {
+double getAngle(glm::f64vec3 center, glm::f64vec3 v0, glm::f64vec3 v1)
+{
     glm::f64vec3 a = glm::normalize(v0 - center);
     glm::f64vec3 b = glm::normalize(v1 - center);
 
     return glm::dot(a, b);
 }
 
-MapPolygon sortVerticesCCW(MapPolygon poly) {
+MapPolygon sortVerticesCCW(MapPolygon poly)
+{
     MapPolygon result;
     size_t     vertCount = poly.vertices.size();
 
@@ -298,13 +338,15 @@ MapPolygon sortVerticesCCW(MapPolygon poly) {
 
     // Center of poly
     glm::f64vec3 center(0.0f);
-    for ( auto v = poly.vertices.begin(); v != poly.vertices.end(); v++ ) {
+    for ( auto v = poly.vertices.begin(); v != poly.vertices.end(); v++ )
+    {
         center += v->pos;
     }
     center /= vertCount;
 
     size_t closestVertexID = 0;
-    for ( size_t i = 0; i < vertCount - 1; i++ ) {
+    for ( size_t i = 0; i < vertCount - 1; i++ )
+    {
         glm::f64vec3 v0pos = poly.vertices[ i ].pos; // Find next vertex to v0 with smallest angle
 
         // Plane definition:
@@ -315,11 +357,14 @@ MapPolygon sortVerticesCCW(MapPolygon poly) {
 
         int    smallesAngleIndex = 0;
         double smallestAngle     = -1.0;
-        for ( size_t j = i + 1; j < vertCount; j++ ) {
+        for ( size_t j = i + 1; j < vertCount; j++ )
+        {
             glm::f64vec3 test = glm::normalize(poly.vertices[ j ].pos - center);
-            if ( glm::dot(plane.n, test) < -PS_FLOAT_EPSILON ) { // check if point is legal
+            if ( glm::dot(plane.n, test) < -PS_FLOAT_EPSILON )
+            { // check if point is legal
                 double angle = getAngle(center, v0pos, poly.vertices[ j ].pos);
-                if ( angle > smallestAngle ) {
+                if ( angle > smallestAngle )
+                {
                     smallestAngle     = angle;
                     smallesAngleIndex = j;
                 }
@@ -332,7 +377,8 @@ MapPolygon sortVerticesCCW(MapPolygon poly) {
     glm::f64vec3 a      = poly.vertices[ 0 ].pos - center;
     glm::f64vec3 b      = poly.vertices[ 1 ].pos - center;
     glm::f64vec3 normal = glm::normalize(glm::cross(a, b));
-    if ( glm::dot(normal, poly.normal) < PS_FLOAT_EPSILON ) {
+    if ( glm::dot(normal, poly.normal) < PS_FLOAT_EPSILON )
+    {
         std::reverse(poly.vertices.begin(), poly.vertices.end());
         poly.normal = normal;
     }
@@ -358,14 +404,17 @@ MapPolygon sortVerticesCCW(MapPolygon poly) {
 * 
 * TODO: Fix this with indexed data.
 */
-std::vector<MapPolygon> triangulate(std::vector<MapPolygon> polys) {
+std::vector<MapPolygon> triangulate(std::vector<MapPolygon> polys)
+{
     std::vector<MapPolygon> tris = {};
 
-    for ( auto p = polys.begin(); p != polys.end(); p++ ) {
+    for ( auto p = polys.begin(); p != polys.end(); p++ )
+    {
         MapPolygon     sortedPoly    = sortVerticesCCW(*p);
         size_t         vertCount     = sortedPoly.vertices.size();
         QuakeMapVertex provokingVert = sortedPoly.vertices[ 0 ];
-        for ( size_t i = 2; i < vertCount; i++ ) {
+        for ( size_t i = 2; i < vertCount; i++ )
+        {
             MapPolygon poly = {};
             poly.vertices.push_back(provokingVert);
             poly.vertices.push_back(sortedPoly.vertices[ i - 1 ]);

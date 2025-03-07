@@ -220,7 +220,7 @@ void FirstPersonPlayer::LoadModel(const char* path, glm::vec3 initialPosition)
     m_Model.pOwner = this;
     m_Model.renderFlags |= MODEL_RENDER_FLAG_IGNORE;
     m_Model.isRigidBody = false;
-    m_Model.scale       = glm::vec3(1.0f);
+    m_Model.scale       = glm::vec3(1.2f);
 
     for ( int i = 0; i < m_Model.animations.size(); i++ )
     {

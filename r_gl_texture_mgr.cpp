@@ -13,24 +13,34 @@ GLTextureManager* GLTextureManager::Instance() {
     return &theOneAndOnly;
 }
 
-ITexture* GLTextureManager::CreateTexture(std::string filename) {
+ITexture* GLTextureManager::CreateTexture(const std::string& filename) {
     if ( m_NameToTexture.contains(filename) ) {
         return m_NameToTexture.at(filename);
     }
 
     ITexture* result = new GLTexture(filename);
 
-    m_NameToTexture.insert({ filename, result });
-    m_HandleToTexture.insert({ result->m_hGPU, result });
+    if ( result->m_IsValid )
+    {
+        m_NameToTexture.insert({ filename, result });
+        m_HandleToTexture.insert({ result->m_hGPU, result });
+    }
 
     return result;
 }
 
-uint64_t GLTextureManager::CreateTextureGetHandle(std::string filename) {
+bool GLTextureManager::CreateTextureGetHandle(const std::string& filename, uint64_t* out_handle) {
     ITexture* texture = CreateTexture(filename);
-    assert(texture != NULL && "Return of CreateTexture is NULL!");
+    
+    if ( !texture->m_IsValid )
+    {
+        delete texture;
+        return false;
+    }
 
-    return texture->m_hGPU;
+    *out_handle = texture->m_hGPU;
+
+    return true;
 }
 
 ITexture* GLTextureManager::CreateTexture(CFont* font) {
@@ -40,8 +50,11 @@ ITexture* GLTextureManager::CreateTexture(CFont* font) {
 
     ITexture* result = new GLTexture(font);
 
-    m_NameToTexture.insert({ font->m_Filename, result });
-    m_HandleToTexture.insert({ result->m_hGPU, result });
+    if ( result->m_IsValid )
+    {
+        m_NameToTexture.insert({ font->m_Filename, result });
+        m_HandleToTexture.insert({ result->m_hGPU, result });
+    }
 
     return result;
 }

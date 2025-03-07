@@ -65,7 +65,7 @@ HKD_Model CreateModelFromIQM(IQMModel* model)
             mesh.isTextured = true;
         }
 
-        mesh.textureFileName = iqmMesh->material;
+        mesh.textureFileName = RemoveExtension(iqmMesh->material);
         mesh.firstTri        = iqmMesh->firstTri;
         mesh.numTris         = iqmMesh->numTris;
         for ( int v = 0; v < iqmMesh->vertices.size(); v += 3 )
@@ -136,7 +136,7 @@ HKD_Model CreateModelFromIQM(IQMModel* model)
         EllipsoidCollider ec = CreateEllipsoidColliderFromAABB(mins, maxs);
         result.ellipsoidColliders.push_back(ec);
     }
-
+    
     result.position       = glm::vec3(0.0f);
     result.orientation    = glm::angleAxis(glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     result.scale          = glm::vec3(1.0f);
@@ -214,7 +214,7 @@ HKD_Model CreateModelFromBrushes(const std::vector<Brush>& brushes)
     {
         HKD_Mesh mesh{};
         mesh.isTextured       = true;
-        mesh.textureFileName  = textureName + ".tga"; // FIX: Check for all formats.
+        mesh.textureFileName  = textureName;
         mesh.firstTri         = triOffset;
         size_t numTris        = mapPolys.size();
         mesh.numTris          = numTris;
@@ -265,7 +265,6 @@ static void InterpolatePoses(glm::mat4* out_pPoseMat, const Pose& a, const Pose&
 
     //*out_pPoseMat = transMat * rotMat * scaleMat;
 
-
     /********************/
     /* Optimized version */
     /********************/
@@ -279,8 +278,7 @@ static void InterpolatePoses(glm::mat4* out_pPoseMat, const Pose& a, const Pose&
     glm::quat interpRot = glm::slerp(a.rotation, b.rotation, pct);
     glm::mat4 rotMat    = glm::toMat4(interpRot);
 
-    *out_pPoseMat
-        = glm::translate(glm::mat4(1.0f), interpTrans) * rotMat * glm::scale(glm::mat4(1.0f), interpScale);
+    *out_pPoseMat = glm::translate(glm::mat4(1.0f), interpTrans) * rotMat * glm::scale(glm::mat4(1.0f), interpScale);
 }
 
 void UpdateModel(HKD_Model* model, float dt)
@@ -342,9 +340,9 @@ void UpdateModel(HKD_Model* model, float dt)
         if ( animationDone && !anim.loop )
         {
             currentFrame = anim.firstFrame + anim.numFrames - 1;
-            nextFrame = currentFrame;
+            nextFrame    = currentFrame;
         }
-        
+
         model->currentFrame = currentFrame;
 
         //printf("currentFrame: %d\n", currentFrame);

@@ -24,8 +24,8 @@ class FirstPersonPlayer : public MovingEntity, public IInputReceiver
 
   public:
     // Movement related values
-    static constexpr float MAX_VELOCITY           = 350.0f;
-    static constexpr float RUN_VELOCITY           = 300.0f;
+    static constexpr float MAX_VELOCITY           = 450.0f;
+    static constexpr float RUN_VELOCITY           = 400.0f;
     static constexpr float WALK_FACTOR            = 0.5f;
     static constexpr float MAX_MOUSE_LOOK_DEGREES = 89.0f;
 

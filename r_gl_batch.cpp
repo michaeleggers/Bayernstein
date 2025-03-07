@@ -133,7 +133,7 @@ GLBatch::GLBatch(uint32_t maxVerts, uint32_t maxIndices)
 }
 
 // TODO: cullFace and drawMode not used!
-int GLBatch::Add(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
+int GLBatch::AddTris(Tri* tris, uint32_t numTris, bool cullFace, DrawMode drawMode)
 {
     if ( m_VertOffsetIndex + 3 * numTris > m_MaxVerts )
     {
@@ -168,10 +168,10 @@ int GLBatch::AddMapTris(MapTri* tris, uint32_t numTris, bool cullFace, DrawMode 
         rawTris[ i ] = tris[ i ].tri;
     }
 
-    return Add(rawTris.data(), numTris, cullFace, drawMode);
+    return AddTris(rawTris.data(), numTris, cullFace, drawMode);
 }
 
-int GLBatch::Add(const Vertex* verts, uint32_t numVerts, bool cullFace, DrawMode drawMode)
+int GLBatch::AddVertices(const Vertex* verts, uint32_t numVerts, bool cullFace, DrawMode drawMode)
 {
     if ( m_VertOffsetIndex + numVerts > m_MaxVerts )
     {
@@ -191,7 +191,7 @@ int GLBatch::Add(const Vertex* verts, uint32_t numVerts, bool cullFace, DrawMode
     return offset;
 }
 
-bool GLBatch::Add(Vertex*   verts,
+bool GLBatch::AddIndexedVertices(Vertex*   verts,
                   uint32_t  numVerts,
                   uint16_t* indices,
                   uint32_t  numIndices,

@@ -43,12 +43,14 @@ class IRender
 {
   public:
     virtual bool                   Init(void)                                                                       = 0;
+    virtual void                   SetResolution(int width, int height)                                             = 0;
+    virtual void                   SetDisplayMode(DisplayMode displayMode)                                          = 0;
     virtual void                   Shutdown(void)                                                                   = 0;
     virtual int                    RegisterModel(HKD_Model* model)                                                  = 0;
     virtual int                    RegisterBrush(HKD_Model* model)                                                  = 0;
     virtual void                   RegisterFont(CFont* font)                                                        = 0;
     virtual void                   RegisterWorld(CWorld* world)                                                     = 0;
-    virtual uint64_t               RegisterTextureGetHandle(const std::string& name)                                = 0;
+    virtual bool                   RegisterTextureGetHandle(const std::string& name, uint64_t* out_handle)          = 0;
     virtual void                   SetActiveCamera(Camera* camera)                                                  = 0;
     virtual std::vector<ITexture*> ModelTextures(int gpuModelHandle)                                                = 0;
     virtual std::vector<ITexture*> Textures()                                                                       = 0;
@@ -98,6 +100,7 @@ class IRender
     virtual void             RenderEnd(void)                                                         = 0;
     virtual void             SetWindowTitle(char* windowTitle)                                       = 0;
     virtual glm::vec2        GetWindowDimensions()                                                   = 0;
+    virtual glm::vec2        GetRenderDimensions()                                                   = 0;
     virtual SDL_Window*      GetWindow()                                                             = 0;
     virtual ITextureManager* GetTextureManager()                                                     = 0;
 

@@ -10,13 +10,15 @@
 
 class GLTexture : public ITexture {
   public:
-    GLTexture(std::string filename);
+
+    virtual ~GLTexture() override;
+
+    GLTexture(const std::string& filename);
     GLTexture(CFont* font);
 
     // TODO: (Michael) Nuke texture from GPU memory
 
-    GLuint         m_gl_Handle;
-    unsigned char* m_Pixeldata;
+    GLuint         m_gl_Handle;     
 };
 
 #endif

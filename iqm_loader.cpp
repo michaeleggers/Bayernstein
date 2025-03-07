@@ -41,7 +41,7 @@ IQMModel LoadIQM(const char* file) {
     char*         pComments   = (char*)(iqmData + pHeader->ofsComment);
     uint8_t*      pExt        = (uint8_t*)(iqmData + pHeader->ofsExt);
 
-    printf("IQM Header: %s\n", pHeader->magic);
+    // printf("IQM Header: %s\n", pHeader->magic);
 
     uint8_t* pPositions        = NULL;
     uint32_t positionStride    = 0;
@@ -105,7 +105,7 @@ IQMModel LoadIQM(const char* file) {
             blendWeightStride = numComponents * dataSize;
         }
 
-        printf("type: %d, format: %d, numComponents: %d, offset: %d\n", type, format, numComponents, offset);
+        //printf("type: %d, format: %d, numComponents: %d, offset: %d\n", type, format, numComponents, offset);
     }
 
     for ( int i = 0; i < pHeader->numMeshes; i++ ) {
@@ -160,7 +160,7 @@ IQMModel LoadIQM(const char* file) {
     bindPoses.resize(pHeader->numJoints);
     for ( int i = 0; i < pHeader->numJoints; i++ ) {
         IQMJoint* pJoint = pJoints + i;
-        printf("Joint %d name: %s\n", i, pText + pJoint->name);
+        //printf("Joint %d name: %s\n", i, pText + pJoint->name);
 
         glm::vec3 translation = glm::vec3(pJoint->translate[ 0 ], pJoint->translate[ 1 ], pJoint->translate[ 2 ]);
         // WARNING: GLM STORES W AS ITS ____FIRST____ COMPONENT!!! WHAT THE FUCK IS WRONG WITH THEM???
@@ -276,6 +276,7 @@ IQMModel LoadIQM(const char* file) {
     for ( int i = 0; i < pHeader->numAnims; i++ ) {
         IQMAnim* pAnim = pAnims + i;
 
+        /*
         printf("Animation %d, name: %s, first frame: %d, last frame: %d, num frames: %d, loop: %d\n",
                i,
                pText + pAnim->name,
@@ -283,6 +284,7 @@ IQMModel LoadIQM(const char* file) {
                pAnim->firstFrame + pAnim->numFrames,
                pAnim->numFrames,
                pAnim->flags & 1);
+       */
 
         Anim anim       = {};
         anim.name       = std::string(pText + pAnim->name);
