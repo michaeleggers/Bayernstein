@@ -205,21 +205,12 @@ bool GLRender::Init(void)
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
     SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
 
-    // Create an application window with the following settings:
-    m_Window = SDL_CreateWindow(
-        "HKD", 1, 1, DOD_DEFAULT_WINDOW_WIDTH, DOD_DEFAULT_WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
-    //SDL_SetWindowFullscreen(m_Window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    SDL_DisplayMode displayMode{};
-    SDL_GetCurrentDisplayMode(0, &displayMode);
-    printf("Display Mode:\n  width: %d, height: %d\n  refresh-rate: %d\n",
-           displayMode.w,
-           displayMode.h,
-           displayMode.refresh_rate);
-    //SDL_SetWindowSize(m_Window, displayMode.w, displayMode.h);
-    //SDL_SetWindowDisplayMode(m_Window, &displayMode);
-
     // BEWARE! These flags must be set AFTER SDL_CreateWindow. Otherwise SDL
     // just doesn't cate about them (at least on Linux)!
+    //
+    // NOTE: It turns out that it actually *does* work. And for Nvidia
+    // it might even fail to init the context properly with the error:
+    // 'Could not make GL context current: BadMatch (invalid parameter attributes)'
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -233,6 +224,19 @@ bool GLRender::Init(void)
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+    // Create an application window with the following settings:
+    m_Window = SDL_CreateWindow(
+        "HKD", 1, 1, DOD_DEFAULT_WINDOW_WIDTH, DOD_DEFAULT_WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
+    //SDL_SetWindowFullscreen(m_Window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    SDL_DisplayMode displayMode{};
+    SDL_GetCurrentDisplayMode(0, &displayMode);
+    printf("Display Mode:\n  width: %d, height: %d\n  refresh-rate: %d\n",
+           displayMode.w,
+           displayMode.h,
+           displayMode.refresh_rate);
+    //SDL_SetWindowSize(m_Window, displayMode.w, displayMode.h);
+    //SDL_SetWindowDisplayMode(m_Window, &displayMode);
 
     m_SDL_GL_Context = SDL_GL_CreateContext(m_Window);
     if ( !m_SDL_GL_Context )
